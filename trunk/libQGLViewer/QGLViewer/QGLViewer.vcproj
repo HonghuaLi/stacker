@@ -72,7 +72,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="glu32.lib opengl32.lib gdi32.lib user32.lib QtXmld4.lib QtOpenGLd4.lib QtGuid4.lib QtCored4.lib"
+				AdditionalDependencies="gdi32.lib user32.lib QtXmld4.lib QtOpenGLd4.lib QtGuid4.lib QtCored4.lib opengl32.lib glu32.lib"
 				OutputFile="lib\QGLViewerd2.dll"
 				Version="2.39"
 				SuppressStartupBanner="true"
@@ -161,7 +161,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="glu32.lib opengl32.lib gdi32.lib user32.lib QtXml4.lib QtOpenGL4.lib QtGui4.lib QtCore4.lib"
+				AdditionalDependencies="gdi32.lib user32.lib QtXml4.lib QtOpenGL4.lib QtGui4.lib QtCore4.lib opengl32.lib glu32.lib"
 				OutputFile="lib\QGLViewer2.dll"
 				Version="2.39"
 				LinkIncremental="1"
@@ -1270,35 +1270,11 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
-		<File
-			RelativePath="c:\Users\ibraheem\Desktop\Research\Code\Workspace\Workspace\libQGLViewer\QGLViewer\QGLViewer_resource.rc"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCResourceCompilerTool"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="c:\Users\ibraheem\Desktop\Research\Code\Workspace\Workspace\libQGLViewer\QGLViewer\QGLViewerd_resource.rc"
-			>
-			<FileConfiguration
-				Name="Release|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCResourceCompilerTool"
-				/>
-			</FileConfiguration>
-		</File>
 	</Files>
 	<Globals>
 		<Global
 			Name="QtVersion Win32"
-			Value="4.7.3"
+			Value="4.7.2"
 		/>
 		<Global
 			Name="RccDir"

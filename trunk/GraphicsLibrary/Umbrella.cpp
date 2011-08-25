@@ -163,7 +163,7 @@ PairInt Umbrella::borderNeighbours()
 
 PairFaces Umbrella::borderFaces()
 {
-	PairFaces result (NULL, NULL);
+	PairFaces result ((Face*)0, (Face*)0);
 	Vector<Face*> ne;
 
 	for(HalfEdgeSet::iterator h = halfEdge.begin(); h != halfEdge.end(); h++)
@@ -253,7 +253,7 @@ StdSet<int> Umbrella::faceNeighbours(Face * face)
 
 PairFaces Umbrella::faceNeighboursPair( Face * face )
 {
-	PairFaces result (NULL, NULL);
+	PairFaces result ((Face*)0, (Face*)0);
 	Vector<Face*> ne;
 
 	for(HalfEdgeSet::iterator h = halfEdge.begin(); h != halfEdge.end(); h++)
