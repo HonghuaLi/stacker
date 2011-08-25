@@ -4,9 +4,6 @@
 
 #include "SimpleDraw.h"
 
-#include "Voxeler.h"
-Voxeler * v;
-
 Scene::Scene( QWidget *parent ) : QGLViewer(parent)
 {
 	// GLViewer options
@@ -18,8 +15,6 @@ Scene::Scene( QWidget *parent ) : QGLViewer(parent)
 	connect(timer, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
 
 	displayMessage(tr("New scene created."));
-
-	v = NULL;
 }
 
 void Scene::init()
@@ -76,9 +71,6 @@ void Scene::draw()
 	{
 		mesh->draw();
 	}
-
-	if(v != NULL)
-		v->draw();
 }
 
 void Scene::drawWithNames()
@@ -91,7 +83,6 @@ void Scene::drawWithNames()
 
 void Scene::mousePressEvent( QMouseEvent* e )
 {
-
 	// Regular behavior
 	QGLViewer::mousePressEvent(e);
 }
@@ -110,16 +101,6 @@ void Scene::mouseMoveEvent( QMouseEvent* e )
 
 void Scene::keyPressEvent( QKeyEvent *e )
 {
-	if(e->key() == Qt::Key_V)
-	{
-		foreach(QMesh * mesh, objects)
-		{
-			v = new Voxeler(mesh, 0.01);
-
-			
-		}
-	}
-
 	// Regular behavior
 	QGLViewer::keyPressEvent(e);
 }
@@ -133,6 +114,7 @@ void Scene::postSelection( const QPoint& point )
 
 	print(QString("Selected %1").arg(selected));
 
+	// BAD : should be 'currentMesh' or so
 	foreach(QMesh * mesh, objects)
 	{
 		mesh->selectedFace = selected;
@@ -197,8 +179,8 @@ void Scene::insertObject( QString fileName )
 
 	newMesh->id = qPrintable(newObjName);
 	newMesh->loadFromFile(qPrintable(fileName));
+	
 	newMesh->normalizeScale();
-	newMesh->setColor(255,255,255,100);
 
 	// Add to list of scene objects
 	objects[ newObjName ] = newMesh;
