@@ -2,12 +2,12 @@
 
 #include <QColorDialog>
 #include <QQueue>
+#include <QKeyEvent>
 
 #include "QGLViewer/qglviewer.h"
 using namespace qglviewer;
 
 #include "QMesh.h"
-#include "QOpenMesh.h"
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX};
@@ -65,7 +65,6 @@ private:
 // Objects in the scene
 private:
 	QMap<QString, QMesh *> objects;
-	QMap<QString, QOpenMesh *> openObjects;
 
 public slots:
 	void insertObject( QString fileName );

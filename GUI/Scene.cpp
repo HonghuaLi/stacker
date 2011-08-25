@@ -4,6 +4,9 @@
 
 #include "SimpleDraw.h"
 
+#include "Voxeler.h"
+Voxeler * v;
+
 Scene::Scene( QWidget *parent ) : QGLViewer(parent)
 {
 	// GLViewer options
@@ -11,9 +14,12 @@ Scene::Scene( QWidget *parent ) : QGLViewer(parent)
 
 	// TEXT ON SCREEN
 	timer = new QTimer(this);
-	connect(timer, SIGNAL(timeout()), this, SLOT(dequeueLastMessage()));
+
+	connect(timer, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
 
 	displayMessage(tr("New scene created."));
+
+	v = NULL;
 }
 
 void Scene::init()
@@ -71,15 +77,16 @@ void Scene::draw()
 		mesh->draw();
 	}
 
-	foreach(QOpenMesh * mesh, openObjects)
-	{
-		mesh->draw();
-	}
+	if(v != NULL)
+		v->draw();
 }
 
 void Scene::drawWithNames()
 {
-
+	foreach(QMesh * mesh, objects)
+	{
+		mesh->drawFaceNames();
+	}
 }
 
 void Scene::mousePressEvent( QMouseEvent* e )
@@ -103,6 +110,16 @@ void Scene::mouseMoveEvent( QMouseEvent* e )
 
 void Scene::keyPressEvent( QKeyEvent *e )
 {
+	if(e->key() == Qt::Key_V)
+	{
+		foreach(QMesh * mesh, objects)
+		{
+			v = new Voxeler(mesh, 0.01);
+
+			
+		}
+	}
+
 	// Regular behavior
 	QGLViewer::keyPressEvent(e);
 }
@@ -111,6 +128,15 @@ void Scene::postSelection( const QPoint& point )
 {
 	// Regular behavior
 	//QGLViewer::postSelection(point);
+
+	int selected = selectedName();
+
+	print(QString("Selected %1").arg(selected));
+
+	foreach(QMesh * mesh, objects)
+	{
+		mesh->selectedFace = selected;
+	}
 }
 
 void Scene::setViewMode(ViewMode toMode)
@@ -167,29 +193,13 @@ void Scene::insertObject( QString fileName )
 	QString newObjName = fInfo.fileName();
 	newObjName.chop(4);
 
-	bool isOpenMesh = true;
+	QMesh * newMesh = new QMesh;
 
-	if(isOpenMesh)
-	{
-		QOpenMesh * newMesh = new QOpenMesh;
+	newMesh->id = qPrintable(newObjName);
+	newMesh->loadFromFile(qPrintable(fileName));
+	newMesh->normalizeScale();
+	newMesh->setColor(255,255,255,100);
 
-		OpenMesh::IO::read_mesh(*newMesh, fileName.toStdString());
-
-		newMesh->init();
-
-		setSceneRadius(newMesh->radius());
-
-		// Add to list of scene objects
-		openObjects [ newObjName ] = newMesh;
-	}
-	else
-	{
-		QMesh * newMesh = new QMesh;
-
-		newMesh->id = qPrintable(newObjName);
-		newMesh->loadFromFile(qPrintable(fileName));
-
-		// Add to list of scene objects
-		objects[ newObjName ] = newMesh;
-	}
+	// Add to list of scene objects
+	objects[ newObjName ] = newMesh;
 }

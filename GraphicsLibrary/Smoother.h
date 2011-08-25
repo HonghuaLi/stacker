@@ -29,14 +29,6 @@
 
 #include "Mesh.h"
 
-// Use Eigen to help setup sparse matrix
-#undef min
-#undef max
-#define EIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET
-#include <Eigen/Core>
-#include <Eigen/Sparse>
-using namespace Eigen;
-
 class Smoother{
 private:
 	static void treatBorders(Mesh * mesh, Vector<Umbrella> & U);

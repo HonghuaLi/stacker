@@ -83,4 +83,4 @@ public:
 	StdString toString();
 };
 
-#define PairFaces Pair<Face *, Face *>
+#define PairFaces Pair< Face*, Face* >

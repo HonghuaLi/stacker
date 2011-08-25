@@ -67,4 +67,3 @@ public:
 };
 
 #endif // UMBRELLA_H
-

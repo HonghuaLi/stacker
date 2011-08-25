@@ -1,6 +1,5 @@
 #include "LocalFrame.h"
 #include "SimpleDraw.h"
-#include "Transform.h"
 
 LocalFrame::LocalFrame()
 {
@@ -84,12 +83,13 @@ Vector<LocalFrame> LocalFrame::alongTangent( const Vector<Vec>& tangent, const V
 
 qglviewer::Quaternion LocalFrame::rotation( const LocalFrame& A, const LocalFrame& B )
 {
-	Vector<Vec> axis1, axis2;
+	/*Vector<Vec> axis1, axis2;
 
 	axis1.push_back(A.n); axis1.push_back(A.up); axis1.push_back(A.b);
 	axis2.push_back(B.n); axis2.push_back(B.up); axis2.push_back(B.b);
 
-	Transformation t = Transform3D::findFrom(axis1, axis2);
+	Transformation t = Transform3D::findFrom(axis1, axis2);*/
 
-	return t.R;
+	// Warning
+	return qglviewer::Quaternion();
 }

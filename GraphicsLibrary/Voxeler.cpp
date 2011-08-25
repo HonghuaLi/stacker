@@ -48,7 +48,7 @@ Voxeler::Voxeler( Mesh * src_mesh, double voxel_size )
 	// Inner / outer computation
 	printf("Computing inside, outside..");
 	
-	fillInsideOut(innerVoxels, outerVoxels);
+	//fillInsideOut(innerVoxels, outerVoxels);
 
 	printf("done.");
 }

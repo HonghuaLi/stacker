@@ -309,7 +309,7 @@ void Mesh::normalizeScale()
 
 	int N = this->numberOfVertices();
 
-#pragma omp parallel for
+	#pragma omp parallel for
 	for(int i=0; i < N; i++)
 	{
 		vertex[i].x = (vertex[i].x - center.x) * scale;
@@ -436,6 +436,8 @@ void Mesh::loadFromFileOBJ( const char* fileName )
 		while (!file.eof())
 		{
 			GetLine (file, inputLine);
+
+			if(inputLine.empty()) continue;
 
 			switch(inputLine[0])
 			{
@@ -992,17 +994,20 @@ void Mesh::draw()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		SimpleDraw::DrawTriangle(face->vec(0),face->vec(1),face->vec(2),1,1,1,1);
 
-		SimpleDraw::IdentifyPoint(vertex[selectedVertex], 0,0,0,20);
-
-		Umbrella u(&vertexInfo[selectedVertex]);
-		Vector<Vec> points;
-
-		for(int i = 0; i < (int)u.neighbor.size(); i++)
+		if(selectedVertex >= 0)
 		{
-			points.push_back(vec(u.neighbor[i]));
-		}
+			SimpleDraw::IdentifyPoint(vertex[selectedVertex], 0,0,0,20);
 
-		SimpleDraw::IdentifyConnectedPoints(points);
+			Umbrella u(&vertexInfo[selectedVertex]);
+			Vector<Vec> points;
+
+			for(int i = 0; i < (int)u.neighbor.size(); i++)
+			{
+				points.push_back(vec(u.neighbor[i]));
+			}
+
+			SimpleDraw::IdentifyConnectedPoints(points);
+		}
 	}
 
 	// === end debug

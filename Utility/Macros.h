@@ -17,13 +17,6 @@
 	#define GLEE_ARB_vertex_buffer_object GLEW_ARB_vertex_buffer_object
 #endif
 
-// Eigen library
-#undef min
-#undef max
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-using namespace Eigen;
-
 // Constants
 static const double Epsilon_HIGH = DBL_EPSILON;
 extern double Epsilon;
