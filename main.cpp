@@ -15,5 +15,6 @@ int main(int argc, char *argv[])
 
 	Workspace w;
 	w.show();
+
 	return a.exec();
 }

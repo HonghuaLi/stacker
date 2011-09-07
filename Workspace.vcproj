@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=".\GeneratedFiles;&quot;$(QTDIR)\include&quot;;&quot;.\GeneratedFiles\$(ConfigurationName)&quot;;&quot;$(QTDIR)\include\qtmain&quot;;&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include\QtMultimedia&quot;;&quot;$(QTDIR)\include\QtXml&quot;;&quot;$(QTDIR)\include\QtOpenGL&quot;;&quot;$(QTDIR)\include\QtScript&quot;;.\;.\libQGLViewer;.\OpenMesh\src;.\OpenNL;.\Eigen;.\GUI;.\GraphicsLibrary;.\Spline;.\Utility"
+				AdditionalIncludeDirectories=".\GeneratedFiles;&quot;$(QTDIR)\include&quot;;&quot;.\GeneratedFiles\$(ConfigurationName)&quot;;&quot;$(QTDIR)\include\qtmain&quot;;&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include\QtMultimedia&quot;;&quot;$(QTDIR)\include\QtXml&quot;;&quot;$(QTDIR)\include\QtOpenGL&quot;;&quot;$(QTDIR)\include\QtScript&quot;;.\;.\libQGLViewer;.\OpenMesh\src;.\OpenNL;.\Eigen;.\GUI;.\GraphicsLibrary;.\Spline;.\Utility;.\GraphicsLibrary\SurfaceMesh"
 				PreprocessorDefinitions="UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_MULTIMEDIA_LIB;QT_XML_LIB;QT_OPENGL_LIB;QT_SCRIPT_LIB;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;QT_DLL"
 				RuntimeLibrary="2"
 				EnableEnhancedInstructionSet="2"
@@ -111,7 +111,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\GeneratedFiles;&quot;$(QTDIR)\include&quot;;&quot;.\GeneratedFiles\$(ConfigurationName)&quot;;&quot;$(QTDIR)\include\qtmain&quot;;&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include\QtMultimedia&quot;;&quot;$(QTDIR)\include\QtXml&quot;;&quot;$(QTDIR)\include\QtOpenGL&quot;;&quot;$(QTDIR)\include\QtScript&quot;;.\;.\libQGLViewer;.\OpenMesh\src;.\OpenNL;.\Eigen;.\GUI;.\GraphicsLibrary;.\Spline;.\Utility"
+				AdditionalIncludeDirectories=".\GeneratedFiles;&quot;$(QTDIR)\include&quot;;&quot;.\GeneratedFiles\$(ConfigurationName)&quot;;&quot;$(QTDIR)\include\qtmain&quot;;&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include\QtMultimedia&quot;;&quot;$(QTDIR)\include\QtXml&quot;;&quot;$(QTDIR)\include\QtOpenGL&quot;;&quot;$(QTDIR)\include\QtScript&quot;;.\;.\libQGLViewer;.\OpenMesh\src;.\OpenNL;.\Eigen;.\GUI;.\GraphicsLibrary;.\Spline;.\Utility;.\GraphicsLibrary\SurfaceMesh"
 				PreprocessorDefinitions="UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_CORE_LIB;QT_GUI_LIB;QT_MULTIMEDIA_LIB;QT_XML_LIB;QT_OPENGL_LIB;QT_SCRIPT_LIB;_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;QT_DLL"
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="false"
@@ -189,7 +189,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing $(InputFileName)..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL  &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot; &quot;.\Workspace.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL  &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot; &quot;-I.\GraphicsLibrary\SurfaceMesh&quot; &quot;.\Workspace.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
 						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 					/>
@@ -200,7 +200,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing $(InputFileName)..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL  &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot; &quot;.\Workspace.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL  &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot; &quot;-I.\GraphicsLibrary\SurfaceMesh&quot; &quot;.\Workspace.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
 						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 					/>
@@ -320,6 +320,18 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\GeneratedFiles\Release\moc_QSurfaceMesh.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath=".\GeneratedFiles\Release\moc_Scene.cpp"
 					>
 					<FileConfiguration
@@ -351,6 +363,18 @@
 				>
 				<File
 					RelativePath=".\GeneratedFiles\Debug\moc_QMesh.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\GeneratedFiles\Debug\moc_QSurfaceMesh.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -428,7 +452,7 @@
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Moc&apos;ing $(InputFileName)..."
-							CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL  &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot; &quot;.\GUI\Scene.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
+							CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL  &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot; &quot;-I.\GraphicsLibrary\SurfaceMesh&quot; &quot;.\GUI\Scene.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 							AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
 							Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 						/>
@@ -439,7 +463,7 @@
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Moc&apos;ing $(InputFileName)..."
-							CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL  &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot; &quot;.\GUI\Scene.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
+							CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL  &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot; &quot;-I.\GraphicsLibrary\SurfaceMesh&quot; &quot;.\GUI\Scene.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 							AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
 							Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 						/>
@@ -639,6 +663,80 @@
 				</File>
 				<File
 					RelativePath=".\GraphicsLibrary\Voxeler.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="SurfaceMesh"
+				>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\IO.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\IO.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\IO_obj.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\IO_off.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\IO_stl.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\properties.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\QSurfaceMesh.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\QSurfaceMesh.h"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Moc&apos;ing $(InputFileName)..."
+							CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL &quot;-I.&quot; &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot;&#x0D;&#x0A;"
+							AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+							Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Moc&apos;ing $(InputFileName)..."
+							CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL &quot;-I.&quot; &quot;-I.\GeneratedFiles&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\GeneratedFiles\$(ConfigurationName)\.&quot; &quot;-I$(QTDIR)\include\qtmain&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtMultimedia&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I.&quot; &quot;-I.\libQGLViewer&quot; &quot;-I.\OpenMesh\src&quot; &quot;-I.\OpenNL&quot; &quot;-I.\Eigen&quot; &quot;-I.\GUI&quot; &quot;-I.\GraphicsLibrary&quot; &quot;-I.\Spline&quot; &quot;-I.\Utility&quot;&#x0D;&#x0A;"
+							AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+							Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\Quadric.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\Surface_mesh.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\Surface_mesh.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GraphicsLibrary\SurfaceMesh\Vector.h"
 					>
 				</File>
 			</Filter>

@@ -11,8 +11,10 @@ Scene::Scene( QWidget *parent ) : QGLViewer(parent)
 
 	// TEXT ON SCREEN
 	timer = new QTimer(this);
-
 	connect(timer, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
+
+	// Other events
+	connect(this, SIGNAL(objectInserted(QSurfaceMesh *)), SLOT(update()));
 
 	displayMessage(tr("New scene created."));
 }
@@ -67,7 +69,7 @@ void Scene::draw()
 	this->setBackgroundColor(backColor);
 
 	// Draw objects
-	foreach(QMesh * mesh, objects)
+	foreach(QSurfaceMesh * mesh, objects)
 	{
 		mesh->draw();
 	}
@@ -75,10 +77,44 @@ void Scene::draw()
 
 void Scene::drawWithNames()
 {
-	foreach(QMesh * mesh, objects)
+	foreach(QSurfaceMesh * mesh, objects)
 	{
 		mesh->drawFaceNames();
 	}
+}
+
+void Scene::insertObject( QString fileName )
+{
+	// Get object name from file path
+	QFileInfo fInfo (fileName);
+	QString newObjName = fInfo.fileName();
+	newObjName.chop(4);
+
+	// Title of scene
+	setWindowTitle(newObjName);
+
+	// Legacy mesh data structure
+	/*QMesh * newMesh = new QMesh;
+	newMesh->id = qPrintable(newObjName);
+	newMesh->loadFromFile(qPrintable(fileName));
+	newMesh->normalizeScale();*/
+
+	// Using Surface_mesh library
+	QSurfaceMesh * newMesh = new QSurfaceMesh;
+	newMesh->read(qPrintable(fileName));
+	newMesh->compute_bounding_box();
+	newMesh->set_color_vertices();
+
+	camera()->setSceneCenter(Vec(newMesh->center.data()));
+	camera()->setSceneRadius(newMesh->radius);
+	camera()->showEntireScene();
+
+	newMesh->update();
+
+	// Add to list of scene objects
+	objects[ newObjName ] = newMesh;
+
+	emit(objectInserted(newMesh));
 }
 
 void Scene::mousePressEvent( QMouseEvent* e )
@@ -113,12 +149,6 @@ void Scene::postSelection( const QPoint& point )
 	int selected = selectedName();
 
 	print(QString("Selected %1").arg(selected));
-
-	// BAD : should be 'currentMesh' or so
-	foreach(QMesh * mesh, objects)
-	{
-		mesh->selectedFace = selected;
-	}
 }
 
 void Scene::setViewMode(ViewMode toMode)
@@ -168,20 +198,7 @@ void Scene::dequeueLastMessage()
 	}
 }
 
-void Scene::insertObject( QString fileName )
+void Scene::focusInEvent( QFocusEvent * event )
 {
-	// Get object name from file path
-	QFileInfo fInfo (fileName);
-	QString newObjName = fInfo.fileName();
-	newObjName.chop(4);
-
-	QMesh * newMesh = new QMesh;
-
-	newMesh->id = qPrintable(newObjName);
-	newMesh->loadFromFile(qPrintable(fileName));
-	
-	newMesh->normalizeScale();
-
-	// Add to list of scene objects
-	objects[ newObjName ] = newMesh;
+	emit(focusChanged(this));
 }

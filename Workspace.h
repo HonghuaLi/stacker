@@ -1,11 +1,12 @@
-#ifndef WORKSPACE_H
-#define WORKSPACE_H
+#pragma once
 
 #include <QtGui/QMainWindow>
 #include "ui_Workspace.h"
 
 #include <QMdiSubWindow>
 #include <QFileDialog>
+
+#include "Scene.h"
 
 class Workspace : public QMainWindow
 {
@@ -18,6 +19,7 @@ public:
 public slots:
 	void addNewScene();
 	void importObject();
+	void sceneFocusChanged(Scene* scene);
 
 signals:
 	void importedObject(QString fileName);
@@ -25,5 +27,3 @@ signals:
 private:
 	Ui::WorkspaceClass ui;
 };
-
-#endif // WORKSPACE_H

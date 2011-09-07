@@ -8,6 +8,7 @@
 using namespace qglviewer;
 
 #include "QMesh.h"
+#include "QSurfaceMesh.h"
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX};
@@ -39,6 +40,9 @@ public:
 	virtual void mouseMoveEvent(QMouseEvent* e);
 	virtual void keyPressEvent(QKeyEvent *e);
 
+	// Focus stuff
+	virtual void focusInEvent(QFocusEvent * event);
+
 	// SELECTION
 	virtual void postSelection(const QPoint& point);
 
@@ -64,8 +68,13 @@ private:
 
 // Objects in the scene
 private:
-	QMap<QString, QMesh *> objects;
+	QMap<QString, QSurfaceMesh *> objects;
+	QMap<QString, QMesh *> legacy_objects;
 
 public slots:
 	void insertObject( QString fileName );
+
+signals:
+	void focusChanged( Scene* );
+	void objectInserted( QSurfaceMesh * );
 };
