@@ -10,6 +10,7 @@ message("You are running qmake on a generated .pro file. This may not work!")
 HEADERS += ./Workspace.h \
     ./GUI/QMesh.h \
     ./GUI/Scene.h \
+    ./GraphicsLibrary/SurfaceMesh/QSurfaceMesh.h \
     ./Utility/HashTable.h \
     ./Utility/Macros.h \
     ./Utility/SimpleDraw.h \
@@ -34,6 +35,11 @@ HEADERS += ./Workspace.h \
     ./GraphicsLibrary/VertexDetail.h \
     ./GraphicsLibrary/Voxel.h \
     ./GraphicsLibrary/Voxeler.h \
+    ./GraphicsLibrary/SurfaceMesh/IO.h \
+    ./GraphicsLibrary/SurfaceMesh/properties.h \
+    ./GraphicsLibrary/SurfaceMesh/Quadric.h \
+    ./GraphicsLibrary/SurfaceMesh/Surface_mesh.h \
+    ./GraphicsLibrary/SurfaceMesh/Vector.h \
     ./GraphicsLibrary/BoundingBox.h \
     ./GraphicsLibrary/Intersection.h \
     ./Utility/kdtree.h \
@@ -57,6 +63,12 @@ SOURCES += ./main.cpp \
     ./GraphicsLibrary/VBO.cpp \
     ./GraphicsLibrary/VertexDetail.cpp \
     ./GraphicsLibrary/Voxeler.cpp \
+    ./GraphicsLibrary/SurfaceMesh/IO.cpp \
+    ./GraphicsLibrary/SurfaceMesh/IO_obj.cpp \
+    ./GraphicsLibrary/SurfaceMesh/IO_off.cpp \
+    ./GraphicsLibrary/SurfaceMesh/IO_stl.cpp \
+    ./GraphicsLibrary/SurfaceMesh/QSurfaceMesh.cpp \
+    ./GraphicsLibrary/SurfaceMesh/Surface_mesh.cpp \
     ./GraphicsLibrary/BoundingBox.cpp \
     ./Utility/kdtree.cpp \
     ./GraphicsLibrary/Octree.cpp

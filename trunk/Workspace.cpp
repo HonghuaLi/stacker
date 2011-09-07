@@ -1,7 +1,5 @@
 #include "Workspace.h"
 
-#include "Scene.h"
-
 Workspace::Workspace(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
 {
@@ -27,6 +25,9 @@ void Workspace::addNewScene()
 	ui.sceneArea->addSubWindow(newScene);
 
 	newScene->showMaximized();
+	newScene->setWindowTitle("Untitled");
+
+	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*)));
 }
 
 void Workspace::importObject()
@@ -39,4 +40,11 @@ void Workspace::importObject()
 		selectedScene->insertObject(fileName);
 
 	emit(importedObject(fileName));
+}
+
+void Workspace::sceneFocusChanged(Scene* scene)
+{
+	QString title = QString("%1 - %2")
+		.arg(QFileInfo(QApplication::applicationFilePath()).baseName())
+		.arg(scene->windowTitle());
 }

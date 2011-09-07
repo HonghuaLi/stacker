@@ -168,7 +168,7 @@ SliceResult Slicer::SliceAt(Mesh * mesh, Vector<int> & facesIndices,  const Plan
 	// recompute normals and reconnect vertex pointers in faces
 	mesh->refreshFaces(modifiedFaces);
 
-	mesh->vbo = new VBO(&mesh->vertex, &mesh->vNormal, &mesh->vColor, &mesh->face);
+	mesh->vbo = new VBO<Point3D, Normal, Color4, Face>(&mesh->vertex, &mesh->vNormal, &mesh->vColor, &mesh->face);
 	mesh->setDirtyVBO(true);
 
 	mesh->getUmbrellas();

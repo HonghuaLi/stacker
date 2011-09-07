@@ -86,7 +86,7 @@ Mesh::Mesh(const Mesh& fromMesh)
 	if(fromMesh.vbo == NULL)
 		this->vbo = NULL;
 	else
-		this->vbo = new VBO(&this->vertex, &this->vNormal, &this->vColor, &this->face);
+		this->vbo = new VBO<Point3D, Normal, Color4, Face>(&this->vertex, &this->vNormal, &this->vColor, &this->face);
 
 	//this->tempUmbrellas = fromMesh.tempUmbrellas;
 	this->tempUmbrellas.clear();
@@ -173,7 +173,7 @@ Mesh& Mesh::operator= (const Mesh& fromMesh)
 		if(fromMesh.vbo == NULL)
 			this->vbo = NULL;
 		else
-			this->vbo = new VBO(&this->vertex, &this->vNormal, &this->vColor, &this->face);
+			this->vbo = new VBO<Point3D, Normal, Color4, Face>(&this->vertex, &this->vNormal, &this->vColor, &this->face);
 
 		//this->tempUmbrellas = fromMesh.tempUmbrellas;
 		this->tempUmbrellas.clear();
@@ -642,7 +642,7 @@ void Mesh::saveToFile(const char* fileName)
 
 void Mesh::createVBO()
 {
-	this->vbo = new VBO(&vertex, &vNormal, &vColor, &face);
+	this->vbo = new VBO<Point3D, Normal, Color4, Face>(&vertex, &vNormal, &vColor, &face);
 }
 
 void Mesh::updateVBO()
@@ -876,7 +876,7 @@ void Mesh::setDirtyVBO(bool state)
 
 void Mesh::rebuildVBO()
 {
-	vbo = new VBO(&this->vertex, &this->vNormal, &this->vColor, &this->face);
+	vbo = new VBO<Point3D, Normal, Color4, Face>(&this->vertex, &this->vNormal, &this->vColor, &this->face);
 
 	this->isReady = true;
 }

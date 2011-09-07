@@ -35,7 +35,7 @@ protected:
 	Vector<Color4> vColor;
 
 	// Vertex Buffer Object
-	VBO * vbo;
+	VBO<Point3D, Normal, Color4, Face> * vbo;
 
 public:
 	Mesh(int expectedNumVerts = 0);
