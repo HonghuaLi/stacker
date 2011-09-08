@@ -1,13 +1,18 @@
 #include "Workspace.h"
 
-Workspace::Workspace(QWidget *parent, Qt::WFlags flags)
-	: QMainWindow(parent, flags)
+#include <QVBoxLayout >
+
+Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, flags)
 {
 	ui.setupUi(this);
 
 	// New scene action
 	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
 	connect(ui.actionImportObject, SIGNAL(triggered()), SLOT(importObject()));
+
+	sw = new StackerPanel();
+	ui.leftDockWidget->setLayout(new QVBoxLayout);
+	ui.leftDockWidget->layout()->addWidget(sw);
 
 	// Create new scene when we start by default
 	addNewScene();
@@ -28,6 +33,8 @@ void Workspace::addNewScene()
 	newScene->setWindowTitle("Untitled");
 
 	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*)));
+
+	connect(sw, SIGNAL(doStuffScene(QString)), newScene, SLOT(print(QString)));
 }
 
 void Workspace::importObject()
