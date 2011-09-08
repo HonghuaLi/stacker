@@ -7,6 +7,7 @@
 #include <QFileDialog>
 
 #include "Scene.h"
+#include "StackerPanel.h"
 
 class Workspace : public QMainWindow
 {
@@ -26,4 +27,5 @@ signals:
 
 private:
 	Ui::WorkspaceClass ui;
+	StackerPanel * sw;
 };
