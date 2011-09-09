@@ -1,0 +1,348 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{eaee7999-1731-47f0-9dbb-8fcf1a49f669}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{9aa16ef2-c1ae-4dfc-83c3-20b9c987593d}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{5cbbc0c4-115b-4f41-bc1f-e15bb26c1851}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI\Header">
+      <UniqueIdentifier>{66957104-4842-4d97-8b77-478afc2af94a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI\Source">
+      <UniqueIdentifier>{83f2a070-5cd3-4a09-9080-91fc4e5de9b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{5a361ae3-2960-4985-b5c8-fbf6f495f55a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Header">
+      <UniqueIdentifier>{c05c86af-b52c-4054-b60f-bfdd450fe71c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Source">
+      <UniqueIdentifier>{ea60c8b3-5575-41fa-b662-b6f6027ed5c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsLibrary">
+      <UniqueIdentifier>{800ed783-bc84-4657-babe-1495d94efbc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsLibrary\Header">
+      <UniqueIdentifier>{f448ba05-c38c-4f48-9bad-ea0015849980}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsLibrary\Source">
+      <UniqueIdentifier>{0a6a17da-1d9d-4d60-a9fd-8e7ecb370d18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsLibrary\SurfaceMesh">
+      <UniqueIdentifier>{09feec5c-a03b-4f07-b4df-b4b058857a0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Intersection">
+      <UniqueIdentifier>{075d0a5c-8097-4899-a301-b92e3ab58817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Intersection\Source">
+      <UniqueIdentifier>{628f6522-3dde-4727-ad92-9b7e5f96aac9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Intersection\Header">
+      <UniqueIdentifier>{467124aa-bc59-4e60-8a67-15ab21244f91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files\Template">
+      <UniqueIdentifier>{5d77b313-f755-40df-944f-38053f63940a}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Workspace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_Workspace.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QMesh.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QSurfaceMesh.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Scene.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Workspace.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QMesh.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QSurfaceMesh.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Scene.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Workspace.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Scene.cpp">
+      <Filter>GUI\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\SimpleDraw.cpp">
+      <Filter>Utility\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Circle.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Curvature.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Face.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Line.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\LocalFrame.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Mesh.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Plane.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Sampler.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Slicer.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Smoother.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Triangle.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Umbrella.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\VBO.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\VertexDetail.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Voxeler.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\SurfaceMesh\IO.cpp">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\SurfaceMesh\IO_obj.cpp">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\SurfaceMesh\IO_off.cpp">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\SurfaceMesh\IO_stl.cpp">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.cpp">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\SurfaceMesh\Surface_mesh.cpp">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\BoundingBox.cpp">
+      <Filter>Intersection\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\kdtree.cpp">
+      <Filter>Intersection\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Octree.cpp">
+      <Filter>Intersection\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_StackerPanel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_StackerPanel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_StackerPanel.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackerPanel.cpp">
+      <Filter>GUI\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeneratedFiles\ui_Workspace.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\HashTable.h">
+      <Filter>Utility\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\Macros.h">
+      <Filter>Utility\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\OpenMeshGL.h">
+      <Filter>Utility\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\SimpleDraw.h">
+      <Filter>Utility\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Circle.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Color4.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Curvature.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Edge.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Face.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\HalfEdge.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Line.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\LocalFrame.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Mesh.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Plane.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Point.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Sampler.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Slicer.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Smoother.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Triangle.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Umbrella.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\VBO.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Vec4.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\VertexDetail.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Voxel.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Voxeler.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\SurfaceMesh\IO.h">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\SurfaceMesh\properties.h">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\SurfaceMesh\Quadric.h">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\SurfaceMesh\Surface_mesh.h">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\SurfaceMesh\Vector.h">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\BoundingBox.h">
+      <Filter>Intersection\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Intersection.h">
+      <Filter>Intersection\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\kdtree.h">
+      <Filter>Intersection\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Octree.h">
+      <Filter>Intersection\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Offset.h">
+      <Filter>GUI\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Workspace.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Workspace.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Workspace.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Workspace.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\QMesh.h">
+      <Filter>GUI\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\Scene.h">
+      <Filter>GUI\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.h">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerPanel.h">
+      <Filter>GUI\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerWidget.ui">
+      <Filter>GUI\Header</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
