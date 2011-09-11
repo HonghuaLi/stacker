@@ -37,16 +37,21 @@ HEADERS += ./Workspace.h \
     ./GraphicsLibrary/Voxeler.h \
     ./GraphicsLibrary/SurfaceMesh/IO.h \
     ./GraphicsLibrary/SurfaceMesh/properties.h \
+    ./GraphicsLibrary/SurfaceMesh/QSurfaceMesh.h \
     ./GraphicsLibrary/SurfaceMesh/Quadric.h \
     ./GraphicsLibrary/SurfaceMesh/Surface_mesh.h \
     ./GraphicsLibrary/SurfaceMesh/Vector.h \
-    ./GraphicsLibrary/SurfaceMesh/QSurfaceMesh.h \
     ./GraphicsLibrary/BoundingBox.h \
     ./GraphicsLibrary/Intersection.h \
     ./Utility/kdtree.h \
     ./GraphicsLibrary/Octree.h \
+    ./Stacker/StackerPanel.h \
     ./Stacker/Offset.h \
-    ./Stacker/StackerPanel.h
+    ./Wires/Wire.h \
+    ./Wires/AnalyzeWires.h \
+    ./Wires/WiresPanel.h \
+    ./Utility/Graph.h \
+    ./Wires/SimpleEdge.h
 SOURCES += ./main.cpp \
     ./Workspace.cpp \
     ./GUI/Scene.cpp \
@@ -75,7 +80,11 @@ SOURCES += ./main.cpp \
     ./GraphicsLibrary/BoundingBox.cpp \
     ./Utility/kdtree.cpp \
     ./GraphicsLibrary/Octree.cpp \
-    ./Stacker/StackerPanel.cpp
+    ./Stacker/StackerPanel.cpp \
+    ./Wires/Wire.cpp \
+    ./Wires/AnalyzeWires.cpp \
+    ./Wires/WiresPanel.cpp
 FORMS += ./Workspace.ui \
-    ./Stacker/StackerWidget.ui
-RESOURCES += Workspace.qrc
+    ./Stacker/StackerWidget.ui \
+    ./Wires/WiresWidget.ui
+RESOURCES += ./Workspace.qrc

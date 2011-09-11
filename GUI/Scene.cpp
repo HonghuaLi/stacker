@@ -16,6 +16,8 @@ Scene::Scene( QWidget *parent ) : QGLViewer(parent)
 	// Other events
 	connect(this, SIGNAL(objectInserted(QSurfaceMesh *)), SLOT(update()));
 
+	activeObject = NULL;
+
 	displayMessage(tr("New scene created."));
 }
 
@@ -73,6 +75,11 @@ void Scene::draw()
 	{
 		mesh->draw();
 	}
+
+	foreach(Wire w, activeWires)
+	{
+		w.draw();
+	}
 }
 
 void Scene::drawWithNames()
@@ -113,6 +120,8 @@ void Scene::insertObject( QString fileName )
 
 	// Add to list of scene objects
 	objects[ newObjName ] = newMesh;
+
+	activeObject = newMesh;
 
 	emit(objectInserted(newMesh));
 }
@@ -201,6 +210,11 @@ void Scene::dequeueLastMessage()
 void Scene::focusInEvent( QFocusEvent * event )
 {
 	emit(focusChanged(this));
+}
+
+void Scene::setActiveWires( QVector<Wire> newWires )
+{
+	activeWires = newWires.toStdVector();
 }
 
 void Scene::doStacking()

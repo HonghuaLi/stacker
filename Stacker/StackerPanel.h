@@ -1,14 +1,13 @@
 #pragma once
 
-#include "ui_StackerPanel.h"
-
+#include "ui_StackerWidget.h"
 
 class StackerPanel : public QWidget
 {
 	Q_OBJECT
 
 private:
-	Ui::StackerPanel panel;
+	Ui::StackerWidget panel;
 
 public:
 	StackerPanel();
