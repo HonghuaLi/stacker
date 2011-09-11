@@ -10,9 +10,9 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
 	connect(ui.actionImportObject, SIGNAL(triggered()), SLOT(importObject()));
 
-	sw = new StackerPanel();
+	stacker_panel = new StackerPanel();
 	ui.leftDockWidget->setLayout(new QVBoxLayout);
-	ui.leftDockWidget->layout()->addWidget(sw);
+	ui.leftDockWidget->layout()->addWidget(stacker_panel);
 
 	// Create new scene when we start by default
 	addNewScene();
@@ -20,7 +20,7 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 
 Workspace::~Workspace()
 {
-
+	delete stacker_panel;
 }
 
 void Workspace::addNewScene()
@@ -34,7 +34,7 @@ void Workspace::addNewScene()
 
 	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*)));
 
-	connect(sw, SIGNAL(doStuffScene(QString)), newScene, SLOT(print(QString)));
+	connect(stacker_panel, SIGNAL(StackButtonClicked()), newScene, SLOT(doStacking()));
 }
 
 void Workspace::importObject()

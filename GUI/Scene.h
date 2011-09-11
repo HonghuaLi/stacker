@@ -9,6 +9,7 @@ using namespace qglviewer;
 
 #include "QMesh.h"
 #include "QSurfaceMesh.h"
+#include "Offset.h"
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX};
@@ -77,4 +78,8 @@ public slots:
 signals:
 	void focusChanged( Scene* );
 	void objectInserted( QSurfaceMesh * );
+
+//stacker
+public slots:
+	void doStacking();
 };

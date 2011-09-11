@@ -202,3 +202,9 @@ void Scene::focusInEvent( QFocusEvent * event )
 {
 	emit(focusChanged(this));
 }
+
+void Scene::doStacking()
+{
+	print("Start stacking...");
+	Offset offset(objects.begin().value());
+}

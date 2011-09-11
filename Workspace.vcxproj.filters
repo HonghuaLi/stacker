@@ -312,7 +312,7 @@
     <ClInclude Include="Stacker\Offset.h">
       <Filter>GUI\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
+    <ClInclude Include="GeneratedFiles\ui_StackerPanel.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -341,7 +341,7 @@
     <CustomBuild Include="Stacker\StackerPanel.h">
       <Filter>GUI\Header</Filter>
     </CustomBuild>
-    <CustomBuild Include="Stacker\StackerWidget.ui">
+    <CustomBuild Include="Stacker\StackerPanel.ui">
       <Filter>GUI\Header</Filter>
     </CustomBuild>
   </ItemGroup>
