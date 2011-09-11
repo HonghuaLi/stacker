@@ -61,7 +61,7 @@ struct kdres {
 #define SQ(x)			((x) * (x))
 
 #include <float.h>
-#define Epsilon			DBL_EPSILON
+#define kdEpsilon			DBL_EPSILON
 
 #include <vector>
 
@@ -107,8 +107,8 @@ public:
 
 	struct kdnode *get_nearest(float x, float y, float z);
 
-	bool has( const double *pos, double eps = Epsilon );
-	bool has( double x, double y, double z, double eps = Epsilon );
+	bool has( const double *pos, double eps = kdEpsilon );
+	bool has( double x, double y, double z, double eps = kdEpsilon );
 
 	struct kdres *get_all();
 	std::vector<double*> getAll();

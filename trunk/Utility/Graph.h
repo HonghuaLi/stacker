@@ -13,20 +13,21 @@
 #undef max
 #include <limits>
 
-template <typename VertexType = int, typename WeightType = float>
+template <typename VertexType = unsigned int, typename WeightType = float>
 class Graph
 {
 private:
 	typedef VertexType vertex_t;
 	typedef WeightType weight_t;
 
+public:
 	struct Edge {
 		vertex_t target;
 		weight_t weight;
-		int index;
+		unsigned int index;
 
-		Edge(vertex_t arg_target, weight_t arg_weight, int arg_index = -1)
-			: target(arg_target), weight(arg_weight), index(arg_index) { }
+		Edge(vertex_t arg_target, weight_t arg_weight, unsigned int edge_index = -1)
+			: target(arg_target), weight(arg_weight), index(edge_index) { }
 
 		bool operator == (const Edge & rhs) const
 		{
@@ -34,6 +35,7 @@ private:
 		}
 	};
 
+private:
 	typedef std::map<vertex_t, std::list<Edge> > adjacency_map_t;
 	typedef std::set<vertex_t> vertices_set;
 
@@ -55,7 +57,7 @@ private:
 		else
 			lastStart = source;
 
-                for (typename adjacency_map_t::iterator vertex_iter = adjacency_map.begin();
+		for (typename adjacency_map_t::iterator vertex_iter = adjacency_map.begin();
 			vertex_iter != adjacency_map.end();
 			vertex_iter++)
 		{
@@ -66,7 +68,7 @@ private:
 		min_distance[source] = 0;
 		std::set< std::pair<weight_t, vertex_t>,
 			pair_first_less<weight_t, vertex_t> > vertex_queue;
-                for (typename adjacency_map_t::iterator vertex_iter = adjacency_map.begin();
+		for (typename adjacency_map_t::iterator vertex_iter = adjacency_map.begin();
 			vertex_iter != adjacency_map.end();
 			vertex_iter++){
 				vertex_t v = vertex_iter->first;
@@ -78,7 +80,7 @@ private:
 			vertex_queue.erase(vertex_queue.begin());
 
 			// Visit each edge exiting u
-                        for (typename std::list<Edge>::iterator edge_iter = adjacency_map[u].begin();
+			for (typename std::list<Edge>::iterator edge_iter = adjacency_map[u].begin();
 				edge_iter != adjacency_map[u].end();
 				edge_iter++)
 			{
@@ -100,7 +102,7 @@ private:
 	std::list<vertex_t> DijkstraGetShortestPathTo(vertex_t target)
 	{
 		std::list<vertex_t> path;
-                typename std::map<vertex_t, vertex_t>::iterator prev;
+		typename std::map<vertex_t, vertex_t>::iterator prev;
 		vertex_t vertex = target;
 
 		if(previous.size())
@@ -114,6 +116,15 @@ private:
 		return path;
 	}
 
+public:
+	std::list<vertex_t> DijkstraShortestPath(vertex_t start, vertex_t end)
+	{
+		this->DijkstraComputePaths(start);
+		return this->DijkstraGetShortestPathTo(end);
+	}
+
+
+private:
 	// Graph Variables:
 	vertices_set vertices;
 	adjacency_map_t adjacency_map;
@@ -156,7 +167,7 @@ public:
 	{
 		std::list<Edge> * adj = &adjacency_map[p1];
 
-                for(typename std::list<Edge>::iterator i = adj->begin(); i != adj->end(); i++)
+		for(typename std::list<Edge>::iterator i = adj->begin(); i != adj->end(); i++)
 		{
 			Edge * e = &(*i);
 
@@ -178,7 +189,7 @@ public:
 	{
 		std::list<Edge> * adj = &adjacency_map[p1];
 
-                for(typename std::list<Edge>::iterator i = adj->begin(); i != adj->end(); i++)
+		for(typename std::list<Edge>::iterator i = adj->begin(); i != adj->end(); i++)
 		{
 			Edge * e = &(*i);
 
@@ -207,7 +218,7 @@ public:
 
 		std::list<Edge> * adj = &adjacency_map[p];
 
-                for(typename std::list<Edge>::iterator i = adj->begin(); i != adj->end(); i++)
+		for(typename std::list<Edge>::iterator i = adj->begin(); i != adj->end(); i++)
 		{
 			Edge * e = &(*i);
 
@@ -222,7 +233,7 @@ public:
 		vertex_t n = p;
 
 		std::list<Edge> * adj = &adjacency_map[p];
-                for(typename std::list<Edge>::iterator i = adj->begin(); i != adj->end(); i++)
+		for(typename std::list<Edge>::iterator i = adj->begin(); i != adj->end(); i++)
 		{
 			Edge * e = &(*i);
 
@@ -256,7 +267,7 @@ public:
 
 			if(visited.find(next) != visited.end())
 				return true;
-			
+
 			prev = curr;
 			curr = next;
 		}
@@ -274,11 +285,37 @@ public:
 		return false;
 	}
 
+	vertices_set GetNodes()
+	{
+		return vertices;
+	}
+
+	// the 'index' of the edge will be replaced with index of a vertex
+	std::vector<Edge> GetEdges()
+	{
+		std::vector<Edge> result;
+
+		for(typename adjacency_map_t::iterator it = adjacency_map.begin(); it != adjacency_map.end(); it++)
+		{
+			vertex_t v1 = it->first;
+			std::list<Edge> adj = it->second;
+
+			for(typename std::list<Edge>::iterator i = adj.begin(); i != adj.end(); i++)
+			{
+				Edge e = *i;
+
+				result.push_back(Edge(e.target, e.weight, v1));
+			}
+		}
+
+		return result;
+	}
+
 	std::vector<vertex_t> GetLeaves() const
 	{
 		std::vector<vertex_t> leaves;
 
-                for(typename adjacency_map_t::const_iterator it = adjacency_map.begin(); it != adjacency_map.end(); it++)
+		for(typename adjacency_map_t::const_iterator it = adjacency_map.begin(); it != adjacency_map.end(); it++)
 		{
 			if(it->second.size() < 2)
 			{
@@ -302,11 +339,10 @@ public:
 			q.pop();
 
 			std::list<Edge> * adj = &adjacency_map[i];
-
-                        for(typename std::list<Edge>::const_iterator it = adj->begin(); it != adj->end(); it++)
+			for(typename std::list<Edge>::const_iterator it = adj->begin(); it != adj->end(); it++)
 			{
 				int j = it->target;
-				
+
 				// Check: not visited
 				if(explored.find(j) == explored.end()) 
 				{
@@ -315,12 +351,6 @@ public:
 				}
 			}
 		}
-	}
-	
-	std::list<vertex_t> DijkstraShortestPath(vertex_t start, vertex_t end)
-	{
-		this->DijkstraComputePaths(start);
-		return this->DijkstraGetShortestPathTo(end);
 	}
 
 	vertex_t getNodeLargestConnected()
@@ -332,7 +362,7 @@ public:
 			return -1;
 
 		// fill unvisited set
-                for(typename vertices_set::const_iterator it = vertices.begin(); it != vertices.end(); it++)
+		for(typename vertices_set::const_iterator it = vertices.begin(); it != vertices.end(); it++)
 			unvisited.insert(*it);
 
 		while(unvisited.size() > 1)
@@ -349,13 +379,13 @@ public:
 			connectedComponents.push_back(currVisit);
 
 			// Remove from unvisited set
-                        for(typename std::set<vertex_t>::iterator it = currVisit.begin(); it != currVisit.end(); it++)
+			for(typename std::set<vertex_t>::iterator it = currVisit.begin(); it != currVisit.end(); it++)
 				unvisited.erase(*it);
 		}
 
 		// Find set with maximum number of nodes
 		int maxConnectSize = -1, max_i = 0;
-                for(int i = 0; i < (int)connectedComponents.size(); i++)
+		for(int i = 0; i < (int)connectedComponents.size(); i++)
 		{
 			int currSize = connectedComponents[i].size();
 
@@ -367,6 +397,49 @@ public:
 
 		// Return first node of that maximum set
 		return *(connectedComponents[max_i].begin());
+	}
+
+	void subGraph(Graph & g, const std::set<vertex_t> & explored)
+	{
+		for(std::set<vertex_t>::const_iterator vi = explored.begin(); vi != explored.end(); vi++)
+		{
+			std::list<Edge> adj = g.adjacency_map[*vi];
+
+			for(std::list<Edge>::iterator e = adj.begin(); e != adj.end(); e++)
+				this->AddEdge(*vi, e->target, e->weight);
+		}
+	}
+
+	std::vector< Graph <vertex_t,weight_t> > toConnectedParts()
+	{
+		std::vector< Graph <vertex_t,weight_t> > result;
+
+		// Make a 'bitmap' of visited nodes
+		std::map<vertex_t, bool> isVisited;
+		for(std::set<vertex_t>::iterator it = vertices.begin(); it != vertices.end(); it++)
+			isVisited[*it] = false;
+		
+		for(std::map<vertex_t,bool>::iterator i = isVisited.begin(); i != isVisited.end(); i++)
+		{
+			// Check if visited
+			if(i->second)
+				continue;
+
+			vertex_t seed = i->first;
+
+			std::set<vertex_t> explored;
+			explore(seed, explored);
+
+			// Add this new connected sub graph from exploration
+			result.push_back(Graph<vertex_t, weight_t>());
+			result.back().subGraph(*this, explored);
+
+			// mark as visited the explored
+			for(std::set<vertex_t>::iterator vi = explored.begin(); vi != explored.end(); vi++)
+				isVisited[*vi] = true;
+		}
+	
+		return result;
 	}
 };
 

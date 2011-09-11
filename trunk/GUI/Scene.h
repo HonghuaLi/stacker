@@ -11,6 +11,8 @@ using namespace qglviewer;
 #include "QSurfaceMesh.h"
 #include "Offset.h"
 
+#include "Wire.h"
+
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX};
 enum ModifyMode { DEFAULT, CP_REF_VECTOR, MOVE_VERTEX };
@@ -72,8 +74,14 @@ private:
 	QMap<QString, QSurfaceMesh *> objects;
 	QMap<QString, QMesh *> legacy_objects;
 
+	Vector<Wire> activeWires;
+
+public:
+	QSurfaceMesh * activeObject;
+
 public slots:
 	void insertObject( QString fileName );
+	void setActiveWires( QVector<Wire> );
 
 signals:
 	void focusChanged( Scene* );

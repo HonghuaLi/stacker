@@ -57,6 +57,8 @@ typedef Vector< Vector<float> > Vector2Df;
 #define PREV(i, N) ((i + N-1) % N)
 #define NEXT(i, N) ((i + 1) % N)
 #define SWAP(x, y, T) do { T temp##x##y = x; x = y; y = temp##x##y; } while (0)
+#define TO_RAD(X) (X*M_PI/180.0)
+#define AROUND(x, target, threshold) ( (abs(x) - abs(target) < threshold) ? 1 : 0)
 
 // Basic STL converters
 template <typename T> static inline Vector<T> SET_TO_VECTOR(StdSet<T> fromSet){
