@@ -1,22 +1,21 @@
 #pragma once
 
-#include "ui_StackerWidget.h"
+#include "ui_StackerPanel.h"
 
-using namespace Ui;
 
 class StackerPanel : public QWidget
 {
 	Q_OBJECT
 
 private:
-	StackerWidget sw;
+	Ui::StackerPanel panel;
 
 public:
 	StackerPanel();
 
 public slots:
-	void stackButtonClicked();
+	void onStackButtonClicked();
 
 signals:
-	void doStuffScene(QString);
+	void StackButtonClicked();
 };

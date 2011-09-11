@@ -27,5 +27,5 @@ signals:
 
 private:
 	Ui::WorkspaceClass ui;
-	StackerPanel * sw;
+	StackerPanel * stacker_panel;
 };

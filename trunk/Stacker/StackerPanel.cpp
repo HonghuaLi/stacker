@@ -2,12 +2,12 @@
 
 StackerPanel::StackerPanel()
 {
-	sw.setupUi(this);
+	panel.setupUi(this);
 
-	connect(sw.stackButton, SIGNAL(clicked()), SLOT(stackButtonClicked()));
+	connect(panel.stackButton, SIGNAL(clicked()), SLOT(onStackButtonClicked()));
 }
 
-void StackerPanel::stackButtonClicked()
+void StackerPanel::onStackButtonClicked()
 {
-	emit(doStuffScene(QString("Value is : %1").arg(sw.spinBox->value())));
+	emit(StackButtonClicked());
 }
