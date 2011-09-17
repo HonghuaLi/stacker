@@ -21,6 +21,9 @@
 static const double Epsilon_HIGH = DBL_EPSILON;
 extern double Epsilon;
 
+// Numerical stuff
+#define FLOAT_INFINITY std::numeric_limits<float>::infinity()
+
 // STL containers
 #include <vector>
 #include <list>

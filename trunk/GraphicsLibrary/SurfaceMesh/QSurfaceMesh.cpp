@@ -106,3 +106,125 @@ void QSurfaceMesh::update()
 	isReady = true;
 	isDirty = false;
 }
+
+void QSurfaceMesh::drawFacesUnique()
+{
+	glDisable(GL_LIGHTING);
+
+	Face_property<uint> findex = face_property<uint>("f:index");
+	Vertex_property<Point> points = vertex_property<Point>("v:point");
+	Face_iterator fit, fend = faces_end();
+	Vertex_around_face_circulator fvit, fvend;
+	Vertex v0, v1, v2;
+
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glBegin(GL_TRIANGLES);
+
+	for(fit = faces_begin(); fit != fend; ++fit)
+	{
+		uint f_id = findex[fit] + 1;
+
+		GLubyte a = (f_id & 0xFF000000) >> 24;
+		GLubyte r = (f_id & 0x00FF0000) >> 16;
+		GLubyte g = (f_id & 0x0000FF00) >> 8;
+		GLubyte b = (f_id & 0x000000FF) >> 0;
+
+		// Magical color!
+		glColor4ub(r,g,b,255 - a);
+
+		fvit = fvend = vertices(fit);
+		v0 = fvit;
+		v2 = ++fvit;
+
+		do{
+			v1 = v2;
+			v2 = fvit;
+
+			glVertex3dv(points[v0]);
+			glVertex3dv(points[v1]);
+			glVertex3dv(points[v2]);
+
+		} while (++fvit != fvend);
+
+	}
+
+	glEnd();
+
+	glEnable(GL_LIGHTING);
+}
+
+void QSurfaceMesh::moveCenterToOrigin()
+{
+	compute_bounding_box();
+
+	Surface_mesh::Vertex_property<Point> points = vertex_property<Point>("v:point");
+	Surface_mesh::Vertex_iterator vit, vend = vertices_end();
+
+	for (vit = vertices_begin(); vit != vend; ++vit)
+	{
+		if (!is_deleted(vit))
+		{
+			points[vit] -= center;
+		}
+	}
+
+	compute_bounding_box();
+}
+
+
+void QSurfaceMesh::assignVertexIndices()
+{
+	Vertex_property<uint> vindex = vertex_property<uint>("v:index");
+	Vertex_iterator vit, vend = vertices_end();
+
+	uint i = 0;
+	for(vit = vertices_begin(); vit != vend; ++vit) 
+	{
+		vertex_array.push_back(vit);
+		vindex[vit] = i++;
+	}
+}
+
+void QSurfaceMesh::assignFaceIndices()
+{
+	Face_property<uint> findex = face_property<uint>("f:index");
+	Face_iterator fit, fend = faces_end();
+
+	uint i = 0;
+	for(fit = faces_begin(); fit != fend; ++fit) 
+	{
+		face_array.push_back(fit);
+		findex[fit] = i++;
+	}
+}
+
+std::vector<uint> QSurfaceMesh::vertexIndicesAroundFace( uint f_id )
+{
+	std::vector<uint> vindices;
+
+	Vertex_property<uint> vindex = vertex_property<uint>("v:index");
+	Vertex_around_face_circulator fvit, fvend;
+
+	fvit = fvend = vertices(face_array[f_id]);
+
+	do{
+		vindices.push_back(vindex[fvit]);
+	} while (++fvit != fvend);
+
+
+	return vindices;
+}
+
+Point QSurfaceMesh::getVertex( uint v_id )
+{
+	Vertex_property<Point> points = vertex_property<Point>("v:point");
+	return points[vertex_array[v_id]];
+}
+
+void QSurfaceMesh::setVertexColor( uint v_id, const Color& newColor )
+{
+	Vertex_property<Color> vcolor = vertex_property<Color>("v:color");
+	vcolor[vertex_array[v_id]] = newColor;
+}

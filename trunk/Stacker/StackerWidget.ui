@@ -18,9 +18,9 @@
     <widget class="QSpinBox" name="spinBox"/>
    </item>
    <item>
-    <widget class="QPushButton" name="stackButton">
+    <widget class="QPushButton" name="offsetButton">
      <property name="text">
-      <string>Stack</string>
+      <string>Offset function</string>
      </property>
     </widget>
    </item>
