@@ -4,10 +4,24 @@ StackerPanel::StackerPanel()
 {
 	panel.setupUi(this);
 
-	connect(panel.stackButton, SIGNAL(clicked()), SLOT(onStackButtonClicked()));
+	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
 }
 
-void StackerPanel::onStackButtonClicked()
+
+void StackerPanel::onOffsetButtonClicked()
 {
-	emit(StackButtonClicked());
+	if (!activeScene->activeObject)
+	{
+		activeScene->print("There is no mesh opened!");
+		return;
+	}
+
+	Stacker stacker(activeScene);
+	stacker.computeOffset();
+}
+
+
+void StackerPanel::setActiveScene( Scene * scene)
+{
+	activeScene = scene;
 }

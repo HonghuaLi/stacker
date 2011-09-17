@@ -38,9 +38,7 @@ void Workspace::addNewScene()
 
 	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*)));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), wp, SLOT(setActiveScene(Scene*)));
-
-	// Stacker
-	connect(sp, SIGNAL(StackButtonClicked()), newScene, SLOT(doStacking()));
+	connect(newScene, SIGNAL(focusChanged(Scene*)), sp, SLOT(setActiveScene(Scene*)));
 
 	// Wires
 	connect(wp, SIGNAL(wiresFound(QVector<Wire>)), newScene, SLOT(setActiveWires(QVector<Wire>)));

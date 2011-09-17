@@ -65,21 +65,43 @@ void Scene::setupLights()
 
 void Scene::draw()
 {
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 
 	// Background color
 	this->setBackgroundColor(backColor);
 
-	// Draw objects
+	// Draw objects normally
 	foreach(QSurfaceMesh * mesh, objects)
 	{
 		mesh->draw();
 	}
 
+	// Wires
 	foreach(Wire w, activeWires)
 	{
 		w.draw();
 	}
+
+	// For depth buffer, selection, anything extraordinary
+	specialDraw();
+}
+
+void Scene::specialDraw()
+{
+	switch(specialRenderMode)
+	{
+	case REGULAR:
+		break;
+
+	case UNIQUE_FACES:
+		foreach(QSurfaceMesh * mesh, objects)
+		{
+			mesh->drawFacesUnique();
+		}
+		break;
+	}
+
+	specialRenderMode = REGULAR;
 }
 
 void Scene::drawWithNames()
@@ -111,6 +133,8 @@ void Scene::insertObject( QString fileName )
 	newMesh->read(qPrintable(fileName));
 	newMesh->compute_bounding_box();
 	newMesh->set_color_vertices();
+	newMesh->assignFaceIndices();
+	newMesh->assignVertexIndices();
 
 	camera()->setSceneCenter(Vec(newMesh->center.data()));
 	camera()->setSceneRadius(newMesh->radius);
@@ -217,8 +241,31 @@ void Scene::setActiveWires( QVector<Wire> newWires )
 	activeWires = newWires.toStdVector();
 }
 
-void Scene::doStacking()
+void* Scene::readBuffer( GLenum format, GLenum type )
 {
-	print("Start stacking...");
-	Offset offset(objects.begin().value());
+	glClearColor(0,0,0,0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	preDraw(); // apply camera settings
+	draw();
+
+	int w = width();
+	int h = height();
+
+	void * data = NULL;
+
+	switch(format)
+	{
+	case GL_DEPTH_COMPONENT:
+		data = new GLfloat[w*h];
+		break;
+
+	case GL_RGBA:
+		data = new GLubyte[w*h*4];
+		break;
+	}
+
+	glReadPixels(0, 0, w, h, format, type, data);
+
+	return data;
 }

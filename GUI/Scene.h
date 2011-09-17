@@ -9,13 +9,13 @@ using namespace qglviewer;
 
 #include "QMesh.h"
 #include "QSurfaceMesh.h"
-#include "Offset.h"
 
 #include "Wire.h"
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX};
 enum ModifyMode { DEFAULT, CP_REF_VECTOR, MOVE_VERTEX };
+enum SpecialRenderMode { REGULAR, DEPTH, UNIQUE_FACES };
 
 class Scene : public QGLViewer{
 
@@ -29,10 +29,13 @@ public:
 	void setupCamera();
 	void setupLights();
 
-	// OpenGL Drawing
+	// OpenGL Drawing and Buffer
 	virtual void draw();
 	virtual void drawWithNames();
 	virtual void postDraw();
+	virtual void specialDraw();
+
+	void* readBuffer( GLenum format, GLenum type );
 
 	// Scene Visualizations
 	void drawCornerAxis();
@@ -53,6 +56,7 @@ public:
 	ViewMode viewMode;
 	SelectMode selectMode;
 	ModifyMode modifyMode;
+	SpecialRenderMode specialRenderMode;
 
 	QColor backColor;
 
@@ -86,8 +90,4 @@ public slots:
 signals:
 	void focusChanged( Scene* );
 	void objectInserted( QSurfaceMesh * );
-
-//stacker
-public slots:
-	void doStacking();
 };

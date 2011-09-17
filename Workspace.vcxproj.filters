@@ -207,6 +207,15 @@
     <ClCompile Include="Wires\WiresPanel.cpp">
       <Filter>Wires</Filter>
     </ClCompile>
+    <ClCompile Include="Stacker\Stacker.cpp">
+      <Filter>Stacker</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Offset.cpp">
+      <Filter>Stacker</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\ColorMap.cpp">
+      <Filter>Utility\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -323,9 +332,6 @@
     <ClInclude Include="GraphicsLibrary\Octree.h">
       <Filter>Intersection\Header</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\Offset.h">
-      <Filter>Stacker</Filter>
-    </ClInclude>
     <ClInclude Include="Wires\AnalyzeWires.h">
       <Filter>Wires</Filter>
     </ClInclude>
@@ -334,6 +340,15 @@
     </ClInclude>
     <ClInclude Include="Wires\Wire.h">
       <Filter>Wires</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Stacker.h">
+      <Filter>Stacker</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Offset.h">
+      <Filter>Stacker</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\ColorMap.h">
+      <Filter>Utility\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

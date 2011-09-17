@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ui_StackerWidget.h"
+#include "Scene.h"
+#include "Stacker.h"
 
 class StackerPanel : public QWidget
 {
@@ -8,13 +10,12 @@ class StackerPanel : public QWidget
 
 private:
 	Ui::StackerWidget panel;
+	Scene * activeScene;
 
 public:
 	StackerPanel();
 
 public slots:
-	void onStackButtonClicked();
-
-signals:
-	void StackButtonClicked();
+	void onOffsetButtonClicked();
+	void setActiveScene(Scene *);
 };
