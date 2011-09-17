@@ -111,7 +111,6 @@ void QSurfaceMesh::drawFacesUnique()
 {
 	glDisable(GL_LIGHTING);
 
-	Face_property<uint> findex = face_property<uint>("f:index");
 	Vertex_property<Point> points = vertex_property<Point>("v:point");
 	Face_iterator fit, fend = faces_end();
 	Vertex_around_face_circulator fvit, fvend;
@@ -124,7 +123,7 @@ void QSurfaceMesh::drawFacesUnique()
 
 	for(fit = faces_begin(); fit != fend; ++fit)
 	{
-		uint f_id = findex[fit] + 1;
+		uint f_id = ((Face)fit).idx() + 1;
 
 		GLubyte a = (f_id & 0xFF000000) >> 24;
 		GLubyte r = (f_id & 0x00FF0000) >> 16;
@@ -173,54 +172,46 @@ void QSurfaceMesh::moveCenterToOrigin()
 	compute_bounding_box();
 }
 
-
-void QSurfaceMesh::assignVertexIndices()
+void QSurfaceMesh::assignVertexArray()
 {
-	Vertex_property<uint> vindex = vertex_property<uint>("v:index");
 	Vertex_iterator vit, vend = vertices_end();
 
-	uint i = 0;
 	for(vit = vertices_begin(); vit != vend; ++vit) 
-	{
 		vertex_array.push_back(vit);
-		vindex[vit] = i++;
-	}
 }
 
-void QSurfaceMesh::assignFaceIndices()
+void QSurfaceMesh::assignFaceArray()
 {
-	Face_property<uint> findex = face_property<uint>("f:index");
 	Face_iterator fit, fend = faces_end();
 
-	uint i = 0;
 	for(fit = faces_begin(); fit != fend; ++fit) 
-	{
 		face_array.push_back(fit);
-		findex[fit] = i++;
-	}
 }
 
 std::vector<uint> QSurfaceMesh::vertexIndicesAroundFace( uint f_id )
 {
 	std::vector<uint> vindices;
 
-	Vertex_property<uint> vindex = vertex_property<uint>("v:index");
 	Vertex_around_face_circulator fvit, fvend;
-
 	fvit = fvend = vertices(face_array[f_id]);
 
 	do{
-		vindices.push_back(vindex[fvit]);
+		vindices.push_back( ((Vertex)fvit).idx() );
 	} while (++fvit != fvend);
-
 
 	return vindices;
 }
 
-Point QSurfaceMesh::getVertex( uint v_id )
+Point QSurfaceMesh::getVertexPos( uint v_id )
 {
 	Vertex_property<Point> points = vertex_property<Point>("v:point");
 	return points[vertex_array[v_id]];
+}
+
+Point QSurfaceMesh::getVertexPos( const Vertex & v )
+{
+	Vertex_property<Point> points = vertex_property<Point>("v:point");
+	return points[v];
 }
 
 void QSurfaceMesh::setVertexColor( uint v_id, const Color& newColor )

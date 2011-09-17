@@ -58,7 +58,7 @@ public:
 	Vector<Normal> normals;
 	HashMap<int, Face* > faces;
 
-	// Modifiy
+	// Modify
 	void smoothPrincipalCurvatures(int iterations = 1.0);
 
 };
