@@ -133,8 +133,8 @@ void Scene::insertObject( QString fileName )
 	newMesh->read(qPrintable(fileName));
 	newMesh->compute_bounding_box();
 	newMesh->set_color_vertices();
-	newMesh->assignFaceIndices();
-	newMesh->assignVertexIndices();
+	newMesh->assignFaceArray();
+	newMesh->assignVertexArray();
 
 	camera()->setSceneCenter(Vec(newMesh->center.data()));
 	camera()->setSceneRadius(newMesh->radius);

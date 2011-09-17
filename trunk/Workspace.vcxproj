@@ -204,6 +204,7 @@
     <ClCompile Include="Stacker\Offset.cpp" />
     <ClCompile Include="Stacker\Stacker.cpp" />
     <ClCompile Include="Utility\ColorMap.cpp" />
+    <ClCompile Include="Wires\Ridges.cpp" />
     <ClCompile Include="Workspace.cpp" />
     <ClCompile Include="Utility\SimpleDraw.cpp" />
     <ClCompile Include="GraphicsLibrary\Circle.cpp" />
@@ -330,6 +331,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(Configuration)\moc_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <ClInclude Include="Wires\AnalyzeWires.h" />
+    <ClInclude Include="Wires\Ridges.h" />
     <ClInclude Include="Wires\SimpleEdge.h" />
     <ClInclude Include="Wires\Wire.h" />
     <CustomBuild Include="Wires\WiresPanel.h">

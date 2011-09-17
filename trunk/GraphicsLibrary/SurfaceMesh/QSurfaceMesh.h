@@ -11,16 +11,16 @@ class QSurfaceMesh : public QObject, public Surface_mesh
 public:
 	QSurfaceMesh();
 
-
 	std::vector<Vertex_iterator> vertex_array;
 	std::vector<Face_iterator> face_array;
 
-	void assignVertexIndices();
-	void assignFaceIndices();
+	void assignVertexArray();
+	void assignFaceArray();
+
 	std::vector<uint> vertexIndicesAroundFace( uint f_id );
-	Point getVertex( uint v_id );
 
-
+	Point getVertexPos( uint v_id );
+	Point getVertexPos( const Vertex & v );
 
 	void compute_bounding_box();
 	void moveCenterToOrigin();

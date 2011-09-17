@@ -216,6 +216,9 @@
     <ClCompile Include="Utility\ColorMap.cpp">
       <Filter>Utility\Source</Filter>
     </ClCompile>
+    <ClCompile Include="Wires\Ridges.cpp">
+      <Filter>Wires</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -349,6 +352,9 @@
     </ClInclude>
     <ClInclude Include="Utility\ColorMap.h">
       <Filter>Utility\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Wires\Ridges.h">
+      <Filter>Wires</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -11,7 +11,6 @@ Offset::~Offset()
 
 }
 
-
 std::vector< std::vector<float> > Offset::computeEnvelope( int direction )
 {
 	QSurfaceMesh * activeObject = activeScene->activeObject;
@@ -116,11 +115,13 @@ void Offset::setOffsetColors( int direction, std::vector< std::vector<float> > &
 
 	for (std::set<uint>::iterator it = vindices.begin(); it!=vindices.end(); it++)
 	{
-		Point src = activeObject->getVertex(*it);
+		Point src = activeObject->getVertexPos(*it);
 		Vec vpixel = activeScene->camera()->projectedCoordinatesOf(Vec(src));
 
-		int x = (direction) == 1 ? vpixel.x : (w-1)-vpixel.x;
-		x = RANGED(0, x, (w-1));
+		// For flipping
+		int _x = (direction) == 1 ? vpixel.x : (w-1)-vpixel.x;
+
+		int x = RANGED(0, _x, (w-1));
 		int y = RANGED(0, (h-1)-vpixel.y, (h - 1));
 
 		ColorMap::jetColorMap(rgb, Max(0, offset[y][x] / O_max), 0, 1);
