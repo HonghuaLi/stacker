@@ -126,9 +126,6 @@
     <ClCompile Include="GraphicsLibrary\Circle.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Curvature.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsLibrary\Face.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
@@ -219,6 +216,9 @@
     <ClCompile Include="Wires\Ridges.cpp">
       <Filter>Wires</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicsLibrary\SurfaceMesh\Curvature.cpp">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -249,9 +249,6 @@
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Color4.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Curvature.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Edge.h">
@@ -355,6 +352,9 @@
     </ClInclude>
     <ClInclude Include="Wires\Ridges.h">
       <Filter>Wires</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\SurfaceMesh\Curvature.h">
+      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

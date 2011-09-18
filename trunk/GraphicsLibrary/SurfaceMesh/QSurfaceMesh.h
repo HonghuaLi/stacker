@@ -25,6 +25,9 @@ public:
 	void compute_bounding_box();
 	void moveCenterToOrigin();
 
+	double getAverageEdgeLength();
+	double averageEdgeLength;
+
 	void draw();
 	void drawFaceNames();
 	void drawFacesUnique();

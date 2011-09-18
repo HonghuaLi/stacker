@@ -172,6 +172,7 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_WiresPanel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_Workspace.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -194,11 +195,13 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_WiresPanel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_Workspace.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GraphicsLibrary\SurfaceMesh\Curvature.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GUI\Scene.cpp" />
     <ClCompile Include="Stacker\Offset.cpp" />
@@ -208,7 +211,6 @@
     <ClCompile Include="Workspace.cpp" />
     <ClCompile Include="Utility\SimpleDraw.cpp" />
     <ClCompile Include="GraphicsLibrary\Circle.cpp" />
-    <ClCompile Include="GraphicsLibrary\Curvature.cpp" />
     <ClCompile Include="GraphicsLibrary\Face.cpp" />
     <ClCompile Include="GraphicsLibrary\Line.cpp" />
     <ClCompile Include="GraphicsLibrary\LocalFrame.cpp" />
@@ -272,6 +274,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(Configuration)\moc_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
+    <ClInclude Include="GraphicsLibrary\SurfaceMesh\Curvature.h" />
     <ClInclude Include="Stacker\Offset.h" />
     <ClInclude Include="Stacker\Stacker.h" />
     <ClInclude Include="Utility\ColorMap.h" />
@@ -282,7 +285,6 @@
     <ClInclude Include="Utility\SimpleDraw.h" />
     <ClInclude Include="GraphicsLibrary\Circle.h" />
     <ClInclude Include="GraphicsLibrary\Color4.h" />
-    <ClInclude Include="GraphicsLibrary\Curvature.h" />
     <ClInclude Include="GraphicsLibrary\Edge.h" />
     <ClInclude Include="GraphicsLibrary\Face.h" />
     <ClInclude Include="GraphicsLibrary\HalfEdge.h" />

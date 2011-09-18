@@ -2,8 +2,9 @@
 
 #include "Macros.h"
 #include "Graph.h"
-
 typedef Graph<uint, double> WireGraph;
+
+#include "Curvature.h"
 
 std::vector<Wire> AnalyzeWires::fromMesh( Surface_mesh * m, double dihedralThreshold )
 {
@@ -79,6 +80,17 @@ std::vector<Wire> AnalyzeWires::fromMesh( Surface_mesh * m, double dihedralThres
 			wires.back().addEdge(v[vmap[pi1]], v[vmap[pi2]], pi1, pi2, e->weight);
 		}
 	}
+
+	return wires;
+}
+
+std::vector<Wire> AnalyzeWires::fromMesh2( Surface_mesh * m, double dihedralThreshold )
+{
+	std::vector<Wire> wires;
+
+	Curvature c;
+
+	c.computeDerivativesCurvatures(m);
 
 	return wires;
 }
