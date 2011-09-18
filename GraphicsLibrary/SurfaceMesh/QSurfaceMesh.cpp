@@ -1,6 +1,8 @@
 #include "QSurfaceMesh.h"
 #include "IO.h"
 
+#include "SimpleDraw.h"
+
 QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 {
 	vbo = NULL;
@@ -9,6 +11,8 @@ QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 	edges.clear();
 
 	isReady = false;
+
+	averageEdgeLength = -1;
 }
 
 void QSurfaceMesh::compute_bounding_box()
@@ -47,6 +51,28 @@ void QSurfaceMesh::draw()
 	if(isDirty || !vbo)	update();
 
 	vbo->render_smooth();
+
+	// Render some mesh indicators
+	// Curvature:
+	if(get_vertex_property<double>("v:curv1"))
+	{
+		std::vector<Vec> starts, directions1, directions2;
+
+		Vertex_property<Point>  points = vertex_property<Point>("v:point");
+		Vertex_property<Vec3d> pdir1 = vertex_property<Vec3d>("v:pdir1"),
+			pdir2 = vertex_property<Vec3d>("v:pdir2");
+		Vertex_iterator vit, vend = vertices_end();
+
+		for(vit = vertices_begin(); vit != vend; ++vit)
+		{
+			starts.push_back(Vec(points[vit]));
+			directions1.push_back(Vec(pdir1[vit]));
+			directions2.push_back(Vec(pdir2[vit]));
+		}
+
+		SimpleDraw::DrawLineTick(starts, directions1, getAverageEdgeLength() * 0.5, false, 1, 0, 0);
+		SimpleDraw::DrawLineTick(starts, directions2, getAverageEdgeLength() * 0.5, false, 0, 0, 1);
+	}
 }
 
 void QSurfaceMesh::drawFaceNames()
@@ -218,4 +244,26 @@ void QSurfaceMesh::setVertexColor( uint v_id, const Color& newColor )
 {
 	Vertex_property<Color> vcolor = vertex_property<Color>("v:color");
 	vcolor[vertex_array[v_id]] = newColor;
+}
+
+double QSurfaceMesh::getAverageEdgeLength()
+{
+	// Efficiency
+	if(averageEdgeLength >= 0)
+		return averageEdgeLength;
+
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+
+	Edge_iterator eit, eend = edges_end();
+
+	double sumEdgeLen = 0;
+
+	for(eit = edges_begin(); eit != eend; ++eit)
+	{
+		sumEdgeLen += (points[vertex(eit, 1)] - points[vertex(eit, 0)]).norm();
+	}
+
+	averageEdgeLength = sumEdgeLen / n_edges();
+
+	return averageEdgeLength;
 }

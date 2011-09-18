@@ -12,7 +12,7 @@ WiresPanel::WiresPanel()
 void WiresPanel::analyzeButtonClicked()
 {
 	QVector<Wire> newWires = QVector<Wire>::fromStdVector(
-		AnalyzeWires::fromMesh(activeScene->activeObject, TO_RAD(ww.angleTolerance->value()))); 
+		AnalyzeWires::fromMesh2(activeScene->activeObject, TO_RAD(ww.angleTolerance->value()))); 
 
 	emit(wiresFound( newWires ));
 }

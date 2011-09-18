@@ -1,66 +1,44 @@
 /* 
-	Second method taken from: 
+	method taken from: 
 	Princeton University file 'TriMesh_curvature.cc'
 	Rusinkiewicz, Szymon. "Estimating Curvatures and Their Derivatives on Triangle Meshes," 2004
 */
 
 #pragma once
 
-#include "Mesh.h"
-#include "Vec4.h"
+#include "QSurfaceMesh.h"
+typedef Surface_mesh::Vertex Vertex;
 
 class Curvature
 {
+
 private:
-	double AREA(double pp1[3], double pp2[3], double pp3[3]);
+	std::vector<double> curv1, curv2;
+	std::vector<Vec4d> dcurv;
+	std::vector<Vec3d> pdir1, pdir2;
+	std::vector<Vec3d> cornerareas;
+	std::vector<double> pointareas;
 
 public:
-	// 1st method: from 'MeshViewer' by "Yutaka Ohtake" - Uses one ring neighborhood
-	void computePrincipalCurvatures2(Mesh * mesh);
-
-	// 2nd method: from 'TriMesh2' by "Szymon Rusinkiewicz" - Finite-differences approach
-	void computePrincipalCurvatures(Mesh * src_mesh);
+	// from 'TriMesh2' by "Szymon Rusinkiewicz" - Finite-differences approach
+	void computePrincipalCurvatures(Surface_mesh * src_mesh);
 
 	// derivatives of curvature
-	void computeDerivativesCurvatures(Mesh * src_mesh);
-
-	static void rot_coord_sys(const Vec &old_u, const Vec &old_v, const Vec &new_norm, Vec &new_u, Vec &new_v);
-
-	void proj_curv(const Vec &old_u, const Vec &old_v, double old_ku, double old_kuv, double old_kv, 
-					const Vec &new_u, const Vec &new_v, double &new_ku, double &new_kuv, double &new_kv);
-
-	void proj_dcurv(const Vec &old_u, const Vec &old_v, const Vec4 old_dcurv, 
-					const Vec &new_u, const Vec &new_v, Vec4 & new_dcurv);
-
-	void diagonalize_curv(const Vec &old_u, const Vec &old_v, double ku, double kuv, double kv, 
-							const Vec &new_norm, Vec &pdir1, Vec &pdir2, double &k1, double &k2);
+	void computeDerivativesCurvatures(Surface_mesh * src_mesh);
 
 	// Compute per-vertex point areas
-	void computePointAreas(Mesh * src_mesh);
+	void computePointAreas(Surface_mesh * src_mesh);
 
-public:
-	Mesh * mesh;
+	void rot_coord_sys(const Point &old_u, const Point &old_v, const Point &new_norm, Point &new_u, Point &new_v);
 
-	// STORED DATA - 1st method
-	Vector<double> k_max,k_min;
+	void proj_curv(const Point &old_u, const Point &old_v, double old_ku, double old_kuv, double old_kv, 
+					const Point &new_u, const Point &new_v, double &new_ku, double &new_kuv, double &new_kv);
 
-	// STORED DATA - 2nd method
-	Vector<double> curv1, curv2;
-	Vector<Vec4> dcurv;
-	Vector<Vec> cornerareas;
-	Vector<double> pointareas;
+	void proj_dcurv(const Point &old_u, const Point &old_v, const Vec4d old_dcurv, 
+					const Point &new_u, const Point &new_v, Vec4d & new_dcurv);
 
-	// STORED DATA - shared
-	Vector<Vec> pdir1, pdir2;
-
-	// Make copies of mesh (not efficient!)
-	Vector<Point3D> vertices;
-	Vector<Normal> normals;
-	HashMap<int, Face* > faces;
-
-	// Modify
-	void smoothPrincipalCurvatures(int iterations = 1.0);
-
+	void diagonalize_curv(const Point &old_u, const Point &old_v, double ku, double kuv, double kv, 
+							const Point &new_norm, Point &pdir1, Point &pdir2, double &k1, double &k2);
 };
 
 // Macros needed for Princeton code:
@@ -125,3 +103,6 @@ static inline void ldltsl(T A[N][N], T rdiag[N], T B[N], T x[N])
 		x[i] -= sum * rdiag[i];
 	}
 }
+
+// Stuff
+#define SWAP(x, y, T) do { T temp##x##y = x; x = y; y = temp##x##y; } while (0)

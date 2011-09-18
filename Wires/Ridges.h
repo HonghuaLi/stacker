@@ -74,15 +74,7 @@ typedef back_insert_iterator< std::vector<Ridge_line*> > OutputIterator;
 class Ridge_approximation
 {
 public:  
-	Ridge_approximation(QSurfaceMesh &M,
-		const VertexdoublePropertyMap& vertex2k1_pm, 
-		const VertexdoublePropertyMap& vertex2k2_pm,
-		const VertexdoublePropertyMap& vertex2b0_pm, 
-		const VertexdoublePropertyMap& vertex2b3_pm,
-		const VertexVectorPropertyMap& vertex2d1_pm, 
-		const VertexVectorPropertyMap& vertex2d2_pm,
-		const VertexdoublePropertyMap& vertex2P1_pm, 
-		const VertexdoublePropertyMap& vertex2P2_pm);
+	Ridge_approximation(QSurfaceMesh * m);
 
 	//Find MAX_RIDGE, MIN_RIDGE or CREST_RIDGE ridges iterate on P Faces,
 	//find a non-visited, regular (i.e. if there is a coherent
@@ -90,11 +82,12 @@ public:
 	//follow non-visited, regular, 2Xing triangles in both sens to
 	//create a Ridge line.  Each time an edge is added the strength and
 	//sharpness(if Ridge_order_4) are updated.
-	OutputIterator compute_ridges(Ridge_interrogation_type r_type, OutputIterator ridge_lines_it,	
-		Ridge_order ord = Ridge_order_3);
+	OutputIterator compute_ridges(OutputIterator ridge_lines_it, 
+		Ridge_interrogation_type r_type = MAX_RIDGE, Ridge_order ord = Ridge_order_3);
 
 protected:
-	QSurfaceMesh& M;
+
+	QSurfaceMesh * M;
 	double squared_model_size;//squared radius of the smallest enclosing sphere of the Surface_mesh
 	//used to make the sharpness scale independent and iso independent
 	Ridge_order tag_order;
@@ -107,8 +100,8 @@ protected:
 	Face2bool_map_type is_visited_map;
 
 	//Property maps
-	const VertexdoublePropertyMap &k1, &k2, &b0, &b3, &P1, &P2;
-	const VertexVectorPropertyMap &d1, &d2;
+	VertexdoublePropertyMap k1, k2, b0, b3, P1, P2;
+	VertexVectorPropertyMap d1, d2;
 
 	//is a Face crossed by a BLUE, RED or CREST_RIDGE ridge? if so, return
 	//the crossed edges and more precise type from MAX_ELLIPTIC_RIDGE,
@@ -164,4 +157,7 @@ protected:
 	// xing_point = coord*p + (1-coord)*q
 	double bary_coord(const Halfedge he, const Ridge_type r_type);
 	Vector_3 barycenter( Vector_3 p, double w, Vector_3 q );
+
+public:
+	static std::vector<Ridge_line*> get_ridges(QSurfaceMesh * m);
 };
