@@ -356,6 +356,9 @@
     <ClInclude Include="GraphicsLibrary\SurfaceMesh\Curvature.h">
       <Filter>GraphicsLibrary\SurfaceMesh</Filter>
     </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Monge_via_jet_fitting.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Workspace.rc" />

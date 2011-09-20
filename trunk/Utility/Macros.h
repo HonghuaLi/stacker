@@ -101,6 +101,15 @@ double inline uniform(double a = 0.0, double b = 1.0)
 	return ((double)rand()/RAND_MAX) * len + a;
 }
 
+unsigned inline int fact(unsigned int n){
+	unsigned int i, p=1;
+
+	for(i = 2; i <= n; i++) 
+		p *= i;
+
+	return p;
+}
+
 // Array operations
 #include <algorithm>
 #define MaxElement(v) (*max_element(v.begin(), v.end()))
