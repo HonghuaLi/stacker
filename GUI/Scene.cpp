@@ -27,6 +27,7 @@ void Scene::init()
 	this->viewMode = VIEW;
 	this->selectMode = NONE;
 	this->modifyMode = DEFAULT;
+	this->specialRenderMode = REGULAR;
 
 	// Background
 	setBackgroundColor(backColor = QColor(50,50,60));
@@ -63,9 +64,15 @@ void Scene::setupLights()
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
 }
 
+void Scene::preDraw()
+{
+	this->makeCurrent();
+	QGLViewer::preDraw();
+}
+
 void Scene::draw()
 {
-	//glEnable(GL_MULTISAMPLE);
+	glEnable(GL_MULTISAMPLE);
 
 	// Background color
 	this->setBackgroundColor(backColor);
@@ -93,15 +100,24 @@ void Scene::specialDraw()
 	case REGULAR:
 		break;
 
-	case UNIQUE_FACES:
+	case DEPTH:
+		glClearColor(0,0,0,0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_MULTISAMPLE);
+
 		foreach(QSurfaceMesh * mesh, objects)
-		{
+			mesh->draw();
+		break;
+
+	case UNIQUE_FACES:
+		glClearColor(0,0,0,0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_MULTISAMPLE);
+
+		foreach(QSurfaceMesh * mesh, objects)
 			mesh->drawFacesUnique();
-		}
 		break;
 	}
-
-	specialRenderMode = REGULAR;
 }
 
 void Scene::drawWithNames()
@@ -131,12 +147,11 @@ void Scene::insertObject( QString fileName )
 	// Using Surface_mesh library
 	QSurfaceMesh * newMesh = new QSurfaceMesh;
 	newMesh->read(qPrintable(fileName));
-	newMesh->compute_bounding_box();
-	newMesh->set_color_vertices();
+	newMesh->moveCenterToOrigin();
+	newMesh->setColorVertices(); // white
 	newMesh->assignFaceArray();
 	newMesh->assignVertexArray();
 
-	camera()->setSceneCenter(Vec(newMesh->center.data()));
 	camera()->setSceneRadius(newMesh->radius);
 	camera()->showEntireScene();
 
@@ -148,6 +163,11 @@ void Scene::insertObject( QString fileName )
 	activeObject = newMesh;
 
 	emit(objectInserted(newMesh));
+}
+
+uint Scene::numObjects()
+{
+	return objects.size();
 }
 
 void Scene::mousePressEvent( QMouseEvent* e )
@@ -201,6 +221,9 @@ void Scene::setModifyMode(ModifyMode toMode)
 
 void Scene::postDraw()
 {
+	if(specialRenderMode != REGULAR)
+		return;
+
 	// Textual log messages
 	for(int i = 0; i < osdMessages.size(); i++){
 		int margin = 20; //px
@@ -220,14 +243,14 @@ void Scene::print(QString message, long age)
 {
 	osdMessages.enqueue(message);
 	timer->start(age);
-	update();
+	updateGL();
 }
 
 void Scene::dequeueLastMessage()
 {
 	if(!osdMessages.isEmpty()){
 		osdMessages.dequeue();
-		update();
+		updateGL();
 	}
 }
 
@@ -243,12 +266,6 @@ void Scene::setActiveWires( QVector<Wire> newWires )
 
 void* Scene::readBuffer( GLenum format, GLenum type )
 {
-	glClearColor(0,0,0,0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	preDraw(); // apply camera settings
-	draw();
-
 	int w = width();
 	int h = height();
 

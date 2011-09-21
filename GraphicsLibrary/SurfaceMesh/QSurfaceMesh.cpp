@@ -15,7 +15,41 @@ QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 	averageEdgeLength = -1;
 }
 
-void QSurfaceMesh::compute_bounding_box()
+QSurfaceMesh::QSurfaceMesh( const QSurfaceMesh& from ) : Surface_mesh(from)
+{
+	averageEdgeLength = from.averageEdgeLength;
+
+	this->isReady = from.isReady;
+	this->bbmin = from.bbmin;
+	this->bbmax = from.bbmax;
+	this->radius = from.radius;
+	this->triangles = from.triangles;
+	this->edges = from.edges;
+
+	// Rebuild VBO
+	this->isDirty = true;
+	this->vbo = NULL;
+}
+
+QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
+{
+	Surface_mesh::operator=(rhs);
+
+	this->isReady = rhs.isReady;
+	this->bbmin = rhs.bbmin;
+	this->bbmax = rhs.bbmax;
+	this->radius = rhs.radius;
+	this->triangles = rhs.triangles;
+	this->edges = rhs.edges;
+
+	// Rebuild VBO
+	this->isDirty = true;
+	this->vbo = NULL;
+
+	return *this;
+}
+
+void QSurfaceMesh::computeBoundingBox()
 {
 	Surface_mesh::Vertex_property<Point> points = vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_iterator vit, vend = vertices_end();
@@ -34,7 +68,7 @@ void QSurfaceMesh::compute_bounding_box()
 	radius = (bbmax - bbmin).norm() * 0.5f;
 }
 
-void QSurfaceMesh::set_color_vertices(double r, double g, double b, double a)
+void QSurfaceMesh::setColorVertices( double r /*= 1.0*/, double g /*= 1.0*/, double b /*= 1.0*/, double a /*= 1.0*/ )
 {
 	Vertex_property<Color>  vcolors  = vertex_property<Color>("v:color");
 	Surface_mesh::Vertex_iterator vit, vend = vertices_end();
@@ -54,20 +88,20 @@ void QSurfaceMesh::draw()
 
 	// Render some mesh indicators
 	// Curvature:
-	if(get_vertex_property<double>("v:curv1"))
+	//if(get_vertex_property<double>("v:d1"))
 	{
 		std::vector<Vec> starts, directions1, directions2;
 
 		Vertex_property<Point>  points = vertex_property<Point>("v:point");
-		Vertex_property<Vec3d> pdir1 = vertex_property<Vec3d>("v:pdir1"),
-			pdir2 = vertex_property<Vec3d>("v:pdir2");
+		Vertex_property<Vec3d> d1 = vertex_property<Vec3d>("v:d1"),
+			d2 = vertex_property<Vec3d>("v:d2");
 		Vertex_iterator vit, vend = vertices_end();
 
 		for(vit = vertices_begin(); vit != vend; ++vit)
 		{
 			starts.push_back(Vec(points[vit]));
-			directions1.push_back(Vec(pdir1[vit]));
-			directions2.push_back(Vec(pdir2[vit]));
+			directions1.push_back(Vec(d1[vit]));
+			directions2.push_back(Vec(d2[vit]));
 		}
 
 		SimpleDraw::DrawLineTick(starts, directions1, getAverageEdgeLength() * 0.5, false, 1, 0, 0);
@@ -78,6 +112,8 @@ void QSurfaceMesh::draw()
 void QSurfaceMesh::drawFaceNames()
 {
 	if(isDirty)	update();
+
+	// TODO:
 }
 
 void QSurfaceMesh::update()
@@ -182,7 +218,7 @@ void QSurfaceMesh::drawFacesUnique()
 
 void QSurfaceMesh::moveCenterToOrigin()
 {
-	compute_bounding_box();
+	computeBoundingBox();
 
 	Surface_mesh::Vertex_property<Point> points = vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_iterator vit, vend = vertices_end();
@@ -195,7 +231,7 @@ void QSurfaceMesh::moveCenterToOrigin()
 		}
 	}
 
-	compute_bounding_box();
+	computeBoundingBox();
 }
 
 void QSurfaceMesh::assignVertexArray()
@@ -244,6 +280,8 @@ void QSurfaceMesh::setVertexColor( uint v_id, const Color& newColor )
 {
 	Vertex_property<Color> vcolor = vertex_property<Color>("v:color");
 	vcolor[vertex_array[v_id]] = newColor;
+
+	this->isDirty = true;
 }
 
 double QSurfaceMesh::getAverageEdgeLength()
@@ -266,4 +304,70 @@ double QSurfaceMesh::getAverageEdgeLength()
 	averageEdgeLength = sumEdgeLen / n_edges();
 
 	return averageEdgeLength;
+}
+
+void QSurfaceMesh::resetVistedVertices(std::vector <Vertex>& all)
+{
+	Vertex_property<int> visited_map = vertex_property<int>("v:visit_map");
+
+	std::vector<Vertex>::iterator it = all.begin(), ite = all.end();
+	for(;it != ite; it++)
+		visited_map[*it] = -1;
+}
+
+void QSurfaceMesh::resetVistedVertices(uint toState)
+{
+	Vertex_property<int> visited_map = vertex_property<int>("v:visit_map");
+
+	Surface_mesh::Vertex_iterator vit, vend = vertices_end();
+
+	for (vit = vertices_begin(); vit != vend; ++vit)
+		visited_map[vit] = toState;
+}
+
+void QSurfaceMesh::collectEnoughRings(Vertex v, const size_t min_nb, std::vector <Vertex>& all)
+{
+	std::vector<Vertex> current_ring, next_ring;
+	Vertex_property<int> visited_map = vertex_property<int>("v:visit_map");
+
+	//initialize
+	visited_map[v] = 0;
+	current_ring.push_back(v);
+	all.push_back(v);
+
+	int i = 1;
+
+	while ( (all.size() < min_nb) &&  (current_ring.size() != 0) )
+	{
+		// collect ith ring
+		std::vector<Vertex>::iterator it = current_ring.begin(), ite = current_ring.end();
+
+		for(;it != ite; it++)
+		{
+			// push neighbors of 
+			Halfedge_around_vertex_circulator hedgeb = halfedges(*it), hedgee = hedgeb;
+
+			do{
+				Vertex vj = to_vertex(hedgeb);
+
+				if (visited_map[vj] == -1)  
+				{
+					visited_map[vj] = i;
+					next_ring.push_back(vj);
+					all.push_back(vj);
+				}
+				
+				++hedgeb;
+			} while(hedgeb != hedgee);
+		}
+
+		//next round must be launched from p_next_ring...
+		current_ring = next_ring;
+		next_ring.clear();
+
+		i++;
+	}
+
+	//clean up
+	resetVistedVertices(all);
 }

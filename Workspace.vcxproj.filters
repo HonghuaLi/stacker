@@ -70,6 +70,11 @@
     <Filter Include="Wires">
       <UniqueIdentifier>{cd35c609-af64-4474-87f9-bc0e5992d19d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Generated Files\Template">
+      <UniqueIdentifier>{a0126cec-ea6d-40d4-8cdc-11e18572fe32}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneratedFiles\qrc_Workspace.cpp">
@@ -218,6 +223,21 @@
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\Curvature.cpp">
       <Filter>GraphicsLibrary\SurfaceMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackerPreview.cpp">
+      <Filter>Stacker</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_StackerPreview.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_StackerPreview.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_StackerPreview.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Monge_via_jet_fitting.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -393,6 +413,9 @@
     </CustomBuild>
     <CustomBuild Include="Wires\WiresWidget.ui">
       <Filter>Wires</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerPreview.h">
+      <Filter>Stacker</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

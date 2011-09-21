@@ -30,6 +30,7 @@ public:
 	void setupLights();
 
 	// OpenGL Drawing and Buffer
+	virtual void preDraw();
 	virtual void draw();
 	virtual void drawWithNames();
 	virtual void postDraw();
@@ -85,6 +86,7 @@ public:
 
 public slots:
 	void insertObject( QString fileName );
+	uint numObjects();
 	void setActiveWires( QVector<Wire> );
 
 signals:
