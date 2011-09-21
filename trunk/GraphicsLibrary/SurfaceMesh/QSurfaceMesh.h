@@ -10,6 +10,8 @@ class QSurfaceMesh : public QObject, public Surface_mesh
 
 public:
 	QSurfaceMesh();
+	QSurfaceMesh(const QSurfaceMesh& from);
+	QSurfaceMesh& operator=(const QSurfaceMesh& rhs);
 
 	std::vector<Vertex_iterator> vertex_array;
 	std::vector<Face_iterator> face_array;
@@ -18,11 +20,11 @@ public:
 	void assignFaceArray();
 
 	std::vector<uint> vertexIndicesAroundFace( uint f_id );
-
+	
 	Point getVertexPos( uint v_id );
 	Point getVertexPos( const Vertex & v );
 
-	void compute_bounding_box();
+	void computeBoundingBox();
 	void moveCenterToOrigin();
 
 	double getAverageEdgeLength();
@@ -33,10 +35,15 @@ public:
 	void drawFacesUnique();
 
 	void update();
-	void set_color_vertices(double r = 1.0, double g = 1.0, double b = 1.0, double a = 1.0);
+	void setColorVertices(double r = 1.0, double g = 1.0, double b = 1.0, double a = 1.0);
 	void setVertexColor( uint v_id, const Color& newColor );
-	bool isReady;
 
+	void collectEnoughRings(Vertex v, const size_t min_nb, std::vector <Vertex>& all);
+	void resetVistedVertices(std::vector <Vertex>& all);
+	void resetVistedVertices(uint toState = false); // for entire mesh
+
+	// Properties
+	bool isReady;
 	Point bbmin, bbmax, center;
 	Scalar radius;
 

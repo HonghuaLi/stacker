@@ -25,9 +25,13 @@ std::vector< std::vector<float> > Offset::computeEnvelope( int direction )
 	// Save new camera state
 	activeScene->camera()->addKeyFrameToPath(direction + 2);
 
-
 	// Compute the envelop (z value)
 	float zCamera = (activeScene->camera()->position()).z;
+
+	activeScene->specialRenderMode = DEPTH;
+	activeScene->updateGL(); // draw
+	activeScene->specialRenderMode = REGULAR;
+
 	GLfloat* depthBuffer = (GLfloat*)activeScene->readBuffer(GL_DEPTH_COMPONENT, GL_FLOAT);
 
 	int w = activeScene->width();
@@ -61,17 +65,17 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 	std::set<uint> vertices;	
 	QSurfaceMesh * activeObject = activeScene->activeObject;	
 
-
 	// restore camera
 	activeScene->camera()->playPath(direction + 2);
-
 
 	//rend the faces with unique color
 	int w = activeScene->width();
 	int h = activeScene->height();	
-	activeScene->specialRenderMode = UNIQUE_FACES;
 
-	activeScene->update();
+	activeScene->specialRenderMode = UNIQUE_FACES;
+	activeScene->updateGL();
+	activeScene->specialRenderMode = REGULAR;
+
 	GLubyte* colormap = (GLubyte*)activeScene->readBuffer(GL_RGBA, GL_UNSIGNED_BYTE);
 
 	//get the indices back
@@ -85,13 +89,14 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 
 			uint f_id = ((255-a)<<24) + (r<<16) + (g<<8) + b;
 
-			if(f_id > 0)
+			if(f_id > 0 && f_id < (activeObject->n_faces() + 1))
 			{
 				std::vector<uint> cur_vertices = activeObject->vertexIndicesAroundFace(f_id - 1);
 				vertices.insert(cur_vertices.begin(), cur_vertices.end());
 			}
 		}
 	}		
+
 	delete colormap;
 	return vertices;
 }
@@ -168,7 +173,6 @@ void Offset::run()
 	float O_max = *max_element(row_max.begin(), row_max.end());
 
 
-
 	// Assign each vertex with offset color
 	setOffsetColors(1, offset, O_max);
 	setOffsetColors(-1, offset, O_max);
@@ -190,10 +194,8 @@ void Offset::run()
 
 	// Restore camera state
 	activeScene->camera()->setType(Camera::PERSPECTIVE);
-	activeScene->camera()->playPath(0);
+	activeScene->camera()->resetPath(0);
 
 	activeScene->displayMessage(QString("O_max / objectH = %1").arg(O_max / objectH));
 	activeScene->print(QString("Offset function computing has done!"));
 }
-
-

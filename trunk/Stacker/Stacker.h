@@ -6,12 +6,12 @@
 class Stacker
 {
 public:
-	Stacker(Scene *scene);
-	~Stacker();
+	Stacker();
 
-public:
 	void computeOffset();
 
+	void setScene(Scene * newScene);
+	Scene * scene();
 
 private:
 	Scene *activeScene;

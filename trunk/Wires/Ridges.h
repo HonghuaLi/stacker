@@ -5,6 +5,7 @@
 #include <iterator>
 #include <vector>
 #include "QSurfaceMesh.h"
+#include "Monge_via_jet_fitting.h"
 
 using namespace std;
 

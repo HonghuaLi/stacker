@@ -15,13 +15,22 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QSpinBox" name="spinBox"/>
-   </item>
-   <item>
-    <widget class="QPushButton" name="offsetButton">
-     <property name="text">
-      <string>Offset function</string>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Stacker</string>
      </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QSpinBox" name="spinBox"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="offsetButton">
+        <property name="text">
+         <string>Offset function</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
