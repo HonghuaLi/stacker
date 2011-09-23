@@ -19,6 +19,7 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	ui.leftDockWidget->layout()->addWidget(wp);
 
 	// Create new scene when we start by default
+	sceneCount = 0;
 	addNewScene();
 }
 
@@ -29,7 +30,15 @@ Workspace::~Workspace()
 
 void Workspace::addNewScene()
 {
-	Scene * newScene = new Scene;
+	Scene * newScene;
+	
+	//main_args;
+	QStringList mesh_fileNames = main_args.filter(QRegExp("^*(obj|off)$"));
+
+	if(sceneCount == 0 && mesh_fileNames.size())
+		newScene = new Scene(mesh_fileNames.first());
+	else
+		newScene = new Scene;
 
 	ui.sceneArea->addSubWindow(newScene);
 
@@ -42,6 +51,9 @@ void Workspace::addNewScene()
 
 	// Wires
 	connect(wp, SIGNAL(wiresFound(QVector<Wire>)), newScene, SLOT(setActiveWires(QVector<Wire>)));
+	connect(wp, SIGNAL(wiresFound(QVector<Wire>)), newScene, SLOT(updateGL()));
+
+	sceneCount++;
 }
 
 void Workspace::importObject()

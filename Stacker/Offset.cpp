@@ -13,7 +13,7 @@ Offset::~Offset()
 
 std::vector< std::vector<float> > Offset::computeEnvelope( int direction )
 {
-	QSurfaceMesh * activeObject = activeScene->activeObject;
+	QSurfaceMesh * activeObject = activeScene->activeObject();
 
 	// Set camera
 	activeScene->camera()->setType(Camera::ORTHOGRAPHIC);
@@ -63,7 +63,7 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 {
 	//return value
 	std::set<uint> vertices;	
-	QSurfaceMesh * activeObject = activeScene->activeObject;	
+	QSurfaceMesh * activeObject = activeScene->activeObject();	
 
 	// restore camera
 	activeScene->camera()->playPath(direction + 2);
@@ -103,7 +103,7 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 
 void Offset::setOffsetColors( int direction, std::vector< std::vector<float> > &offset, float O_max )
 {
-	QSurfaceMesh * activeObject = activeScene->activeObject;
+	QSurfaceMesh * activeObject = activeScene->activeObject();
 
 	// restore camera
 	activeScene->camera()->playPath(direction + 2);
@@ -116,7 +116,7 @@ void Offset::setOffsetColors( int direction, std::vector< std::vector<float> > &
 
 	std::set<uint> vindices = verticesOnEnvelope(direction);
 
-	float objectH = (activeScene->activeObject->bbmax - activeScene->activeObject->bbmin).z();
+	float objectH = (activeObject->bbmax - activeObject->bbmin).z();
 
 	for (std::set<uint>::iterator it = vindices.begin(); it!=vindices.end(); it++)
 	{
@@ -145,7 +145,7 @@ void Offset::run()
 {
 	if(!activeScene) return;
 
-	QSurfaceMesh * activeObject = activeScene->activeObject;
+	QSurfaceMesh * activeObject = activeScene->activeObject();
 
 	// Save original camera state
 	activeScene->camera()->addKeyFrameToPath(0);
@@ -181,7 +181,7 @@ void Offset::run()
 
 	//// Save the offset function to an image
 	uchar * rgb = new uchar[3];	
-	float objectH = (activeScene->activeObject->bbmax - activeScene->activeObject->bbmin).z();
+	float objectH = (activeObject->bbmax - activeObject->bbmin).z();
 	QImage offset_img(w, h, QImage::Format_ARGB32);
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{

@@ -6,6 +6,5 @@
 class AnalyzeWires
 {
 public:
-	static std::vector<Wire> fromMesh( QSurfaceMesh * m, double dihedralThreshold );
-	static std::vector<Wire> fromMesh2( QSurfaceMesh * m, double dihedralThreshold ); // experimental: from curvature
+	static std::vector<Wire> fromMesh( QSurfaceMesh * src_mesh, double sharp_threshold, double strength_threshold );
 };

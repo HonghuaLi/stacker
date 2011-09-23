@@ -47,6 +47,10 @@ public:
 	Point bbmin, bbmax, center;
 	Scalar radius;
 
+	// Debug items
+	std::vector<Point> debug_points, debug_points2, debug_points3;
+	std::vector< std::vector<Point> > debug_lines, debug_lines2, debug_lines3;
+
 private:
 	bool isDirty;
 

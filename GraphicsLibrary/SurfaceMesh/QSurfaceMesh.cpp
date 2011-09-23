@@ -11,6 +11,7 @@ QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 	edges.clear();
 
 	isReady = false;
+	isDirty = false;
 
 	averageEdgeLength = -1;
 }
@@ -27,6 +28,7 @@ QSurfaceMesh::QSurfaceMesh( const QSurfaceMesh& from ) : Surface_mesh(from)
 	this->edges = from.edges;
 
 	// Rebuild VBO
+	this->isReady = from.isReady;
 	this->isDirty = true;
 	this->vbo = NULL;
 }
@@ -43,6 +45,7 @@ QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
 	this->edges = rhs.edges;
 
 	// Rebuild VBO
+	this->isReady = rhs.isReady;
 	this->isDirty = true;
 	this->vbo = NULL;
 
@@ -82,17 +85,31 @@ void QSurfaceMesh::draw()
 {
 	if(!isReady) return;
 
-	if(isDirty || !vbo)	update();
+	if(isDirty || !vbo)	
+		update();
 
+	// Render mesh regularly
 	vbo->render_smooth();
 
+	//vbo->render_wireframe();
+
 	// Render some mesh indicators
+	// Test points
+	foreach(Point p, debug_points)	SimpleDraw::IdentifyPoint(Vec(p),1,0,0);
+	foreach(Point p, debug_points2)	SimpleDraw::IdentifyPoint(Vec(p),0,1,0);
+	foreach(Point p, debug_points3)	SimpleDraw::IdentifyPoint(Vec(p),0,0,1);
+
+	// Test lines
+	foreach(std::vector<Point> line, debug_lines) SimpleDraw::IdentifyConnectedPoints(line,1.0,0,0);
+	foreach(std::vector<Point> line, debug_lines2) SimpleDraw::IdentifyConnectedPoints(line,0,1.0,0);
+	foreach(std::vector<Point> line, debug_lines3) SimpleDraw::IdentifyConnectedPoints(line,0,0,1.0);
+
 	// Curvature:
-	//if(get_vertex_property<double>("v:d1"))
+	/*if(get_vertex_property<Vec3d>("v:d1"))
 	{
 		std::vector<Vec> starts, directions1, directions2;
 
-		Vertex_property<Point>  points = vertex_property<Point>("v:point");
+		Vertex_property<Point> points = vertex_property<Point>("v:point");
 		Vertex_property<Vec3d> d1 = vertex_property<Vec3d>("v:d1"),
 			d2 = vertex_property<Vec3d>("v:d2");
 		Vertex_iterator vit, vend = vertices_end();
@@ -104,9 +121,9 @@ void QSurfaceMesh::draw()
 			directions2.push_back(Vec(d2[vit]));
 		}
 
-		SimpleDraw::DrawLineTick(starts, directions1, getAverageEdgeLength() * 0.5, false, 1, 0, 0);
-		SimpleDraw::DrawLineTick(starts, directions2, getAverageEdgeLength() * 0.5, false, 0, 0, 1);
-	}
+		SimpleDraw::DrawLineTick(starts, directions1, getAverageEdgeLength() * 0.5, false, 1, 0, 0, 0.25);
+		SimpleDraw::DrawLineTick(starts, directions2, getAverageEdgeLength() * 0.5, false, 0, 0, 1, 0.25);
+	}*/
 }
 
 void QSurfaceMesh::drawFaceNames()
@@ -162,11 +179,11 @@ void QSurfaceMesh::update()
 		glColorPointer(vcolors.data());
 		glTexCoordPointer(vtex.data());*/
 
-		vbo = new VBO<Point,Normal_,Color>(this->n_vertices(), points.data(), vnormals.data(), vcolors.data(), triangles);
+		this->vbo = new VBO<Point,Normal_,Color>(this->n_vertices(), points.data(), vnormals.data(), vcolors.data(), triangles);
 	}
 
-	isReady = true;
 	isDirty = false;
+	isReady = true; 
 }
 
 void QSurfaceMesh::drawFacesUnique()

@@ -17,11 +17,17 @@ Ridge_approximation::Ridge_approximation( QSurfaceMesh * m ) : M(m)
 	tag_order = Ridge_order_3;
 
 	// Copy property maps
-	k1 = M->get_vertex_property<double>("v:cur1");
-	k2 = M->get_vertex_property<double>("v:cur2");
+	k1 = M->get_vertex_property<double>("v:k1");
+	k2 = M->get_vertex_property<double>("v:k2");
 
-	d1 = M->get_vertex_property<Vec3d>("v:pdir1");
-	d2 = M->get_vertex_property<Vec3d>("v:pdir2");
+	d1 = M->get_vertex_property<Vec3d>("v:d1");
+	d2 = M->get_vertex_property<Vec3d>("v:d2");
+
+	b0 = M->get_vertex_property<double>("v:b0");
+	b3 = M->get_vertex_property<double>("v:b3");
+
+	P1 = M->get_vertex_property<double>("v:P1");
+	P2 = M->get_vertex_property<double>("v:P2");
 }
 
 OutputIterator Ridge_approximation::compute_ridges( OutputIterator ridge_lines_it, Ridge_interrogation_type r_type, Ridge_order ord)
@@ -63,6 +69,7 @@ OutputIterator Ridge_approximation::compute_ridges( OutputIterator ridge_lines_i
 		{
 			f = M->face(M->opposite_halfedge(h1));
 			curhe = h1;
+
 			while (cur_ridge_type == Face_ridge_type(f,curhe1,curhe2,r_type))
 			{
 				//follow the ridge from curhe
@@ -75,6 +82,7 @@ OutputIterator Ridge_approximation::compute_ridges( OutputIterator ridge_lines_i
 					f = M->face(M->opposite_halfedge(curhe));
 				else break;
 			}
+			
 			//exit from the while if
 			//1. border or already visited (this is a ridge loop)
 			//2. not same type, then do not set visited cause a MAX_ELLIPTIC_RIDGE
@@ -86,6 +94,7 @@ OutputIterator Ridge_approximation::compute_ridges( OutputIterator ridge_lines_i
 		{
 			f = M->face(M->opposite_halfedge(h2));
 			curhe = h2;
+
 			while (cur_ridge_type == Face_ridge_type(f,curhe1,curhe2,r_type))
 			{
 				//follow the ridge from curhe
@@ -107,6 +116,9 @@ OutputIterator Ridge_approximation::compute_ridges( OutputIterator ridge_lines_i
 Ridge_type Ridge_approximation::Face_ridge_type(const Surface_mesh::Face f, Halfedge& he1, Halfedge& he2, 
 	Ridge_interrogation_type r_type)
 {
+	if(f.idx() == -1)
+		return NO_RIDGE;
+
 	//polyhedral data
 	//we have v1--h1-->v2--h2-->v3--h3-->v1
 	const Halfedge h1 = M->halfedge(f);
@@ -175,12 +187,18 @@ Ridge_type Ridge_approximation::Face_ridge_type(const Surface_mesh::Face f, Half
 	//CGAL_postcondition ( !( (h1_is_crossed && !h2_is_crossed && !h3_is_crossed)
 	//	|| (!h1_is_crossed && h2_is_crossed && !h3_is_crossed)
 	//	|| (!h1_is_crossed && !h2_is_crossed && h3_is_crossed)) );
-
-	//There is a ridge segment in the triangle, determine its type elliptic/hyperbolic
 	bool is_elliptic;  
-	if ( r_type == MAX_RIDGE || crest_color == MAX_CREST_RIDGE ) 
-		is_elliptic = tag_as_elliptic_hyperbolic(MAX_RIDGE, he1, he2);
-	else is_elliptic = tag_as_elliptic_hyperbolic(MIN_RIDGE, he1, he2);
+
+	if(M->is_valid(he1))
+	{
+		//There is a ridge segment in the triangle, determine its type elliptic/hyperbolic
+		if ( r_type == MAX_RIDGE || crest_color == MAX_CREST_RIDGE ) 
+			is_elliptic = tag_as_elliptic_hyperbolic(MAX_RIDGE, he1, he2);
+		else 
+			is_elliptic = tag_as_elliptic_hyperbolic(MIN_RIDGE, he1, he2);
+	}
+	else
+		return NO_RIDGE;
 
 	if (r_type == MAX_RIDGE) 
 	{if (is_elliptic) return MAX_ELLIPTIC_RIDGE;
@@ -418,7 +436,7 @@ void Ridge_approximation::addfront(Ridge_line* ridge_line,  const Halfedge he, c
 
 Vector_3 Ridge_approximation::barycenter( Vector_3 p, double w, Vector_3 q )
 {
-	return w*p  + (1.0 - w)*q;
+	return (w*p) + ((1.0 - w)*q);
 }
 
 double Ridge_approximation::bary_coord(const Halfedge he, const Ridge_type r_type)

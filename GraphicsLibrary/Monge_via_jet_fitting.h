@@ -13,7 +13,7 @@ typedef double  FT;
 typedef Point   Point_3;
 typedef Point  Vector_3;
 typedef std::vector<Point_3>::iterator InputIterator;
-typedef Eigen::Transform<FT,3,Eigen::Affine> Aff_transformation;
+typedef Eigen::Transform<FT, 3, Eigen::AffineCompact> Aff_transformation;
 typedef Eigen::VectorXd LAVector;
 typedef Eigen::MatrixXd LAMatrix;
 
@@ -131,14 +131,15 @@ protected:
 		const Vector_3& v3);
 
 	//Convert Vector_3 to Eigen::Vector3d back and forth
-	Vector_3 Monge_via_jet_fitting::E2V_converter(Eigen::Vector3d vec);
-	Eigen::Vector3d  Monge_via_jet_fitting::V2E_converter(Vector_3 vec);
+	Vector_3 E2V_converter(Eigen::Vector3d vec);
+	Eigen::Vector3d V2E_converter(Vector_3 vec);
 
 	friend std::ostream& operator<< (std::ostream& out_stream, const Monge_via_jet_fitting::Monge_form& monge)
 	{
 		monge.dump_verbose(out_stream);
 		return out_stream;
 	}
+
 };
 
 

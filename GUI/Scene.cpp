@@ -4,7 +4,9 @@
 
 #include "SimpleDraw.h"
 
-Scene::Scene( QWidget *parent ) : QGLViewer(parent)
+#include "Workspace.h"
+
+Scene::Scene( QString loadObject, QWidget *parent)
 {
 	// GLViewer options
 	setGridIsDrawn();
@@ -16,7 +18,8 @@ Scene::Scene( QWidget *parent ) : QGLViewer(parent)
 	// Other events
 	connect(this, SIGNAL(objectInserted(QSurfaceMesh *)), SLOT(update()));
 
-	activeObject = NULL;
+	if(loadObject.size())
+		insertObject(loadObject);
 
 	displayMessage(tr("New scene created."));
 }
@@ -78,10 +81,8 @@ void Scene::draw()
 	this->setBackgroundColor(backColor);
 
 	// Draw objects normally
-	foreach(QSurfaceMesh * mesh, objects)
-	{
-		mesh->draw();
-	}
+	if(activeObject() != NULL)
+		activeObject()->draw();
 
 	// Wires
 	foreach(Wire w, activeWires)
@@ -105,8 +106,7 @@ void Scene::specialDraw()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_MULTISAMPLE);
 
-		foreach(QSurfaceMesh * mesh, objects)
-			mesh->draw();
+		activeObject()->draw();
 		break;
 
 	case UNIQUE_FACES:
@@ -114,24 +114,27 @@ void Scene::specialDraw()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_MULTISAMPLE);
 
-		foreach(QSurfaceMesh * mesh, objects)
-			mesh->drawFacesUnique();
+		activeObject()->draw();
 		break;
 	}
 }
 
 void Scene::drawWithNames()
 {
-	foreach(QSurfaceMesh * mesh, objects)
-	{
-		mesh->drawFaceNames();
-	}
+	if(activeObject())
+		activeObject()->drawFaceNames();
 }
 
 void Scene::insertObject( QString fileName )
 {
 	// Get object name from file path
 	QFileInfo fInfo (fileName);
+
+	if(!fInfo.exists()){
+		displayMessage(QString("Error: invalid file (%1).").arg(fileName));
+		return;
+	}
+
 	QString newObjName = fInfo.fileName();
 	newObjName.chop(4);
 
@@ -144,10 +147,14 @@ void Scene::insertObject( QString fileName )
 	newMesh->loadFromFile(qPrintable(fileName));
 	newMesh->normalizeScale();*/
 
+	// Add to list of scene objects
+	all_objects[ newObjName ] = QSurfaceMesh();
+	QSurfaceMesh * newMesh = &all_objects[ newObjName ];
+
 	// Using Surface_mesh library
-	QSurfaceMesh * newMesh = new QSurfaceMesh;
 	newMesh->read(qPrintable(fileName));
-	newMesh->moveCenterToOrigin();
+	//newMesh->moveCenterToOrigin();
+	newMesh->computeBoundingBox();
 	newMesh->setColorVertices(); // white
 	newMesh->assignFaceArray();
 	newMesh->assignVertexArray();
@@ -157,17 +164,14 @@ void Scene::insertObject( QString fileName )
 
 	newMesh->update();
 
-	// Add to list of scene objects
-	objects[ newObjName ] = newMesh;
-
-	activeObject = newMesh;
+	activeObjectId = newObjName;
 
 	emit(objectInserted(newMesh));
 }
 
 uint Scene::numObjects()
 {
-	return objects.size();
+	return 1;
 }
 
 void Scene::mousePressEvent( QMouseEvent* e )
@@ -285,4 +289,12 @@ void* Scene::readBuffer( GLenum format, GLenum type )
 	glReadPixels(0, 0, w, h, format, type, data);
 
 	return data;
+}
+
+QSurfaceMesh * Scene::activeObject()
+{
+	if(all_objects.find(activeObjectId) != all_objects.end())
+		return &all_objects[activeObjectId];
+	else
+		return NULL;
 }

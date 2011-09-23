@@ -153,12 +153,12 @@ protected:
 	void addback(Ridge_line* ridge_line, const Halfedge he, const Ridge_type r_type);
 	void addfront(Ridge_line* ridge_line, const Halfedge he, const Ridge_type r_type);
 
+public:
 	// compute the barycentric coordinate of the xing point (blue or red)
 	// for he: p->q (wrt the extremality values b0/3).  coord is st
 	// xing_point = coord*p + (1-coord)*q
 	double bary_coord(const Halfedge he, const Ridge_type r_type);
-	Vector_3 barycenter( Vector_3 p, double w, Vector_3 q );
+	static Vector_3 barycenter( Vector_3 p, double w, Vector_3 q );
 
-public:
 	static std::vector<Ridge_line*> get_ridges(QSurfaceMesh * m);
 };

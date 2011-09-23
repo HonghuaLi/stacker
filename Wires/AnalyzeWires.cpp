@@ -6,90 +6,12 @@ typedef Graph<uint, double> WireGraph;
 
 #include "Ridges.h"
 
-std::vector<Wire> AnalyzeWires::fromMesh( QSurfaceMesh * m, double dihedralThreshold )
-{
-	std::vector<Wire> wires;
-
-	if(m == NULL)
-		return wires;
-
-	QSurfaceMesh::Face_property<Normal_> fnormals = m->face_property<Normal_>("f:normal");
-	QSurfaceMesh::Edge_property<double> iswire = m->edge_property<double>("e:is_wire");
-	QSurfaceMesh::Vertex_property<Point> v = m->vertex_property<Point>("v:point");
-	QSurfaceMesh::Edge_iterator eit, eend = m->edges_end();
-
-	QSurfaceMesh::Face f1, f2;
-	Normal_ n1, n2;
-
-	// go over edges of mesh
-	for(eit = m->edges_begin(); eit != eend; ++eit)
-	{
-		f1 = m->face(m->halfedge(eit, 0));
-		f2 = m->face(m->halfedge(eit, 1));
-
-		n1 = fnormals[f1];
-		n2 = fnormals[f2];
-
-		double di_angle = acos( RANGED(-1, dot(n1, n2), 1) );
-
-		iswire[eit] = Max(0.01, di_angle);
-	}
-
-	uint vi1, vi2;
-	QSurfaceMesh::Vertex vertex1, vertex2;
-
-	// first wire
-	WireGraph allWiresGraph;
-	std::map<uint, QSurfaceMesh::Vertex> vmap;
-
-	for(eit = m->edges_begin(); eit != eend; ++eit)
-	{
-		if( iswire[eit] > dihedralThreshold )
-		{
-			vertex1 = m->vertex(eit, 0);
-			vertex2 = m->vertex(eit, 1);
-
-			// indices
-			vi1 = vertex1.idx();
-			vi2 = vertex2.idx();
-
-			allWiresGraph.AddEdge(vi1, vi2, iswire[eit]);
-
-			// save in a map, for later
-			vmap[vi1] = vertex1;
-			vmap[vi2] = vertex2;
-		}
-	}
-
-	std::vector< WireGraph > separateWiresGraph = allWiresGraph.toConnectedParts();
-
-	for(std::vector< WireGraph >::iterator wg = separateWiresGraph.begin(); wg != separateWiresGraph.end(); wg++)
-	{
-		// Add empty wire
-		wires.push_back(Wire());
-	
-		// Get edges
-		std::vector<WireGraph::Edge> edges = wg->GetEdges();
-
-		// Add edges
-		for(std::vector<WireGraph::Edge>::iterator e = edges.begin(); e != edges.end(); e++)
-		{
-			uint pi1 = e->index;
-			uint pi2 = e->target;
-
-			wires.back().addEdge(v[vmap[pi1]], v[vmap[pi2]], pi1, pi2, e->weight);
-		}
-	}
-
-	return wires;
-}
-
-std::vector<Wire> AnalyzeWires::fromMesh2( QSurfaceMesh * src_mesh, double dihedralThreshold )
+std::vector<Wire> AnalyzeWires::fromMesh( QSurfaceMesh * src_mesh, double sharp_threshold, double strength_threshold )
 {
 	std::vector<Wire> wires;
 
 	QSurfaceMesh::Vertex_property<Point> points = src_mesh->vertex_property<Point>("v:point");
-	QSurfaceMesh::Vertex_property<Normal_> normals = src_mesh->vertex_property<Normal_>("v:point");
+	QSurfaceMesh::Vertex_property<Normal_> normals = src_mesh->vertex_property<Normal_>("v:normal");
 	QSurfaceMesh::Vertex_iterator vit, vend = src_mesh->vertices_end();
 
 	// Differential properties
@@ -108,6 +30,8 @@ std::vector<Wire> AnalyzeWires::fromMesh2( QSurfaceMesh * src_mesh, double dihed
 	size_t d_fitting = 3;
 	size_t d_monge = 3;
 	size_t min_nb_points = (d_fitting + 1) * (d_fitting + 2) / 2;
+
+	//min_nb_points *= 6;
 
 	// Local differential properties of sampled surfaces via polynomial fitting
 	for(vit = src_mesh->vertices_begin(); vit != vend; ++vit)
@@ -152,6 +76,66 @@ std::vector<Wire> AnalyzeWires::fromMesh2( QSurfaceMesh * src_mesh, double dihed
 				*(monge_form.coefficients()[10]
 			-3*monge_form.coefficients()[1]*monge_form.coefficients()[1]
 			*monge_form.coefficients()[1]);
+		}
+	}
+
+	// Ridges
+	Ridge_approximation ridge_approximation(src_mesh);
+	std::vector<Ridge_line*> ridge_lines;
+	
+	back_insert_iterator<std::vector<Ridge_line*> > max_ridges(ridge_lines);
+	back_insert_iterator<std::vector<Ridge_line*> > min_ridges(ridge_lines);
+	back_insert_iterator<std::vector<Ridge_line*> > crest_ridges(ridge_lines);
+
+	// Find MAX_RIDGE, MIN_RIDGE, CREST_RIDGES
+	ridge_approximation.compute_ridges(max_ridges, MAX_RIDGE);
+	ridge_approximation.compute_ridges(min_ridges, MIN_RIDGE);
+	ridge_approximation.compute_ridges(crest_ridges, CREST_RIDGE);
+
+	std::vector<Ridge_line*>::iterator iter_lines = ridge_lines.begin(), iter_end = ridge_lines.end();
+
+	src_mesh->debug_lines.clear();
+	src_mesh->debug_lines2.clear();
+	src_mesh->debug_lines3.clear();
+
+	for (;iter_lines != iter_end; iter_lines++)
+	{
+		Ridge_line * ridge_line = (*iter_lines);
+
+		// Filter?
+		if(ridge_line->sharpness() >= sharp_threshold && ridge_line->strength() >= strength_threshold)
+		{
+			std::list<Ridge_halfhedge>::iterator iter = ridge_line->line()->begin(), ite = ridge_line->line()->end();
+
+			std::vector<Point> cur_line;
+
+			for (; iter != ite; iter++)
+			{
+				//he: p->q, r is the crossing point
+				Point p = points[src_mesh->to_vertex(iter->first)];
+				Point q = points[src_mesh->from_vertex(iter->first)];
+				Point r = Ridge_approximation::barycenter(q, iter->second, p);
+
+				// R is cool point
+				cur_line.push_back(r);
+			}
+
+			Ridge_type t = ridge_line->line_type();
+
+			switch(t)
+			{
+			case MAX_ELLIPTIC_RIDGE: case MAX_HYPERBOLIC_RIDGE:
+				src_mesh->debug_lines.push_back(cur_line);
+				break;
+
+			case MIN_ELLIPTIC_RIDGE: case MIN_HYPERBOLIC_RIDGE:
+				src_mesh->debug_lines2.push_back(cur_line);
+				break;
+
+			case MAX_CREST_RIDGE: case MIN_CREST_RIDGE:
+				src_mesh->debug_lines3.push_back(cur_line);
+				break;
+			}
 		}
 	}
 

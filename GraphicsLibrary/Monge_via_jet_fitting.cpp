@@ -1,5 +1,7 @@
 #include "Monge_via_jet_fitting.h"
 
+using namespace std;
+
 void Monge_via_jet_fitting::Monge_form::set_up(std::size_t degree) {
 	if ( degree >= 2 ) std::fill_n(std::back_inserter(m_coefficients),
 		(degree+1)*(degree+2)/2-4, 0.);
@@ -62,12 +64,6 @@ void Monge_via_jet_fitting::Monge_form::dump_4ogl(std::ostream& out_stream, cons
 //////////////////////////////////////////////////////////////
 // Implementation main Monge_via_jet_fiting
 
-
-Monge_via_jet_fitting::	Monge_via_jet_fitting()
-{
-	m_pca_basis = std::vector< std::pair<FT, Vector_3> >(3);
-} 
-
 Vector_3 Monge_via_jet_fitting::E2V_converter(Eigen::Vector3d vec)
 {
 	return Vector_3(vec[0], vec[1], vec[2]);
@@ -78,6 +74,10 @@ Eigen::Vector3d  Monge_via_jet_fitting::V2E_converter(Vector_3 vec)
 	return Eigen::Vector3d(vec[0], vec[1], vec[2]);
 }
 
+Monge_via_jet_fitting::	Monge_via_jet_fitting()
+{
+	m_pca_basis = std::vector< std::pair<FT, Vector_3> >(3);
+} 
 
 Monge_via_jet_fitting::Monge_form	Monge_via_jet_fitting::operator()(InputIterator begin, InputIterator end, 
 	size_t d, size_t dprime)
@@ -92,13 +92,17 @@ Monge_via_jet_fitting::Monge_form	Monge_via_jet_fitting::operator()(InputIterato
 	monge_form.set_up(dprime);
 	//for the system MA=Z
 	LAMatrix M(nb_input_pts, nb_d_jet_coeff);
-	LAVector Z(nb_input_pts);
+	LAVector Z = LAVector::Zero(nb_input_pts);
 
 	compute_PCA(begin, end);
 	fill_matrix(begin, end, d, M, Z);//with precond
 	solve_linear_system(M, Z);  //correct with precond
 	compute_Monge_basis(Z.data(), monge_form);
 	if ( dprime >= 3) compute_Monge_coefficients(Z.data(), dprime, monge_form);
+
+	//monge_form.dump_verbose(std::cout);
+	//std::cout << endl;
+
 	return monge_form;
 }
 
@@ -154,20 +158,13 @@ void Monge_via_jet_fitting::compute_PCA(InputIterator begin, InputIterator end)
 	Eigen::Vector3d e_values = Eigen::Reverse<Eigen::Vector3d, Eigen::Vertical>(es.eigenvalues());
 	Eigen::Matrix3d e_vectors = Eigen::Reverse<Eigen::Matrix3d, Eigen::Horizontal>(es.eigenvectors());
 
-	const FT * eigen_values = e_values.data();
-	const FT * eigen_vectors = e_vectors.data();
-
 	//store in m_pca_basis
 	for (int i=0; i<3; i++)
 	{
-		m_pca_basis[i].first =  eigen_values[i];
+		m_pca_basis[i].first =  e_values[i];
+		m_pca_basis[i].second = E2V_converter(e_vectors.col(i));	
 	}
-	Vector_3 v1(eigen_vectors[0],eigen_vectors[1],eigen_vectors[2]);
-	m_pca_basis[0].second = v1;
-	Vector_3 v2(eigen_vectors[3],eigen_vectors[4],eigen_vectors[5]);
-	m_pca_basis[1].second = v2;
-	Vector_3 v3(eigen_vectors[6],eigen_vectors[7],eigen_vectors[8]);
-	m_pca_basis[2].second = v3;
+
 	switch_to_direct_orientation(m_pca_basis[0].second,	m_pca_basis[1].second, m_pca_basis[2].second);
 
 	//Store the change of basis W->F
@@ -175,32 +172,38 @@ void Monge_via_jet_fitting::compute_PCA(InputIterator begin, InputIterator end)
 	tM << m_pca_basis[0].second[0], m_pca_basis[0].second[1], m_pca_basis[0].second[2], 
 		m_pca_basis[1].second[0], m_pca_basis[1].second[1], m_pca_basis[1].second[2],
 		m_pca_basis[2].second[0], m_pca_basis[2].second[1], m_pca_basis[2].second[2];
-	Aff_transformation change_basis (tM);
+
+	Aff_transformation change_basis (tM.transpose());
 
 	this->change_world2fitting = change_basis; 
 }
-
 
 
 void Monge_via_jet_fitting::fill_matrix(InputIterator begin, InputIterator end,
 	std::size_t d, LAMatrix &M, LAVector& Z)
 {
 	//origin of fitting coord system = first input data point
-	Point_3 point0 = *begin;
 	//transform coordinates of sample points with a
 	//translation ($-p$) and multiplication by $ P_{W\rightarrow F}$.
-	Point_3 orig(0.,0.,0.);
-	Eigen::Translation3d transl(V2E_converter(orig - point0));
-	this->translate_p0 = transl;
-	Aff_transformation transf_points = this->change_world2fitting * this->translate_p0;
+	Point_3 origin = *begin;
+
+	this->translate_p0 = Aff_transformation(Eigen::Translation3d(V2E_converter(-origin)));
+
+	// Rotate then translate
+	Aff_transformation transf_points = this->change_world2fitting.inverse() * translate_p0;
 
 	//compute and store transformed points
 	std::vector<Point_3> pts_in_fitting_basis;
 	for(;begin != end; begin++)
 	{
+		Vector_3 p_orig = *begin;
 		Vector_3 p = E2V_converter(transf_points * V2E_converter(*begin));
 
 		pts_in_fitting_basis.push_back(p);
+
+		/*cout << "From: " << p_orig[0] << " " << p_orig[1] << " " << p_orig[2] << endl;
+		cout << "To: " << p[0] << " " << p[1] << " " << p[2] << endl;
+		cout << endl;*/
 	}
 
 	//Compute preconditionning
@@ -223,6 +226,7 @@ void Monge_via_jet_fitting::fill_matrix(InputIterator begin, InputIterator end,
 	{
 		x = itb->x();
 		y = itb->y();
+
 		Z(line_count) = itb->z();
 
 		for (std::size_t k=0; k <= d; k++) {
@@ -231,7 +235,9 @@ void Monge_via_jet_fitting::fill_matrix(InputIterator begin, InputIterator end,
 				FT g = std::pow(x,static_cast<double>(k-i)) * std::pow(y,static_cast<double>(i))
 					/( fact(i) * fact(k-i) *std::pow(this->preconditionning,static_cast<double>(k)));
 
-				M(line_count, k*(k+1)/2+i) = g;
+				size_t c = k*(k+1)/2+i;
+
+				M(line_count, c) = g;
 			}
 		}
 
@@ -239,36 +245,37 @@ void Monge_via_jet_fitting::fill_matrix(InputIterator begin, InputIterator end,
 	}
 }
 
-
 void Monge_via_jet_fitting:: solve_linear_system(LAMatrix &M, LAVector& Z)
 {
-
 	Eigen::VectorXd A = M.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(Z);
 
 	for (int k=0; k <= this->deg; k++) 
+	{
 		for (int i=0; i<=k; i++)
 		{
 			int id = k*(k+1)/2+i;
-			Z(id) = A(id) / std::pow(this->preconditionning,k);
+
+			FT z_entry = A(id) / std::pow(this->preconditionning,k);
+			Z(id) = z_entry;
 		}
+	}
 
-		Eigen::JacobiSVD<Eigen::MatrixXd::PlainObject>::SingularValuesType sing_vals;
-		sing_vals = M.jacobiSvd().singularValues();
+	Eigen::JacobiSVD<Eigen::MatrixXd::PlainObject>::SingularValuesType sing_vals;
+	sing_vals = M.jacobiSvd().singularValues();
 
-		this->inverse_condition_nb = sing_vals(sing_vals.size()-1) / sing_vals(0);
-
+	this->inverse_condition_nb = sing_vals(sing_vals.size()-1) / sing_vals(0);
 }
 
 void Monge_via_jet_fitting::compute_Monge_basis(const FT* A, Monge_form& monge_form)
 {
 	// only 1st order info.
 	if ( this->deg_monge == 1 ) {  
-		Eigen::Vector3d orig_monge(0., 0., A[0]);
+		/*Eigen::Vector3d orig_monge(0., 0., A[0]);
 		Eigen::Vector3d  normal(-A[1], -A[2], 1.);
 		FT norm2 = normal.dot(normal);
 		normal = normal / sqrt(norm2);
 		monge_form.origin() = E2V_converter((translate_p0.inverse() * change_world2fitting.inverse()) * (orig_monge)) ;
-		monge_form.normal_direction() = E2V_converter(this->change_world2fitting.inverse() * (normal));
+		monge_form.normal_direction() = E2V_converter(this->change_world2fitting.inverse() * (normal));*/
 	}
 	// else (deg_monge >= 2) then 2nd order info are computed
 	else 
@@ -277,7 +284,9 @@ void Monge_via_jet_fitting::compute_Monge_basis(const FT* A, Monge_form& monge_f
 		Eigen::Vector3d orig_monge(0., 0., A[0]);
 
 		//normal = Xu cross product Xv
-		Eigen::Vector3d Xu(1.,0.,A[1]), Xv(0.,1.,A[2]), normal(-A[1], -A[2], 1.);
+		Eigen::Vector3d Xu(1, 0, A[1]), Xv(0, 1, A[2]);
+		Eigen::Vector3d normal(-A[1], -A[2], 1);
+
 		FT norm2 = normal.dot(normal);
 		normal = normal / sqrt(norm2);
 
@@ -326,25 +335,30 @@ void Monge_via_jet_fitting::compute_Monge_basis(const FT* A, Monge_form& monge_f
 		const FT * evec = e_vectors.data();		//eval in decreasing order
 
 
-		Eigen::Vector3d d_max = evec[0]*Y + evec[1]*Z,
-			d_min = evec[2]*Y + evec[3]*Z;
+		Vector_3 d_max = E2V_converter(evec[0]*Y + evec[1]*Z);
+		Vector_3 d_min = E2V_converter(evec[2]*Y + evec[3]*Z);
 
-		switch_to_direct_orientation(E2V_converter(d_max), E2V_converter(d_min), E2V_converter(normal));
+		switch_to_direct_orientation(d_max, d_min, E2V_converter(normal));
+		
 		Eigen::Matrix3d tM;
-		tM << d_max[0], d_max[1], d_max[2], 
-			d_min[0], d_min[1], d_min[2],
-			normal[0], normal[1], normal[2];
-		Aff_transformation change_basis (tM);
+		tM <<	d_max[0], d_max[1], d_max[2], 
+				d_min[0], d_min[1], d_min[2],
+				normal[0], normal[1], normal[2];
+
+		Aff_transformation change_basis (tM.transpose());
+		
 		this->change_fitting2monge = change_basis;
 
 		//store the monge basis origin and vectors with their world coord
 		//store ppal curv
 
-		monge_form.origin() = E2V_converter((translate_p0.inverse() * change_world2fitting.inverse()) * orig_monge);
+		monge_form.origin() = E2V_converter((translate_p0.inverse() * change_world2fitting) * orig_monge);
 
-		monge_form.maximal_principal_direction() = E2V_converter(change_world2fitting.inverse() * d_max);
-		monge_form.minimal_principal_direction() = E2V_converter(change_world2fitting.inverse() * d_min);
-		monge_form.normal_direction()  = E2V_converter(change_world2fitting.inverse() * normal);
+		monge_form.maximal_principal_direction() = E2V_converter(change_world2fitting * V2E_converter(d_max));
+		monge_form.minimal_principal_direction() = E2V_converter(change_world2fitting * V2E_converter(d_min));
+		
+		monge_form.normal_direction() = E2V_converter(change_world2fitting * normal);
+		
 		monge_form.coefficients()[0] = eval[0];
 		monge_form.coefficients()[1] = eval[1];
 	}
@@ -354,33 +368,34 @@ void Monge_via_jet_fitting::compute_Monge_basis(const FT* A, Monge_form& monge_f
 
 void Monge_via_jet_fitting::compute_Monge_coefficients(FT* A, std::size_t dprime, Monge_form& monge_form)
 {
-	//One has the equation w=J_A(u,v) of the fitted surface S 
-	// in the fitting_basis
-	//Substituing (u,v,w)=change_fitting2monge^{-1}(x,y,z)
-	//One has the equation f(x,y,z)=0 on this surface S in the monge
-	//  basis
-	//The monge form of the surface at the origin is the bivariate fct
+	// One has the equation w=J_A(u,v) of the fitted surface S in the fitting_basis
+	// Substituing (u,v,w)=change_fitting2monge^{-1}(x,y,z)
+	// One has the equation f(x,y,z)=0 on this surface S in the monge basis
+	// The monge form of the surface at the origin is the bivariate fct
 	//   g(x,y) s.t. f(x,y,g(x,y))=0
-	//voir les calculs Maple dans monge.mws
-	//Notations are f123= d^3f/dxdydz
+	// voir les calculs Maple dans monge.mws
+	// Notations are f123= d^3f/dxdydz
 	//              g(x,y)=sum (gij x^i y^j/ i!j!) with 
 	//              g00=g10=g01=g11=0, g20=kmax, g02=kmin
 	//
-	//g(x,y)= 1/2*(k1x^2 +k2y^2) 
+	// g(x,y)= 1/2*(k1x^2 +k2y^2) 
 	//       +1/6*(b0x^3 +3b1x^2y +3b2xy^2 +b3y^3) 
 	//       +1/24*(c0x^4 +4c1x^3y +6c2x^2y^2 +4c3xy^3 +c4y^4)
 	//       +...
 	// p stores change_fitting2monge^{-1}=change_fitting2monge^{T}
 	FT p[3][3];
-	p[0][0] = this->change_fitting2monge(0,0);
-	p[1][0] = this->change_fitting2monge(0,1);
-	p[2][0] = this->change_fitting2monge(0,2);
-	p[0][1] = this->change_fitting2monge(1,0);
-	p[1][1] = this->change_fitting2monge(1,1);
-	p[2][1] = this->change_fitting2monge(1,2);
-	p[0][2] = this->change_fitting2monge(2,0);
-	p[1][2] = this->change_fitting2monge(2,1);
-	p[2][2] = this->change_fitting2monge(2,2);
+
+	Aff_transformation t = change_fitting2monge.inverse();
+
+	p[0][0] = t(0,0);
+	p[1][0] = t(0,1);
+	p[2][0] = t(0,2);
+	p[0][1] = t(1,0);
+	p[1][1] = t(1,1);
+	p[2][1] = t(1,2);
+	p[0][2] = t(2,0);
+	p[1][2] = t(2,1);
+	p[2][2] = t(2,2);
 
 	// formula are designed for w=sum( Aij ui vj), but we have J_A = sum( Aij/i!j! ui vj)
 	for (int k=0; k <= this->deg; k++) 
@@ -531,16 +546,11 @@ void Monge_via_jet_fitting::compute_Monge_coefficients(FT* A, std::size_t dprime
 		+24*A[10]*p[0][1]*p[0][1]*p[0][1]*p[0][1]
 		+24*A[14]*p[1][1]*p[1][1]*p[1][1]*p[1][1];
 
-		FT c0 =
-			-1/(f3*f3*f3)*(f1111*(f3*f3)-4*f13*f3*f111+12*f13*f13*f11-6*f113*f3*f11+3*f33*f11*f11);
-		FT c1 =
-			1/(f3*f3*f3)*(f23*f3*f111+3*f3*f123*f11+3*f13*f3*f112-f1112*(f3*f3)-6*f13*f23*f11); 
-		FT c2 =
-			1/(f3*f3*f3)*(-f33*f22*f11+f113*f3*f22+2*f13*f3*f122-2*f13*f13*f22+f223*f3*f11+2*f23*f3*f112-2*f23*f23*f11-f1122*(f3*f3)); 
-		FT c3 =
-			1/(f3*f3*f3)*(-f1222*(f3*f3)-6*f13*f23*f22+3*f123*f3*f22+f13*f3*f222+3*f23*f3*f122); 
-		FT c4 =
-			-1/(f3*f3*f3)*(f2222*(f3*f3)+3*f33*f22*f22-6*f223*f3*f22-4*f23*f3*f222+12*f23*f23*f22) ; 
+		FT c0 =	-1/(f3*f3*f3)*(f1111*(f3*f3)-4*f13*f3*f111+12*f13*f13*f11-6*f113*f3*f11+3*f33*f11*f11);
+		FT c1 =	1/(f3*f3*f3)*(f23*f3*f111+3*f3*f123*f11+3*f13*f3*f112-f1112*(f3*f3)-6*f13*f23*f11); 
+		FT c2 =	1/(f3*f3*f3)*(-f33*f22*f11+f113*f3*f22+2*f13*f3*f122-2*f13*f13*f22+f223*f3*f11+2*f23*f3*f112-2*f23*f23*f11-f1122*(f3*f3)); 
+		FT c3 =	1/(f3*f3*f3)*(-f1222*(f3*f3)-6*f13*f23*f22+3*f123*f3*f22+f13*f3*f222+3*f23*f3*f122); 
+		FT c4 =	-1/(f3*f3*f3)*(f2222*(f3*f3)+3*f33*f22*f22-6*f223*f3*f22-4*f23*f3*f222+12*f23*f23*f22) ; 
 
 		monge_form.coefficients()[6] = c0;
 		monge_form.coefficients()[7] = c1;
@@ -553,10 +563,13 @@ void Monge_via_jet_fitting::compute_Monge_coefficients(FT* A, std::size_t dprime
 void Monge_via_jet_fitting::switch_to_direct_orientation(Vector_3& v1, const Vector_3& v2,	const Vector_3& v3) 
 {
 	Eigen::Matrix3d M;
+
 	for (int i=0; i<3; i++) M(i,0) = v1[i];
 	for (int i=0; i<3; i++) M(i,1) = v2[i];
 	for (int i=0; i<3; i++) M(i,2) = v3[i];
 
+	//if(dot(cross(v1, v2), v3))
+	//	v1 = -v1;
 
 	if (M.determinant() < 0) 
 		v1 = -v1;

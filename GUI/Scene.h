@@ -22,7 +22,7 @@ class Scene : public QGLViewer{
 	Q_OBJECT
 
 public:
-	Scene(QWidget *parent = 0);
+	Scene(QString loadObject = "", QWidget *parent = 0);
 
 	// Setup scene
 	virtual void init();
@@ -76,13 +76,13 @@ private:
 
 // Objects in the scene
 private:
-	QMap<QString, QSurfaceMesh *> objects;
 	QMap<QString, QMesh *> legacy_objects;
 
 	Vector<Wire> activeWires;
 
 public:
-	QSurfaceMesh * activeObject;
+	QSurfaceMesh * activeObject();
+	QString activeObjectId;
 
 public slots:
 	void insertObject( QString fileName );
