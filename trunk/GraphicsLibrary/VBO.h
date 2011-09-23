@@ -30,6 +30,8 @@ public:
 		color_vbo_id = 0;
 		faces_id = 0;
 
+		isReady = false;
+
 		int num_of_indices = f->size() * 3;
 
 		vCount = v->size();
@@ -91,10 +93,15 @@ public:
 	{
 		if(this->isVBOEnabled)
 		{
-			free_vbo(vertex_vbo_id);
-			free_vbo(normal_vbo_id);
-			free_vbo(color_vbo_id);
-			free_vbo(faces_id);
+			if(vertex_vbo_id)	free_vbo(vertex_vbo_id);
+			if(normal_vbo_id)	free_vbo(normal_vbo_id);
+			if(color_vbo_id)	free_vbo(color_vbo_id);
+			if(faces_id)		free_vbo(faces_id);
+
+			vertex_vbo_id = 0;
+			normal_vbo_id = 0;
+			color_vbo_id = 0;
+			faces_id = 0;
 
 			delete indices;
 		}
@@ -107,6 +114,8 @@ public:
 			if(indices->size() > 0)
 			{
 				update_vbo(&vertex_vbo_id, vCount * sizeof(PointType), vertices);
+
+				if(vertex_vbo_id) isReady = true;
 
 				if(normals) update_vbo(&normal_vbo_id, vCount * sizeof(NormalType), normals);
 				if(colors) update_vbo(&color_vbo_id, vCount * sizeof(ColorType), colors);
@@ -144,6 +153,8 @@ public:
 	{
 		if(dynamic || isDirty)
 			update();
+
+		if(vertex_vbo_id == 0) return; // something went wrong..
 
 		glEnable(GL_LIGHTING);
 		glEnable(GL_POLYGON_OFFSET_FILL);
@@ -187,13 +198,15 @@ public:
 			isDirty = false;
 		}
 
+		if(vertex_vbo_id == 0) return;
+
 		glLineWidth(1.0f); // default?
 
 		glDisable(GL_LIGHTING);
-		//glEnable(GL_BLEND); 
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND); 
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glColor3f(0, 0.6f, 0.2f);
+		glColor4f(0, 0.6f, 0.2f, 0.5);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
@@ -217,6 +230,8 @@ public:
 			update_vbo(&vertex_vbo_id, vCount*sizeof(PointType), vertices);
 			isDirty = false;
 		}
+
+		if(vertex_vbo_id == 0) return;
 
 		glDisable(GL_LIGHTING);
 		GLfloat pointSize;
@@ -243,6 +258,8 @@ public:
 	{
 		if(dynamic || isDirty)
 			update();
+
+		if(vertex_vbo_id == 0) return;
 
 		GLfloat pointSize;
 		glGetFloatv(GL_POINT_SIZE, &pointSize);
@@ -279,6 +296,8 @@ public:
 
 	bool isDirty;
 	inline void setDirty(bool state) {isDirty = state;}
+
+	bool isReady;
 
 	bool isVBOEnabled;
 };

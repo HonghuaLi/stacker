@@ -691,6 +691,20 @@ void SimpleDraw::IdentifyConnectedPoints( Vector<Vec> & points, float r /*= 0.4f
 	glEnable(GL_LIGHTING);
 }
 
+void SimpleDraw::IdentifyConnectedPoints( Vector<Point> & points, float r /*= 0.4f*/, float g /*= 1.0*/, float b /*= 0.2f*/ )
+{
+	glDisable(GL_LIGHTING);
+	glColor4f(r, g, b, 1);
+
+	glLineWidth(3.0 + (r * 2) + (g * 4) + (b * 6));
+
+	glBegin(GL_LINE_STRIP);
+		foreach(Point p, points)
+			glVertex3dv(p);
+	glEnd();
+
+}
+
 void SimpleDraw::IdentifyLineRed( const Vec& p1, const Vec& p2, bool showPoints /*= true*/ )
 {
 	// Red line

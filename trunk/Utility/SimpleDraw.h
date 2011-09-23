@@ -1,6 +1,8 @@
 #ifndef SIMPLE_DRAW_H
 #define SIMPLE_DRAW_H
 
+#include "QSurfaceMesh.h"
+
 #include "Line.h"
 
 #ifndef Vector
@@ -17,6 +19,7 @@ public:
 	static void IdentifyPoint2(Vec p);
 	static void IdentifyPoints(Vector<Vec> & points, float r = 1.0, float g = 0.2f, float b = 0.2f, float pointSize = 10.0);
 	static void IdentifyConnectedPoints(Vector<Vec> & points, float r = 0.4f, float g = 1.0, float b = 0.2f);
+	static void IdentifyConnectedPoints(Vector<Point> & points, float r = 0.4f, float g = 1.0, float b = 0.2f);
 
 	// LINES
 	static void IdentifyLine(const Vec& p1, const Vec& p2, bool showPoints = true);

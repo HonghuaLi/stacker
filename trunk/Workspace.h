@@ -11,6 +11,9 @@
 #include "StackerPanel.h"
 #include "WiresPanel.h"
 
+extern QStringList main_args;
+extern QMap<QString, QSurfaceMesh> all_objects;
+
 class Workspace : public QMainWindow
 {
 	Q_OBJECT
@@ -32,4 +35,6 @@ private:
 
 	StackerPanel * sp;
 	WiresPanel * wp;
+
+	int sceneCount;
 };
