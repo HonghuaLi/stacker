@@ -5,7 +5,7 @@ StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
 {
 	setMaximumWidth(200);
 
-	this->activeObject = NULL;
+	this->activeScene = NULL;
 }
 
 void StackerPreview::init()
@@ -45,32 +45,28 @@ void StackerPreview::setupLights()
 
 void StackerPreview::preDraw()
 {
-	this->makeCurrent();
 	QGLViewer::preDraw();
 }
 
 void StackerPreview::draw()
 {
-	if(!activeObject)
+	if(!activeScene || !activeScene->activeObject())
 		return;
 
 	// Background
 	setBackgroundColor(backColor);
 
-	activeObject->draw();
+	activeScene->activeObject()->draw();
 }
 
-void StackerPreview::setActiveObject( QSurfaceMesh * newObject )
+void StackerPreview::setActiveScene( Scene * changedScene )
 {
-	if(!newObject)
-		return;
+	this->activeScene = changedScene;
 
-	if(activeObject)
-		delete activeObject;
+	if(activeScene && activeScene->activeObject())
+		camera()->setSceneRadius(activeScene->activeObject()->radius);
 
-	this->activeObject = new QSurfaceMesh(*newObject);
-	this->activeObject->setColorVertices(); // white
-
-	camera()->setSceneRadius(activeObject->radius);
 	camera()->showEntireScene();
+
+	this->updateGL();
 }

@@ -5,7 +5,8 @@
 #include "QSurfaceMesh.h"
 
 extern QMap<QString, QSurfaceMesh> all_objects;
+extern uint global_id;
 
 // Functions
-void addNewObject(QString fileName);
+QString addNewObject(QString fileName);
 QSurfaceMesh * getObject(QString objectId);

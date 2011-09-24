@@ -22,4 +22,8 @@ public:
 public slots:
 	void onOffsetButtonClicked();
 	void setActiveScene(Scene *);
+	void sceneUpdated();
+
+signals:
+	void activeSceneChanged();
 };

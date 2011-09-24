@@ -3,12 +3,11 @@
 #include "Macros.h"
 
 // Surface-mesh
-#include "Surface_mesh.h"
+#include "Vector.h"
 
-typedef Point PointType;
-typedef Normal NormalType;
-typedef Color ColorType;
-typedef Surface_mesh::Face FaceType;
+typedef Vec3d PointType;
+typedef Vec3d NormalType;
+typedef Vec4d ColorType;
 typedef uint Index;
 
 class VBO
@@ -19,14 +18,16 @@ class VBO
 	unsigned int faces_id;
 
 public:
+	std::string objectId;
 	int vCount;
 
 	const PointType * vertices;
 	const NormalType * normals;
 	const ColorType * colors;
-	StdVector<Index> * indices;
+	StdVector<Index> indices;
 
-	VBO( unsigned int vert_count, const PointType * v, const NormalType * n, const ColorType * c, StdVector<Index> * faces );
+	VBO(){ isVBOEnabled = false; isDirty = false; isReady = false; };
+	VBO( unsigned int vert_count, const PointType * v, const NormalType * n, const ColorType * c, StdVector<Index> faces );
 
 	void free_vbo(Index vbo);
 	~VBO();
@@ -36,14 +37,21 @@ public:
 	void update_ebo(Index *ebo, int ebo_size, const GLvoid *ebo_data);
 
 	// Rendering Vertex Buffer Object (VBO)
-	void render_smooth(bool dynamic = false);
+	void render_regular(bool dynamic = false);
 	void render_wireframe(bool dynamic = false);
 	void render_vertices(bool dynamic = false);
 	void render_as_points(bool dynamic = false);
+	void render(bool dynamic = false);
 
 	// State of VBO
 	bool isDirty;
 	void setDirty(bool state);
 	bool isReady;
 	bool isVBOEnabled;
+
+	// Rendering flags
+	bool isDrawRegular;
+	bool isDrawWireframe;
+	bool isDrawAsPoints;
+	bool isFlatShade;
 };

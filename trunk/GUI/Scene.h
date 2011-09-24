@@ -10,6 +10,7 @@
 using namespace qglviewer;
 
 #include "QSurfaceMesh.h"
+#include "VBO.h"
 #include "Wire.h"
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
@@ -49,6 +50,7 @@ public:
 
 	// Focus stuff
 	virtual void focusInEvent(QFocusEvent * event);
+	virtual void focusOutEvent(QFocusEvent * event);
 
 	// SELECTION
 	virtual void postSelection(const QPoint& point);
@@ -73,6 +75,10 @@ public slots:
 private:
 	QQueue<QString> osdMessages;
 	QTimer *timer;
+	
+	// drawing
+	QMap<QString, VBO> vboCollection;
+	void updateVBOs();
 
 // Objects in the scene
 private:
@@ -90,4 +96,5 @@ public slots:
 signals:
 	void focusChanged( Scene* );
 	void objectInserted( QSurfaceMesh * );
+	void newSceneCreated();
 };

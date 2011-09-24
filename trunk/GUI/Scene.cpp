@@ -22,6 +22,72 @@ Scene::Scene( QString loadObject, QWidget *parent)
 		insertObject(loadObject);
 
 	displayMessage(tr("New scene created."));
+
+	emit(newSceneCreated());
+}
+
+void Scene::insertObject( QString fileName )
+{
+	// Get object name from file path
+	QFileInfo fInfo (fileName);
+
+	if(!fInfo.exists()){
+		displayMessage(QString("Error: invalid file (%1).").arg(fileName));
+		return;
+	}
+
+	// Load mesh into memory
+	activeObjectId = addNewObject(fileName);
+
+	// Change title of scene
+	setWindowTitle(activeObjectId);
+
+	QSurfaceMesh * newMesh = getObject(activeObjectId);
+
+	camera()->setSceneRadius(newMesh->radius);
+	camera()->showEntireScene();
+
+	emit(objectInserted(newMesh));
+}
+
+void Scene::updateVBOs()
+{
+	QSurfaceMesh * mesh = activeObject();
+
+	if(mesh && mesh->isReady && vboCollection.find(activeObjectId) == vboCollection.end())
+	{
+		Surface_mesh::Vertex_property<Point>  points   = mesh->vertex_property<Point>("v:point");
+		Surface_mesh::Vertex_property<Point>  vnormals = mesh->vertex_property<Point>("v:normal");
+		Surface_mesh::Face_property<Point>    fnormals = mesh->face_property<Point>("f:normal");
+		Surface_mesh::Vertex_property<Color>  vcolors  = mesh->vertex_property<Color>("v:color");
+		Surface_mesh::Vertex_property<float>  vtex     = mesh->vertex_property<float>("v:tex1D", 0.0);
+
+		// get face indices
+		Surface_mesh::Face_iterator fit, fend = mesh->faces_end();
+		Surface_mesh::Vertex_around_face_circulator fvit, fvend;
+		Surface_mesh::Vertex v0, v1, v2;
+		for (fit = mesh->faces_begin(); fit != fend; ++fit){
+			fvit = fvend = mesh->vertices(fit);
+			v0 = fvit;
+			v2 = ++fvit;
+
+			do{
+				v1 = v2;
+				v2 = fvit;
+				mesh->triangles.push_back(v0.idx());
+				mesh->triangles.push_back(v1.idx());
+				mesh->triangles.push_back(v2.idx());
+			} while (++fvit != fvend);
+		}
+
+		// Create VBO
+		vboCollection[activeObjectId] = VBO(mesh->n_vertices(), points.data(), vnormals.data(), vcolors.data(), mesh->triangles);
+	}
+}
+
+uint Scene::numObjects()
+{
+	return vboCollection.size();
 }
 
 void Scene::init()
@@ -80,12 +146,13 @@ void Scene::draw()
 	// Background color
 	this->setBackgroundColor(backColor);
 
-	// Draw objects normally
-	if(activeObject() != NULL)
-	{
+	// Update if needed
+	updateVBOs();
 
-		activeObject()->draw();
-	}
+	// Draw objects normally
+	QMap<QString, VBO>::iterator i;
+	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
+		i->render(true);
 
 	// Wires
 	foreach(Wire w, activeWires)
@@ -124,42 +191,7 @@ void Scene::specialDraw()
 
 void Scene::drawWithNames()
 {
-	if(activeObject())
-		activeObject()->drawFaceNames();
-}
 
-void Scene::insertObject( QString fileName )
-{
-	// Get object name from file path
-	QFileInfo fInfo (fileName);
-
-	if(!fInfo.exists()){
-		displayMessage(QString("Error: invalid file (%1).").arg(fileName));
-		return;
-	}
-
-	// Load mesh into memory
-	addNewObject(fileName);
-
-	QString newObjId = fInfo.fileName();
-	newObjId.chop(4);
-
-	// Title of scene
-	setWindowTitle(newObjId);
-
-	QSurfaceMesh * newMesh = getObject(newObjId);
-
-	camera()->setSceneRadius(newMesh->radius);
-	camera()->showEntireScene();
-
-	activeObjectId = newObjId;
-
-	emit(objectInserted(newMesh));
-}
-
-uint Scene::numObjects()
-{
-	return 1;
 }
 
 void Scene::mousePressEvent( QMouseEvent* e )
@@ -247,6 +279,11 @@ void Scene::dequeueLastMessage()
 }
 
 void Scene::focusInEvent( QFocusEvent * event )
+{
+	emit(focusChanged(this));
+}
+
+void Scene::focusOutEvent( QFocusEvent * event )
 {
 	emit(focusChanged(this));
 }
