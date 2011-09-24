@@ -11,7 +11,7 @@ std::vector<Wire> AnalyzeWires::fromMesh( QSurfaceMesh * src_mesh, double sharp_
 	std::vector<Wire> wires;
 
 	QSurfaceMesh::Vertex_property<Point> points = src_mesh->vertex_property<Point>("v:point");
-	QSurfaceMesh::Vertex_property<Normal_> normals = src_mesh->vertex_property<Normal_>("v:normal");
+	QSurfaceMesh::Vertex_property<Normal> normals = src_mesh->vertex_property<Normal>("v:normal");
 	QSurfaceMesh::Vertex_iterator vit, vend = src_mesh->vertices_end();
 
 	// Differential properties
@@ -31,7 +31,7 @@ std::vector<Wire> AnalyzeWires::fromMesh( QSurfaceMesh * src_mesh, double sharp_
 	size_t d_monge = 3;
 	size_t min_nb_points = (d_fitting + 1) * (d_fitting + 2) / 2;
 
-	//min_nb_points *= 6;
+	//min_nb_points *= 2;
 
 	// Local differential properties of sampled surfaces via polynomial fitting
 	for(vit = src_mesh->vertices_begin(); vit != vend; ++vit)
@@ -50,8 +50,8 @@ std::vector<Wire> AnalyzeWires::fromMesh( QSurfaceMesh * src_mesh, double sharp_
 		monge_form = monge_fit(neighbour_points.begin(), neighbour_points.end(), d_fitting, d_monge);
 
 		//switch min-max ppal curv/dir wrt the mesh orientation
-		const Vector_3 normal_mesh = normals[vit];
-		monge_form.comply_wrt_given_normal(normal_mesh);
+		const Vector3 Normalmesh = normals[vit];
+		monge_form.comply_wrt_given_normal(Normalmesh);
 
 		//Store monge data needed for ridge computations in property maps
 		d1[vit] = monge_form.maximal_principal_direction();

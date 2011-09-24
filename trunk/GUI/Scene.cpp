@@ -1,10 +1,10 @@
-#include "Scene.h"
-
 #include <QFileInfo>
 
-#include "SimpleDraw.h"
-
 #include "Workspace.h"
+#include "Scene.h"
+
+#include "QMeshManager.h"
+#include "SimpleDraw.h"
 
 Scene::Scene( QString loadObject, QWidget *parent)
 {
@@ -82,7 +82,10 @@ void Scene::draw()
 
 	// Draw objects normally
 	if(activeObject() != NULL)
+	{
+
 		activeObject()->draw();
+	}
 
 	// Wires
 	foreach(Wire w, activeWires)
@@ -135,36 +138,21 @@ void Scene::insertObject( QString fileName )
 		return;
 	}
 
-	QString newObjName = fInfo.fileName();
-	newObjName.chop(4);
+	// Load mesh into memory
+	addNewObject(fileName);
+
+	QString newObjId = fInfo.fileName();
+	newObjId.chop(4);
 
 	// Title of scene
-	setWindowTitle(newObjName);
+	setWindowTitle(newObjId);
 
-	// Legacy mesh data structure
-	/*QMesh * newMesh = new QMesh;
-	newMesh->id = qPrintable(newObjName);
-	newMesh->loadFromFile(qPrintable(fileName));
-	newMesh->normalizeScale();*/
-
-	// Add to list of scene objects
-	all_objects[ newObjName ] = QSurfaceMesh();
-	QSurfaceMesh * newMesh = &all_objects[ newObjName ];
-
-	// Using Surface_mesh library
-	newMesh->read(qPrintable(fileName));
-	//newMesh->moveCenterToOrigin();
-	newMesh->computeBoundingBox();
-	newMesh->setColorVertices(); // white
-	newMesh->assignFaceArray();
-	newMesh->assignVertexArray();
+	QSurfaceMesh * newMesh = getObject(newObjId);
 
 	camera()->setSceneRadius(newMesh->radius);
 	camera()->showEntireScene();
 
-	newMesh->update();
-
-	activeObjectId = newObjName;
+	activeObjectId = newObjId;
 
 	emit(objectInserted(newMesh));
 }
@@ -265,7 +253,7 @@ void Scene::focusInEvent( QFocusEvent * event )
 
 void Scene::setActiveWires( QVector<Wire> newWires )
 {
-	activeWires = newWires.toStdVector();
+	activeWires = newWires;
 }
 
 void* Scene::readBuffer( GLenum format, GLenum type )

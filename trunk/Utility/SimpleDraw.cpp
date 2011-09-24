@@ -1,43 +1,27 @@
 #include "SimpleDraw.h"
 
+// Bad includes.. needed for rotations for now
 #include "QGLViewer/qglviewer.h"
+#include "QGLViewer/quaternion.h"
 
-void SimpleDraw::IdentifyLines(Vector<Line> & lines, float lineWidth, float r, float g, float b)
-{
-	glDisable(GL_LIGHTING);
-	glLineWidth(lineWidth);
-
-	glColor3f(r, g, b);
-
-	glBegin(GL_LINES);
-	for(int i = 0; i < (int)lines.size(); i++)
-	{
-		glVertex3dv(lines[i].a);
-		glVertex3dv(lines[i].b);
-	}
-	glEnd();
-
-	glEnable(GL_LIGHTING);
-}
-
-void SimpleDraw::DrawBox(const Vec& center, float width, float length, float height, float r, float g, float b)
+void SimpleDraw::DrawBox(const Vec3d& center, float width, float length, float height, float r, float g, float b)
 {
 	glDisable(GL_LIGHTING);
 
 	glColor3f(r, g, b);
 
-	Vec c1, c2, c3, c4;
-	Vec bc1, bc2, bc3, bc4;
+	Vec3d  c1, c2, c3, c4;
+	Vec3d  bc1, bc2, bc3, bc4;
 
-	c1 = Vec(width, length, height) + center;
-	c2 = Vec(-width, length, height) + center;
-	c3 = Vec(-width, -length, height) + center;
-	c4 = Vec(width, -length, height) + center;
+	c1 = Vec3d (width, length, height) + center;
+	c2 = Vec3d (-width, length, height) + center;
+	c3 = Vec3d (-width, -length, height) + center;
+	c4 = Vec3d (width, -length, height) + center;
 
-	bc1 = Vec(width, length, -height) + center;
-	bc2 = Vec(-width, length, -height) + center;
-	bc3 = Vec(-width, -length, -height) + center;
-	bc4 = Vec(width, -length, -height) + center;
+	bc1 = Vec3d (width, length, -height) + center;
+	bc2 = Vec3d (-width, length, -height) + center;
+	bc3 = Vec3d (-width, -length, -height) + center;
+	bc4 = Vec3d (width, -length, -height) + center;
 
 	glLineWidth(1.0f);
 
@@ -60,26 +44,26 @@ void SimpleDraw::DrawBox(const Vec& center, float width, float length, float hei
 
 }
 
-void SimpleDraw::DrawSolidBox(const Vec& center, float width, float length, float height, float r, float g, float b, float a)
+void SimpleDraw::DrawSolidBox(const Vec3d & center, float width, float length, float height, float r, float g, float b, float a)
 {
 	glColor3f(r, g, b);
 
-	Vec c1, c2, c3, c4;
-	Vec bc1, bc2, bc3, bc4;
+	Vec3d  c1, c2, c3, c4;
+	Vec3d  bc1, bc2, bc3, bc4;
 
 	width *= 0.5;
 	length *= 0.5;
 	height *= 0.5;
 
-	c1 = Vec(width, length, height) + center;
-	c2 = Vec(-width, length, height) + center;
-	c3 = Vec(-width, -length, height) + center;
-	c4 = Vec(width, -length, height) + center;
+	c1 = Vec3d (width, length, height) + center;
+	c2 = Vec3d (-width, length, height) + center;
+	c3 = Vec3d (-width, -length, height) + center;
+	c4 = Vec3d (width, -length, height) + center;
 
-	bc1 = Vec(width, length, -height) + center;
-	bc2 = Vec(-width, length, -height) + center;
-	bc3 = Vec(-width, -length, -height) + center;
-	bc4 = Vec(width, -length, -height) + center;
+	bc1 = Vec3d (width, length, -height) + center;
+	bc2 = Vec3d (-width, length, -height) + center;
+	bc3 = Vec3d (-width, -length, -height) + center;
+	bc4 = Vec3d (width, -length, -height) + center;
 
 	glShadeModel(GL_FLAT);
 
@@ -95,7 +79,7 @@ void SimpleDraw::DrawSolidBox(const Vec& center, float width, float length, floa
 	glShadeModel(GL_SMOOTH);
 }
 
-void SimpleDraw::DrawTriangle(const Vec& v1, const Vec& v2, const Vec& v3, float r, float g, float b, float a, bool isOpaque)
+void SimpleDraw::DrawTriangle(const Vec3d & v1, const Vec3d & v2, const Vec3d & v3, float r, float g, float b, float a, bool isOpaque)
 {
 	glDisable(GL_LIGHTING);
 
@@ -170,7 +154,7 @@ void SimpleDraw::DrawTriangle(const Vec& v1, const Vec& v2, const Vec& v3, float
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::DrawTriangles( const Vector<Vector<Vec> >& tris, float r, float g, float b, float a, bool isOpaque, bool isDrawPoints)
+void SimpleDraw::DrawTriangles( const StdVector< StdVector<Vec3d> > & tris, float r, float g, float b, float a, bool isOpaque, bool isDrawPoints)
 {
 	glDisable(GL_LIGHTING);
 
@@ -266,7 +250,7 @@ void SimpleDraw::DrawTriangles( const Vector<Vector<Vec> >& tris, float r, float
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::DrawLineTick(const Vector<Vec>& start, const Vector<Vec>& direction, 
+void SimpleDraw::DrawLineTick(const StdVector<Vec3d >& start, const StdVector<Vec3d >& direction, 
 							  float len, bool border, float r, float g, float b, float a)
 {
 	glPushAttrib( GL_ALL_ATTRIB_BITS );
@@ -322,7 +306,7 @@ void SimpleDraw::DrawLineTick(const Vector<Vec>& start, const Vector<Vec>& direc
 
 }
 
-void SimpleDraw::DrawSquare(const Vec& v1, const Vec& v2, const Vec& v3, const Vec& v4, 
+void SimpleDraw::DrawSquare(const Vec3d & v1, const Vec3d & v2, const Vec3d & v3, const Vec3d & v4, 
 							bool isOpaque, float r, float g, float b, float a)
 {
 	glEnable(GL_LIGHTING);
@@ -339,7 +323,11 @@ void SimpleDraw::DrawSquare(const Vec& v1, const Vec& v2, const Vec& v3, const V
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glBegin(GL_QUADS);
-		glNormal3dv(((v2 - v1).unit() ^ (v3 - v1).unit()).unit());
+		
+		Vec3d v21 = v2 - v1;
+		Vec3d v31 = v3 - v1;
+
+		glNormal3dv(cross(v21 , v31).normalized());
 		glVertex3dv(v1);
 		glVertex3dv(v2);
 		glVertex3dv(v3);
@@ -367,7 +355,7 @@ void SimpleDraw::DrawSquare(const Vec& v1, const Vec& v2, const Vec& v3, const V
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::DrawSquares( const Vector<Vector<Vec> >& squares, bool isOpaque, float r, float g, float b, float a )
+void SimpleDraw::DrawSquares( const StdVector<StdVector<Vec3d > >& squares, bool isOpaque, float r, float g, float b, float a )
 {
 	glDisable(GL_LIGHTING);
 
@@ -419,7 +407,7 @@ void SimpleDraw::DrawSquares( const Vector<Vector<Vec> >& squares, bool isOpaque
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::DrawCube( const Vec& center, float length /*= 1.0f*/ )
+void SimpleDraw::DrawCube( const Vec3d & center, float length /*= 1.0f*/ )
 {
 	static GLdouble n[6][3] ={
 		{-1.0, 0.0, 0.0},
@@ -447,7 +435,7 @@ void SimpleDraw::DrawCube( const Vec& center, float length /*= 1.0f*/ )
 	v[1][2] = v[2][2] = v[5][2] = v[6][2] = length / 2;
 
 	glPushMatrix();
-	glTranslatef(center.x, center.y, center.z);
+	glTranslatef(center.x(), center.y(), center.z());
 
 	for (i = 0; i < 6; i++) 
 	{
@@ -465,10 +453,10 @@ void SimpleDraw::DrawCube( const Vec& center, float length /*= 1.0f*/ )
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void SimpleDraw::DrawSphere( const Vec& center, float radius /*= 1.0f*/ )
+void SimpleDraw::DrawSphere( const Vec3d & center, float radius /*= 1.0f*/ )
 {
 	glPushMatrix();
-	glTranslatef(center.x, center.y, center.z);
+	glTranslatef(center.x(), center.y(), center.z());
 	GLUquadricObj *quadObj = gluNewQuadric();
 
 	gluQuadricDrawStyle(quadObj, GLU_FILL);
@@ -480,12 +468,12 @@ void SimpleDraw::DrawSphere( const Vec& center, float radius /*= 1.0f*/ )
 	glPopMatrix();
 }
 
-void SimpleDraw::DrawCylinder( const Vec& center, const Vec& direction /*= Vec(0,0,1)*/,
+void SimpleDraw::DrawCylinder( const Vec3d & center, const Vec3d & direction /*= Vec3d (0,0,1)*/,
 							  float height, float radius /*= 1.0f*/, float radius2 /*= -1*/ )
 {
 	glPushMatrix();
-	glTranslatef(center.x, center.y, center.z);
-	glMultMatrixd(qglviewer::Quaternion(Vec(0,0,1), direction).matrix());
+	glTranslatef(center.x(), center.y(), center.z());
+	glMultMatrixd(qglviewer::Quaternion(qglviewer::Vec(0,0,1), qglviewer::Vec(direction)).matrix());
 
 	GLUquadricObj *quadObj = gluNewQuadric();
 	gluQuadricDrawStyle(quadObj, GLU_FILL);
@@ -499,10 +487,10 @@ void SimpleDraw::DrawCylinder( const Vec& center, const Vec& direction /*= Vec(0
 	glPopMatrix();
 }
 
-void SimpleDraw::DrawArrow( Vec from, Vec to, bool isForward /*= true*/ , bool isFilledBase)
+void SimpleDraw::DrawArrow( Vec3d  from, Vec3d  to, bool isForward /*= true*/ , bool isFilledBase)
 {
 	if(!isForward){
-		Vec temp = from;
+		Vec3d  temp = from;
 		from = to;
 		to = temp;
 	}
@@ -522,7 +510,7 @@ void SimpleDraw::DrawArrow( Vec from, Vec to, bool isForward /*= true*/ , bool i
 
 	glPushMatrix();
 	glTranslatef(from[0],from[1],from[2]);
-	glMultMatrixd(qglviewer::Quaternion(Vec(0,0,1), to-from).matrix());
+	glMultMatrixd(qglviewer::Quaternion(qglviewer::Vec(0,0,1), qglviewer::Vec(to-from)).matrix());
 
 	static GLUquadric* quadric = gluNewQuadric();
 
@@ -536,18 +524,18 @@ void SimpleDraw::DrawArrow( Vec from, Vec to, bool isForward /*= true*/ , bool i
 	glPopMatrix();
 }
 
-void SimpleDraw::DrawArrowDirected( const Vec& pos, const Vec& normal, float height /*= 1.0f*/, 
+void SimpleDraw::DrawArrowDirected( const Vec3d & pos, const Vec3d & normal, float height /*= 1.0f*/, 
 								   bool isForward /*= true*/ , bool isFilledBase)
 {
 	DrawArrow(pos, pos + (normal*height), isForward, isFilledBase);
 }
 
-void SimpleDraw::PointArrowAt( Vec point, float radius /*= 1.0f*/ )
+void SimpleDraw::PointArrowAt( Vec3d  point, float radius /*= 1.0f*/ )
 {
-	DrawArrowDirected(point, point + (radius*Vec(Max(0.2, point.x),point.y,point.z).unit()), radius, false);
+	DrawArrowDirected(point, point + (double(radius) * Vec3d (Max(0.2, point.x()),point.y(),point.z()).normalized()), radius, false);
 }
 
-void SimpleDraw::DrawArrowDoubleDirected( const Vec& pos, const Vec& normal, float height /*= 1.0f*/, 
+void SimpleDraw::DrawArrowDoubleDirected( const Vec3d & pos, const Vec3d & normal, float height /*= 1.0f*/, 
 										 bool isForward /*= true*/, bool isFilledBase /*= true*/ )
 {
 	DrawArrowDirected(pos, normal, height, isForward, isFilledBase);
@@ -556,7 +544,25 @@ void SimpleDraw::DrawArrowDoubleDirected( const Vec& pos, const Vec& normal, flo
 	DrawArrowDirected(pos, -normal, height, isForward, isFilledBase);
 }
 
-void SimpleDraw::IdentifyLine( const Vec& p1, const Vec& p2, float r, float g, float b, bool showPoints /*= true*/, float lineWidth /*= 3.0f*/ )
+/*void SimpleDraw::IdentifyLines(StdVector<Line> & lines, float lineWidth, float r, float g, float b)
+{
+	glDisable(GL_LIGHTING);
+	glLineWidth(lineWidth);
+
+	glColor3f(r, g, b);
+
+	glBegin(GL_LINES);
+	for(int i = 0; i < (int)lines.size(); i++)
+	{
+		glVertex3dv(lines[i].a);
+		glVertex3dv(lines[i].b);
+	}
+	glEnd();
+
+	glEnable(GL_LIGHTING);
+}*/
+
+void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, float r, float g, float b, bool showPoints /*= true*/, float lineWidth /*= 3.0f*/ )
 {
 	glDisable(GL_LIGHTING);
 
@@ -593,13 +599,13 @@ void SimpleDraw::IdentifyLine( const Vec& p1, const Vec& p2, float r, float g, f
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::IdentifyLine( const Vec& p1, const Vec& p2, bool showPoints /*= true*/ )
+void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, bool showPoints /*= true*/ )
 {
 	// Blue line
 	IdentifyLine(p1, p2, 0.2f, 0.2f, 1.0, showPoints);
 }
 
-void SimpleDraw::IdentifyPoint( const Vec& p, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/, float pointSize /*= 10.0*/ )
+void SimpleDraw::IdentifyPoint( const Vec3d & p, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/, float pointSize /*= 10.0*/ )
 {
 	glDisable(GL_LIGHTING);
 
@@ -607,7 +613,7 @@ void SimpleDraw::IdentifyPoint( const Vec& p, float r /*= 1.0*/, float g /*= 0.2
 	glColor3f(r, g, b);
 	glPointSize(pointSize);
 	glBegin(GL_POINTS);
-	glVertex3f(p.x, p.y, p.z);
+	glVertex3f(p.x(), p.y(), p.z());
 	glEnd();
 
 	// White Border
@@ -615,19 +621,19 @@ void SimpleDraw::IdentifyPoint( const Vec& p, float r /*= 1.0*/, float g /*= 0.2
 	glColor3f(1, 1, 1);
 
 	glBegin(GL_POINTS);
-	glVertex3f(p.x, p.y, p.z);
+	glVertex3f(p.x(), p.y(), p.z());
 	glEnd();
 
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::IdentifyPoint2( Vec p )
+void SimpleDraw::IdentifyPoint2( Vec3d  p )
 {
 	// Green
 	IdentifyPoint(p, 0.2f, 1.0f, 0.2f, 12.0f);
 }
 
-void SimpleDraw::IdentifyPoints( Vector<Vec> & points, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/, float pointSize /*= 10.0*/ )
+void SimpleDraw::IdentifyPoints( StdVector<Vec3d > & points, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/, float pointSize /*= 10.0*/ )
 {
 	glDisable(GL_LIGHTING);
 
@@ -636,7 +642,7 @@ void SimpleDraw::IdentifyPoints( Vector<Vec> & points, float r /*= 1.0*/, float 
 	glPointSize(pointSize);
 	glBegin(GL_POINTS);
 	for(unsigned int i = 0; i < points.size(); i++)
-		glVertex3fv(points[i]);
+		glVertex3dv(points[i]);
 	glEnd();
 
 	// White Border
@@ -645,53 +651,13 @@ void SimpleDraw::IdentifyPoints( Vector<Vec> & points, float r /*= 1.0*/, float 
 
 	glBegin(GL_POINTS);
 	for(unsigned int i = 0; i < points.size(); i++)
-		glVertex3fv(points[i]);
+		glVertex3dv(points[i]);
 	glEnd();
 
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::IdentifyConnectedPoints( Vector<Vec> & points, float r /*= 0.4f*/, float g /*= 1.0*/, float b /*= 0.2f*/ )
-{
-	glDisable(GL_LIGHTING);
-
-	int N = points.size();
-
-	glLineWidth(3.0);
-	glBegin(GL_LINE_STRIP);
-	for(int i = 0; i < N; i++)
-	{
-		float t = Min((float(i) / N + 0.25f), 1.0);
-		glColor3f(r * t, g * t, b * t);
-		glVertex3fv(points[i]);
-	}
-	glEnd();
-
-	// Colored dot
-	glColor3f(r, g, b);
-	glPointSize(13.0);
-	glBegin(GL_POINTS);
-	for(int i = 0; i < N; i++)
-	{
-		float t = float(i) / N;
-		glColor3f(r * t, g * t, b * t);
-		glVertex3fv(points[i]);
-	}
-	glEnd();
-
-	// White Border
-	glPointSize(15.0);
-	glColor3f(1, 1, 1);
-
-	glBegin(GL_POINTS);
-	for(int i = 0; i < N; i++)
-		glVertex3fv(points[i]);
-	glEnd();
-
-	glEnable(GL_LIGHTING);
-}
-
-void SimpleDraw::IdentifyConnectedPoints( Vector<Point> & points, float r /*= 0.4f*/, float g /*= 1.0*/, float b /*= 0.2f*/ )
+void SimpleDraw::IdentifyConnectedPoints( StdVector<Point> & points, float r /*= 0.4f*/, float g /*= 1.0*/, float b /*= 0.2f*/ )
 {
 	glDisable(GL_LIGHTING);
 	glColor4f(r, g, b, 1);
@@ -705,13 +671,53 @@ void SimpleDraw::IdentifyConnectedPoints( Vector<Point> & points, float r /*= 0.
 
 }
 
-void SimpleDraw::IdentifyLineRed( const Vec& p1, const Vec& p2, bool showPoints /*= true*/ )
+void SimpleDraw::IdentifyConnectedPoints2( StdVector<Vec3d > & points, float r /*= 0.4f*/, float g /*= 1.0*/, float b /*= 0.2f*/ )
+{
+	glDisable(GL_LIGHTING);
+
+	int N = points.size();
+
+	glLineWidth(3.0);
+	glBegin(GL_LINE_STRIP);
+	for(int i = 0; i < N; i++)
+	{
+		float t = Min((float(i) / N + 0.25f), 1.0);
+		glColor3f(r * t, g * t, b * t);
+		glVertex3dv(points[i]);
+	}
+	glEnd();
+
+	// Colored dot
+	glColor3f(r, g, b);
+	glPointSize(13.0);
+	glBegin(GL_POINTS);
+	for(int i = 0; i < N; i++)
+	{
+		float t = float(i) / N;
+		glColor3f(r * t, g * t, b * t);
+		glVertex3dv(points[i]);
+	}
+	glEnd();
+
+	// White Border
+	glPointSize(15.0);
+	glColor3f(1, 1, 1);
+
+	glBegin(GL_POINTS);
+	for(int i = 0; i < N; i++)
+		glVertex3dv(points[i]);
+	glEnd();
+
+	glEnable(GL_LIGHTING);
+}
+
+void SimpleDraw::IdentifyLineRed( const Vec3d & p1, const Vec3d & p2, bool showPoints /*= true*/ )
 {
 	// Red line
 	IdentifyLine(p1, p2, 1.0, 0.2f, 0.2f, showPoints);
 }
 
-void SimpleDraw::IdentifyArrow( const Vec & start, const Vec & end, float lineWidth /*= 2.0*/, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/ )
+void SimpleDraw::IdentifyArrow( const Vec3d  & start, const Vec3d  & end, float lineWidth /*= 2.0*/, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/ )
 {
 	glDisable(GL_LIGHTING);
 
@@ -724,10 +730,10 @@ void SimpleDraw::IdentifyArrow( const Vec & start, const Vec & end, float lineWi
 	glBegin(GL_LINES);
 
 	glColor4f(r/2, g/2, b/2, 0.2f);
-	glVertex3fv(start);
+	glVertex3dv(start);
 
 	glColor4f(r, g, b, 1.0);
-	glVertex3fv(end);
+	glVertex3dv(end);
 
 	glEnd();
 
@@ -736,7 +742,7 @@ void SimpleDraw::IdentifyArrow( const Vec & start, const Vec & end, float lineWi
 	glLineWidth(1.0);
 }
 
-void SimpleDraw::IdentifyArrows( Vector<Vec> & starts, Vector<Vec> & ends, float lineWidth /*= 2.0*/, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/ )
+void SimpleDraw::IdentifyArrows( StdVector<Vec3d > & starts, StdVector<Vec3d > & ends, float lineWidth /*= 2.0*/, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/ )
 {
 	glDisable(GL_LIGHTING);
 
@@ -750,10 +756,10 @@ void SimpleDraw::IdentifyArrows( Vector<Vec> & starts, Vector<Vec> & ends, float
 	for(unsigned int i = 0; i < starts.size(); i++)
 	{
 		glColor4f(r, g, b, 0.0);
-		glVertex3fv(starts[i]);
+		glVertex3dv(starts[i]);
 
 		glColor4f(r, g, b, 1.0);
-		glVertex3fv(ends[i]);
+		glVertex3dv(ends[i]);
 	}
 	glEnd();
 
@@ -761,7 +767,7 @@ void SimpleDraw::IdentifyArrows( Vector<Vec> & starts, Vector<Vec> & ends, float
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::DrawBarChart(const Vector<double> & data, int x, int y, double height, double width, int barWidth)
+void SimpleDraw::DrawBarChart(const StdVector<double> & data, int x, int y, double height, double width, int barWidth)
 {
 	glDisable(GL_LIGHTING);
 	glLineWidth(barWidth);

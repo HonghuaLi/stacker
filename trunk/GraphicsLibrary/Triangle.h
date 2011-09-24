@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Point.h"
+#include "Surface_mesh.h"
 #include "Intersection.h"
 
 #define MODIFIED_TRI 5
@@ -11,8 +11,8 @@ public:
 	int index;
 	int flag;
 
-	virtual Vec vec(int i) const = 0;
-	virtual Vec normal() const = 0;
+	virtual Vec3d vec(int i) const = 0;
+	virtual Vec3d normal() const = 0;
 
 	virtual void intersectionTest(const Ray & ray, HitResult & res, bool allowBack = false) const = 0;
 };
@@ -20,20 +20,20 @@ public:
 class Triangle : public BaseTriangle
 {
 private:
-	Vec p[3];
+	Vec3d p[3];
 
 public:
 
 	Triangle()
 	{
-		p[0] = Vec();
-		p[1] = Vec();
-		p[2] = Vec();
+		p[0] = Vec3d();
+		p[1] = Vec3d();
+		p[2] = Vec3d();
 
 		index = flag = -1;
 	}
 
-	Triangle(const Vec& point1, const Vec& point2, const Vec& point3, int tri_index = -1, int tri_flag = -1)
+	Triangle(const Vec3d& point1, const Vec3d& point2, const Vec3d& point3, int tri_index = -1, int tri_flag = -1)
 	{
 		p[0] = point1;
 		p[1] = point2;
@@ -43,12 +43,12 @@ public:
 		flag = tri_flag;
 	}
 
-	Vec vec(int i) const{ return p[i]; }
-	Vec center() const { return (p[0]+p[1]+p[2]) / 3.0; };
+	Vec3d vec(int i) const{ return p[i]; }
+	Vec3d center() const { return (p[0]+p[1]+p[2]) / 3.0; };
 
-	Vec normal() const
+	Vec3d normal() const
 	{
-		Vec n = (p[1] - p[0]) ^ (p[2] - p[0]);
+		Vec3d n = cross((p[1] - p[0]), (p[2] - p[0]));
 
 		double length = n.norm();
 

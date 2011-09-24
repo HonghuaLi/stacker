@@ -80,9 +80,9 @@ class Property_array : public Base_property_array
 public:
 
     typedef T                                       value_type;
-    typedef std::vector<value_type>                 vector_type;
-    typedef typename vector_type::reference         reference;
-    typedef typename vector_type::const_reference   const_reference;
+    typedef std::vector<value_type>                 Vectortype;
+    typedef typename Vectortype::reference         reference;
+    typedef typename Vectortype::const_reference   const_reference;
 
     Property_array(const std::string& name, T t=T()) : Base_property_array(name), value_(t) {}
 
@@ -106,7 +106,7 @@ public: // virtual interface of Base_property_array
 
     virtual void free_memory()
     {
-        vector_type(data_).swap(data_);
+        Vectortype(data_).swap(data_);
     }
 
     virtual void swap(size_t i0, size_t i1)
@@ -148,7 +148,7 @@ public:
 
 
 private:
-    vector_type data_;
+    Vectortype data_;
     value_type  value_;
 };
 

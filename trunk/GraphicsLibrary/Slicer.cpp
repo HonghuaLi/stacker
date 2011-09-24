@@ -1,6 +1,6 @@
 #include "Slicer.h"
 
-void Slicer::FindSliceStrip(Mesh * mesh, Vector<int> & facesIndices, 
+void Slicer::FindSliceStrip(QSurfaceMesh * mesh, Vector<int> & facesIndices, 
 							const Plane& plane, 
 							StdSet<int> & cutPoints, IntSet & cutPointsTable, 
 							IntSet & cutFaces, EdgeSet & cutEdges)
@@ -95,7 +95,7 @@ void Slicer::FindSliceStrip(Mesh * mesh, Vector<int> & facesIndices,
 	}
 }
 
-SliceResult Slicer::SliceAt(Mesh * mesh, Vector<int> & facesIndices,  const Plane& cutPlane)
+SliceResult Slicer::SliceAt(QSurfaceMesh * mesh, Vector<int> & facesIndices,  const Plane& cutPlane)
 {
 	StdSet<int> cutPoints;
 	IntSet cutPointsTable, cutFaces, newPoints;
@@ -166,12 +166,10 @@ SliceResult Slicer::SliceAt(Mesh * mesh, Vector<int> & facesIndices,  const Plan
 	}
 
 	// recompute normals and reconnect vertex pointers in faces
-	mesh->refreshFaces(modifiedFaces);
-
-	mesh->vbo = new VBO<Point3D, Normal, Color4, Face>(&mesh->vertex, &mesh->vNormal, &mesh->vColor, &mesh->face);
-	mesh->setDirtyVBO(true);
-
-	mesh->getUmbrellas();
+	//mesh->refreshFaces(modifiedFaces);
+	//mesh->vbo = new VBO<Point3D, Normal, Color4, Face>(&mesh->vertex, &mesh->vNormal, &mesh->vColor, &mesh->face);
+	//mesh->setDirtyVBO(true);
+	//mesh->getUmbrellas();
 
 	return SliceResult(modifiedFaces, cutPointsTable, newPoints, cutEdges, allRemoveFaces, allKeepFaces);
 }

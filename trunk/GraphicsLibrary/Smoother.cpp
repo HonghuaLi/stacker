@@ -268,8 +268,8 @@ void Smoother::MeanCurvatureFlow(Mesh * mesh, double step,int numIteration, bool
 
 	// Initialize B & X vectors
 
-	VECTOR_double b_x(N), b_y(N), b_z(N);
-	VECTOR_double X(N), Y(N), Z(N);
+	Vectordouble b_x(N), b_y(N), b_z(N);
+	Vectordouble X(N), Y(N), Z(N);
 	Vector<double> area (N, 0.0);
 
 	double dt = step;

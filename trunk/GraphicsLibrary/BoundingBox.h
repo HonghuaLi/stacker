@@ -1,6 +1,7 @@
 // Based on jMonkeyEngine, ported from java code (New BSD License)
-
 #pragma once
+
+#include "Macros.h"
 
 #include "Triangle.h"
 
@@ -15,24 +16,24 @@ class BoundingBox
 {
 
 public:
-	Vec center;
+	Vec3d center;
 	double xExtent, yExtent, zExtent;
 
 	BoundingBox();
-	BoundingBox(const Vec& c, double x, double y, double z);
+	BoundingBox(const Vec3d& c, double x, double y, double z);
 	BoundingBox& operator= (const BoundingBox& other);
 
-	void computeFromTris(const Vector<BaseTriangle*>& tris);
+	void computeFromTris(const StdVector<BaseTriangle*>& tris);
 
 	bool intersects(const Ray& ray) const;
 
-	bool contains(const Vec& point) const;
+	bool contains(const Vec3d& point) const;
 
-	bool containsTriangle(const Vec& tv1, const Vec& tv2, const Vec& tv3) const;
+	bool containsTriangle(const Vec3d& tv1, const Vec3d& tv2, const Vec3d& tv3) const;
 	bool intersectsBoundingBox(const BoundingBox& bb) const;
-	bool intersectsSphere(const Vec& sphere_center, double radius);
+	bool intersectsSphere(const Vec3d& sphere_center, double radius);
 
-	Vector<Vec> getCorners();
+	StdVector<Vec3d> getCorners();
 };
 
 /* AABB-triangle overlap test code                      */
@@ -48,11 +49,11 @@ public:
 	if(x2<min) min=x2;\
 	if(x2>max) max=x2;
 
-static inline int planeBoxOverlap(const Vec& normal, const Vec& vert, const Vec& maxbox)
+static inline int planeBoxOverlap(const Vec3d& normal, const Vec3d& vert, const Vec3d& maxbox)
 {
-	Vec vmin,vmax;
+	Vec3d vmin,vmax;
 
-	for(int q=X;q<=Z;q++)
+	for(int q=X; q<=Z; q++)
 	{
 		double v = vert[q];					
 		if(normal[q]>0.0)
@@ -66,8 +67,8 @@ static inline int planeBoxOverlap(const Vec& normal, const Vec& vert, const Vec&
 			vmax[q]=-maxbox[q] - v;
 		}
 	}
-	if((normal * vmin) > 0.0) return 0;
-	if((normal * vmax) >= 0.0) return 1;
+	if(dot(normal , vmin) > 0.0) return 0;
+	if(dot(normal , vmax) >= 0.0) return 1;
 
 	return 0;
 }

@@ -652,15 +652,15 @@ void
 Surface_mesh::
 update_face_normals()
 {
-    if (!fnormal_)
-        fnormal_ = face_property<Point>("f:normal");
+    if (!fNormal)
+        fNormal = face_property<Point>("f:normal");
 
     Face_iterator fit, fend=faces_end();
 
     for (fit=faces_begin(); fit!=fend; ++fit)
     {
         if (!is_deleted(fit))
-            fnormal_[fit] = compute_face_normal(fit);
+            fNormal[fit] = compute_face_normal(fit);
     }
 }
 
@@ -668,7 +668,7 @@ update_face_normals()
 //-----------------------------------------------------------------------------
 
 
-Normal_
+Normal
 Surface_mesh::
 compute_face_normal(Face f) const
 {
@@ -688,7 +688,7 @@ compute_face_normal(Face f) const
 
     else // face is a general polygon
     {
-        Normal_ n(0,0,0);
+        Normal n(0,0,0);
 
         hend = h;
         do
@@ -713,15 +713,15 @@ void
 Surface_mesh::
 update_vertex_normals()
 {
-    if (!vnormal_)
-        vnormal_ = vertex_property<Point>("v:normal");
+    if (!vNormal)
+        vNormal = vertex_property<Point>("v:normal");
 
     Vertex_iterator vit, vend=vertices_end();
 
     for (vit=vertices_begin(); vit!=vend; ++vit)
 	{
         if (!is_deleted(vit))
-            vnormal_[vit] = compute_vertex_normal(vit);
+            vNormal[vit] = compute_vertex_normal(vit);
     }
 }
 
@@ -729,7 +729,7 @@ update_vertex_normals()
 //-----------------------------------------------------------------------------
 
 
-Normal_
+Normal
 Surface_mesh::
 compute_vertex_normal(Vertex v) const
 {

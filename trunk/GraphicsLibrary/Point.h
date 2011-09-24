@@ -87,7 +87,7 @@ public:
 	inline double DistSq() const { return x*x + y*y; }
 };
 
-#define Vector2DPoint std::vector<std::vector<Point2D> >
+#define Vector2DPoint std::StdVector<std::StdVector<Point2D> >
 
 class Point3D : public Vec{
 
@@ -165,13 +165,13 @@ public:
 		return Vec((a.x + b.x) / 2.0, (a.y + b.y) / 2.0, (a.z + b.z) / 2.0);
 	}
 
-	static Vec MidVec(const Vector<Vec> & points)
+	static Vec MidVec(const StdVector<Vec> & points)
 	{
 		int N = points.size();
 
 		Vec sum;
 
-		for(Vector<Vec>::const_iterator it = points.begin(); it != points.end(); it++)
+		for(StdVector<Vec>::const_iterator it = points.begin(); it != points.end(); it++)
 			sum += *it;
 
 		return sum / (double)N;
@@ -313,9 +313,6 @@ public:
 		}
 	}
 };
-
-typedef Point3D Normal;
-typedef unsigned int Index ;
 
 struct VecIndex
 {

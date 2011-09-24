@@ -102,7 +102,7 @@ void Curvature::computePrincipalCurvatures( Surface_mesh * src_mesh )
 	std::vector<double> curv12(nv);
 	
 	Surface_mesh::Vertex_property<Point> points = src_mesh->vertex_property<Point>("v:point");
-	Surface_mesh::Vertex_property<Normal_> normals = src_mesh->vertex_property<Normal_>("v:normal");
+	Surface_mesh::Vertex_property<Normal> normals = src_mesh->vertex_property<Normal>("v:normal");
 	Surface_mesh::Face_iterator fit, fend = src_mesh->faces_end();
 	Surface_mesh::Vertex_around_face_circulator fvit, fvend;
 	Surface_mesh::Vertex_iterator vit, vend = src_mesh->vertices_end();
@@ -137,7 +137,7 @@ void Curvature::computePrincipalCurvatures( Surface_mesh * src_mesh )
 	{
 		uint i = ((Surface_mesh::Face)fit).idx(); // face index
 
-		uint vi[3];	Normal_ vn[3];
+		uint vi[3];	Normal vn[3];
 		fvit = src_mesh->vertices(fit);
 		
 		vi[0] = ((Vertex)fvit).idx(); Point v0 = points[fvit]; vn[0] = normals[fvit]; ++fvit;
@@ -231,7 +231,7 @@ void Curvature::computeDerivativesCurvatures(Surface_mesh * src_mesh)
 	computePrincipalCurvatures(src_mesh);
 
 	Surface_mesh::Vertex_property<Point> points = src_mesh->vertex_property<Point>("v:point");
-	Surface_mesh::Vertex_property<Normal_> normals = src_mesh->vertex_property<Normal_>("v:normal");
+	Surface_mesh::Vertex_property<Normal> normals = src_mesh->vertex_property<Normal>("v:normal");
 	Surface_mesh::Face_iterator fit, fend = src_mesh->faces_end();
 	Surface_mesh::Vertex_around_face_circulator fvit, fvend;
 
@@ -246,7 +246,7 @@ void Curvature::computeDerivativesCurvatures(Surface_mesh * src_mesh)
 	{
 		uint i = ((Surface_mesh::Face)fit).idx(); // face index
 
-		uint vi[3];	Normal_ vn[3];
+		uint vi[3];	Normal vn[3];
 		fvit = src_mesh->vertices(fit);
 
 		vi[0] = ((Vertex)fvit).idx(); Point v0 = points[fvit]; vn[0] = normals[fvit]; ++fvit;

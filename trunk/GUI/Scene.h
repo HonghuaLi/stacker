@@ -4,12 +4,12 @@
 #include <QQueue>
 #include <QKeyEvent>
 
+#include "Macros.h"
+
 #include "QGLViewer/qglviewer.h"
 using namespace qglviewer;
 
-#include "QMesh.h"
 #include "QSurfaceMesh.h"
-
 #include "Wire.h"
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
@@ -76,9 +76,7 @@ private:
 
 // Objects in the scene
 private:
-	QMap<QString, QMesh *> legacy_objects;
-
-	Vector<Wire> activeWires;
+	QVector<Wire> activeWires;
 
 public:
 	QSurfaceMesh * activeObject();

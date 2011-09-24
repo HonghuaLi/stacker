@@ -1,7 +1,6 @@
-#ifndef SLICER_H
-#define SLICER_H
+#pragma once
 
-#include "Mesh.h"
+#include "QSurfaceMesh.h"
 #include "Plane.h"
 
 #include "HashTable.h"
@@ -13,8 +12,8 @@ struct SliceResult
 	IntSet newPoints;
 	EdgeSet cutEdges;
 
-	SliceResult(StdSet<Face*>& faces, IntSet& points, IntSet& new_points, 
-		EdgeSet& edges, StdSet<Face*>& RemoveFaces, StdSet<Face*>& KeepFaces)
+	SliceResult(StdSet<Surface_mesh::Face>& faces, IntSet& points, IntSet& new_points, 
+		EdgeSet& edges, StdSet<Surface_mesh::Face>& RemoveFaces, StdSet<Surface_mesh::Face>& KeepFaces)
 	{
 		cutPoints = points; 
 		newPoints = new_points;
@@ -34,9 +33,7 @@ class Slicer
 private:
 
 public:
-	static void FindSliceStrip(Mesh * mesh, Vector<int> & facesIndices, const Plane& cutPlane, 
+	static void FindSliceStrip(QSurfaceMesh * mesh, StdVector<int> & facesIndices, const Plane& cutPlane, 
 							StdSet<int> & cutPoints, IntSet & cutPointsTable, IntSet & cutFaces, EdgeSet & cutEdges);
-        static SliceResult SliceAt(Mesh * mesh, Vector<int> & facesIndices,  const Plane& cutPlane);
+        static SliceResult SliceAt(QSurfaceMesh * mesh, StdVector<int> & facesIndices,  const Plane& cutPlane);
 };
-
-#endif // SLICER_H

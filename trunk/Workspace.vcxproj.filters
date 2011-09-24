@@ -80,9 +80,6 @@
     <ClCompile Include="GeneratedFiles\qrc_Workspace.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QMesh.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_QSurfaceMesh.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
@@ -97,9 +94,6 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_Workspace.cpp">
       <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_QMesh.cpp">
-      <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_QSurfaceMesh.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -128,46 +122,10 @@
     <ClCompile Include="Utility\SimpleDraw.cpp">
       <Filter>Utility\Source</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Circle.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Face.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Line.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\LocalFrame.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Mesh.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Plane.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsLibrary\Sampler.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Slicer.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Smoother.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Triangle.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Umbrella.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsLibrary\VBO.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\VertexDetail.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Voxeler.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\IO.cpp">
@@ -239,6 +197,9 @@
     <ClCompile Include="GraphicsLibrary\Monge_via_jet_fitting.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\QMeshManager.cpp">
+      <Filter>GUI\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -265,64 +226,13 @@
     <ClInclude Include="Utility\SimpleDraw.h">
       <Filter>Utility\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Circle.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Color4.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Edge.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Face.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\HalfEdge.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Line.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\LocalFrame.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Mesh.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Plane.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Point.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
     <ClInclude Include="GraphicsLibrary\Sampler.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Slicer.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Smoother.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Triangle.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Umbrella.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\VBO.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Vec4.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\VertexDetail.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
     <ClInclude Include="GraphicsLibrary\Voxel.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Voxeler.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\SurfaceMesh\IO.h">
@@ -379,6 +289,9 @@
     <ClInclude Include="GraphicsLibrary\Monge_via_jet_fitting.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
+    <ClInclude Include="GUI\QMeshManager.h">
+      <Filter>GUI\Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Workspace.rc" />
@@ -389,9 +302,6 @@
     </CustomBuild>
     <CustomBuild Include="Workspace.qrc">
       <Filter>Resource Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="GUI\QMesh.h">
-      <Filter>GUI\Header</Filter>
     </CustomBuild>
     <CustomBuild Include="GUI\Scene.h">
       <Filter>GUI\Header</Filter>

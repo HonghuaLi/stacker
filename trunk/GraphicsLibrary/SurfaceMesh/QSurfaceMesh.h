@@ -51,9 +51,17 @@ public:
 	std::vector<Point> debug_points, debug_points2, debug_points3;
 	std::vector< std::vector<Point> > debug_lines, debug_lines2, debug_lines3;
 
+	// Face Utility
+	Vec3d fn( Face f );
+	Vec3d faceCenter ( Face f );
+	double faceArea( Face f );
+	std::vector<Vec3d> pointsFace( Face f );
+	Vec3d getBaryFace( Face f, double U, double V );
+
+
 private:
 	bool isDirty;
 
-	VBO<Point, Normal_, Color>* vbo;
-	Vector<unsigned int> triangles, edges;
+	VBO * vbo;
+	std::vector<unsigned int> triangles, edges;
 };

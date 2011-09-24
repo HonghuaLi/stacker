@@ -25,7 +25,7 @@ public:
 	inline int operator[](int i)	const   { 	return vIndex[i];	}
 	inline int neighbor()		const	{	return vIndex[1];	}
 
-	float length(Vector<Point3D> & vertex)
+	float length(StdVector<Point3D> & vertex)
 	{
 		return (vertex[vIndex[0]] - vertex[vIndex[1]]).norm();
 	}
