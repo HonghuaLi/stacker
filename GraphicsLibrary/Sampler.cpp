@@ -3,7 +3,7 @@
 #include "SimpleDraw.h"
 #include "Stats.h"
 
-Sampler::Sampler(Mesh * srcMesh, SamplingMethod samplingMethod)
+Sampler::Sampler(QSurfaceMesh * srcMesh, SamplingMethod samplingMethod)
 {
 	isReady = false;
 
@@ -18,27 +18,30 @@ Sampler::Sampler(Mesh * srcMesh, SamplingMethod samplingMethod)
 	if( method == RANDOM_BARYCENTRIC )
 	{
 		// Compute all faces area
-		faceAreas = Vector<double> (mesh->numberOfFaces());
-		faceProbability = Vector<double> (mesh->numberOfFaces());
-		totalMeshArea = 0;
+		faceAreas = StdVector<double> (mesh->n_faces());
+		faceProbability = StdVector<double> (mesh->n_faces());
+		this->totalMeshArea = 0;
 
-		for(StdList<Face>::iterator f = mesh->face.begin(); f != mesh->face.end(); f++)
+		Surface_mesh::Face_iterator fit, fend = mesh->faces_end();
+		for (fit = mesh->faces_begin(); fit != fend; ++fit)
 		{
-			faceAreas[f->index] = f->area();
-			totalMeshArea += faceAreas[f->index];
+			uint f_id = Surface_mesh::Face(fit).idx();
+
+			faceAreas[f_id] = mesh->faceArea(fit);
+			totalMeshArea += faceAreas[f_id];
 		}
 
 		for(int i = 0; i < (int) faceAreas.size(); i++)
 			faceProbability[i] = faceAreas[i] / totalMeshArea;
 
-		interval = Vector<AreaFace>(mesh->numberOfFaces() + 1);
-		interval[0] = AreaFace(0.0, mesh->faceIndexMap[0]);
+		interval = StdVector<AreaFace>(mesh->n_faces() + 1);
+		interval[0] = AreaFace(0.0, mesh->face_array[0]);
 		int i = 0;
 
 		// Compute mesh area in a cumulative manner
 		for(int j = 0; j < (int) faceAreas.size(); j++)
 		{
-			interval[i+1] = AreaFace(interval[i].area + faceProbability[j], mesh->faceIndexMap[j]);
+			interval[i+1] = AreaFace(interval[i].area + faceProbability[j], mesh->face_array[j]);
 			i++;
 		}
 
@@ -63,38 +66,40 @@ SamplePoint Sampler::getSample()
 		double r = uniform();
 
 		// Find corresponding face
-		Vector<AreaFace>::iterator it = lower_bound(interval.begin(), interval.end(), AreaFace(Min(r,interval.back().area)));
-		Face * face = it->f;
+		StdVector<AreaFace>::iterator it = lower_bound(interval.begin(), interval.end(), AreaFace(Min(r,interval.back().area)));
+		Surface_mesh::Face face = it->f;
+		uint face_id = face.idx();
 
 		// Add sample from that face
 		double b[3]; RandomBaricentric(b);
 
-		sp = SamplePoint( face->getBary(b[0], b[1]), *mesh->fn(face->index), 1.0, face->index, b[0], b[1]);
+		sp = SamplePoint( mesh->getBaryFace(face, b[0], b[1]), mesh->fn(face), 1.0, face_id, b[0], b[1]);
 	}
 	else if( method ==  FACE_CENTER )
 	{
-		int fcount = mesh->numberOfFaces();
+		int fcount = mesh->n_faces();
 
 		int randTriIndex = (int) (fcount * (((double)rand()) / (double)RAND_MAX)) ;
 
 		if( randTriIndex >= fcount )
 			randTriIndex = fcount - 1;
 
-		Face * tri = mesh->f( randTriIndex );
+		Surface_mesh::Face tri = mesh->face_array[ randTriIndex ];
+		uint tri_id = tri.idx();
 
 		// Get triangle center and normal
-		Vec triCenter = tri->center();
-		Vec triNor = *mesh->fn(randTriIndex);
+		Vec3d triCenter = mesh->faceCenter(tri);
+		Vec3d triNor = *mesh->fn(tri);
 
-		sp = SamplePoint(triCenter, triNor, tri->area(), tri->index);
+		sp = SamplePoint(triCenter, triNor, mesh->faceArea(tri), tri_id);
 	}
 
 	return sp;
 }
 
-Vector<SamplePoint> Sampler::getSamples(int numberSamples)
+StdVector<SamplePoint> Sampler::getSamples(int numberSamples)
 {
-	Vector<SamplePoint> samples;
+	StdVector<SamplePoint> samples;
 
 	for(int i = 0; i < numberSamples; i++)
 	{
@@ -129,14 +134,14 @@ void Sampler::resampleWithBias()
 	for(int i = 0; i < (int) faceAreas.size(); i++)
 		faceProbability[i] = faceAreas[i] / totalNewArea;
 
-	interval = Vector<AreaFace>(mesh->numberOfFaces() + 1);
-	interval[0] = AreaFace(0.0, mesh->faceIndexMap[0]);
+	interval = StdVector<AreaFace>(mesh->n_faces() + 1);
+	interval[0] = AreaFace(0.0, mesh->face_array[0]);
 	int i = 0;
 
 	// Compute mesh area in a cumulative manner
 	for(int j = 0; j < (int) faceAreas.size(); j++)
 	{
-		interval[i+1] = AreaFace(interval[i].area + faceProbability[j], mesh->faceIndexMap[j]);
+		interval[i+1] = AreaFace(interval[i].area + faceProbability[j], mesh->face_array[j]);
 		i++;
 	}
 
@@ -148,7 +153,7 @@ void Sampler::resampleWithBias()
 	isReady = true;
 }
 
-void Sampler::draw(const Vector<SamplePoint> & samples)
+void Sampler::draw(const StdVector<SamplePoint> & samples)
 {
 	glEnable(GL_BLEND); 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -161,7 +166,7 @@ void Sampler::draw(const Vector<SamplePoint> & samples)
 		const SamplePoint * p = &samples[i];
 
 		glColor4f(1,0,0, p->weight);
-		glNormal3fv(p->n);
+		glNormal3dv(p->n);
 		glVertex3dv(p->pos);
 	}
 	glEnd();

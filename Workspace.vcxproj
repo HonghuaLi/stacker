@@ -159,9 +159,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QMesh.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_QSurfaceMesh.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
@@ -185,9 +182,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_Workspace.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_QMesh.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_QSurfaceMesh.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -215,6 +209,7 @@
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\Monge_via_jet_fitting.cpp" />
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\Curvature.cpp" />
+    <ClCompile Include="GUI\QMeshManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GUI\Scene.cpp" />
     <ClCompile Include="Stacker\Offset.cpp" />
@@ -224,20 +219,8 @@
     <ClCompile Include="Wires\Ridges.cpp" />
     <ClCompile Include="Workspace.cpp" />
     <ClCompile Include="Utility\SimpleDraw.cpp" />
-    <ClCompile Include="GraphicsLibrary\Circle.cpp" />
-    <ClCompile Include="GraphicsLibrary\Face.cpp" />
-    <ClCompile Include="GraphicsLibrary\Line.cpp" />
-    <ClCompile Include="GraphicsLibrary\LocalFrame.cpp" />
-    <ClCompile Include="GraphicsLibrary\Mesh.cpp" />
-    <ClCompile Include="GraphicsLibrary\Plane.cpp" />
     <ClCompile Include="GraphicsLibrary\Sampler.cpp" />
-    <ClCompile Include="GraphicsLibrary\Slicer.cpp" />
-    <ClCompile Include="GraphicsLibrary\Smoother.cpp" />
-    <ClCompile Include="GraphicsLibrary\Triangle.cpp" />
-    <ClCompile Include="GraphicsLibrary\Umbrella.cpp" />
     <ClCompile Include="GraphicsLibrary\VBO.cpp" />
-    <ClCompile Include="GraphicsLibrary\VertexDetail.cpp" />
-    <ClCompile Include="GraphicsLibrary\Voxeler.cpp" />
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\IO.cpp" />
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\IO_obj.cpp" />
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\IO_off.cpp" />
@@ -256,18 +239,6 @@
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h" />
     <ClInclude Include="GeneratedFiles\ui_WiresWidget.h" />
     <ClInclude Include="GeneratedFiles\ui_Workspace.h" />
-    <CustomBuild Include="GUI\QMesh.h">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Filename)%(Extension)...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtScript" "-I." "-I\libQGLViewer" "-I.\OpenMesh" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\GraphicsLibrary" "-I.\Spline" "-I.\Utility"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(Configuration)\moc_%(Filename).cpp;%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Filename)%(Extension)...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtScript" "-I." "-I\libQGLViewer" "-I.\OpenMesh" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\GraphicsLibrary" "-I.\Spline" "-I.\Utility"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(Configuration)\moc_%(Filename).cpp;%(Outputs)</Outputs>
-    </CustomBuild>
     <CustomBuild Include="GUI\Scene.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Filename)%(Extension)...</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\GraphicsLibrary" "-I.\Spline" "-I.\Utility" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Stacker" "-I.\Wires" "-I." "-I." "-I." "GUI\Scene.h" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
@@ -290,6 +261,7 @@
     </CustomBuild>
     <ClInclude Include="GraphicsLibrary\Monge_via_jet_fitting.h" />
     <ClInclude Include="GraphicsLibrary\SurfaceMesh\Curvature.h" />
+    <ClInclude Include="GUI\QMeshManager.h" />
     <ClInclude Include="Stacker\Offset.h" />
     <ClInclude Include="Stacker\Stacker.h" />
     <CustomBuild Include="Stacker\StackerPreview.h">
@@ -312,26 +284,9 @@
     <ClInclude Include="Utility\Macros.h" />
     <ClInclude Include="Utility\OpenMeshGL.h" />
     <ClInclude Include="Utility\SimpleDraw.h" />
-    <ClInclude Include="GraphicsLibrary\Circle.h" />
-    <ClInclude Include="GraphicsLibrary\Color4.h" />
-    <ClInclude Include="GraphicsLibrary\Edge.h" />
-    <ClInclude Include="GraphicsLibrary\Face.h" />
-    <ClInclude Include="GraphicsLibrary\HalfEdge.h" />
-    <ClInclude Include="GraphicsLibrary\Line.h" />
-    <ClInclude Include="GraphicsLibrary\LocalFrame.h" />
-    <ClInclude Include="GraphicsLibrary\Mesh.h" />
-    <ClInclude Include="GraphicsLibrary\Plane.h" />
-    <ClInclude Include="GraphicsLibrary\Point.h" />
     <ClInclude Include="GraphicsLibrary\Sampler.h" />
-    <ClInclude Include="GraphicsLibrary\Slicer.h" />
-    <ClInclude Include="GraphicsLibrary\Smoother.h" />
-    <ClInclude Include="GraphicsLibrary\Triangle.h" />
-    <ClInclude Include="GraphicsLibrary\Umbrella.h" />
     <ClInclude Include="GraphicsLibrary\VBO.h" />
-    <ClInclude Include="GraphicsLibrary\Vec4.h" />
-    <ClInclude Include="GraphicsLibrary\VertexDetail.h" />
     <ClInclude Include="GraphicsLibrary\Voxel.h" />
-    <ClInclude Include="GraphicsLibrary\Voxeler.h" />
     <ClInclude Include="GraphicsLibrary\SurfaceMesh\IO.h" />
     <ClInclude Include="GraphicsLibrary\SurfaceMesh\properties.h" />
     <CustomBuild Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.h">

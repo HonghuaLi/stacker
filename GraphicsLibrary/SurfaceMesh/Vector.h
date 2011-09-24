@@ -17,8 +17,8 @@
 //=============================================================================
 
 
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef VectorH
+#define VectorH
 
 
 //=============================================================== INCLUDES ====
@@ -42,7 +42,7 @@
 
 /// A vector class.
 template <typename Scalar, int N>
-class Vector_
+class Vector
 {
 public:
     
@@ -63,10 +63,10 @@ public:
     //--- constructors ---
     
     /// default constructor creates uninitialized values.
-    Vector_() {}
+    Vector() {}
     
     /// construct from scalar s (fills all components with s)
-    Vector_(const Scalar s)
+    Vector(const Scalar s)
     {
         for (int i=0; i<N; i++) data_[i] = s;
     }
@@ -74,7 +74,7 @@ public:
     
     /** constructor taking 2 explicit Scalar values; only valid for
      2D vectors. */
-    Vector_(const Scalar v0,const Scalar v1)
+    Vector(const Scalar v0,const Scalar v1)
     {
         assert(N==2);
         data_[0] = v0; data_[1] = v1;
@@ -82,7 +82,7 @@ public:
     
     /** constructor taking 3 explicit Scalar values; only valid for
      3D vector. */
-    Vector_(const Scalar v0, const Scalar v1, const Scalar v2)
+    Vector(const Scalar v0, const Scalar v1, const Scalar v2)
     {
         assert(N==3);
         data_[0]=v0; data_[1]=v1; data_[2]=v2;
@@ -90,7 +90,7 @@ public:
     
     /** constructor taking 4 explicit Scalar values; only valid for
      4D vectors. */
-    Vector_(const Scalar v0, const Scalar v1, const Scalar v2, const Scalar v3)
+    Vector(const Scalar v0, const Scalar v1, const Scalar v2, const Scalar v3)
     {
         assert(N==4);
         data_[0]=v0; data_[1]=v1; data_[2]=v2; data_[3]=v3;
@@ -98,7 +98,7 @@ public:
     
     /// copy constructor
     template<typename otherScalarType>
-    Vector_(const Vector_<otherScalarType,N> &o)
+    Vector(const Vector<otherScalarType,N> &o)
     {
         operator=(o);
     }
@@ -180,7 +180,7 @@ public:
     //--- assignment, comparsion ---
     
     /// assign a scalar to all componenets
-    Vector_<Scalar,N>& operator=(const Scalar s)
+    Vector<Scalar,N>& operator=(const Scalar s)
     {
         for (int i=0; i<N; i++)
             data_[i] = s;
@@ -188,7 +188,7 @@ public:
     }
     
     /// assignment from a vector of the same kind
-    Vector_<Scalar,N>& operator=(const Vector_<Scalar,N> &o)
+    Vector<Scalar,N>& operator=(const Vector<Scalar,N> &o)
     {
         memcpy(data_, o.data_, N*sizeof(Scalar));
         return *this;
@@ -196,7 +196,7 @@ public:
     
     /// assignment from a vector of the different kind
     template<typename otherScalarType>
-    Vector_<Scalar,N>& operator=(const Vector_<otherScalarType,N> &o)
+    Vector<Scalar,N>& operator=(const Vector<otherScalarType,N> &o)
     {
         for (int i=0; i<N; i++)
             data_[i] = Scalar(o[i]);
@@ -204,7 +204,7 @@ public:
     }
     
     /// component-wise comparison
-    bool operator==(const Vector_<Scalar,N> &other) const
+    bool operator==(const Vector<Scalar,N> &other) const
     {
         for (int i=0; i<N; i++)
             if (data_[i]!=other.data_[i])
@@ -213,7 +213,7 @@ public:
     }
     
     /// component-wise comparison
-    bool operator!=(const Vector_<Scalar,N> &other) const
+    bool operator!=(const Vector<Scalar,N> &other) const
     {
         for (int i=0; i<N; i++)
             if (data_[i]!=other.data_[i])
@@ -227,7 +227,7 @@ public:
     //--- vector space operators ---
     
     /// component-wise self-multiplication with Scalar
-    Vector_<Scalar,N>& operator*=(const Scalar &s)
+    Vector<Scalar,N>& operator*=(const Scalar &s)
     {
         for (int i=0; i<N; i++)
             data_[i] *= s;
@@ -235,13 +235,13 @@ public:
     }
     
     /// component-wise multiplication with Scalar
-    Vector_<Scalar,N> operator*(const Scalar &s) const
+    Vector<Scalar,N> operator*(const Scalar &s) const
     {
-        return Vector_<Scalar,N>(*this) *= s;
+        return Vector<Scalar,N>(*this) *= s;
     }
     
     /// component-wise self-division by Scalar
-    const Vector_<Scalar,N> &operator/=(const Scalar &s)
+    const Vector<Scalar,N> &operator/=(const Scalar &s)
     {
         for (int i=0; i<N; i++)
             data_[i] /= s;
@@ -249,13 +249,13 @@ public:
     }
     
     /// component-wise division by Scalar
-    Vector_<Scalar,N> operator/(const Scalar &s) const
+    Vector<Scalar,N> operator/(const Scalar &s) const
     {
-        return Vector_<Scalar,N>(*this) /= s;
+        return Vector<Scalar,N>(*this) /= s;
     }
     
     /// vector difference from this
-    Vector_<Scalar,N> &operator-=(const Vector_<Scalar,N> &other)
+    Vector<Scalar,N> &operator-=(const Vector<Scalar,N> &other)
     {
         for (int i=0; i<N; i++)
             data_[i] -= other.data_[i];
@@ -263,13 +263,13 @@ public:
     }
     
     /// vector difference
-    Vector_<Scalar,N> operator-(const Vector_<Scalar,N> &other) const
+    Vector<Scalar,N> operator-(const Vector<Scalar,N> &other) const
     {
-        return Vector_<Scalar,N>(*this) -= other;
+        return Vector<Scalar,N>(*this) -= other;
     }
     
     /// vector self-addition
-    Vector_<Scalar,N> &operator+=(const Vector_<Scalar,N> &other)
+    Vector<Scalar,N> &operator+=(const Vector<Scalar,N> &other)
     {
         for (int i=0; i<N; i++)
             data_[i] += other.data_[i];
@@ -277,15 +277,15 @@ public:
     }
     
     /// vector addition
-    Vector_<Scalar,N> operator+(const Vector_<Scalar,N> &other) const
+    Vector<Scalar,N> operator+(const Vector<Scalar,N> &other) const
     {
-        return Vector_<Scalar,N>(*this) += other;
+        return Vector<Scalar,N>(*this) += other;
     }
     
     /// unary minus
-    Vector_<Scalar,N> operator-(void) const
+    Vector<Scalar,N> operator-(void) const
     {
-        Vector_<Scalar,N> v;
+        Vector<Scalar,N> v;
         for (int i=0; i<N; i++)
             v.data_[i] = -data_[i];
         return v;
@@ -312,7 +312,7 @@ public:
     }
     
     /// normalize vector, return normalized vector
-    Vector_<Scalar,N>& normalize()
+    Vector<Scalar,N>& normalize()
     {
         Scalar n = norm();
         if (n > std::numeric_limits<Scalar>::min())
@@ -321,7 +321,7 @@ public:
     }
     
     /// return normalized vector (does not change vector)
-    const Vector_<Scalar,N> normalized() const
+    const Vector<Scalar,N> normalized() const
     {
         return (*this) / norm();
     }
@@ -330,7 +330,7 @@ public:
     //--- max and min for bounding box computations ---
     
     /// return vector with minimum of this and other in each component
-    Vector_<Scalar,N> minimize(const Vector_<Scalar,N> &other)
+    Vector<Scalar,N> minimize(const Vector<Scalar,N> &other)
     {
         for (int i = 0; i < N; i++)
             if (other[i] < data_[i])
@@ -339,7 +339,7 @@ public:
     }
     
     /// return vector with maximum of this and other in each component
-    Vector_<Scalar,N> maximize(const Vector_<Scalar,N> &other)
+    Vector<Scalar,N> maximize(const Vector<Scalar,N> &other)
     {
         for (int i = 0; i < N; i++)
             if (other[i] > data_[i])
@@ -371,7 +371,7 @@ protected:
 
 /// read the space-separated components of a vector from a stream
 template <typename Scalar,int N>
-inline std::istream& operator>>(std::istream& is, Vector_<Scalar,N>& vec)
+inline std::istream& operator>>(std::istream& is, Vector<Scalar,N>& vec)
 {
     for (int i=0; i<N; i++)
         is >> vec[i];
@@ -382,7 +382,7 @@ inline std::istream& operator>>(std::istream& is, Vector_<Scalar,N>& vec)
 /// output a vector by printing its space-separated compontens
 template <typename Scalar,int N>
 inline std::ostream&
-operator<<(std::ostream& os, const Vector_<Scalar,N>& vec)
+operator<<(std::ostream& os, const Vector<Scalar,N>& vec)
 {
     for (int i=0; i<N-1; i++)
         os << vec[i] << " ";
@@ -393,7 +393,7 @@ operator<<(std::ostream& os, const Vector_<Scalar,N>& vec)
 
 /// Scalar * vector
 template <typename Scalar, int N>
-inline Vector_<Scalar,N> operator*(Scalar s, const Vector_<Scalar,N>& v )
+inline Vector<Scalar,N> operator*(Scalar s, const Vector<Scalar,N>& v )
 {
     return v*s;
 }
@@ -401,7 +401,7 @@ inline Vector_<Scalar,N> operator*(Scalar s, const Vector_<Scalar,N>& v )
 
 /// compute the dot product of two vectors
 template <typename Scalar, int N>
-inline Scalar dot(const Vector_<Scalar,N> v0, const Vector_<Scalar,N>& v1)
+inline Scalar dot(const Vector<Scalar,N> v0, const Vector<Scalar,N>& v1)
 {
     Scalar p(0.0);
     for (int i=0; i<N; i++)
@@ -413,10 +413,10 @@ inline Scalar dot(const Vector_<Scalar,N> v0, const Vector_<Scalar,N>& v1)
 
 /// compute the cross product of two vectors (only valid for 3D vectors)
 template <typename Scalar, int N>
-inline Vector_<Scalar,3> cross(const Vector_<Scalar,N> v0, const Vector_<Scalar,N>& v1)
+inline Vector<Scalar,3> cross(const Vector<Scalar,N> v0, const Vector<Scalar,N>& v1)
 {
     assert(N>2);
-    return Vector_<Scalar,3>(v0[1]*v1[2]-v0[2]*v1[1],
+    return Vector<Scalar,3>(v0[1]*v1[2]-v0[2]*v1[1],
                             v0[2]*v1[0]-v0[0]*v1[2],
                             v0[0]*v1[1]-v0[1]*v1[0]);
 }
@@ -427,59 +427,59 @@ inline Vector_<Scalar,3> cross(const Vector_<Scalar,N> v0, const Vector_<Scalar,
 
 
 /** 2-byte signed vector */
-typedef Vector_<signed char,2> Vec2c;
+typedef Vector<signed char,2> Vec2c;
 /** 2-byte unsigned vector */
-typedef Vector_<unsigned char,2> Vec2uc;
+typedef Vector<unsigned char,2> Vec2uc;
 /** 2-short signed vector */
-typedef Vector_<signed short int,2> Vec2s;
+typedef Vector<signed short int,2> Vec2s;
 /** 2-short unsigned vector */
-typedef Vector_<unsigned short int,2> Vec2us;
+typedef Vector<unsigned short int,2> Vec2us;
 /** 2-int signed vector */
-typedef Vector_<signed int,2> Vec2i;
+typedef Vector<signed int,2> Vec2i;
 /** 2-int unsigned vector */
-typedef Vector_<unsigned int,2> Vec2ui;
+typedef Vector<unsigned int,2> Vec2ui;
 /** 2-float vector */
-typedef Vector_<float,2> Vec2f;
+typedef Vector<float,2> Vec2f;
 /** 2-double vector */
-typedef Vector_<double,2> Vec2d;
+typedef Vector<double,2> Vec2d;
 
 /** 3-byte signed vector */
-typedef Vector_<signed char,3> Vec3c;
+typedef Vector<signed char,3> Vec3c;
 /** 3-byte unsigned vector */
-typedef Vector_<unsigned char,3> Vec3uc;
+typedef Vector<unsigned char,3> Vec3uc;
 /** 3-short signed vector */
-typedef Vector_<signed short int,3> Vec3s;
+typedef Vector<signed short int,3> Vec3s;
 /** 3-short unsigned vector */
-typedef Vector_<unsigned short int,3> Vec3us;
+typedef Vector<unsigned short int,3> Vec3us;
 /** 3-int signed vector */
-typedef Vector_<signed int,3> Vec3i;
+typedef Vector<signed int,3> Vec3i;
 /** 3-int unsigned vector */
-typedef Vector_<unsigned int,3> Vec3ui;
+typedef Vector<unsigned int,3> Vec3ui;
 /** 3-float vector */
-typedef Vector_<float,3> Vec3f;
+typedef Vector<float,3> Vec3f;
 /** 3-double vector */
-typedef Vector_<double,3> Vec3d;
+typedef Vector<double,3> Vec3d;
 
 /** 4-byte signed vector */
-typedef Vector_<signed char,4> Vec4c;
+typedef Vector<signed char,4> Vec4c;
 /** 4-byte unsigned vector */
-typedef Vector_<unsigned char,4> Vec4uc;
+typedef Vector<unsigned char,4> Vec4uc;
 /** 4-short signed vector */
-typedef Vector_<signed short int,4> Vec4s;
+typedef Vector<signed short int,4> Vec4s;
 /** 4-short unsigned vector */
-typedef Vector_<unsigned short int,4> Vec4us;
+typedef Vector<unsigned short int,4> Vec4us;
 /** 4-int signed vector */
-typedef Vector_<signed int,4> Vec4i;
+typedef Vector<signed int,4> Vec4i;
 /** 4-int unsigned vector */
-typedef Vector_<unsigned int,4> Vec4ui;
+typedef Vector<unsigned int,4> Vec4ui;
 /** 4-float vector */
-typedef Vector_<float,4> Vec4f;
+typedef Vector<float,4> Vec4f;
 /** 4-double vector */
-typedef Vector_<double,4> Vec4d;
+typedef Vector<double,4> Vec4d;
 
 
 /// @}
 
 //=============================================================================
-#endif // VECTOR_H
+#endif // VectorH
 //=============================================================================

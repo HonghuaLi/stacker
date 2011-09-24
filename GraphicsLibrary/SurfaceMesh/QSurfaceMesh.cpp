@@ -95,14 +95,14 @@ void QSurfaceMesh::draw()
 
 	// Render some mesh indicators
 	// Test points
-	foreach(Point p, debug_points)	SimpleDraw::IdentifyPoint(Vec(p),1,0,0);
-	foreach(Point p, debug_points2)	SimpleDraw::IdentifyPoint(Vec(p),0,1,0);
-	foreach(Point p, debug_points3)	SimpleDraw::IdentifyPoint(Vec(p),0,0,1);
+	foreach(Point p, debug_points)	SimpleDraw::IdentifyPoint(p, 1,0,0);
+	foreach(Point p, debug_points2)	SimpleDraw::IdentifyPoint(p, 0,1,0);
+	foreach(Point p, debug_points3)	SimpleDraw::IdentifyPoint(p, 0,0,1);
 
 	// Test lines
-	foreach(std::vector<Point> line, debug_lines) SimpleDraw::IdentifyConnectedPoints(line,1.0,0,0);
-	foreach(std::vector<Point> line, debug_lines2) SimpleDraw::IdentifyConnectedPoints(line,0,1.0,0);
-	foreach(std::vector<Point> line, debug_lines3) SimpleDraw::IdentifyConnectedPoints(line,0,0,1.0);
+	foreach(std::vector<Point> line, debug_lines) SimpleDraw::IdentifyConnectedPoints(line, 1.0,0,0);
+	foreach(std::vector<Point> line, debug_lines2) SimpleDraw::IdentifyConnectedPoints(line, 0,1.0,0);
+	foreach(std::vector<Point> line, debug_lines3) SimpleDraw::IdentifyConnectedPoints(line, 0,0,1.0);
 
 	// Curvature:
 	/*if(get_vertex_property<Vec3d>("v:d1"))
@@ -135,9 +135,6 @@ void QSurfaceMesh::drawFaceNames()
 
 void QSurfaceMesh::update()
 {
-	update_face_normals();
-	update_vertex_normals();
-
 	// Create new VBO if you can't update
 	if(vbo)
 	{
@@ -179,7 +176,7 @@ void QSurfaceMesh::update()
 		glColorPointer(vcolors.data());
 		glTexCoordPointer(vtex.data());*/
 
-		this->vbo = new VBO<Point,Normal_,Color>(this->n_vertices(), points.data(), vnormals.data(), vcolors.data(), triangles);
+		this->vbo = new VBO(this->n_vertices(), points.data(), vnormals.data(), vcolors.data(), &triangles);
 	}
 
 	isDirty = false;
@@ -387,4 +384,62 @@ void QSurfaceMesh::collectEnoughRings(Vertex v, const size_t min_nb, std::vector
 
 	//clean up
 	resetVistedVertices(all);
+}
+
+std::vector<Vec3d> QSurfaceMesh::pointsFace( Face f )
+{
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+
+	Vertex_around_face_circulator fvit, fvend;
+	fvit = fvend = vertices(f);
+
+	std::vector<Vec3d> v;
+
+	do{
+		v.push_back(points[fvit]);
+	} while (++fvit != fvend);
+
+	return v;
+}
+
+double QSurfaceMesh::faceArea( Face f )
+{
+	std::vector<Vec3d> v = pointsFace(f);
+
+	Vec3d t = cross((v[1] - v[0]), (v[2] - v[0]));
+	return 0.5 * t.norm();
+}
+
+Vec3d QSurfaceMesh::getBaryFace( Face f, double U, double V )
+{
+	std::vector<Vec3d> v = pointsFace(f);
+
+	if(U == 1.0) return v[1];
+	if(V == 1.0) return v[2];
+
+	double b1 = U;
+	double b2 = V;
+	double b3 = 1.0 - (U + V);
+
+	Vec3d p;
+
+	p.x() = (b1 * v[0].x()) + (b2 * v[1].x()) + (b3 * v[2].x());
+	p.y() = (b1 * v[0].y()) + (b2 * v[1].y()) + (b3 * v[2].y());
+	p.z() = (b1 * v[0].z()) + (b2 * v[1].z()) + (b3 * v[2].z());
+
+	return p;
+}
+
+Vec3d QSurfaceMesh::fn( Face f )
+{
+	Face_property<Normal> normals = face_property<Normal>("f:normal");
+	return normals[f];
+}
+
+Vec3d QSurfaceMesh::faceCenter( Face f )
+{
+	std::vector<Vec3d> v = pointsFace(f);
+	return Vec3d ((v[0].x() + v[1].x() + v[2].x()) / 3.0, 
+		(v[0].y() + v[1].y() + v[2].y()) / 3.0, 
+		(v[0].z() + v[1].z() + v[2].z()) / 3.0);
 }

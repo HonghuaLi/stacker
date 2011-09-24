@@ -3,7 +3,7 @@
 
 StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
 {
-	setMaximumWidth(150);
+	setMaximumWidth(200);
 
 	this->activeObject = NULL;
 }

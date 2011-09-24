@@ -18,17 +18,17 @@ using namespace std;
 class Octree
 {
 private:
-	Vector<Octree> children;
-	Vector<BaseTriangle*> triangleData;
+	StdVector<Octree> children;
+	StdVector<BaseTriangle*> triangleData;
 
 public:
 	BoundingBox boundingBox;
 	int trianglePerNode;
 
 	Octree(){trianglePerNode = -1;}
-//	Octree(const Vector<int> & trisIndex, Mesh * mesh, int triPerNode);
+//	Octree(const StdVector<int> & trisIndex, Mesh * mesh, int triPerNode);
         Octree(const StdList<BaseTriangle*>& tris, int triPerNode);
-        Octree( int triPerNode, const BoundingBox& bb, const Vector<BaseTriangle*>& tris );
+        Octree( int triPerNode, const BoundingBox& bb, const StdVector<BaseTriangle*>& tris );
 
 	void init(int triPerNode);
 	void initBuild(const StdList<BaseTriangle*>& tris, int triPerNode );
@@ -36,20 +36,20 @@ public:
 	void newNode( int depth, double x, double y, double z );
 	void build(int depth = 0);
 
-        vector<BaseTriangle*> getIntersectingTris(const Vec& v0, const Vec& v1, const Vec& v2, bool showIt=false);
+    StdVector<BaseTriangle*> getIntersectingTris(const Vec3d& v0, const Vec3d& v1, const Vec3d& v2, bool showIt=false);
 
 	bool intersectHit(IndexSet& tris);
 
-	IndexSet intersectPoint(const Vec& point);
-	void intersectRecursivePoint(const Vec& point, IndexSet& tris);
+	IndexSet intersectPoint(const Vec3d& point);
+	void intersectRecursivePoint(const Vec3d& point, IndexSet& tris);
 
 	IndexSet intersectRay(const Ray& ray);
 	void intersectRecursiveRay(const Ray& ray, IndexSet& tris);
 
-	IndexSet intersectSphere(const Vec& sphere_center, double radius);
-	void intersectRecursiveSphere(const Vec& sphere_center, double radius, IndexSet& tris);
+	IndexSet intersectSphere(const Vec3d& sphere_center, double radius);
+	void intersectRecursiveSphere(const Vec3d& sphere_center, double radius, IndexSet& tris);
 
-	IndexSet intersectRaySphere(const Ray& ray, const Vec& sphere_center, double radius);
+	IndexSet intersectRaySphere(const Ray& ray, const Vec3d& sphere_center, double radius);
 	void intersectRayBoth(const Ray& ray, IndexSet & tris);
 
 //	BaseTriangle* findClosestTri(const Ray & ray, IndexSet & tris, Mesh * mesh, HitResult & hitRes);
@@ -58,7 +58,7 @@ public:
 	bool testIntersectHit(const Ray& ray, HitResult & hitRes);
 	void testIntersectRayBoth(const Ray& ray, HitResult & hitRes);
 
-	Vector<BaseTriangle*> getTriangleData();
+	StdVector<BaseTriangle*> getTriangleData();
 
 	void draw(double r, double g, double b);
 };

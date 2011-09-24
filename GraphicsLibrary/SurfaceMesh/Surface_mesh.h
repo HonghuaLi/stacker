@@ -34,16 +34,16 @@
 typedef double              Scalar;
 
 /// Point type
-typedef Vector_<Scalar,3>   Point;
+typedef Vector<Scalar,3>   Point;
 
-/// Normal_ type
-typedef Vector_<Scalar,3>   Normal_;
+/// Normal type
+typedef Vector<Scalar,3>   Normal;
 
 /// Color type
-typedef Vector_<Scalar,4>   Color;
+typedef Vector<Scalar,4>   Color;
 
 /// Texture coordinate type
-typedef Vector_<Scalar,3>   Texture_coordinate;
+typedef Vector<Scalar,3>   Texture_coordinate;
 
 
 
@@ -1438,13 +1438,13 @@ public: //------------------------------------------ geometry-related functions
     void update_face_normals();
 
     /// compute normal vector of face \c f.
-    Normal_ compute_face_normal(Face f) const;
+    Normal compute_face_normal(Face f) const;
 
     /// compute vertex normals by calling compute_vertex_normal(Vertex) for each vertex.
     void update_vertex_normals();
 
     /// compute normal vector of vertex \c v.
-    Normal_ compute_vertex_normal(Vertex v) const;
+    Normal compute_vertex_normal(Vertex v) const;
 
     /// compute the length of edge \c e.
     Scalar edge_length(Edge e) const;
@@ -1527,8 +1527,8 @@ private: //------------------------------------------------------- private data
     Face_property<bool>    fdeleted_;
 
     Vertex_property<Point>   vpoint_;
-    Vertex_property<Normal_>  vnormal_;
-    Face_property<Normal_>    fnormal_;
+    Vertex_property<Normal>  vNormal;
+    Face_property<Normal>    fNormal;
 
     unsigned int deleted_vertices_;
     unsigned int deleted_edges_;

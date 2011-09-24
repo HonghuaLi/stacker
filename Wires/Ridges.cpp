@@ -223,8 +223,8 @@ void Ridge_approximation::xing_on_edge(const Halfedge he, bool& is_crossed, Ridg
 	Vertex vq = M->to_vertex(he);
 
 	//ppal dir
-	Vector_3  d_p = d1[vp];
-	Vector_3  d_q = d1[vq];
+	Vector3  d_p = d1[vp];
+	Vector3  d_q = d1[vq];
 
 	if ( color == MAX_RIDGE ) 
 	{
@@ -266,8 +266,8 @@ bool Ridge_approximation::tag_as_elliptic_hyperbolic(const Ridge_interrogation_t
 
 	if ( tag_order == Ridge_order_3 ) 
 	{
-		Vector_3 r1 = barycenter(M->getVertexPos(v_p1), coord1, M->getVertexPos(v_q1));
-		Vector_3 r2 = barycenter(M->getVertexPos(v_p2), coord2, M->getVertexPos(v_q2));
+		Vector3 r1 = barycenter(M->getVertexPos(v_p1), coord1, M->getVertexPos(v_q1));
+		Vector3 r2 = barycenter(M->getVertexPos(v_p2), coord2, M->getVertexPos(v_q2));
 
 		//identify the 3 different vertices v_p1, v_q1 and v3 = v_p2 or v_q2
 		Vertex v3;
@@ -296,9 +296,9 @@ bool Ridge_approximation::tag_as_elliptic_hyperbolic(const Ridge_interrogation_t
 }
 
 int Ridge_approximation::b_sign_pointing_to_ridge(const Vertex v1, const Vertex v2, const Vertex v3,
-	const Vector_3 r1, const Vector_3 r2,  const Ridge_interrogation_type color)
+	const Vector3 r1, const Vector3 r2,  const Ridge_interrogation_type color)
 {
-	Vector_3 r = r2 - r1, dv1, dv2, dv3;
+	Vector3 r = r2 - r1, dv1, dv2, dv3;
 	double bv1, bv2, bv3;
 	if ( color == MAX_RIDGE ) {
 		bv1 = b0[v1];
@@ -357,7 +357,7 @@ void Ridge_approximation::addback(Ridge_line* ridge_line, const Halfedge he,	con
 	Point p = M->getVertexPos(v_p), q = M->getVertexPos(v_q);
 	Point p_cur = M->getVertexPos(v_p_cur), q_cur = M->getVertexPos(v_q_cur);
 
-	Vector_3 segment = barycenter(p, coord, q) - barycenter(p_cur, coord_cur, q_cur);
+	Vector3 segment = barycenter(p, coord, q) - barycenter(p_cur, coord_cur, q_cur);
 
 	double k1x, k2x;	 //abs value of the ppal curvatures at the Xing point on he.
 	double k_second = 0; // abs value of the second derivative of the curvature along the line of curvature
@@ -403,7 +403,7 @@ void Ridge_approximation::addfront(Ridge_line* ridge_line,  const Halfedge he, c
 	Point p = M->getVertexPos(v_p), q = M->getVertexPos(v_q);
 	Point p_cur = M->getVertexPos(v_p_cur), q_cur = M->getVertexPos(v_q_cur);
 
-	Vector_3 segment = barycenter(p, coord, q) - barycenter(p_cur, coord_cur, q_cur);
+	Vector3 segment = barycenter(p, coord, q) - barycenter(p_cur, coord_cur, q_cur);
 
 	double k1x, k2x;		// abs value of the ppal curvatures at the Xing point on he.
 	double k_second = 0.0;	// abs value of the second derivative of the curvature along the line of curvature
@@ -434,7 +434,7 @@ void Ridge_approximation::addfront(Ridge_line* ridge_line,  const Halfedge he, c
 	ridge_line->line()->push_front( Ridge_halfhedge(he, coord));
 }
 
-Vector_3 Ridge_approximation::barycenter( Vector_3 p, double w, Vector_3 q )
+Vector3 Ridge_approximation::barycenter( Vector3 p, double w, Vector3 q )
 {
 	return (w*p) + ((1.0 - w)*q);
 }

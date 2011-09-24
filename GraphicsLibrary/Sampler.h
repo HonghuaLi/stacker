@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Mesh.h"
+#include "QSurfaceMesh.h"
 
-// Helper structs
+// Helper structures
 struct SamplePoint{
-	Vec pos, n;
+	Vec3d pos, n;
 	double weight;
 	double u,v;
 	int findex; // index of sampled face
 	int flag;
 
-	SamplePoint(const Vec& position = Vec(), const Vec& normal = Vec(), 
+	SamplePoint(const Vec3d& position = Vec3d(), const Vec3d& normal = Vec3d(), 
 		double Weight = 0.0, int face_index = -1.0, double U = 0.0, double V = 0.0, int flags = 0)
 	{
 		pos = position;
@@ -25,9 +25,9 @@ struct SamplePoint{
 
 struct AreaFace{
 	double area;
-	Face * f;
+	Surface_mesh::Face f;
 
-	AreaFace(double a = 0.0, Face * face = NULL) : area(a), f(face){};
+	AreaFace(double a = 0.0, Surface_mesh::Face face = Surface_mesh::Face()) : area(a), f(face){};
 
 	bool operator< (const AreaFace & af) const { return area < af.area; }
 	void setValue (double val) { area = val; }
@@ -44,27 +44,27 @@ public:
 	
 	SamplingMethod method;
 
-	Sampler( Mesh * srcMesh = NULL, SamplingMethod samplingMethod = RANDOM_BARYCENTRIC );
-
+	Sampler(QSurfaceMesh * srcMesh = NULL, SamplingMethod samplingMethod = RANDOM_BARYCENTRIC );
+	Sampler(void * srcMesh, SamplingMethod samplingMethod);
 	// Get samples
 	SamplePoint getSample();
-	Vector<SamplePoint> getSamples(int numberSamples);
+	StdVector<SamplePoint> getSamples(int numberSamples);
 
 	// Bias samples
 	void resampleWithBias();
 	void clearBias();
-	Vector<double> bias;
+	StdVector<double> bias;
 
-	Mesh * mesh;
+	QSurfaceMesh * mesh;
 	double totalMeshArea;
 
 	// For Monte Carlo
-	Vector<AreaFace> interval;
-	Vector<double> faceAreas;
-	Vector<double> faceProbability;
+	StdVector<AreaFace> interval;
+	StdVector<double> faceAreas;
+	StdVector<double> faceProbability;
 
 	// DEBUG:
-	void draw(const Vector<SamplePoint> & samples);
+	void draw(const StdVector<SamplePoint> & samples);
 
 	bool isReady;
 };

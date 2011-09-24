@@ -86,9 +86,9 @@ bool read_off(Surface_mesh& mesh, const std::string& filename)
 
 
     // properties
-    Surface_mesh::Vertex_property<Normal_>  normals;
+    Surface_mesh::Vertex_property<Normal>  normals;
     Surface_mesh::Vertex_property<Texture_coordinate>  texcoords;
-    if (has_normals)   normals   = mesh.vertex_property<Normal_>("v:normal");
+    if (has_normals)   normals   = mesh.vertex_property<Normal>("v:normal");
     if (has_texcoords) texcoords = mesh.vertex_property<Texture_coordinate>("v:texcoord");
 
 

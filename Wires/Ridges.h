@@ -20,15 +20,15 @@ enum Ridge_type {NO_RIDGE = 0,
 enum Ridge_order {Ridge_order_3 = 3, Ridge_order_4 = 4};
 
 // CGAL translations
-typedef Point Vector_3;
+typedef Point Vector3;
 typedef Surface_mesh::Vertex_property<double> VertexdoublePropertyMap;
-typedef Surface_mesh::Vertex_property<Vector_3> VertexVectorPropertyMap;
+typedef Surface_mesh::Vertex_property<Vector3> VertexVectorPropertyMap;
 typedef Surface_mesh::Halfedge Halfedge;
 typedef Surface_mesh::Vertex Vertex;
 
 // Ridges stuff
 typedef std::pair<Halfedge, double>    Ridge_halfhedge;
-#define NULL_VECTOR Vector_3()
+#define NULL_VECTOR Vector3()
 
 //---------------------------------------------------------------------------
 // Ridge_line : a connected sequence of edges of a
@@ -140,7 +140,7 @@ protected:
 	//  for color = MIN_RIDGE, sign = -1 if MIN_ELLIPTIC_RIDGE, 1 if
 	//  MIN_HYPERBOLIC_RIDGE
 	int b_sign_pointing_to_ridge(const Vertex v1, const Vertex v2, const Vertex v3, 
-		const Vector_3 r1, const Vector_3 r2, 	const Ridge_interrogation_type color);
+		const Vector3 r1, const Vector3 r2, 	const Ridge_interrogation_type color);
 
 	//a ridge line begins with a segment in a triangle given by the 2 he
 	//crossed
@@ -158,7 +158,7 @@ public:
 	// for he: p->q (wrt the extremality values b0/3).  coord is st
 	// xing_point = coord*p + (1-coord)*q
 	double bary_coord(const Halfedge he, const Ridge_type r_type);
-	static Vector_3 barycenter( Vector_3 p, double w, Vector_3 q );
+	static Vector3 barycenter( Vector3 p, double w, Vector3 q );
 
 	static std::vector<Ridge_line*> get_ridges(QSurfaceMesh * m);
 };

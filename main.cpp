@@ -6,8 +6,6 @@ double Epsilon = 1.0e-7f;
 
 QStringList main_args;
 
-QMap<QString, QSurfaceMesh> all_objects;
-
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);

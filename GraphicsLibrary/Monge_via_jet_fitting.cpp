@@ -7,11 +7,11 @@ void Monge_via_jet_fitting::Monge_form::set_up(std::size_t degree) {
 		(degree+1)*(degree+2)/2-4, 0.);
 }
 
-void Monge_via_jet_fitting::Monge_form::comply_wrt_given_normal(const Vector_3 given_normal)
+void Monge_via_jet_fitting::Monge_form::comply_wrt_given_normal(const Vector3 given_normal)
 {
-	if ( dot(given_normal,this->normal_direction()) < 0 )
+	if ( dot(given_normal,this->Normaldirection()) < 0 )
 	{
-		normal_direction() = -normal_direction();
+		Normaldirection() = -Normaldirection();
 		std::swap(maximal_principal_direction(), minimal_principal_direction());
 		if ( coefficients().size() >= 2) 
 			std::swap(coefficients()[0],coefficients()[1]);
@@ -31,7 +31,7 @@ void Monge_via_jet_fitting::Monge_form::comply_wrt_given_normal(const Vector_3 g
 void Monge_via_jet_fitting::Monge_form::dump_verbose(std::ostream& out_stream) const
 {
 	out_stream << "origin : " << origin() << std::endl
-		<< "n : " << normal_direction() << std::endl;
+		<< "n : " << Normaldirection() << std::endl;
 	if ( coefficients().size() >= 2) 
 		out_stream << "d1 : " << maximal_principal_direction() << std::endl 
 		<< "d2 : " << minimal_principal_direction() << std::endl
@@ -64,19 +64,19 @@ void Monge_via_jet_fitting::Monge_form::dump_4ogl(std::ostream& out_stream, cons
 //////////////////////////////////////////////////////////////
 // Implementation main Monge_via_jet_fiting
 
-Vector_3 Monge_via_jet_fitting::E2V_converter(Eigen::Vector3d vec)
+Vector3 Monge_via_jet_fitting::E2V_converter(Eigen::Vector3d vec)
 {
-	return Vector_3(vec[0], vec[1], vec[2]);
+	return Vector3(vec[0], vec[1], vec[2]);
 }
 
-Eigen::Vector3d  Monge_via_jet_fitting::V2E_converter(Vector_3 vec)
+Eigen::Vector3d  Monge_via_jet_fitting::V2E_converter(Vector3 vec)
 {
 	return Eigen::Vector3d(vec[0], vec[1], vec[2]);
 }
 
 Monge_via_jet_fitting::	Monge_via_jet_fitting()
 {
-	m_pca_basis = std::vector< std::pair<FT, Vector_3> >(3);
+	m_pca_basis = std::vector< std::pair<FT, Vector3> >(3);
 } 
 
 Monge_via_jet_fitting::Monge_form	Monge_via_jet_fitting::operator()(InputIterator begin, InputIterator end, 
@@ -196,8 +196,8 @@ void Monge_via_jet_fitting::fill_matrix(InputIterator begin, InputIterator end,
 	std::vector<Point_3> pts_in_fitting_basis;
 	for(;begin != end; begin++)
 	{
-		Vector_3 p_orig = *begin;
-		Vector_3 p = E2V_converter(transf_points * V2E_converter(*begin));
+		Vector3 p_orig = *begin;
+		Vector3 p = E2V_converter(transf_points * V2E_converter(*begin));
 
 		pts_in_fitting_basis.push_back(p);
 
@@ -275,7 +275,7 @@ void Monge_via_jet_fitting::compute_Monge_basis(const FT* A, Monge_form& monge_f
 		FT norm2 = normal.dot(normal);
 		normal = normal / sqrt(norm2);
 		monge_form.origin() = E2V_converter((translate_p0.inverse() * change_world2fitting.inverse()) * (orig_monge)) ;
-		monge_form.normal_direction() = E2V_converter(this->change_world2fitting.inverse() * (normal));*/
+		monge_form.Normaldirection() = E2V_converter(this->change_world2fitting.inverse() * (normal));*/
 	}
 	// else (deg_monge >= 2) then 2nd order info are computed
 	else 
@@ -335,8 +335,8 @@ void Monge_via_jet_fitting::compute_Monge_basis(const FT* A, Monge_form& monge_f
 		const FT * evec = e_vectors.data();		//eval in decreasing order
 
 
-		Vector_3 d_max = E2V_converter(evec[0]*Y + evec[1]*Z);
-		Vector_3 d_min = E2V_converter(evec[2]*Y + evec[3]*Z);
+		Vector3 d_max = E2V_converter(evec[0]*Y + evec[1]*Z);
+		Vector3 d_min = E2V_converter(evec[2]*Y + evec[3]*Z);
 
 		switch_to_direct_orientation(d_max, d_min, E2V_converter(normal));
 		
@@ -357,7 +357,7 @@ void Monge_via_jet_fitting::compute_Monge_basis(const FT* A, Monge_form& monge_f
 		monge_form.maximal_principal_direction() = E2V_converter(change_world2fitting * V2E_converter(d_max));
 		monge_form.minimal_principal_direction() = E2V_converter(change_world2fitting * V2E_converter(d_min));
 		
-		monge_form.normal_direction() = E2V_converter(change_world2fitting * normal);
+		monge_form.Normaldirection() = E2V_converter(change_world2fitting * normal);
 		
 		monge_form.coefficients()[0] = eval[0];
 		monge_form.coefficients()[1] = eval[1];
@@ -560,7 +560,7 @@ void Monge_via_jet_fitting::compute_Monge_coefficients(FT* A, std::size_t dprime
 	}
 }
 
-void Monge_via_jet_fitting::switch_to_direct_orientation(Vector_3& v1, const Vector_3& v2,	const Vector_3& v3) 
+void Monge_via_jet_fitting::switch_to_direct_orientation(Vector3& v1, const Vector3& v2,	const Vector3& v3) 
 {
 	Eigen::Matrix3d M;
 

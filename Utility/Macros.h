@@ -32,7 +32,7 @@ extern double Epsilon;
 #include <stack>
 
 // STL beautification
-#define Vector std::vector
+#define StdVector std::vector
 #define StdList std::list
 #define StdMap std::map
 #define StdSet std::set
@@ -40,7 +40,7 @@ extern double Epsilon;
 #define StdString std::string
 #define PairInt std::pair<int,int>
 #define Pair std::pair
-typedef Vector< Vector<float> > Vector2Df;
+typedef StdVector < StdVector< float > > Vector2Df;
 
 // IO name decoration
 #define FileStream std::ifstream 
@@ -64,26 +64,26 @@ typedef Vector< Vector<float> > Vector2Df;
 #define AROUND(x, target, threshold) ( (abs(x) - abs(target) < threshold) ? 1 : 0)
 
 // Basic STL converters
-template <typename T> static inline Vector<T> SET_TO_VECTOR(StdSet<T> fromSet){
-	Vector<T> result;
+template <typename T> static inline StdVector<T> SET_TO_VECTOR(StdSet<T> fromSet){
+	StdVector<T> result;
         for(typename StdSet<T>::iterator it = fromSet.begin(); it != fromSet.end(); it++)
 		result.push_back(*it);
 	return result;
 }
-template <typename T> static inline StdSet<T> VECTOR_TO_SET(Vector<T> fromVector){
+template <typename T> static inline StdSet<T> VectorTO_SET(StdVector<T> fromVector){
 	StdSet<T> result;
-        for(typename Vector<T>::iterator it = fromVector.begin(); it != fromVector.end(); it++)
+        for(typename StdVector<T>::iterator it = fromVector.begin(); it != fromVector.end(); it++)
 		result.insert(*it);
 	return result;
 }
-template <typename T> static inline StdList<T> VECTOR_TO_LIST(Vector<T> fromVector){
+template <typename T> static inline StdList<T> VectorTO_LIST(StdVector<T> fromVector){
 	StdList<T> result;
-        for(typename Vector<T>::iterator it = fromVector.begin(); it != fromVector.end(); it++)
+        for(typename StdVector<T>::iterator it = fromVector.begin(); it != fromVector.end(); it++)
 		result.push_back(*it);
 	return result;
 }
-template <typename T> static inline Vector<T> LIST_TO_VECTOR(StdList<T> fromList){
-	Vector<T> result;
+template <typename T> static inline StdVector<T> LIST_TO_VECTOR(StdList<T> fromList){
+	StdVector<T> result;
         for(typename StdList<T>::iterator it = fromList.begin(); it != fromList.end(); it++)
 		result.push_back(*it);
 	return result;
