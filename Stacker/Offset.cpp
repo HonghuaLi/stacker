@@ -172,12 +172,9 @@ void Offset::run()
 
 	float O_max = *max_element(row_max.begin(), row_max.end());
 
-
 	// Assign each vertex with offset color
 	setOffsetColors(1, offset, O_max);
 	setOffsetColors(-1, offset, O_max);
-
-	activeObject->update();
 
 	//// Save the offset function to an image
 	uchar * rgb = new uchar[3];	

@@ -1,8 +1,8 @@
 #pragma once
 #include <QObject>
+#include "Macros.h"
 
 #include "Surface_mesh.h"
-#include "VBO.h"
 
 class QSurfaceMesh : public QObject, public Surface_mesh
 {
@@ -34,7 +34,6 @@ public:
 	void drawFaceNames();
 	void drawFacesUnique();
 
-	void update();
 	void setColorVertices(double r = 1.0, double g = 1.0, double b = 1.0, double a = 1.0);
 	void setVertexColor( uint v_id, const Color& newColor );
 
@@ -58,10 +57,8 @@ public:
 	std::vector<Vec3d> pointsFace( Face f );
 	Vec3d getBaryFace( Face f, double U, double V );
 
+	std::vector<unsigned int> triangles, edges;
 
 private:
 	bool isDirty;
-
-	VBO * vbo;
-	std::vector<unsigned int> triangles, edges;
 };

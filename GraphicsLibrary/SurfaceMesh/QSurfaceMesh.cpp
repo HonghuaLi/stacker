@@ -5,8 +5,6 @@
 
 QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 {
-	vbo = NULL;
-
 	triangles.clear();
 	edges.clear();
 
@@ -26,11 +24,8 @@ QSurfaceMesh::QSurfaceMesh( const QSurfaceMesh& from ) : Surface_mesh(from)
 	this->radius = from.radius;
 	this->triangles = from.triangles;
 	this->edges = from.edges;
-
-	// Rebuild VBO
 	this->isReady = from.isReady;
-	this->isDirty = true;
-	this->vbo = NULL;
+	this->isDirty = from.isDirty;
 }
 
 QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
@@ -43,11 +38,8 @@ QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
 	this->radius = rhs.radius;
 	this->triangles = rhs.triangles;
 	this->edges = rhs.edges;
-
-	// Rebuild VBO
 	this->isReady = rhs.isReady;
-	this->isDirty = true;
-	this->vbo = NULL;
+	this->isDirty = rhs.isDirty;
 
 	return *this;
 }
@@ -71,7 +63,7 @@ void QSurfaceMesh::computeBoundingBox()
 	radius = (bbmax - bbmin).norm() * 0.5f;
 }
 
-void QSurfaceMesh::setColorVertices( double r /*= 1.0*/, double g /*= 1.0*/, double b /*= 1.0*/, double a /*= 1.0*/ )
+void QSurfaceMesh::setColorVertices( double r, double g, double b, double a )
 {
 	Vertex_property<Color>  vcolors  = vertex_property<Color>("v:color");
 	Surface_mesh::Vertex_iterator vit, vend = vertices_end();
@@ -85,13 +77,29 @@ void QSurfaceMesh::draw()
 {
 	if(!isReady) return;
 
-	if(isDirty || !vbo)	
-		update();
-
 	// Render mesh regularly
-	vbo->render_smooth();
+	Vertex_property<Point>  points   = vertex_property<Point>("v:point");
+	Vertex_property<Point>  vnormals = vertex_property<Point>("v:normal");
+	Vertex_property<Color>  vcolors  = vertex_property<Color>("v:color");
+	Face_iterator fit, fend = faces_end();
+	Vertex_iterator vit, vend = vertices_end();
+	Vertex_around_face_circulator fvit;
+	Vertex v0, v1, v2;
 
-	//vbo->render_wireframe();
+	glEnable(GL_LIGHTING);
+
+	glBegin(GL_TRIANGLES);
+	for(fit = faces_begin(); fit != fend; ++fit){
+		fvit = vertices(fit);
+		v0 = fvit;
+		v1 = ++fvit;
+		v2 = ++fvit;
+
+		glColor4dv(vcolors[v0]);	glNormal3dv(vnormals[v0]);	glVertex3dv(points[v0]);
+		glColor4dv(vcolors[v1]);	glNormal3dv(vnormals[v1]);	glVertex3dv(points[v1]);
+		glColor4dv(vcolors[v2]);	glNormal3dv(vnormals[v2]);	glVertex3dv(points[v2]);
+	}
+	glEnd();
 
 	// Render some mesh indicators
 	// Test points
@@ -128,59 +136,7 @@ void QSurfaceMesh::draw()
 
 void QSurfaceMesh::drawFaceNames()
 {
-	if(isDirty)	update();
-
 	// TODO:
-}
-
-void QSurfaceMesh::update()
-{
-	// Create new VBO if you can't update
-	if(vbo)
-	{
-		vbo->update();
-	}
-	else
-	{
-		// get required vertex and face properties
-		Vertex_property<Point>  points   = vertex_property<Point>("v:point");
-		Vertex_property<Point>  vnormals = vertex_property<Point>("v:normal");
-		Face_property<Point>    fnormals = face_property<Point>("f:normal");
-		Vertex_property<Color>  vcolors  = vertex_property<Color>("v:color");
-		Vertex_property<float>  vtex     = vertex_property<float>("v:tex1D", 0.0);
-
-		// Color
-
-		// get face indices
-		Surface_mesh::Face_iterator fit, fend = faces_end();
-		Surface_mesh::Vertex_around_face_circulator fvit, fvend;
-		Surface_mesh::Vertex v0, v1, v2;
-		for (fit = faces_begin(); fit != fend; ++fit)
-		{
-			fvit = fvend = vertices(fit);
-			v0 = fvit;
-			v2 = ++fvit;
-
-			do{
-				v1 = v2;
-				v2 = fvit;
-				triangles.push_back(v0.idx());
-				triangles.push_back(v1.idx());
-				triangles.push_back(v2.idx());
-			} while (++fvit != fvend);
-		}
-
-		// setup vertex arrays
-		/*glVertexPointer(points.data());
-		glNormalPointer(vnormals.data());
-		glColorPointer(vcolors.data());
-		glTexCoordPointer(vtex.data());*/
-
-		this->vbo = new VBO(this->n_vertices(), points.data(), vnormals.data(), vcolors.data(), &triangles);
-	}
-
-	isDirty = false;
-	isReady = true; 
 }
 
 void QSurfaceMesh::drawFacesUnique()

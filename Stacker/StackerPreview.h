@@ -9,7 +9,7 @@ class StackerPreview : public QGLViewer
 private:
 	QColor backColor;
 
-	QSurfaceMesh * activeObject;
+	Scene * activeScene;
 
 public:
 	StackerPreview(QWidget * parent = 0);
@@ -22,5 +22,6 @@ public:
 	void preDraw();
 	void draw();
 
-	void setActiveObject(QSurfaceMesh * newObject);
+public slots:
+	void setActiveScene(Scene * changedScene);
 };

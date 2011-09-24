@@ -1,16 +1,21 @@
 #include "QMeshManager.h"
 
 QMap<QString, QSurfaceMesh> all_objects;
+uint global_id;
 
-void addNewObject( QString fileName )
+QString addNewObject( QString fileName )
 {
 	QFileInfo fInfo (fileName);
-	QString newObjName = fInfo.fileName();
-	newObjName.chop(4);
+	QString newObjId = fInfo.fileName();
+	newObjId.chop(4);
+
+	global_id++;
+
+	newObjId += QString("-%1").arg(global_id);
 
 	// Create a new QSurfaceMesh
-	all_objects[ newObjName ] = QSurfaceMesh();
-	QSurfaceMesh * newMesh = &all_objects[ newObjName ];
+	all_objects[ newObjId ] = QSurfaceMesh();
+	QSurfaceMesh * newMesh = &all_objects[ newObjId ];
 
 	// Using Surface_mesh library
 	newMesh->read(qPrintable(fileName));
@@ -25,6 +30,10 @@ void addNewObject( QString fileName )
 	// From Surface_mesh
 	newMesh->update_face_normals();
 	newMesh->update_vertex_normals();
+
+	newMesh->isReady = true;
+
+	return newObjId;
 }
 
 QSurfaceMesh * getObject( QString objectId )
