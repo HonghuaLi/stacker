@@ -62,25 +62,8 @@ void Scene::updateVBOs()
 		Surface_mesh::Vertex_property<Color>  vcolors  = mesh->vertex_property<Color>("v:color");
 		Surface_mesh::Vertex_property<float>  vtex     = mesh->vertex_property<float>("v:tex1D", 0.0);
 
-		// get face indices
-		Surface_mesh::Face_iterator fit, fend = mesh->faces_end();
-		Surface_mesh::Vertex_around_face_circulator fvit, fvend;
-		Surface_mesh::Vertex v0, v1, v2;
-		for (fit = mesh->faces_begin(); fit != fend; ++fit){
-			fvit = fvend = mesh->vertices(fit);
-			v0 = fvit;
-			v2 = ++fvit;
-
-			do{
-				v1 = v2;
-				v2 = fvit;
-				mesh->triangles.push_back(v0.idx());
-				mesh->triangles.push_back(v1.idx());
-				mesh->triangles.push_back(v2.idx());
-			} while (++fvit != fvend);
-		}
-
 		// Create VBO
+		mesh->fillTrianglesList();
 		vboCollection[activeObjectId] = VBO(mesh->n_vertices(), points.data(), vnormals.data(), vcolors.data(), mesh->triangles);
 	}
 }
@@ -133,12 +116,6 @@ void Scene::setupLights()
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
 }
 
-void Scene::preDraw()
-{
-	this->makeCurrent();
-	QGLViewer::preDraw();
-}
-
 void Scene::draw()
 {
 	glEnable(GL_MULTISAMPLE);
@@ -149,10 +126,13 @@ void Scene::draw()
 	// Update if needed
 	updateVBOs();
 
-	// Draw objects normally
+	// Draw objects using VBO
 	QMap<QString, VBO>::iterator i;
 	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
-		i->render(true);
+		i->render();
+
+	if(activeObjectId.size())
+		activeObject()->drawDebug();
 
 	// Wires
 	foreach(Wire w, activeWires)
@@ -176,7 +156,7 @@ void Scene::specialDraw()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_MULTISAMPLE);
 
-		activeObject()->draw();
+		activeObject()->simpleDraw();
 		break;
 
 	case UNIQUE_FACES:
@@ -184,7 +164,7 @@ void Scene::specialDraw()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_MULTISAMPLE);
 
-		activeObject()->draw();
+		activeObject()->drawFacesUnique();
 		break;
 	}
 }
@@ -320,6 +300,14 @@ QSurfaceMesh * Scene::activeObject()
 {
 	if(all_objects.find(activeObjectId) != all_objects.end())
 		return &all_objects[activeObjectId];
+	else
+		return NULL;
+}
+
+VBO * Scene::activeVBO()
+{
+	if(vboCollection.find(activeObjectId) != vboCollection.end())
+		return &vboCollection[activeObjectId];
 	else
 		return NULL;
 }

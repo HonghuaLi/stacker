@@ -60,7 +60,10 @@ void Workspace::addNewScene()
 
 void Workspace::importObject()
 {
-	Scene * selectedScene = static_cast<Scene*>(ui.sceneArea->activeSubWindow()->widget());
+	QMdiSubWindow * mdi_window = ui.sceneArea->activeSubWindow();
+	if(!mdi_window) return;
+
+	Scene * selectedScene = static_cast<Scene*>(mdi_window->widget());
 
 	QString fileName = QFileDialog::getOpenFileName(this, "Insert Mesh", "", "Mesh Files (*.obj *.off *.stl)");
 

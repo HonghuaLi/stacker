@@ -10,6 +10,7 @@ private:
 	QColor backColor;
 
 	Scene * activeScene;
+	VBO activeObjectVBO;
 
 public:
 	StackerPreview(QWidget * parent = 0);

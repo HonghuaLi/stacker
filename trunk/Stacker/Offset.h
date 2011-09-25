@@ -14,9 +14,9 @@ public:
 	~Offset();
 
 public:
-	std::vector< std::vector<float> > computeEnvelope(int direction);
+	std::vector< std::vector<double> > computeEnvelope(int direction);
 	std::set<uint> verticesOnEnvelope(int direction);
-	void setOffsetColors(int direction, std::vector< std::vector<float> > &offset, float O_max);
+	void setOffsetColors(int direction, std::vector< std::vector<double> > &offset, double O_max);
 	void run();
 
 private:

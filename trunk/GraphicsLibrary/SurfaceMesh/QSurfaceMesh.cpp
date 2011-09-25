@@ -73,35 +73,10 @@ void QSurfaceMesh::setColorVertices( double r, double g, double b, double a )
 			vcolors[vit] = Color(r,g,b,a);
 }
 
-void QSurfaceMesh::draw()
+void QSurfaceMesh::drawDebug()
 {
-	if(!isReady) return;
+	// Render mesh indicators
 
-	// Render mesh regularly
-	Vertex_property<Point>  points   = vertex_property<Point>("v:point");
-	Vertex_property<Point>  vnormals = vertex_property<Point>("v:normal");
-	Vertex_property<Color>  vcolors  = vertex_property<Color>("v:color");
-	Face_iterator fit, fend = faces_end();
-	Vertex_iterator vit, vend = vertices_end();
-	Vertex_around_face_circulator fvit;
-	Vertex v0, v1, v2;
-
-	glEnable(GL_LIGHTING);
-
-	glBegin(GL_TRIANGLES);
-	for(fit = faces_begin(); fit != fend; ++fit){
-		fvit = vertices(fit);
-		v0 = fvit;
-		v1 = ++fvit;
-		v2 = ++fvit;
-
-		glColor4dv(vcolors[v0]);	glNormal3dv(vnormals[v0]);	glVertex3dv(points[v0]);
-		glColor4dv(vcolors[v1]);	glNormal3dv(vnormals[v1]);	glVertex3dv(points[v1]);
-		glColor4dv(vcolors[v2]);	glNormal3dv(vnormals[v2]);	glVertex3dv(points[v2]);
-	}
-	glEnd();
-
-	// Render some mesh indicators
 	// Test points
 	foreach(Point p, debug_points)	SimpleDraw::IdentifyPoint(p, 1,0,0);
 	foreach(Point p, debug_points2)	SimpleDraw::IdentifyPoint(p, 0,1,0);
@@ -113,25 +88,49 @@ void QSurfaceMesh::draw()
 	foreach(std::vector<Point> line, debug_lines3) SimpleDraw::IdentifyConnectedPoints(line, 0,0,1.0);
 
 	// Curvature:
-	/*if(get_vertex_property<Vec3d>("v:d1"))
+	if(get_vertex_property<Vec3d>("v:d1"))
 	{
-		std::vector<Vec> starts, directions1, directions2;
-
 		Vertex_property<Point> points = vertex_property<Point>("v:point");
-		Vertex_property<Vec3d> d1 = vertex_property<Vec3d>("v:d1"),
-			d2 = vertex_property<Vec3d>("v:d2");
+		Vertex_property<Vec3d> d1 = vertex_property<Vec3d>("v:d1"),	d2 = vertex_property<Vec3d>("v:d2");
 		Vertex_iterator vit, vend = vertices_end();
+		
+		std::vector<Vec3d> starts, directions1, directions2;
 
 		for(vit = vertices_begin(); vit != vend; ++vit)
 		{
-			starts.push_back(Vec(points[vit]));
-			directions1.push_back(Vec(d1[vit]));
-			directions2.push_back(Vec(d2[vit]));
+			starts.push_back(points[vit]);
+			directions1.push_back(d1[vit]);
+			directions2.push_back(d2[vit]);
 		}
 
-		SimpleDraw::DrawLineTick(starts, directions1, getAverageEdgeLength() * 0.5, false, 1, 0, 0, 0.25);
-		SimpleDraw::DrawLineTick(starts, directions2, getAverageEdgeLength() * 0.5, false, 0, 0, 1, 0.25);
-	}*/
+		SimpleDraw::DrawLineTick(starts, directions1, getAverageEdgeLength() * 0.5, false, 1,0,0,0.25);
+		SimpleDraw::DrawLineTick(starts, directions2, getAverageEdgeLength() * 0.5, false, 0,0,1,0.25);
+	}
+}
+
+void QSurfaceMesh::simpleDraw()
+{
+	// Render mesh regularly (inefficient)
+	Vertex_property<Point>  points   = vertex_property<Point>("v:point");
+	Vertex_property<Normal>  vnormals = vertex_property<Point>("v:normal");
+	Vertex_property<Color>  vcolors  = vertex_property<Color>("v:color");
+	Face_iterator fit, fend = faces_end();
+	Vertex_iterator vit, vend = vertices_end();
+	Vertex_around_face_circulator fvit;
+	Vertex v0, v1, v2;
+
+	// Draw faces
+	glBegin(GL_TRIANGLES);
+	for(fit = faces_begin(); fit != fend; ++fit){
+		fvit = vertices(fit);
+
+		v0 = fvit; v1 = ++fvit; v2 = ++fvit;
+
+		glColor4dv(vcolors[v0]);glNormal3dv(vnormals[v0]);glVertex3dv(points[v0]);
+		glColor4dv(vcolors[v1]);glNormal3dv(vnormals[v1]);glVertex3dv(points[v1]);
+		glColor4dv(vcolors[v2]);glNormal3dv(vnormals[v2]);glVertex3dv(points[v2]);
+	}
+	glEnd();
 }
 
 void QSurfaceMesh::drawFaceNames()
@@ -218,6 +217,29 @@ void QSurfaceMesh::assignFaceArray()
 
 	for(fit = faces_begin(); fit != fend; ++fit) 
 		face_array.push_back(fit);
+}
+
+void QSurfaceMesh::fillTrianglesList()
+{
+	// get face indices
+	Face_iterator fit, fend = faces_end();
+	Vertex_around_face_circulator fvit, fvend;
+	Vertex v0, v1, v2;
+
+	for (fit = faces_begin(); fit != fend; ++fit)
+	{
+		fvit = fvend = vertices(fit);
+		v0 = fvit;
+		v2 = ++fvit;
+
+		do{
+			v1 = v2;
+			v2 = fvit;
+			triangles.push_back(v0.idx());
+			triangles.push_back(v1.idx());
+			triangles.push_back(v2.idx());
+		} while (++fvit != fvend);
+	}
 }
 
 std::vector<uint> QSurfaceMesh::vertexIndicesAroundFace( uint f_id )

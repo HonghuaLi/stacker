@@ -30,9 +30,10 @@ public:
 	double getAverageEdgeLength();
 	double averageEdgeLength;
 
-	void draw();
 	void drawFaceNames();
 	void drawFacesUnique();
+	void drawDebug();
+	void simpleDraw();
 
 	void setColorVertices(double r = 1.0, double g = 1.0, double b = 1.0, double a = 1.0);
 	void setVertexColor( uint v_id, const Color& newColor );
@@ -56,6 +57,7 @@ public:
 	double faceArea( Face f );
 	std::vector<Vec3d> pointsFace( Face f );
 	Vec3d getBaryFace( Face f, double U, double V );
+	void fillTrianglesList();
 
 	std::vector<unsigned int> triangles, edges;
 
