@@ -18,7 +18,7 @@ StackerPanel::StackerPanel()
 
 void StackerPanel::onOffsetButtonClicked()
 {
-	if (activeScene && activeScene->activeObjectId.size())
+	if (activeScene && !activeScene->activeObjectId.size())
 	{
 		activeScene->print("There is no mesh opened!");
 		return;

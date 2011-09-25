@@ -31,7 +31,6 @@ public:
 	void setupLights();
 
 	// OpenGL Drawing and Buffer
-	virtual void preDraw();
 	virtual void draw();
 	virtual void drawWithNames();
 	virtual void postDraw();
@@ -87,6 +86,8 @@ private:
 public:
 	QSurfaceMesh * activeObject();
 	QString activeObjectId;
+
+	VBO * activeVBO();
 
 public slots:
 	void insertObject( QString fileName );

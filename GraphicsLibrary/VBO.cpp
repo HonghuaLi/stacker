@@ -17,15 +17,12 @@ VBO::VBO( unsigned int vert_count, const PointType * v, const NormalType * n, co
 
 	// If VBO is supported, enable it
 	if(GLEE_ARB_vertex_buffer_object)
-	{
 		isVBOEnabled = true;
-		update();
-	}
 	else
 		isVBOEnabled = false;
 
-	isDirty = false;
-	isReady = true;
+	isDirty = true;
+	isReady = false;
 
 	// Default rendering settings
 	isDrawRegular = true;
@@ -68,6 +65,7 @@ void VBO::update()
 	}
 
 	isDirty = false;
+	isReady = true;
 }
 
 void VBO::update_vbo( Index *vbo, int vbo_size, const GLvoid *vbo_data )
@@ -76,7 +74,7 @@ void VBO::update_vbo( Index *vbo, int vbo_size, const GLvoid *vbo_data )
 		glGenBuffersARB(1, vbo);
 
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, *vbo);
-	glBufferDataARB(GL_ARRAY_BUFFER_ARB, vbo_size, vbo_data, GL_STREAM_COPY_ARB);
+	glBufferDataARB(GL_ARRAY_BUFFER_ARB, vbo_size, vbo_data, GL_STREAM_DRAW);
 }
 
 void VBO::update_ebo( Index *ebo, int ebo_size, const GLvoid *ebo_data )
@@ -85,7 +83,7 @@ void VBO::update_ebo( Index *ebo, int ebo_size, const GLvoid *ebo_data )
 		glGenBuffersARB(1, ebo);
 
 	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, *ebo);
-	glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, ebo_size, ebo_data, GL_STREAM_COPY_ARB);
+	glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, ebo_size, ebo_data, GL_STREAM_DRAW);
 }
 
 void VBO::free_vbo( Index vbo )
@@ -108,28 +106,28 @@ void VBO::render_regular( bool dynamic /*= false*/ )
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 
-	// Bind normals
-	glBindBufferARB(GL_ARRAY_BUFFER_ARB, Normalvbo_id);
-	glNormalPointer(GL_DOUBLE, 0, NULL);
-
-	// Bind colors
-	glBindBufferARB(GL_ARRAY_BUFFER_ARB, color_vbo_id);
-	glColorPointer(4, GL_DOUBLE, 0, NULL);
-
-	// Bind vertex positions
+	// bind
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertex_vbo_id);
-	glVertexPointer(3, GL_DOUBLE, 0, NULL);
+	glVertexPointer(3, GL_DOUBLE, 0, 0);
 
-	// Bind faces then draw
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, Normalvbo_id);
+	glNormalPointer(GL_DOUBLE, 0, 0);
+
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, color_vbo_id);
+	glColorPointer(4, GL_DOUBLE, 0, 0);
+
 	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, faces_id);
+
+	// draw
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	// bind with 0, so, switch back to normal pointer operation
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 }
@@ -156,10 +154,13 @@ void VBO::render_wireframe( bool dynamic /*= false*/ )
 
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertex_vbo_id);
 	glVertexPointer(3, GL_DOUBLE, 0, NULL);
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
 
 	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, faces_id);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
 
 	glPopClientAttrib();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -232,7 +233,7 @@ void VBO::render_as_points( bool dynamic /*= false*/ )
 	glDrawElements(GL_POINTS, indices.size(), GL_UNSIGNED_INT, NULL);
 
 	glPopClientAttrib();
-	glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
 	glPointSize(pointSize);
@@ -240,7 +241,7 @@ void VBO::render_as_points( bool dynamic /*= false*/ )
 
 void VBO::render( bool dynamic )
 {
-	if(!isReady || !isVBOEnabled)
+	if(!isVBOEnabled)
 		return;
 
 	if(dynamic || isDirty)

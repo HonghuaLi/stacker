@@ -50,13 +50,42 @@ void StackerPreview::preDraw()
 
 void StackerPreview::draw()
 {
-	if(!activeScene || !activeScene->activeObject())
-		return;
-
 	// Background
 	setBackgroundColor(backColor);
 
-	activeScene->activeObject()->draw();
+	if(!activeScene || !activeScene->activeObject())
+		return;
+
+	if(!activeObjectVBO.isReady || activeObjectVBO.objectId != qPrintable(activeScene->activeObjectId)){
+		QSurfaceMesh * mesh = activeScene->activeObject();
+
+		Surface_mesh::Vertex_property<Point>  points   = mesh->vertex_property<Point>("v:point");
+		Surface_mesh::Vertex_property<Point>  vnormals = mesh->vertex_property<Point>("v:normal");
+		Surface_mesh::Face_property<Point>    fnormals = mesh->face_property<Point>("f:normal");
+		Surface_mesh::Vertex_property<Color>  vcolors  = mesh->vertex_property<Color>("v:color");
+		Surface_mesh::Vertex_property<float>  vtex     = mesh->vertex_property<float>("v:tex1D", 0.0);
+
+		// Create VBO
+		mesh->fillTrianglesList();
+		activeObjectVBO = VBO(mesh->n_vertices(), points.data(), vnormals.data(), vcolors.data(), mesh->triangles);
+		activeObjectVBO.objectId = qPrintable(activeScene->activeObjectId);
+	}
+
+	int stackCount = 3;
+	Vec3d stackDirection(0, 0, 1.0);
+	double delta = activeScene->activeObject()->radius / 2.0;
+
+	glPushMatrix();
+	glRotated(10, 0, 0, 1);
+
+	for(int i = 0; i < stackCount; i++)
+	{
+		activeObjectVBO.render();
+
+		glTranslated(0,0,delta);
+	}
+
+	glPopMatrix();
 }
 
 void StackerPreview::setActiveScene( Scene * changedScene )

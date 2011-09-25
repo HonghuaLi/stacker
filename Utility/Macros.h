@@ -23,6 +23,7 @@ extern double Epsilon;
 
 // Numerical stuff
 #define FLOAT_INFINITY std::numeric_limits<float>::infinity()
+#define DOUBLE_INFINITY std::numeric_limits<double>::infinity()
 
 // STL containers
 #include <vector>
