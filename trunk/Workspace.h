@@ -10,6 +10,7 @@
 
 #include "StackerPanel.h"
 #include "WiresPanel.h"
+#include "DeformerPanel.h"
 
 extern QStringList main_args;
 extern QMap<QString, QSurfaceMesh> all_objects;
@@ -35,6 +36,7 @@ private:
 
 	StackerPanel * sp;
 	WiresPanel * wp;
+	DeformerPanel * dp;
 
 	int sceneCount;
 };

@@ -8,6 +8,8 @@
 
 Scene::Scene( QString loadObject, QWidget *parent)
 {
+	activeDeformer = NULL;
+
 	// GLViewer options
 	setGridIsDrawn();
 
@@ -22,6 +24,10 @@ Scene::Scene( QString loadObject, QWidget *parent)
 		insertObject(loadObject);
 
 	displayMessage(tr("New scene created."));
+
+	// Mouse selection window
+	this->setSelectRegionHeight(10);
+	this->setSelectRegionWidth(10);
 
 	emit(newSceneCreated());
 }
@@ -140,6 +146,9 @@ void Scene::draw()
 		w.draw();
 	}
 
+	// Deformer
+	if(activeDeformer) activeDeformer->draw();
+
 	// For depth buffer, selection, anything extraordinary
 	specialDraw();
 }
@@ -171,7 +180,7 @@ void Scene::specialDraw()
 
 void Scene::drawWithNames()
 {
-
+	if(activeDeformer) activeDeformer->drawNames();
 }
 
 void Scene::mousePressEvent( QMouseEvent* e )
@@ -206,6 +215,17 @@ void Scene::postSelection( const QPoint& point )
 	int selected = selectedName();
 
 	print(QString("Selected %1").arg(selected));
+
+	if(activeDeformer) 
+	{
+		activeDeformer->postSelection(selected);
+
+		if(selected >= 0)
+		{
+			ManipulatedFrame * fr = &activeDeformer->getQControlPoint(selected);
+			this->setManipulatedFrame(fr);
+		}
+	}
 }
 
 void Scene::setViewMode(ViewMode toMode)
@@ -271,6 +291,11 @@ void Scene::focusOutEvent( QFocusEvent * event )
 void Scene::setActiveWires( QVector<Wire> newWires )
 {
 	activeWires = newWires;
+}
+
+void Scene::setActiveDeformer( QFFD * newFFD )
+{
+	activeDeformer = newFFD;
 }
 
 void* Scene::readBuffer( GLenum format, GLenum type )

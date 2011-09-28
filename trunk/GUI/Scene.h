@@ -12,6 +12,7 @@ using namespace qglviewer;
 #include "QSurfaceMesh.h"
 #include "VBO.h"
 #include "Wire.h"
+#include "QFFD.h"
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX};
@@ -82,6 +83,7 @@ private:
 // Objects in the scene
 private:
 	QVector<Wire> activeWires;
+	QFFD * activeDeformer;
 
 public:
 	QSurfaceMesh * activeObject();
@@ -93,6 +95,7 @@ public slots:
 	void insertObject( QString fileName );
 	uint numObjects();
 	void setActiveWires( QVector<Wire> );
+	void setActiveDeformer( QFFD * );
 
 signals:
 	void focusChanged( Scene* );
