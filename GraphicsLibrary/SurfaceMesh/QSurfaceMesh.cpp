@@ -10,6 +10,7 @@ QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 
 	isReady = false;
 	isDirty = false;
+	isDrawBB = true;
 
 	averageEdgeLength = -1;
 }
@@ -26,6 +27,7 @@ QSurfaceMesh::QSurfaceMesh( const QSurfaceMesh& from ) : Surface_mesh(from)
 	this->edges = from.edges;
 	this->isReady = from.isReady;
 	this->isDirty = from.isDirty;
+	this->isDrawBB = from.isDrawBB;
 }
 
 QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
@@ -40,6 +42,7 @@ QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
 	this->edges = rhs.edges;
 	this->isReady = rhs.isReady;
 	this->isDirty = rhs.isDirty;
+	this->isDrawBB = rhs.isDrawBB;
 
 	return *this;
 }
@@ -76,16 +79,14 @@ void QSurfaceMesh::setColorVertices( double r, double g, double b, double a )
 void QSurfaceMesh::drawDebug()
 {
 	// Render mesh indicators
-
-	// Test points
-	foreach(Point p, debug_points)	SimpleDraw::IdentifyPoint(p, 1,0,0);
-	foreach(Point p, debug_points2)	SimpleDraw::IdentifyPoint(p, 0,1,0);
-	foreach(Point p, debug_points3)	SimpleDraw::IdentifyPoint(p, 0,0,1);
-
-	// Test lines
-	foreach(std::vector<Point> line, debug_lines) SimpleDraw::IdentifyConnectedPoints(line, 1.0,0,0);
-	foreach(std::vector<Point> line, debug_lines2) SimpleDraw::IdentifyConnectedPoints(line, 0,1.0,0);
-	foreach(std::vector<Point> line, debug_lines3) SimpleDraw::IdentifyConnectedPoints(line, 0,0,1.0);
+	// Bounding Box
+	if(isDrawBB)
+	{
+		double w = bbmax.x() - bbmin.x();
+		double l = bbmax.y() - bbmin.y();
+		double h = bbmax.z() - bbmin.z();
+		SimpleDraw::DrawBox(center, w *0.5, l *0.5, h *0.5);
+	}
 
 	// Curvature:
 	if(get_vertex_property<Vec3d>("v:d1"))
@@ -106,6 +107,16 @@ void QSurfaceMesh::drawDebug()
 		SimpleDraw::DrawLineTick(starts, directions1, getAverageEdgeLength() * 0.5, false, 1,0,0,0.25);
 		SimpleDraw::DrawLineTick(starts, directions2, getAverageEdgeLength() * 0.5, false, 0,0,1,0.25);
 	}
+
+	// Debug points
+	foreach(Point p, debug_points)	SimpleDraw::IdentifyPoint(p, 1,0,0);
+	foreach(Point p, debug_points2)	SimpleDraw::IdentifyPoint(p, 0,1,0);
+	foreach(Point p, debug_points3)	SimpleDraw::IdentifyPoint(p, 0,0,1);
+
+	// Debug lines
+	foreach(std::vector<Point> line, debug_lines) SimpleDraw::IdentifyConnectedPoints(line, 1.0,0,0);
+	foreach(std::vector<Point> line, debug_lines2) SimpleDraw::IdentifyConnectedPoints(line, 0,1.0,0);
+	foreach(std::vector<Point> line, debug_lines3) SimpleDraw::IdentifyConnectedPoints(line, 0,0,1.0);
 }
 
 void QSurfaceMesh::simpleDraw()

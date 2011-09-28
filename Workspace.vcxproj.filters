@@ -75,6 +75,9 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Deformer">
+      <UniqueIdentifier>{93db098b-d3a1-44d0-af9e-f1fa4db2a168}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneratedFiles\qrc_Workspace.cpp">
@@ -200,6 +203,42 @@
     <ClCompile Include="GUI\QMeshManager.cpp">
       <Filter>GUI\Source</Filter>
     </ClCompile>
+    <ClCompile Include="Deformer\DeformerPanel.cpp">
+      <Filter>Deformer</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_DeformerPanel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_DeformerPanel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_DeformerPanel.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="Deformer\FFD.cpp">
+      <Filter>Deformer</Filter>
+    </ClCompile>
+    <ClCompile Include="Deformer\QFFD.cpp">
+      <Filter>Deformer</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QFFD.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QFFD.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_QFFD.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QControlPoint.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QControlPoint.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_QControlPoint.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -292,6 +331,12 @@
     <ClInclude Include="GUI\QMeshManager.h">
       <Filter>GUI\Header</Filter>
     </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_DeformerWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Deformer\FFD.h">
+      <Filter>Deformer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Workspace.rc" />
@@ -326,6 +371,18 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\StackerPreview.h">
       <Filter>Stacker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Deformer\DeformerWidget.ui">
+      <Filter>Deformer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Deformer\DeformerPanel.h">
+      <Filter>Deformer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Deformer\QFFD.h">
+      <Filter>Deformer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Deformer\QControlPoint.h">
+      <Filter>Deformer</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

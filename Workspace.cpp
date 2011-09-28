@@ -7,6 +7,7 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	ui.setupUi(this);
 
 	ui.leftDockWidget->setLayout(new QVBoxLayout);
+	ui.rightDockWidget->setLayout(new QVBoxLayout);
 
 	// New scene action
 	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
@@ -17,6 +18,9 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 
 	wp = new WiresPanel();
 	ui.leftDockWidget->layout()->addWidget(wp);
+
+	dp = new DeformerPanel();
+	ui.rightDockWidget->layout()->addWidget(dp);
 
 	// Create new scene when we start by default
 	sceneCount = 0;
@@ -45,15 +49,21 @@ void Workspace::addNewScene()
 	newScene->showMaximized();
 	newScene->setWindowTitle("Untitled");
 
+	connect(newScene, SIGNAL(newSceneCreated()), sp, SLOT(sceneUpdated()));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*)));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), wp, SLOT(setActiveScene(Scene*)));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), sp, SLOT(setActiveScene(Scene*)));
+
+	// Objects inserted
 	connect(newScene, SIGNAL(objectInserted(QSurfaceMesh *)), sp, SLOT(sceneUpdated()));
-	connect(newScene, SIGNAL(newSceneCreated()), sp, SLOT(sceneUpdated()));
+	connect(newScene, SIGNAL(objectInserted(QSurfaceMesh *)), dp, SLOT(createFFD(QSurfaceMesh *)));
 
 	// Wires
 	connect(wp, SIGNAL(wiresFound(QVector<Wire>)), newScene, SLOT(setActiveWires(QVector<Wire>)));
 	connect(wp, SIGNAL(wiresFound(QVector<Wire>)), newScene, SLOT(updateGL()));
+
+	// Deformation
+	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *))), 
 
 	sceneCount++;
 }
