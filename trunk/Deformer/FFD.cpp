@@ -12,28 +12,42 @@ FFD::FFD( QSurfaceMesh * src_mesh, FFD_FitType fit_type )
 	height = mesh->bbmax.z() - mesh->bbmin.z();
 }
 
-StdVector<Vec3d> FFD::bbFit()
+void FFD::bbFit( Vec3i res )
 {
-	StdVector<Vec3d> control_points;
-
 	Vec3d center = mesh->center;
 
-	int N = 3;
+	int Nx = Max(2, res.x());
+	int Ny = Max(2, res.y());
+	int Nz = Max(2, res.z());
 
-	double dx = width / (N-1);
-	double dy = length / (N-1);
-	double dz = height / (N-1);
+	this->resolution = Vec3i(Nx, Ny, Nz);
+
+	double dx = width / (Nx-1);
+	double dy = length / (Ny-1);
+	double dz = height / (Nz-1);
 
 	Vec3d start_corner(-width/2, -length/2, -height/2);
 
-	for(int z = 0; z < N; z++){
-		for(int y = 0; y < N; y++){
-			for(int x = 0; x < N; x++){
+	// indexing
+	int i = 0;
+
+	// Nx x Ny x Nz
+	pointsGridIdx = StdVector<StdVector<StdVector < int > > > 
+		(Nx, StdVector< StdVector < int > >(Ny, StdVector < int >(Nz))); 
+
+	for(int z = 0; z < Nz; z++){
+		for(int y = 0; y < Ny; y++){
+			for(int x = 0; x < Nx; x++){
+				// Grid indexing
+				pointsGridIdx[x][y][z] = i;
+
+				// Control point position
 				Vec3d p = start_corner + Vec3d(dx * x, dy * y, dz * z);
-				control_points.push_back(p);
-			}	
+
+				// Add it
+				points.push_back(new QControlPoint(p, i++, Vec3i(x,y,z)));
+			}
 		}	
 	}
-
-	return control_points;
 }
+
