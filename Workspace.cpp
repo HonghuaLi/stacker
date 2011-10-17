@@ -53,10 +53,10 @@ void Workspace::addNewScene()
 	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*)));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), wp, SLOT(setActiveScene(Scene*)));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), sp, SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(focusChanged(Scene*)), dp, SLOT(setActiveScene(Scene*)));
 
 	// Objects inserted
 	connect(newScene, SIGNAL(objectInserted(QSurfaceMesh *)), sp, SLOT(sceneUpdated()));
-	connect(newScene, SIGNAL(objectInserted(QSurfaceMesh *)), dp, SLOT(createFFD(QSurfaceMesh *)));
 
 	// Wires
 	connect(wp, SIGNAL(wiresFound(QVector<Wire>)), newScene, SLOT(setActiveWires(QVector<Wire>)));

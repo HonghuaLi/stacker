@@ -3,11 +3,23 @@
 DeformerPanel::DeformerPanel()
 {
 	dw.setupUi(this);
+
+	// Connections
+	connect(dw.createBoundingButton, SIGNAL(clicked()), SLOT(onCreateBoundingClicked()));
 }
 
-void DeformerPanel::createFFD( QSurfaceMesh * mesh )
+void DeformerPanel::setActiveScene( Scene * newScene)
 {
-	this->activeDeformer = new QFFD(mesh);
+	activeScene = newScene;
+}
 
-	emit(deformerCreated(activeDeformer));
+void DeformerPanel::onCreateBoundingClicked()
+{
+	if(!activeScene || !activeScene->activeObject())
+		return;
+
+	activeDeformer = new QFFD(activeScene->activeObject(), BoundingBoxFFD, 
+		Vec3i(dw.xRes->value(), dw.yRes->value(), dw.zRes->value()));
+
+	emit( deformerCreated(activeDeformer) );
 }

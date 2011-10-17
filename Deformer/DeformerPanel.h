@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ui_DeformerWidget.h"
+#include "Scene.h"
 #include "QFFD.h"
 
 class DeformerPanel : public QWidget
@@ -9,6 +10,7 @@ class DeformerPanel : public QWidget
 
 private:
 	Ui::DeformerWidget dw;
+	Scene * activeScene;
 
 public:
 	DeformerPanel();
@@ -16,7 +18,8 @@ public:
 	QFFD * activeDeformer;
 
 public slots:
-	void createFFD(QSurfaceMesh * mesh);
+	void setActiveScene(Scene *);
+	void onCreateBoundingClicked();
 
 signals:
 	void deformerCreated( QFFD * );

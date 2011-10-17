@@ -8,6 +8,9 @@
 
 Scene::Scene( QString loadObject, QWidget *parent)
 {
+	activeFrame = new ManipulatedFrame();
+	setManipulatedFrame(activeFrame);
+
 	activeDeformer = NULL;
 
 	// GLViewer options
@@ -221,10 +224,9 @@ void Scene::postSelection( const QPoint& point )
 		activeDeformer->postSelection(selected);
 
 		if(selected >= 0)
-		{
-			ManipulatedFrame * fr = &activeDeformer->getQControlPoint(selected);
-			this->setManipulatedFrame(fr);
-		}
+			setManipulatedFrame( activeDeformer->getQControlPoint(selected) );
+		else
+			setManipulatedFrame( activeFrame );
 	}
 }
 
@@ -296,6 +298,7 @@ void Scene::setActiveWires( QVector<Wire> newWires )
 void Scene::setActiveDeformer( QFFD * newFFD )
 {
 	activeDeformer = newFFD;
+	updateGL();
 }
 
 void* Scene::readBuffer( GLenum format, GLenum type )

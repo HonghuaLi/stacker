@@ -7,70 +7,53 @@
 message("You are running qmake on a generated .pro file. This may not work!")
 
 
-HEADERS += ./Workspace.h \
-    ./GUI/QMesh.h \
+HEADERS += ./GUI/QMeshManager.h \
     ./GUI/Scene.h \
+    ./Workspace.h \
+    ./Utility/ColorMap.h \
+    ./Utility/Graph.h \
     ./Utility/HashTable.h \
     ./Utility/Macros.h \
     ./Utility/OpenMeshGL.h \
     ./Utility/SimpleDraw.h \
-    ./GraphicsLibrary/Circle.h \
-    ./GraphicsLibrary/Color4.h \
-    ./GraphicsLibrary/Curvature.h \
-    ./GraphicsLibrary/Edge.h \
-    ./GraphicsLibrary/Face.h \
-    ./GraphicsLibrary/HalfEdge.h \
-    ./GraphicsLibrary/Line.h \
-    ./GraphicsLibrary/LocalFrame.h \
-    ./GraphicsLibrary/Mesh.h \
-    ./GraphicsLibrary/Plane.h \
-    ./GraphicsLibrary/Point.h \
+    ./GraphicsLibrary/Monge_via_jet_fitting.h \
     ./GraphicsLibrary/Sampler.h \
-    ./GraphicsLibrary/Slicer.h \
-    ./GraphicsLibrary/Smoother.h \
-    ./GraphicsLibrary/Triangle.h \
-    ./GraphicsLibrary/Umbrella.h \
     ./GraphicsLibrary/VBO.h \
-    ./GraphicsLibrary/Vec4.h \
-    ./GraphicsLibrary/VertexDetail.h \
     ./GraphicsLibrary/Voxel.h \
-    ./GraphicsLibrary/Voxeler.h \
+    ./GraphicsLibrary/SurfaceMesh/Curvature.h \
     ./GraphicsLibrary/SurfaceMesh/IO.h \
     ./GraphicsLibrary/SurfaceMesh/properties.h \
-    ./GraphicsLibrary/SurfaceMesh/QSurfaceMesh.h \
     ./GraphicsLibrary/SurfaceMesh/Quadric.h \
     ./GraphicsLibrary/SurfaceMesh/Surface_mesh.h \
     ./GraphicsLibrary/SurfaceMesh/Vector.h \
+    ./GraphicsLibrary/SurfaceMesh/QSurfaceMesh.h \
     ./GraphicsLibrary/BoundingBox.h \
     ./GraphicsLibrary/Intersection.h \
     ./Utility/kdtree.h \
     ./GraphicsLibrary/Octree.h \
-    ./Stacker/StackerPanel.h \
     ./Stacker/Offset.h \
-    ./Wires/Wire.h \
+    ./Stacker/Stacker.h \
+    ./Stacker/StackerPreview.h \
+    ./Stacker/StackerPanel.h \
     ./Wires/AnalyzeWires.h \
+    ./Wires/Ridges.h \
+    ./Wires/SimpleEdge.h \
+    ./Wires/Wire.h \
     ./Wires/WiresPanel.h \
-    ./Utility/Graph.h \
-    ./Wires/SimpleEdge.h
+    ./Deformer/FFD.h \
+    ./Deformer/DeformerPanel.h \
+    ./Deformer/QFFD.h \
+    ./Deformer/QControlPoint.h
 SOURCES += ./main.cpp \
-    ./Workspace.cpp \
+    ./GUI/QMeshManager.cpp \
     ./GUI/Scene.cpp \
+    ./Workspace.cpp \
+    ./Utility/ColorMap.cpp \
     ./Utility/SimpleDraw.cpp \
-    ./GraphicsLibrary/Circle.cpp \
-    ./GraphicsLibrary/Curvature.cpp \
-    ./GraphicsLibrary/Face.cpp \
-    ./GraphicsLibrary/Line.cpp \
-    ./GraphicsLibrary/LocalFrame.cpp \
-    ./GraphicsLibrary/Mesh.cpp \
-    ./GraphicsLibrary/Plane.cpp \
+    ./GraphicsLibrary/Monge_via_jet_fitting.cpp \
     ./GraphicsLibrary/Sampler.cpp \
-    ./GraphicsLibrary/Slicer.cpp \
-    ./GraphicsLibrary/Smoother.cpp \
-    ./GraphicsLibrary/Triangle.cpp \
-    ./GraphicsLibrary/Umbrella.cpp \
     ./GraphicsLibrary/VBO.cpp \
-    ./GraphicsLibrary/VertexDetail.cpp \
-    ./GraphicsLibrary/Voxeler.cpp \
+    ./GraphicsLibrary/SurfaceMesh/Curvature.cpp \
     ./GraphicsLibrary/SurfaceMesh/IO.cpp \
     ./GraphicsLibrary/SurfaceMesh/IO_obj.cpp \
     ./GraphicsLibrary/SurfaceMesh/IO_off.cpp \
@@ -80,11 +63,19 @@ SOURCES += ./main.cpp \
     ./GraphicsLibrary/BoundingBox.cpp \
     ./Utility/kdtree.cpp \
     ./GraphicsLibrary/Octree.cpp \
+    ./Stacker/Offset.cpp \
+    ./Stacker/Stacker.cpp \
+    ./Stacker/StackerPreview.cpp \
     ./Stacker/StackerPanel.cpp \
-    ./Wires/Wire.cpp \
+    ./Wires/Ridges.cpp \
     ./Wires/AnalyzeWires.cpp \
-    ./Wires/WiresPanel.cpp
+    ./Wires/Wire.cpp \
+    ./Wires/WiresPanel.cpp \
+    ./Deformer/DeformerPanel.cpp \
+    ./Deformer/FFD.cpp \
+    ./Deformer/QFFD.cpp
 FORMS += ./Workspace.ui \
     ./Stacker/StackerWidget.ui \
-    ./Wires/WiresWidget.ui
-RESOURCES += ./Workspace.qrc
+    ./Wires/WiresWidget.ui \
+    ./Deformer/DeformerWidget.ui
+RESOURCES += Workspace.qrc

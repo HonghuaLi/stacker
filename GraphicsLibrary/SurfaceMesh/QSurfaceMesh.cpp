@@ -10,7 +10,9 @@ QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 
 	isReady = false;
 	isDirty = false;
-	isDrawBB = true;
+
+	// Render options
+	isDrawBB = false;
 
 	averageEdgeLength = -1;
 }

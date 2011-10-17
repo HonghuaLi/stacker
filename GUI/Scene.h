@@ -82,6 +82,7 @@ private:
 
 // Objects in the scene
 private:
+	ManipulatedFrame * activeFrame;
 	QVector<Wire> activeWires;
 	QFFD * activeDeformer;
 
