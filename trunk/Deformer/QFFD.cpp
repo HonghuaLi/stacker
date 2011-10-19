@@ -12,6 +12,12 @@ QFFD::QFFD( QSurfaceMesh * src_mesh, FFD_FitType fit_type, Vec3i gridResolution 
 	// Fit control points using bounding box
 	ffd()->bbFit( gridResolution );
 
+	// Connect control points to update function
+	foreach(QControlPoint * cp, this->ffd()->points)
+	{
+		connect(cp, SIGNAL(manipulated()), this, SLOT(updateMesh()));
+	}
+
 	isReady = true;
 }
 
@@ -33,6 +39,10 @@ void QFFD::draw()
 		glColor4dv(Color(0.7,0.9,0,1)); 
 		SimpleDraw::DrawSphere(ffd()->points[idx]->pos, Min(ffd()->width, Min(ffd()->length, ffd()->width)) * 0.02);
 	}
+
+	// Debug
+	foreach(Vec3d db_point, this->ffd()->dbPoints)
+		SimpleDraw::IdentifyPoint(db_point, 1.0f, 1.0f, 0, 8.0f);
 }
 
 void QFFD::drawNames()
@@ -103,4 +113,11 @@ QControlPoint * QFFD::getQControlPoint( int index )
 FFD * QFFD::ffd()
 {
 	return &current_ffd;
+}
+
+void QFFD::updateMesh()
+{
+	ffd()->apply();
+
+	emit(meshDeformed());
 }

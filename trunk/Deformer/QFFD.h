@@ -25,4 +25,10 @@ public:
 
 	QControlPoint * getQControlPoint( int index );
 	FFD * ffd();
+
+public slots:
+	void updateMesh();
+
+signals:
+	void meshDeformed();
 };

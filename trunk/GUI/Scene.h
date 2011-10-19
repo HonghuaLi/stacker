@@ -97,6 +97,7 @@ public slots:
 	uint numObjects();
 	void setActiveWires( QVector<Wire> );
 	void setActiveDeformer( QFFD * );
+	void updateActiveObject();
 
 signals:
 	void focusChanged( Scene* );
