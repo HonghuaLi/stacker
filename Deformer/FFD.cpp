@@ -49,5 +49,95 @@ void FFD::bbFit( Vec3i res )
 			}
 		}	
 	}
+
+	// Setup local coordinate
+	mP = start_corner; // this is the origin of our local frame
+	mS = dx*Vec3d(1,0,0);
+	mT = dy*Vec3d(0,1,0);
+	mU = dz*Vec3d(0,0,1);
+
+	// Get copy of original mesh vertices
+	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
+	Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
+
+	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
+	{
+		Vec3d q = getLocalCoordinates(points[vit]); 
+		meshVerticesLocal.push_back(q);
+	}
 }
 
+void FFD::apply()
+{
+	// This algorithm is NOT accumulative, i.e: after calculating the new s,t,u of the vertex,
+	// we deform the mModel, but leave the mModelLocal intact, so next time all the mModelLocal
+	// coordinates will be in (0,1) and we recalculate the new V
+
+	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
+	Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
+
+	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
+	{
+		int vidx = ((Surface_mesh::Vertex)vit).idx();
+		points[vit] = getWorldCoordinate( deformVertexLocal(meshVerticesLocal[vidx]) );
+
+		dbPoints.push_back(points[vit]);
+	}
+}
+
+Vec3d FFD::deformVertexLocal( const Vec3d & localPoint )
+{
+	Vec3d newVertex;
+
+	double s = localPoint.x();
+	double t = localPoint.y();
+	double u = localPoint.z();
+
+	int S = resolution.x()-1, T = resolution.y()-1, U = resolution.z()-1;
+
+	// From Explicit definition of Bézier curves
+	for (int k = 0; k <= U; k++)
+	{
+		int ck = C(U,k);
+		double uk = pow(u,k) * pow(1-u, U-k);
+
+		for (int j = 0; j <= T; j++)
+		{
+			int cj = C(T,j);
+			double tj = pow(t,j) * pow(1-t, T-j);
+
+			for (int i = 0; i <= S; i++)
+			{
+				int ci =  C(S,i);
+				double si = pow(s,i) * pow(1-s, S-i);
+
+				Vec3d controlPointPos = points[pointsGridIdx[i][j][k]]->pos;
+
+				// as combination
+				newVertex += ci*cj*ck*si*tj*uk * (controlPointPos);
+			}
+		}
+	}
+
+	return newVertex;
+}
+
+Vec3d FFD::getWorldCoordinate(const Vec3d & pLocal)
+{
+	return mP + pLocal.x()*mS + pLocal.y()*mT + pLocal.z()*mU;
+}
+
+Vec3d FFD::getLocalCoordinates( const Vec3d & p )
+{
+	Vec3d V = p;
+	double s = 0, t = 0, u = 0;
+
+	Vec3d TXU = cross(mT,mU);
+	s = dot(TXU, V - mP) / dot(TXU, mS);
+	Vec3d SXU = cross(mS,mU);
+	t = dot(SXU, V - mP) / dot(SXU, mT);
+	Vec3d SXT = cross(mS,mT);
+	u = dot(SXT, V - mP) / dot(SXT, mU);
+
+	return Vec3d(s,t,u);
+}

@@ -77,6 +77,11 @@ void Scene::updateVBOs()
 	}
 }
 
+void Scene::updateActiveObject()
+{
+	updateVBOs();
+}
+
 uint Scene::numObjects()
 {
 	return vboCollection.size();
