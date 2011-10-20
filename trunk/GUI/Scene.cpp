@@ -79,7 +79,7 @@ void Scene::updateVBOs()
 
 void Scene::updateActiveObject()
 {
-	updateVBOs();
+	vboCollection[activeObjectId].setDirty(true);
 }
 
 uint Scene::numObjects()

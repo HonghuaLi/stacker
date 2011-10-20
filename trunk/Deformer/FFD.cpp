@@ -10,12 +10,15 @@ FFD::FFD( QSurfaceMesh * src_mesh, FFD_FitType fit_type )
 	width = mesh->bbmax.x() - mesh->bbmin.x();
 	length = mesh->bbmax.y() - mesh->bbmin.y();
 	height = mesh->bbmax.z() - mesh->bbmin.z();
+
+	// Expand a bit so all the vertices are in (0,1)
+	width += mesh->radius * 0.05;
+	length += mesh->radius * 0.05;
+	height += mesh->radius * 0.05;
 }
 
 void FFD::bbFit( Vec3i res )
 {
-	Vec3d center = mesh->center;
-
 	int Nx = Max(2, res.x());
 	int Ny = Max(2, res.y());
 	int Nz = Max(2, res.z());
@@ -52,42 +55,39 @@ void FFD::bbFit( Vec3i res )
 
 	// Setup local coordinate
 	mP = start_corner; // this is the origin of our local frame
-	mS = dx*Vec3d(1,0,0);
-	mT = dy*Vec3d(0,1,0);
-	mU = dz*Vec3d(0,0,1);
+	mS = width * Vec3d(1,0,0);
+	mT = length * Vec3d(0,1,0);
+	mU = height * Vec3d(0,0,1);
 
-	// Get copy of original mesh vertices
-	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
+	// Get copy of original mesh vertices in local coordinates
+	Surface_mesh::Vertex_property<Point> mesh_points = mesh->vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
 
-	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
-	{
-		Vec3d q = getLocalCoordinates(points[vit]); 
-		meshVerticesLocal.push_back(q);
+	meshVerticesLocal.reserve(mesh->n_vertices());
+
+	for (vit = mesh->vertices_begin(); vit != vend; ++vit){
+		meshVerticesLocal.push_back( getLocalCoordinates(mesh_points[vit]) );
 	}
+
+	printf("blah");
 }
 
 void FFD::apply()
 {
-	// This algorithm is NOT accumulative, i.e: after calculating the new s,t,u of the vertex,
-	// we deform the mModel, but leave the mModelLocal intact, so next time all the mModelLocal
-	// coordinates will be in (0,1) and we recalculate the new V
-
-	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
+	Surface_mesh::Vertex_property<Point> mesh_points = mesh->vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
 
 	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
 	{
 		int vidx = ((Surface_mesh::Vertex)vit).idx();
-		points[vit] = getWorldCoordinate( deformVertexLocal(meshVerticesLocal[vidx]) );
 
-		dbPoints.push_back(points[vit]);
-	}
+		mesh_points[vit] = getWorldCoordinate( deformVertexLocal(meshVerticesLocal[vidx]) );
+	}	
 }
 
 Vec3d FFD::deformVertexLocal( const Vec3d & localPoint )
 {
-	Vec3d newVertex;
+	Vec3d newVertex (0,0,0);
 
 	double s = localPoint.x();
 	double t = localPoint.y();
@@ -111,7 +111,7 @@ Vec3d FFD::deformVertexLocal( const Vec3d & localPoint )
 				int ci =  C(S,i);
 				double si = pow(s,i) * pow(1-s, S-i);
 
-				Vec3d controlPointPos = points[pointsGridIdx[i][j][k]]->pos;
+				Vec3d controlPointPos = getLocalCoordinates(points[pointsGridIdx[i][j][k]]->pos);
 
 				// as combination
 				newVertex += ci*cj*ck*si*tj*uk * (controlPointPos);
@@ -134,8 +134,10 @@ Vec3d FFD::getLocalCoordinates( const Vec3d & p )
 
 	Vec3d TXU = cross(mT,mU);
 	s = dot(TXU, V - mP) / dot(TXU, mS);
+
 	Vec3d SXU = cross(mS,mU);
 	t = dot(SXU, V - mP) / dot(SXU, mT);
+
 	Vec3d SXT = cross(mS,mT);
 	u = dot(SXT, V - mP) / dot(SXT, mU);
 

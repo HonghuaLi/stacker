@@ -28,6 +28,7 @@ public:
 
 	// Debug
 	StdVector<Vec3d> dbPoints;
+	StdVector< Pair<Vec3d,Vec3d> > dbLines;
 };
 
 // math helpers

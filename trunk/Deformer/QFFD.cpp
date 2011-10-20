@@ -34,15 +34,18 @@ void QFFD::draw()
 	}
 
 	// Draw sphere around selected control points
-	foreach(int idx, selectedPoints)
-	{
+	foreach(int idx, selectedPoints){
 		glColor4dv(Color(0.7,0.9,0,1)); 
 		SimpleDraw::DrawSphere(ffd()->points[idx]->pos, Min(ffd()->width, Min(ffd()->length, ffd()->width)) * 0.02);
 	}
 
 	// Debug
 	foreach(Vec3d db_point, this->ffd()->dbPoints)
-		SimpleDraw::IdentifyPoint(db_point, 1.0f, 1.0f, 0, 8.0f);
+		SimpleDraw::IdentifyPoint(db_point, 0.6f, 0.5f, 0.1f, 4.0f);
+
+	for(StdVector< Pair<Vec3d,Vec3d> >::iterator db_line = ffd()->dbLines.begin(); 
+		db_line != ffd()->dbLines.end(); db_line++ )
+		SimpleDraw::IdentifyLine(db_line->first, db_line->second);
 }
 
 void QFFD::drawNames()
