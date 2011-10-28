@@ -101,6 +101,13 @@ bool read_off(Surface_mesh& mesh, const std::string& filename)
         assert(c != NULL);
     }
 
+	// Ibraheem bug fix for comments, empty lines..
+	while(!binary && true && !feof(in)){
+		fgets(line, 100, in);
+		if(strlen(line) > 4 && line[0] != '#')
+			break;
+	}
+		
 
     // #Vertice, #Faces, #Edges
     if (binary)
@@ -111,7 +118,7 @@ bool read_off(Surface_mesh& mesh, const std::string& filename)
     }
     else
     {
-        err = fscanf(in, "%d %d %d", (int*)&nV, (int*)&nF, (int*)&nE);
+        err = sscanf(line, "%d %d %d", (int*)&nV, (int*)&nF, (int*)&nE); // Ibraheem's bug fix
     }
     mesh.reserve(nV, std::max(3*nV, nE), nF);
 

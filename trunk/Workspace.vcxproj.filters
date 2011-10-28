@@ -337,6 +337,15 @@
     <ClInclude Include="Deformer\FFD.h">
       <Filter>Deformer</Filter>
     </ClInclude>
+    <ClInclude Include="GraphicsLibrary\OBB.h">
+      <Filter>Intersection\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\OBB2.h">
+      <Filter>Intersection\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\OBB2_math.h">
+      <Filter>Intersection\Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Workspace.rc" />
