@@ -6,6 +6,13 @@
 #include "QMeshManager.h"
 #include "SimpleDraw.h"
 
+// Debug OBB code
+#include "OBB.h"
+OBB * testOBB;
+
+#include "OBB2.h"
+OBB2 * testOBB2;
+
 Scene::Scene( QString loadObject, QWidget *parent)
 {
 	activeFrame = new ManipulatedFrame();
@@ -33,6 +40,9 @@ Scene::Scene( QString loadObject, QWidget *parent)
 	this->setSelectRegionWidth(10);
 
 	emit(newSceneCreated());
+
+	testOBB = NULL;
+	testOBB2 = NULL;
 }
 
 void Scene::insertObject( QString fileName )
@@ -159,6 +169,9 @@ void Scene::draw()
 
 	// For depth buffer, selection, anything extraordinary
 	specialDraw();
+
+	if(testOBB) testOBB->draw();
+	if(testOBB2) testOBB2->draw();
 }
 
 void Scene::specialDraw()
@@ -211,6 +224,17 @@ void Scene::mouseMoveEvent( QMouseEvent* e )
 
 void Scene::keyPressEvent( QKeyEvent *e )
 {
+	if(e->key() == Qt::Key_O)
+	{
+		testOBB = new OBB();
+		testOBB->build_from_mesh( activeObject() );
+	}
+
+	if(e->key() == Qt::Key_P)
+	{
+		testOBB2 = new OBB2( activeObject() );
+	}
+
 	// Regular behavior
 	QGLViewer::keyPressEvent(e);
 }

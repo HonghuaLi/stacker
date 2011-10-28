@@ -344,6 +344,9 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(Configuration)\moc_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <ClInclude Include="GraphicsLibrary\Monge_via_jet_fitting.h" />
+    <ClInclude Include="GraphicsLibrary\OBB.h" />
+    <ClInclude Include="GraphicsLibrary\OBB2.h" />
+    <ClInclude Include="GraphicsLibrary\OBB2_math.h" />
     <ClInclude Include="GraphicsLibrary\SurfaceMesh\Curvature.h" />
     <ClInclude Include="GUI\QMeshManager.h" />
     <ClInclude Include="Stacker\Offset.h" />
