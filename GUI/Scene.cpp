@@ -13,6 +13,9 @@ OBB * testOBB;
 #include "OBB2.h"
 OBB2 * testOBB2;
 
+#include "ConvexHull.h"
+ConvexHull *testCH;
+
 Scene::Scene( QString loadObject, QWidget *parent)
 {
 	activeFrame = new ManipulatedFrame();
@@ -43,6 +46,7 @@ Scene::Scene( QString loadObject, QWidget *parent)
 
 	testOBB = NULL;
 	testOBB2 = NULL;
+	testCH = NULL;
 }
 
 void Scene::insertObject( QString fileName )
@@ -172,6 +176,7 @@ void Scene::draw()
 
 	if(testOBB) testOBB->draw();
 	if(testOBB2) testOBB2->draw();
+	if(testCH) testCH->draw();
 }
 
 void Scene::specialDraw()
@@ -233,6 +238,11 @@ void Scene::keyPressEvent( QKeyEvent *e )
 	if(e->key() == Qt::Key_P)
 	{
 		testOBB2 = new OBB2( activeObject() );
+	}
+
+	if(e->key() == Qt::Key_C)
+	{
+		testCH = new ConvexHull( activeObject() );
 	}
 
 	// Regular behavior

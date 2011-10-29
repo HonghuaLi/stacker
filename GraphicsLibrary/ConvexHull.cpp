@@ -3,15 +3,38 @@
 #include "ConvexHull.h"
 
 
-
-ConvexHull::ConvexHull (InputIterator begin, InputIterator end)
+ConvexHull::ConvexHull( std::vector<Vector3> &pnts )
 {
-	bool CCW;
-	std::vector<InputIterator> mExtreme = getExtremes(begin, end, &CCW);
-	int i0 = mExtreme[0] - begin;
-	int i1 = mExtreme[1] - begin;
-	int i2 = mExtreme[2] - begin;
-	int i3 = mExtreme[3] - begin;
+	mPnts = pnts;
+	isReady = false;
+
+	computeCH();
+}
+
+ConvexHull::ConvexHull( Surface_mesh * mesh )
+{
+	// Get points
+	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
+	Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
+
+	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
+		mPnts.push_back(points[vit]);
+
+	isReady = false;
+
+	// Compute CH
+	computeCH();
+}
+
+
+void ConvexHull::computeCH()
+{
+	std::vector<int> mExtreme;
+	bool CCW = getExtremes(mExtreme);
+	int i0 = mExtreme[0];
+	int i1 = mExtreme[1];
+	int i2 = mExtreme[2];
+	int i3 = mExtreme[3];
 
 	TriFace* tri0;
 	TriFace* tri1;
@@ -45,27 +68,29 @@ ConvexHull::ConvexHull (InputIterator begin, InputIterator end)
 	mHull.insert(tri2);
 	mHull.insert(tri3);
 
-	for (InputIterator itr = begin; itr!=end; itr++)
+	for (int i=0;i<mPnts.size();i++)
 	{
-		if (!Update(itr)){
+		if (!Update(i)){
 			DeleteHull();
 			return;
 		}
 	}
 
 	ExtractIndices();
+
+	isReady = true;
 }
 
-bool ConvexHull::Update (InputIterator v)
+bool ConvexHull::Update (int id)
 {
 	// Locate a TriFace visible to the input point (if possible).
 	TriFace* visible = 0;
 	TriFace* tri;
-	typename std::set<TriFace*>::iterator iter;
+	std::set<TriFace*>::iterator iter;
 	for (iter= mHull.begin(); iter != mHull.end(); ++iter)
 	{
 		tri = *iter;
-		if (tri->GetSign(v) > 0)
+		if (tri->GetSign(id, mPnts) > 0)
 		{
 			visible = tri;
 			break;
@@ -96,7 +121,7 @@ bool ConvexHull::Update (InputIterator v)
 				// Detach TriFace and adjacent TriFace from each other.
 				int nullIndex = tri->DetachFrom(j, adj);
 
-				if (adj->GetSign(v) > 0)
+				if (adj->GetSign(id, mPnts) > 0)
 				{
 					if (!adj->OnStack)
 					{
@@ -124,7 +149,7 @@ bool ConvexHull::Update (InputIterator v)
 	std::map<int,TerminatorData>::iterator edge = terminator.begin();
 	v0 = edge->second.V[0];
 	v1 = edge->second.V[1];
-	tri = new TriFace(i, v0, v1);
+	tri = new TriFace(id, v0, v1);
 	mHull.insert(tri);
 
 	// Save information for linking first/last inserted new TriFaces.
@@ -139,7 +164,7 @@ bool ConvexHull::Update (InputIterator v)
 		edge = terminator.find(v1);
 		v0 = v1;
 		v1 = edge->second.V[1];
-		TriFace* next = new TriFace(i, v0, v1);
+		TriFace* next = new TriFace(id, v0, v1);
 		mHull.insert(next);
 
 		// Establish adjacency links across terminator edge.
@@ -162,27 +187,26 @@ bool ConvexHull::Update (InputIterator v)
 
 void ConvexHull::ExtractIndices ()
 {
-	int mNumSimplices = (int)mHull.size();
-	mIndices = new1<int>(3*mNumSimplices);
+	mNumSimplices = (int)mHull.size();
 
-	typename std::set<TriFace*>::iterator iter = mHull.begin();
-	typename std::set<TriFace*>::iterator end = mHull.end();
-	for (int i = 0; iter != end; ++iter)
+	std::set<TriFace*>::iterator iter = mHull.begin();
+	std::set<TriFace*>::iterator end = mHull.end();
+	for (; iter != end; ++iter)
 	{
 		TriFace* tri = *iter;
-		for (int j = 0; j < 3; ++j, ++i)
+		for (int j = 0; j < 3; ++j)
 		{
-			mIndices[i] = tri->V[j];
+			mIndices.push_back(tri->V[j]);
 		}
-		delete0(tri);
+		delete tri;
 	}
 	mHull.clear();
 }
 
 void ConvexHull::DeleteHull ()
 {
-	typename std::set<TriFace*>::iterator iter = mHull.begin();
-	typename std::set<TriFace*>::iterator end = mHull.end();
+	std::set<TriFace*>::iterator iter = mHull.begin();
+	std::set<TriFace*>::iterator end = mHull.end();
 	for (/**/; iter != end; ++iter)
 	{
 		TriFace* tri = *iter;
@@ -191,102 +215,129 @@ void ConvexHull::DeleteHull ()
 	mHull.clear();
 }
 
-std::vector<InputIterator> ConvexHull::getExtremes( InputIterator begin, InputIterator end, bool *CCW)
+bool ConvexHull::getExtremes( std::vector<int> &mExtreme )
 {
-	// Compute the axis-aligned bounding box for the input points.  Keep track
-	// of the indices into 'points' for the current min and max.
-	Vector3 mMin, mMax;
-	mMin = *begin;
-	mMax = *begin;
+	bool mExtremeCCW = false;
+	mExtreme.resize(4, 0);
+	int nbPnts = mPnts.size();
 
-	std::vector<InputIterator> itrMin, itrMax;
-	for (int j = 0; j < 3; ++j)
+	// Compute the axis-aligned bounding box for the input mPnts.  Keep track
+	// of the indices into 'mPnts' for the current min and max.
+	Vector3 mMin, mMax;
+	int j, indexMin[3], indexMax[3];
+	for (j = 0; j < 3; ++j)
 	{
-		itrMin.push_back(end);
-		itrMax.push_back(end);
+		mMin[j] = mPnts[0][j];
+		mMax[j] = mMin[j];
+		indexMin[j] = 0;
+		indexMax[j] = 0;
 	}
 
-	for (InputIterator itr = begin; itr!=end; itr++)
-	{	
-		for (int j = 0; j < 3; ++j)
+	int i;
+	for (i = 1; i < nbPnts; ++i)
+	{
+		for (j = 0; j < 3; ++j)
 		{
-			Vector3 p = *itr;
-
-			if (p[j] < mMin[j])
+			if (mPnts[i][j] < mMin[j])
 			{
-				mMin[j] = p[j];
-				itrMin[j] = itr;
+				mMin[j] = mPnts[i][j];
+				indexMin[j] = i;
 			}
-			else if (p[j] > mMax[j])
+			else if (mPnts[i][j] > mMax[j])
 			{
-				mMax[j] = p[j];
-				itrMax[j] = itr;
+				mMax[j] = mPnts[i][j];
+				indexMax[j] = i;
 			}
 		}
 	}
 
 	// Determine the maximum range for the bounding box.
-	std::vector<InputIterator> mExtreme(4, end);
 	Real mMaxRange = mMax[0] - mMin[0];
-	mExtreme[0] = itrMin[0];
-	mExtreme[1] = itrMax[0];
-
+	mExtreme[0] = indexMin[0];
+	mExtreme[1] = indexMax[0];
 	Real range = mMax[1] - mMin[1];
 	if (range > mMaxRange)
 	{
 		mMaxRange = range;
-		mExtreme[0] = itrMin[1];
-		mExtreme[1] = itrMax[1];
+		mExtreme[0] = indexMin[1];
+		mExtreme[1] = indexMax[1];
 	}
 	range = mMax[2] - mMin[2];
 	if (range > mMaxRange)
 	{
 		mMaxRange = range;
-		mExtreme[0] = itrMin[2];
-		mExtreme[1] = itrMax[2];
+		mExtreme[0] = indexMin[2];
+		mExtreme[1] = indexMax[2];
 	}
 
 	// The origin is either the point of minimum x-value, point of
 	// minimum y-value, or point of minimum z-value.
-	Vector3 mOrigin = *mExtreme[0];
-	std::vector<Vector3> mDirection(3, Vector3());
+	Vector3 mOrigin = mPnts[mExtreme[0]];
+
 
 	// Test whether the point set is (nearly) a line segment.
-	mDirection[0] = *mExtreme[1] - mOrigin;
+	std::vector<Vector3> mDirection(3, Vector3());
+	mDirection[0] = mPnts[mExtreme[1]] - mOrigin;
 	mDirection[0].normalize();
 	Real maxDistance = (Real)0;
-	Real distance;
-	for (InputIterator itr = begin; itr!=end; itr++)
+	Real distance, Dot;
+	mExtreme[2] = mExtreme[0];
+	for (i = 0; i < nbPnts; ++i)
 	{
-		Vector3 diff = *itr - mOrigin;
-		Vector3 proj = diff - dot(mDirection[0], diff) * mDirection[0];
+		Vector3 diff = mPnts[i] - mOrigin;
+		Dot = dot(mDirection[0], diff);
+		Vector3 proj = diff - Dot*mDirection[0];
 		distance = proj.norm();
 		if (distance > maxDistance)
 		{
 			maxDistance = distance;
-			mExtreme[2] = itr;
-			mDirection[1] = proj;
+			mExtreme[2] = i;
 		}
 	}
 
 
+
 	// Test whether the point set is (nearly) a planar polygon.
+	mDirection[1] = mPnts[mExtreme[2]] - mOrigin;
+	Dot = dot(mDirection[0], mDirection[1]);
+	mDirection[1] -= Dot*mDirection[0];
 	mDirection[1].normalize();
 	mDirection[2] = cross(mDirection[0], mDirection[1]);
 	maxDistance = (Real)0;
-	for (InputIterator itr = begin; itr!=end; itr++)
+	Real maxSign = (Real)0;
+	mExtreme[3] = mExtreme[0];
+	for (i = 0; i < nbPnts; ++i)
 	{
-		Vector3 diff = *itr - mOrigin;
+		Vector3 diff = mPnts[i] - mOrigin;
 		distance = dot(mDirection[2], diff);
 		if (fabs(distance) > maxDistance)
 		{
 			maxDistance = fabs(distance);
-			mExtreme[3] = itr;
-			CCW = (distance > (Real)0);
+			mExtremeCCW = (distance > (Real)0);
+			mExtreme[3] = i;
 		}
 	}
 
-	return mExtreme;
+	return mExtremeCCW;
+}
+
+void ConvexHull::draw()
+{
+	if (!isReady) return;
+
+	std::vector<std::vector<Vector3>> tris;
+	for (int i=0;i<3*mNumSimplices;)
+	{
+		std::vector<Vector3> tri;
+
+		tri.push_back(mPnts[mIndices[i++]]);
+		tri.push_back(mPnts[mIndices[i++]]);
+		tri.push_back(mPnts[mIndices[i++]]);
+
+		tris.push_back(tri);
+	}
+
+	SimpleDraw::DrawTriangles(tris);
 }
 
 // ConvexHull::TriFace
@@ -302,12 +353,12 @@ ConvexHull::TriFace::TriFace (int v0, int v1, int v2)
 }
 
 
-int ConvexHull::TriFace::GetSign( InputIterator v )
+int ConvexHull::TriFace::GetSign( int id , std::vector<Vector3> &pnts)
 {
-	Vector3 a = V[1] - V[0];
-	Vector3 b = V[2] - V[1];
-	Vector3 c = (*v) - V[0];
-	return dot(cross(a,b), c) > 0;
+	Vector3 ab = pnts[V[1]] - pnts[V[0]];
+	Vector3 ac = pnts[V[2]] - pnts[V[0]];
+	Vector3 av = pnts[id]	- pnts[V[0]];
+	return dot(cross(ab,ac), av) > 0;
 }
 
 void ConvexHull::TriFace::AttachTo (TriFace* adj0, TriFace* adj1,
@@ -321,9 +372,6 @@ void ConvexHull::TriFace::AttachTo (TriFace* adj0, TriFace* adj1,
 
 int ConvexHull::TriFace::DetachFrom (int adjIndex, TriFace* adj)
 {
-	assertion(0 <= adjIndex && adjIndex < 3 && Adj[adjIndex] == adj,
-		"Invalid inputs\n");
-
 	Adj[adjIndex] = 0;
 	for (int i = 0; i < 3; ++i)
 	{
