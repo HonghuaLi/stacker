@@ -239,6 +239,9 @@
     <ClCompile Include="GeneratedFiles\Template\moc_QControlPoint.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicsLibrary\ConvexHull.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -345,6 +348,9 @@
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\OBB2_math.h">
       <Filter>Intersection\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\ConvexHull.h">
+      <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
