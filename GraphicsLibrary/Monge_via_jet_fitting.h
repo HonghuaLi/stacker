@@ -2,20 +2,20 @@
 
 #include <iterator>
 #include <math.h>
-#include "Surface_mesh.h"
+#include "SurfaceMesh/Vector.h"
 #include "Macros.h"
 
 #include "Eigen/LU"
 #include "Eigen/Geometry"
 #include "Eigen/Eigenvalues"
 
-typedef double  FT;
-typedef Point   Point_3;
-typedef Point  Vector3;
-typedef std::vector<Point_3>::iterator InputIterator;
-typedef Eigen::Transform<FT, 3, Eigen::AffineCompact> Aff_transformation;
-typedef Eigen::VectorXd LAVector;
-typedef Eigen::MatrixXd LAMatrix;
+typedef double											FT;
+typedef Vector<FT,3>									Point_3;
+typedef Point_3											Vector3;
+typedef std::vector<Point_3>::iterator					InputIterator;
+typedef Eigen::Transform<FT, 3, Eigen::AffineCompact>	Aff_transformation;
+typedef Eigen::VectorXd									LAVector;
+typedef Eigen::MatrixXd									LAMatrix;
 
 ////////////////////// CLASS Monge_via_jet_fitting ////////////////////////
 class Monge_via_jet_fitting {
