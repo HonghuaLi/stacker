@@ -1,9 +1,9 @@
 // From Geometric Tools, LLC
 
-#include "ConvexHull.h"
+#include "ConvexHull3.h"
 
 
-ConvexHull::ConvexHull( std::vector<Vector3> &pnts )
+ConvexHull3::ConvexHull3( std::vector<Vector3> &pnts )
 {
 	mPnts = pnts;
 	isReady = false;
@@ -11,7 +11,7 @@ ConvexHull::ConvexHull( std::vector<Vector3> &pnts )
 	computeCH();
 }
 
-ConvexHull::ConvexHull( Surface_mesh * mesh )
+ConvexHull3::ConvexHull3( Surface_mesh * mesh )
 {
 	// Get points
 	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
@@ -27,7 +27,7 @@ ConvexHull::ConvexHull( Surface_mesh * mesh )
 }
 
 
-void ConvexHull::computeCH()
+void ConvexHull3::computeCH()
 {
 	std::vector<int> mExtreme;
 	bool CCW = getExtremes(mExtreme);
@@ -81,111 +81,120 @@ void ConvexHull::computeCH()
 	isReady = true;
 }
 
-bool ConvexHull::Update (int id)
+bool ConvexHull3::Update (int i)
 {
-	// Locate a TriFace visible to the input point (if possible).
-	TriFace* visible = 0;
-	TriFace* tri;
-	std::set<TriFace*>::iterator iter;
-	for (iter= mHull.begin(); iter != mHull.end(); ++iter)
+	    // Locate a TriFace visible to the input point (if possible).
+    TriFace* visible = 0;
+    TriFace* tri;
+    std::set<TriFace*>::iterator iter = mHull.begin();
+    std::set<TriFace*>::iterator end = mHull.end();
+    for (/**/; iter != end; ++iter)
+    {
+        tri = *iter;
+        if (tri->GetSign(i, mPnts) > 0)
+        {
+            visible = tri;
+            break;
+        }
+    }
+
+    if (!visible)
+    {
+        // The point is inside the current hull; nothing to do.
+        return true;
+    }
+
+    // Locate and remove the visible TriFaces.
+    std::stack<TriFace*> visibleSet;
+    std::map<int,TerminatorData> terminator;
+    visibleSet.push(visible);
+    visible->OnStack = true;
+    int j, v0, v1;
+    while (!visibleSet.empty())
+    {
+        tri = visibleSet.top();
+        visibleSet.pop();
+        tri->OnStack = false;
+        for (j = 0; j < 3; ++j)
+        {
+            TriFace* adj = tri->Adj[j];
+            if (adj != nullptr)
+            {
+                // Detach TriFace and adjacent TriFace from each other.
+                int nullIndex = tri->DetachFrom(j, adj);
+
+                if (adj->GetSign(i, mPnts) > 0)
+                {
+                    if (!adj->OnStack)
+                    {
+                        // Adjacent TriFace is visible.
+                        visibleSet.push(adj);
+                        adj->OnStack = true;
+                    }
+                }
+                else
+                {
+                    // Adjacent TriFace is invisible.
+                    v0 = tri->V[j];
+                    v1 = tri->V[(j+1)%3];
+                    terminator[v0] = TerminatorData(v0, v1, nullIndex, adj);
+                }
+            }
+        }
+        mHull.erase(tri);
+        delete tri;
+    }
+
+    // Insert the new edges formed by the input point and the terminator
+    // between visible and invisible TriFaces.
+    int size = (int)terminator.size();
+    std::map<int,TerminatorData>::iterator edge = terminator.begin();
+    v0 = edge->second.V[0];
+    v1 = edge->second.V[1];
+	if (v0 >= mPnts.size() || v1 >= mPnts.size())
 	{
-		tri = *iter;
-		if (tri->GetSign(id, mPnts) > 0)
+		int a = 0;
+	}
+    tri = new TriFace(i, v0, v1);
+    mHull.insert(tri);
+
+    // Save information for linking first/last inserted new TriFaces.
+    int saveV0 = edge->second.V[0];
+    TriFace* saveTri = tri;
+
+    // Establish adjacency links across terminator edge.
+    tri->Adj[1] = edge->second.T;
+    edge->second.T->Adj[edge->second.NullIndex] = tri;
+    for (j = 1; j < size; ++j)
+    {
+        edge = terminator.find(v1);
+        v0 = v1;
+        v1 = edge->second.V[1];
+        TriFace* next = new TriFace(i, v0, v1);
+		if (v0 >= mPnts.size() || v1 >= mPnts.size())
 		{
-			visible = tri;
-			break;
+			int a = 0;
 		}
-	}
+        mHull.insert(next);
 
-	if (!visible){
-		// The point is inside the current hull; nothing to do.
-		return true;
-	}
+        // Establish adjacency links across terminator edge.
+        next->Adj[1] = edge->second.T;
+        edge->second.T->Adj[edge->second.NullIndex] = next;
 
-	// Locate and remove the visible TriFaces.
-	std::stack<TriFace*> visibleSet;
-	std::map<int,TerminatorData> terminator;
-	visibleSet.push(visible);
-	visible->OnStack = true;
-	int j, v0, v1;
-	while (!visibleSet.empty())
-	{
-		tri = visibleSet.top();
-		visibleSet.pop();
-		tri->OnStack = false;
-		for (j = 0; j < 3; ++j)
-		{
-			TriFace* adj = tri->Adj[j];
-			if (adj)
-			{
-				// Detach TriFace and adjacent TriFace from each other.
-				int nullIndex = tri->DetachFrom(j, adj);
+        // Establish adjacency links with previously inserted TriFace.
+        next->Adj[0] = tri;
+        tri->Adj[2] = next;
 
-				if (adj->GetSign(id, mPnts) > 0)
-				{
-					if (!adj->OnStack)
-					{
-						// Adjacent TriFace is visible.
-						visibleSet.push(adj);
-						adj->OnStack = true;
-					}
-				}
-				else
-				{
-					// Adjacent TriFace is invisible.
-					v0 = tri->V[j];
-					v1 = tri->V[(j+1)%3];
-					terminator[v0] = TerminatorData(v0, v1, nullIndex, adj);
-				}
-			}
-		}
-		mHull.erase(tri);
-		delete tri;
-	}
+        tri = next;
+    }
 
-	// Insert the new edges formed by the input point and the terminator
-	// between visible and invisible TriFaces.
-	int size = (int)terminator.size();
-	std::map<int,TerminatorData>::iterator edge = terminator.begin();
-	v0 = edge->second.V[0];
-	v1 = edge->second.V[1];
-	tri = new TriFace(id, v0, v1);
-	mHull.insert(tri);
-
-	// Save information for linking first/last inserted new TriFaces.
-	int saveV0 = edge->second.V[0];
-	TriFace* saveTri = tri;
-
-	// Establish adjacency links across terminator edge.
-	tri->Adj[1] = edge->second.T;
-	edge->second.T->Adj[edge->second.NullIndex] = tri;
-	for (j = 1; j < size; ++j)
-	{
-		edge = terminator.find(v1);
-		v0 = v1;
-		v1 = edge->second.V[1];
-		TriFace* next = new TriFace(id, v0, v1);
-		mHull.insert(next);
-
-		// Establish adjacency links across terminator edge.
-		next->Adj[1] = edge->second.T;
-		edge->second.T->Adj[edge->second.NullIndex] = next;
-
-		// Establish adjacency links with previously inserted TriFace.
-		next->Adj[0] = tri;
-		tri->Adj[2] = next;
-
-		tri = next;
-	}
-
-
-	// Establish adjacency links between first/last TriFaces.
-	saveTri->Adj[0] = tri;
-	tri->Adj[2] = saveTri;
-	return true;
+    // Establish adjacency links between first/last TriFaces.
+    saveTri->Adj[0] = tri;
+    tri->Adj[2] = saveTri;
+    return true;
 }
 
-void ConvexHull::ExtractIndices ()
+void ConvexHull3::ExtractIndices ()
 {
 	mNumSimplices = (int)mHull.size();
 
@@ -203,7 +212,7 @@ void ConvexHull::ExtractIndices ()
 	mHull.clear();
 }
 
-void ConvexHull::DeleteHull ()
+void ConvexHull3::DeleteHull ()
 {
 	std::set<TriFace*>::iterator iter = mHull.begin();
 	std::set<TriFace*>::iterator end = mHull.end();
@@ -215,7 +224,7 @@ void ConvexHull::DeleteHull ()
 	mHull.clear();
 }
 
-bool ConvexHull::getExtremes( std::vector<int> &mExtreme )
+bool ConvexHull3::getExtremes( std::vector<int> &mExtreme )
 {
 	bool mExtremeCCW = false;
 	mExtreme.resize(4, 0);
@@ -321,7 +330,7 @@ bool ConvexHull::getExtremes( std::vector<int> &mExtreme )
 	return mExtremeCCW;
 }
 
-void ConvexHull::draw()
+void ConvexHull3::draw()
 {
 	if (!isReady) return;
 
@@ -340,28 +349,31 @@ void ConvexHull::draw()
 	SimpleDraw::DrawTriangles(tris);
 }
 
-// ConvexHull::TriFace
-ConvexHull::TriFace::TriFace (int v0, int v1, int v2)
+// ConvexHull3::TriFace
+ConvexHull3::TriFace::TriFace (int v0, int v1, int v2)
 : Sign(0),Time(-1),OnStack(false)
 {
 	V[0] = v0;
 	V[1] = v1;
 	V[2] = v2;
-	Adj[0] = 0;
-	Adj[1] = 0;
-	Adj[2] = 0;
+	Adj[0] = nullptr;
+	Adj[1] = nullptr;
+	Adj[2] = nullptr;
 }
 
 
-int ConvexHull::TriFace::GetSign( int id , std::vector<Vector3> &pnts)
+int ConvexHull3::TriFace::GetSign( int id , std::vector<Vector3> &pnts)
 {
+	if (V[0] >= pnts.size() || V[1] >= pnts.size() || V[2] >= pnts.size())
+		return 0;
+
 	Vector3 ab = pnts[V[1]] - pnts[V[0]];
 	Vector3 ac = pnts[V[2]] - pnts[V[0]];
 	Vector3 av = pnts[id]	- pnts[V[0]];
-	return dot(cross(ab,ac), av) > 0;
+	return dot(cross(ab,ac), av) > Epsilon_LOW;
 }
 
-void ConvexHull::TriFace::AttachTo (TriFace* adj0, TriFace* adj1,
+void ConvexHull3::TriFace::AttachTo (TriFace* adj0, TriFace* adj1,
 	TriFace* adj2)
 {
 	// assert:  The input adjacent TriFaces are correctly ordered.
@@ -370,7 +382,7 @@ void ConvexHull::TriFace::AttachTo (TriFace* adj0, TriFace* adj1,
 	Adj[2] = adj2;
 }
 
-int ConvexHull::TriFace::DetachFrom (int adjIndex, TriFace* adj)
+int ConvexHull3::TriFace::DetachFrom (int adjIndex, TriFace* adj)
 {
 	Adj[adjIndex] = 0;
 	for (int i = 0; i < 3; ++i)
@@ -384,8 +396,9 @@ int ConvexHull::TriFace::DetachFrom (int adjIndex, TriFace* adj)
 	return -1;
 }
 
-// ConvexHull::TerminatorData
-ConvexHull::TerminatorData::TerminatorData (int v0, int v1, int nullIndex, TriFace* tri) : NullIndex(nullIndex), T(tri)
+// ConvexHull3::TerminatorData
+ConvexHull3::TerminatorData::TerminatorData (int v0, int v1, int nullIndex, TriFace* tri) 
+	: NullIndex(nullIndex), T(tri)
 {
 	V[0] = v0;
 	V[1] = v1;

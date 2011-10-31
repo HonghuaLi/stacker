@@ -14,13 +14,16 @@
 typedef double								Real;
 typedef Vector<Real, 3>						Vector3;
 
-class  ConvexHull
+class  ConvexHull3
 {
 public:
-	ConvexHull(std::vector<Vector3> &pnts);
-	ConvexHull(Surface_mesh * mesh);
+	ConvexHull3(std::vector<Vector3> &pnts);
+	ConvexHull3(Surface_mesh * mesh);
     void computeCH();
 	void draw();
+
+	int getNumSimplices(){	return mNumSimplices;}
+	std::vector<int>& getIndices(){	return mIndices;}
 
 private:
 	class TriFace
@@ -28,7 +31,7 @@ private:
 	public:
 		TriFace (int v0, int v1, int v2);
 
-		int GetSign( int id , std::vector<Vector3> &pnts);
+		int GetSign( int i , std::vector<Vector3> &pnts);
 		void AttachTo (TriFace* adj0, TriFace* adj1, TriFace* adj2);
 		int DetachFrom (int adjIndex, TriFace* adj);
 
@@ -42,8 +45,7 @@ private:
     class TerminatorData
     {
     public:
-        TerminatorData (int v0 = -1, int v1 = -1, int nullIndex = -1,
-            TriFace* tri = 0);
+        TerminatorData (int v0 = -1, int v1 = -1, int nullIndex = -1, TriFace* tri = 0);
 
         int V[2];
         int NullIndex;
@@ -51,8 +53,8 @@ private:
     };
 
 private:
-	bool getExtremes( std::vector<int> &mExtremes);
-	bool Update (int id);
+	bool getExtremes( std::vector<int> &mExtreme);
+	bool Update (int i);
 	void ExtractIndices ();
 	void DeleteHull ();
 
