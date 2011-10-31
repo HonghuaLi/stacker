@@ -31,6 +31,7 @@ void ConvexHull3::computeCH()
 {
 	std::vector<int> mExtreme;
 	bool CCW = getExtremes(mExtreme);
+
 	int i0 = mExtreme[0];
 	int i1 = mExtreme[1];
 	int i2 = mExtreme[2];
@@ -83,7 +84,7 @@ void ConvexHull3::computeCH()
 
 bool ConvexHull3::Update (int i)
 {
-	    // Locate a TriFace visible to the input point (if possible).
+	// Locate a TriFace visible to the input point (if possible).
     TriFace* visible = 0;
     TriFace* tri;
     std::set<TriFace*>::iterator iter = mHull.begin();
@@ -151,10 +152,6 @@ bool ConvexHull3::Update (int i)
     std::map<int,TerminatorData>::iterator edge = terminator.begin();
     v0 = edge->second.V[0];
     v1 = edge->second.V[1];
-	if (v0 >= mPnts.size() || v1 >= mPnts.size())
-	{
-		int a = 0;
-	}
     tri = new TriFace(i, v0, v1);
     mHull.insert(tri);
 
@@ -168,13 +165,13 @@ bool ConvexHull3::Update (int i)
     for (j = 1; j < size; ++j)
     {
         edge = terminator.find(v1);
-        v0 = v1;
-        v1 = edge->second.V[1];
-        TriFace* next = new TriFace(i, v0, v1);
-		if (v0 >= mPnts.size() || v1 >= mPnts.size())
+		if (edge == terminator.end())
 		{
 			int a = 0;
 		}
+        v0 = v1;
+        v1 = edge->second.V[1];
+        TriFace* next = new TriFace(i, v0, v1);
         mHull.insert(next);
 
         // Establish adjacency links across terminator edge.
@@ -364,13 +361,14 @@ ConvexHull3::TriFace::TriFace (int v0, int v1, int v2)
 
 int ConvexHull3::TriFace::GetSign( int id , std::vector<Vector3> &pnts)
 {
-	if (V[0] >= pnts.size() || V[1] >= pnts.size() || V[2] >= pnts.size())
-		return 0;
-
 	Vector3 ab = pnts[V[1]] - pnts[V[0]];
+	ab.normalize();
 	Vector3 ac = pnts[V[2]] - pnts[V[0]];
+	ac.normalize();
+	Vector3 cross_prod = cross(ab,ac);
+	cross_prod.normalize();
 	Vector3 av = pnts[id]	- pnts[V[0]];
-	return dot(cross(ab,ac), av) > Epsilon_LOW;
+	return dot(cross_prod, av) > Epsilon_LOW;
 }
 
 void ConvexHull3::TriFace::AttachTo (TriFace* adj0, TriFace* adj1,
@@ -384,12 +382,12 @@ void ConvexHull3::TriFace::AttachTo (TriFace* adj0, TriFace* adj1,
 
 int ConvexHull3::TriFace::DetachFrom (int adjIndex, TriFace* adj)
 {
-	Adj[adjIndex] = 0;
+	Adj[adjIndex] = nullptr;
 	for (int i = 0; i < 3; ++i)
 	{
 		if (adj->Adj[i] == this)
 		{
-			adj->Adj[i] = 0;
+			adj->Adj[i] = nullptr;
 			return i;
 		}
 	}

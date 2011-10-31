@@ -74,9 +74,14 @@ void MinOBB3::computeMinOBB( std::vector<Vector3> &points )
         // Get 3D coordinate system relative to plane of triangle.
         origin = (points[v0] + points[v1] + points[v2])/(Real)3.0;
 		U = points[v2] - points[v0];
-		U.normalize();
         V = points[v1] - points[v0];
-        W = cross(U, V);  // inner-pointing normal
+		U.normalize();	        
+		V.normalize();
+		W = cross(U, V);  // inner-pointing normal
+		if (W.norm() < Epsilon_LOW)
+		{
+			continue; // The triangle is needle-like, so skip it.
+		}
 		W.normalize();
 		V = cross(W, U);
         
@@ -259,7 +264,7 @@ void MinOBB3::GenerateComplementBasis (Vector3& u, Vector3& v, const Vector3& w)
 	}
 }
 
-void MinOBB3::getCornerVertices( std::vector<Vector3> &pnts )
+void MinOBB3::getCorners( std::vector<Vector3> &pnts )
 {
 	pnts.resize(8);
 
@@ -291,7 +296,7 @@ void MinOBB3::draw()
 	if(!isReady) return;
 
 	std::vector<Vector3> pnts;
-	getCornerVertices(pnts);
+	getCorners(pnts);
 
 	SimpleDraw::IdentifyPoint(mMinBox.Center);
 	SimpleDraw::IdentifyLine(pnts[0], pnts[1]);

@@ -51,6 +51,7 @@ void Workspace::addNewScene()
 
 	connect(newScene, SIGNAL(newSceneCreated()), sp, SLOT(sceneUpdated()));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*)));
+
 	connect(newScene, SIGNAL(focusChanged(Scene*)), wp, SLOT(setActiveScene(Scene*)));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), sp, SLOT(setActiveScene(Scene*)));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), dp, SLOT(setActiveScene(Scene*)));
