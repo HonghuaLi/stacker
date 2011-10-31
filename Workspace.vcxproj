@@ -247,7 +247,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\ConvexHull.cpp" />
+    <ClCompile Include="GraphicsLibrary\ConvexHull2.cpp" />
+    <ClCompile Include="GraphicsLibrary\ConvexHull3.cpp" />
+    <ClCompile Include="GraphicsLibrary\MinOBB2.cpp" />
+    <ClCompile Include="GraphicsLibrary\MinOBB3.cpp" />
     <ClCompile Include="GraphicsLibrary\Monge_via_jet_fitting.cpp" />
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\Curvature.cpp" />
     <ClCompile Include="GUI\QMeshManager.cpp" />
@@ -344,7 +347,10 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(Configuration)\moc_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
-    <ClInclude Include="GraphicsLibrary\ConvexHull.h" />
+    <ClInclude Include="GraphicsLibrary\ConvexHull2.h" />
+    <ClInclude Include="GraphicsLibrary\ConvexHull3.h" />
+    <ClInclude Include="GraphicsLibrary\MinOBB2.h" />
+    <ClInclude Include="GraphicsLibrary\MinOBB3.h" />
     <ClInclude Include="GraphicsLibrary\Monge_via_jet_fitting.h" />
     <ClInclude Include="GraphicsLibrary\OBB.h" />
     <ClInclude Include="GraphicsLibrary\OBB2.h" />

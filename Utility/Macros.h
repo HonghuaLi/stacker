@@ -19,6 +19,7 @@
 
 // Constants
 static const double Epsilon_HIGH = DBL_EPSILON;
+static const double Epsilon_LOW = FLT_EPSILON;
 extern double Epsilon;
 
 // Numerical stuff

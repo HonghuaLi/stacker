@@ -13,8 +13,11 @@ OBB * testOBB;
 #include "OBB2.h"
 OBB2 * testOBB2;
 
-#include "ConvexHull.h"
-ConvexHull *testCH;
+#include "ConvexHull3.h"
+ConvexHull3 *testCH;
+
+#include "MinOBB3.h"
+MinOBB3 *testMinOBB;
 
 Scene::Scene( QString loadObject, QWidget *parent)
 {
@@ -47,6 +50,7 @@ Scene::Scene( QString loadObject, QWidget *parent)
 	testOBB = NULL;
 	testOBB2 = NULL;
 	testCH = NULL;
+	testMinOBB = NULL;
 }
 
 void Scene::insertObject( QString fileName )
@@ -177,6 +181,7 @@ void Scene::draw()
 	if(testOBB) testOBB->draw();
 	if(testOBB2) testOBB2->draw();
 	if(testCH) testCH->draw();
+	if (testMinOBB) testMinOBB->draw();
 }
 
 void Scene::specialDraw()
@@ -242,7 +247,12 @@ void Scene::keyPressEvent( QKeyEvent *e )
 
 	if(e->key() == Qt::Key_C)
 	{
-		testCH = new ConvexHull( activeObject() );
+		testCH = new ConvexHull3( activeObject() );
+	}
+
+	if (e->key() == Qt::Key_M)
+	{
+		testMinOBB = new MinOBB3( activeObject() );
 	}
 
 	// Regular behavior

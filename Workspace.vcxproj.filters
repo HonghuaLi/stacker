@@ -239,7 +239,16 @@
     <ClCompile Include="GeneratedFiles\Template\moc_QControlPoint.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\ConvexHull.cpp">
+    <ClCompile Include="GraphicsLibrary\ConvexHull3.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\ConvexHull2.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\MinOBB3.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\MinOBB2.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -349,7 +358,16 @@
     <ClInclude Include="GraphicsLibrary\OBB2_math.h">
       <Filter>Intersection\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\ConvexHull.h">
+    <ClInclude Include="GraphicsLibrary\ConvexHull3.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\ConvexHull2.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\MinOBB3.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\MinOBB2.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
   </ItemGroup>
