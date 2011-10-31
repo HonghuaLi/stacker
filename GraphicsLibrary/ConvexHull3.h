@@ -31,7 +31,7 @@ private:
 	public:
 		TriFace (int v0, int v1, int v2);
 
-		int GetSign( int i , std::vector<Vector3> &pnts);
+		int GetSign( int id , std::vector<Vector3> &pnts);
 		void AttachTo (TriFace* adj0, TriFace* adj1, TriFace* adj2);
 		int DetachFrom (int adjIndex, TriFace* adj);
 
@@ -59,7 +59,7 @@ private:
 	void DeleteHull ();
 
 private:
-	std::vector<Vector3> mPnts;	// The input pnts
+	std::vector<Vector3> mPnts;		// The input pnts
 	std::set<TriFace*> mHull;		// The current hull.
 	int mNumSimplices;
 	std::vector<int> mIndices;

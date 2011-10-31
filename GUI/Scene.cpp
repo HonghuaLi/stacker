@@ -21,6 +21,8 @@ MinOBB3 *testMinOBB;
 
 Scene::Scene( QString loadObject, QWidget *parent)
 {
+	activeObjectId = "";
+
 	activeFrame = new ManipulatedFrame();
 	setManipulatedFrame(activeFrame);
 
@@ -46,6 +48,7 @@ Scene::Scene( QString loadObject, QWidget *parent)
 	this->setSelectRegionWidth(10);
 
 	emit(newSceneCreated());
+
 
 	testOBB = NULL;
 	testOBB2 = NULL;
@@ -247,11 +250,15 @@ void Scene::keyPressEvent( QKeyEvent *e )
 
 	if(e->key() == Qt::Key_C)
 	{
+		if (testCH) delete testCH;
+
 		testCH = new ConvexHull3( activeObject() );
 	}
 
 	if (e->key() == Qt::Key_M)
 	{
+		if (testMinOBB) delete testMinOBB;
+
 		testMinOBB = new MinOBB3( activeObject() );
 	}
 

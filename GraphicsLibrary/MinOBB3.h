@@ -41,7 +41,7 @@ public:
 
 	void computeMinOBB( std::vector<Vector3> &points );
 	void GenerateComplementBasis (Vector3& u, Vector3& v, const Vector3& w);
-	void getCornerVertices(std::vector<Vector3> &pnts);
+	void getCorners( std::vector<Vector3> &pnts );
 	void draw();
 
 private:
