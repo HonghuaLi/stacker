@@ -55,15 +55,6 @@
     <Filter Include="GraphicsLibrary\SurfaceMesh">
       <UniqueIdentifier>{e164964b-910f-4301-9318-8099acd4cec5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Intersection">
-      <UniqueIdentifier>{2f0a832d-88b6-4654-9d9c-7ec783c364ad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Intersection\Source">
-      <UniqueIdentifier>{939bf57d-8791-4952-b867-62328764e8a8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Intersection\Header">
-      <UniqueIdentifier>{4937d98d-a28f-4bd6-b6a1-9a0637ff08e5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Stacker">
       <UniqueIdentifier>{c9f541c5-42a1-42a4-bdd1-b4ea57205b97}</UniqueIdentifier>
     </Filter>
@@ -77,6 +68,15 @@
     </Filter>
     <Filter Include="Deformer">
       <UniqueIdentifier>{93db098b-d3a1-44d0-af9e-f1fa4db2a168}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MathLibrary">
+      <UniqueIdentifier>{01e48a6b-2e83-49a3-adca-3704aedbf577}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MathLibrary\Header">
+      <UniqueIdentifier>{aa5013b2-8684-475c-b490-7c06c270398e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MathLibrary\Source">
+      <UniqueIdentifier>{950efbf4-7534-4cd5-9fba-fdcd46e11fef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -143,20 +143,8 @@
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\IO_stl.cpp">
       <Filter>GraphicsLibrary\SurfaceMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.cpp">
-      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\Surface_mesh.cpp">
       <Filter>GraphicsLibrary\SurfaceMesh</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\BoundingBox.cpp">
-      <Filter>Intersection\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Utility\kdtree.cpp">
-      <Filter>Intersection\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Octree.cpp">
-      <Filter>Intersection\Source</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\StackerPanel.cpp">
       <Filter>Stacker</Filter>
@@ -182,9 +170,6 @@
     <ClCompile Include="Wires\Ridges.cpp">
       <Filter>Wires</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\SurfaceMesh\Curvature.cpp">
-      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
-    </ClCompile>
     <ClCompile Include="Stacker\StackerPreview.cpp">
       <Filter>Stacker</Filter>
     </ClCompile>
@@ -196,9 +181,6 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Template\moc_StackerPreview.cpp">
       <Filter>Generated Files\Template</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\Monge_via_jet_fitting.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
     <ClCompile Include="GUI\QMeshManager.cpp">
       <Filter>GUI\Source</Filter>
@@ -239,16 +221,31 @@
     <ClCompile Include="GeneratedFiles\Template\moc_QControlPoint.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\ConvexHull3.cpp">
+    <ClCompile Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\ConvexHull2.cpp">
+    <ClCompile Include="MathLibrary\BoundingBox.cpp">
+      <Filter>MathLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MathLibrary\ConvexHull2.cpp">
+      <Filter>MathLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MathLibrary\ConvexHull3.cpp">
+      <Filter>MathLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MathLibrary\MinOBB2.cpp">
+      <Filter>MathLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MathLibrary\MinOBB3.cpp">
+      <Filter>MathLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MathLibrary\Monge_via_jet_fitting.cpp">
+      <Filter>MathLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\kdtree.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\MinOBB3.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsLibrary\MinOBB2.cpp">
+    <ClCompile Include="GraphicsLibrary\Octree.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -301,18 +298,6 @@
     <ClInclude Include="GraphicsLibrary\SurfaceMesh\Vector.h">
       <Filter>GraphicsLibrary\SurfaceMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\BoundingBox.h">
-      <Filter>Intersection\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Intersection.h">
-      <Filter>Intersection\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\kdtree.h">
-      <Filter>Intersection\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Octree.h">
-      <Filter>Intersection\Header</Filter>
-    </ClInclude>
     <ClInclude Include="Wires\AnalyzeWires.h">
       <Filter>Wires</Filter>
     </ClInclude>
@@ -334,12 +319,6 @@
     <ClInclude Include="Wires\Ridges.h">
       <Filter>Wires</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\SurfaceMesh\Curvature.h">
-      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Monge_via_jet_fitting.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
     <ClInclude Include="GUI\QMeshManager.h">
       <Filter>GUI\Header</Filter>
     </ClInclude>
@@ -349,25 +328,40 @@
     <ClInclude Include="Deformer\FFD.h">
       <Filter>Deformer</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\OBB.h">
-      <Filter>Intersection\Header</Filter>
+    <ClInclude Include="MathLibrary\BoundingBox.h">
+      <Filter>MathLibrary\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\OBB2.h">
-      <Filter>Intersection\Header</Filter>
+    <ClInclude Include="MathLibrary\ConvexHull2.h">
+      <Filter>MathLibrary\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\OBB2_math.h">
-      <Filter>Intersection\Header</Filter>
+    <ClInclude Include="MathLibrary\ConvexHull3.h">
+      <Filter>MathLibrary\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\ConvexHull3.h">
+    <ClInclude Include="MathLibrary\MinOBB2.h">
+      <Filter>MathLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\MinOBB3.h">
+      <Filter>MathLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\Monge_via_jet_fitting.h">
+      <Filter>MathLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\OBB.h">
+      <Filter>MathLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\OBB2.h">
+      <Filter>MathLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\OBB2_math.h">
+      <Filter>MathLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Intersection.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\ConvexHull2.h">
+    <ClInclude Include="Utility\kdtree.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\MinOBB3.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\MinOBB2.h">
+    <ClInclude Include="GraphicsLibrary\Octree.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
   </ItemGroup>
@@ -386,9 +380,6 @@
     </CustomBuild>
     <CustomBuild Include="Workspace.h">
       <Filter>GUI\Header</Filter>
-    </CustomBuild>
-    <CustomBuild Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.h">
-      <Filter>GraphicsLibrary\SurfaceMesh</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\StackerPanel.h">
       <Filter>Stacker</Filter>
@@ -416,6 +407,9 @@
     </CustomBuild>
     <CustomBuild Include="Deformer\QControlPoint.h">
       <Filter>Deformer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.h">
+      <Filter>GraphicsLibrary\Header</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>
