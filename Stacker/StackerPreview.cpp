@@ -57,7 +57,7 @@ void StackerPreview::draw()
 		return;
 
 	if(!activeObjectVBO.isReady || activeObjectVBO.objectId != qPrintable(activeScene->activeObjectId)){
-		QSurfaceMesh * mesh = activeScene->activeObject();
+		QSurfaceMesh * mesh = activeScene->activeObject()->getSegment(0);
 
 		Surface_mesh::Vertex_property<Point>  points   = mesh->vertex_property<Point>("v:point");
 		Surface_mesh::Vertex_property<Point>  vnormals = mesh->vertex_property<Point>("v:normal");

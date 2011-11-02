@@ -13,7 +13,7 @@ Offset::~Offset()
 
 std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 {
-	QSurfaceMesh * activeObject = activeScene->activeObject();
+	QSurfaceMesh * activeObject = activeScene->activeObject()->getSegment(0);
 
 	// Set camera
 	activeScene->camera()->setType(Camera::ORTHOGRAPHIC);
@@ -63,7 +63,7 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 {
 	//return value
 	std::set<uint> vertices;	
-	QSurfaceMesh * activeObject = activeScene->activeObject();	
+	QSurfaceMesh * activeObject = activeScene->activeObject()->getSegment(0);	
 
 	// restore camera
 	activeScene->camera()->playPath(direction + 2);
@@ -105,7 +105,7 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 
 void Offset::setOffsetColors( int direction, std::vector< std::vector<double> > &offset, double O_max )
 {
-	QSurfaceMesh * activeObject = activeScene->activeObject();
+	QSurfaceMesh * activeObject = activeScene->activeObject()->getSegment(0);
 
 	// restore camera
 	activeScene->camera()->playPath(direction + 2);
@@ -149,7 +149,7 @@ void Offset::run()
 {
 	if(!activeScene) return;
 
-	QSurfaceMesh * activeObject = activeScene->activeObject();
+	QSurfaceMesh * activeObject = activeScene->activeObject()->getSegment(0);
 
 	// Save original camera state
 	activeScene->camera()->addKeyFrameToPath(0);

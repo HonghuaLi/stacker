@@ -72,7 +72,7 @@ void Scene::insertObject( QString fileName )
 	// Change title of scene
 	setWindowTitle(activeObjectId);
 
-	QSurfaceMesh * newMesh = getObject(activeObjectId);
+	QSegMesh * newMesh = getObject(activeObjectId);
 
 	camera()->setSceneRadius(newMesh->radius);
 	camera()->showEntireScene();
@@ -82,19 +82,27 @@ void Scene::insertObject( QString fileName )
 
 void Scene::updateVBOs()
 {
-	QSurfaceMesh * mesh = activeObject();
+	QSegMesh * mesh = activeObject();
 
 	if(mesh && mesh->isReady && vboCollection.find(activeObjectId) == vboCollection.end())
 	{
-		Surface_mesh::Vertex_property<Point>  points   = mesh->vertex_property<Point>("v:point");
-		Surface_mesh::Vertex_property<Point>  vnormals = mesh->vertex_property<Point>("v:normal");
-		Surface_mesh::Face_property<Point>    fnormals = mesh->face_property<Point>("f:normal");
-		Surface_mesh::Vertex_property<Color>  vcolors  = mesh->vertex_property<Color>("v:color");
-		Surface_mesh::Vertex_property<float>  vtex     = mesh->vertex_property<float>("v:tex1D", 0.0);
+		// Create a VBO for each segment
+		for (int i=0;i<mesh->nbSegments();i++)
+		{
+			QSurfaceMesh* seg = mesh->getSegment(i);
 
-		// Create VBO
-		mesh->fillTrianglesList();
-		vboCollection[activeObjectId] = VBO(mesh->n_vertices(), points.data(), vnormals.data(), vcolors.data(), mesh->triangles);
+			Surface_mesh::Vertex_property<Point>  points   = seg->vertex_property<Point>("v:point");
+			Surface_mesh::Vertex_property<Point>  vnormals = seg->vertex_property<Point>("v:normal");
+			Surface_mesh::Vertex_property<Color>  vcolors  = seg->vertex_property<Color>("v:color");
+			
+			seg->fillTrianglesList();
+
+			// Create VBO 
+			vboCollection[activeObjectId+QString("-%1").arg(i)] = VBO( seg->n_vertices(), points.data(), vnormals.data(), vcolors.data(), seg->triangles );		
+		}
+
+
+
 	}
 }
 
@@ -167,7 +175,7 @@ void Scene::draw()
 		i->render();
 
 	if(activeObjectId.size())
-		activeObject()->drawDebug();
+		activeObject()->getSegment(0)->drawDebug();
 
 	// Wires
 	foreach(Wire w, activeWires)
@@ -240,26 +248,26 @@ void Scene::keyPressEvent( QKeyEvent *e )
 	if(e->key() == Qt::Key_O)
 	{
 		testOBB = new OBB();
-		testOBB->build_from_mesh( activeObject() );
+		testOBB->build_from_mesh( activeObject()->getSegment(0) );
 	}
 
 	if(e->key() == Qt::Key_P)
 	{
-		testOBB2 = new OBB2( activeObject() );
+		testOBB2 = new OBB2( activeObject()->getSegment(0) );
 	}
 
 	if(e->key() == Qt::Key_C)
 	{
 		if (testCH) delete testCH;
 
-		testCH = new ConvexHull3( activeObject() );
+		testCH = new ConvexHull3( activeObject()->getSegment(0) );
 	}
 
 	if (e->key() == Qt::Key_M)
 	{
 		if (testMinOBB) delete testMinOBB;
 
-		testMinOBB = new MinOBB3( activeObject() );
+		testMinOBB = new MinOBB3( activeObject()->getSegment(0) );
 	}
 
 	// Regular behavior
@@ -380,7 +388,7 @@ void* Scene::readBuffer( GLenum format, GLenum type )
 	return data;
 }
 
-QSurfaceMesh * Scene::activeObject()
+QSegMesh * Scene::activeObject()
 {
 	if(all_objects.find(activeObjectId) != all_objects.end())
 		return &all_objects[activeObjectId];

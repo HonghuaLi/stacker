@@ -216,21 +216,6 @@ void QSurfaceMesh::moveCenterToOrigin()
 	computeBoundingBox();
 }
 
-void QSurfaceMesh::assignVertexArray()
-{
-	Vertex_iterator vit, vend = vertices_end();
-
-	for(vit = vertices_begin(); vit != vend; ++vit) 
-		vertex_array.push_back(vit);
-}
-
-void QSurfaceMesh::assignFaceArray()
-{
-	Face_iterator fit, fend = faces_end();
-
-	for(fit = faces_begin(); fit != fend; ++fit) 
-		face_array.push_back(fit);
-}
 
 void QSurfaceMesh::fillTrianglesList()
 {
@@ -260,7 +245,7 @@ std::vector<uint> QSurfaceMesh::vertexIndicesAroundFace( uint f_id )
 	std::vector<uint> vindices;
 
 	Vertex_around_face_circulator fvit, fvend;
-	fvit = fvend = vertices(face_array[f_id]);
+	fvit = fvend = vertices(Face(f_id));
 
 	do{
 		vindices.push_back( ((Vertex)fvit).idx() );
@@ -271,20 +256,29 @@ std::vector<uint> QSurfaceMesh::vertexIndicesAroundFace( uint f_id )
 
 Point QSurfaceMesh::getVertexPos( uint v_id )
 {
-	Vertex_property<Point> points = vertex_property<Point>("v:point");
-	return points[vertex_array[v_id]];
+	return getVertexPos(Vertex(v_id));
 }
 
-Point QSurfaceMesh::getVertexPos( const Vertex & v )
+Point QSurfaceMesh::getVertexPos( const Vertex v )
 {
 	Vertex_property<Point> points = vertex_property<Point>("v:point");
 	return points[v];
 }
 
+Surface_mesh::Vertex QSurfaceMesh::getVertex( uint v_id )
+{
+	return Surface_mesh::Vertex(v_id);
+}
+
+Surface_mesh::Face QSurfaceMesh::getFace( uint f_id )
+{
+	return Surface_mesh::Face(f_id);
+}
+
 void QSurfaceMesh::setVertexColor( uint v_id, const Color& newColor )
 {
 	Vertex_property<Color> vcolor = vertex_property<Color>("v:color");
-	vcolor[vertex_array[v_id]] = newColor;
+	vcolor[Vertex(v_id)] = newColor;
 
 	this->isDirty = true;
 }
@@ -434,3 +428,5 @@ Vec3d QSurfaceMesh::faceCenter( Face f )
 		(v[0].y() + v[1].y() + v[2].y()) / 3.0, 
 		(v[0].z() + v[1].z() + v[2].z()) / 3.0);
 }
+
+
