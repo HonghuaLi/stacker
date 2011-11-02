@@ -248,6 +248,18 @@
     <ClCompile Include="GraphicsLibrary\Octree.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QSegMesh.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QSegMesh.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_QSegMesh.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\QSegMesh.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -409,6 +421,9 @@
       <Filter>Deformer</Filter>
     </CustomBuild>
     <CustomBuild Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GraphicsLibrary\QSegMesh.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </CustomBuild>
   </ItemGroup>

@@ -35,13 +35,13 @@ Sampler::Sampler(QSurfaceMesh * srcMesh, SamplingMethod samplingMethod)
 			faceProbability[i] = faceAreas[i] / totalMeshArea;
 
 		interval = StdVector<AreaFace>(mesh->n_faces() + 1);
-		interval[0] = AreaFace(0.0, mesh->face_array[0]);
+		interval[0] = AreaFace(0.0, mesh->getFace(0));
 		int i = 0;
 
 		// Compute mesh area in a cumulative manner
 		for(int j = 0; j < (int) faceAreas.size(); j++)
 		{
-			interval[i+1] = AreaFace(interval[i].area + faceProbability[j], mesh->face_array[j]);
+			interval[i+1] = AreaFace(interval[i].area + faceProbability[j], mesh->getFace(j));
 			i++;
 		}
 
@@ -84,7 +84,7 @@ SamplePoint Sampler::getSample()
 		if( randTriIndex >= fcount )
 			randTriIndex = fcount - 1;
 
-		Surface_mesh::Face tri = mesh->face_array[ randTriIndex ];
+		Surface_mesh::Face tri = mesh->getFace(randTriIndex);
 		uint tri_id = tri.idx();
 
 		// Get triangle center and normal
@@ -135,13 +135,13 @@ void Sampler::resampleWithBias()
 		faceProbability[i] = faceAreas[i] / totalNewArea;
 
 	interval = StdVector<AreaFace>(mesh->n_faces() + 1);
-	interval[0] = AreaFace(0.0, mesh->face_array[0]);
+	interval[0] = AreaFace(0.0, mesh->getFace(0));
 	int i = 0;
 
 	// Compute mesh area in a cumulative manner
 	for(int j = 0; j < (int) faceAreas.size(); j++)
 	{
-		interval[i+1] = AreaFace(interval[i].area + faceProbability[j], mesh->face_array[j]);
+		interval[i+1] = AreaFace(interval[i].area + faceProbability[j], mesh->getFace(j));
 		i++;
 	}
 

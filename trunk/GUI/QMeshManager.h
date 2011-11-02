@@ -2,11 +2,11 @@
 
 #include <QMap>
 #include <QFileInfo>
-#include "QSurfaceMesh.h"
+#include "QSegMesh.h"
 
-extern QMap<QString, QSurfaceMesh> all_objects;
+extern QMap<QString, QSegMesh> all_objects;
 extern uint global_id;
 
 // Functions
 QString addNewObject(QString fileName);
-QSurfaceMesh * getObject(QString objectId);
+QSegMesh * getObject( QString objectId );

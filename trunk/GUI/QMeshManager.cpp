@@ -1,6 +1,6 @@
 #include "QMeshManager.h"
 
-QMap<QString, QSurfaceMesh> all_objects;
+QMap<QString, QSegMesh> all_objects;
 uint global_id;
 
 QString addNewObject( QString fileName )
@@ -13,19 +13,12 @@ QString addNewObject( QString fileName )
 
 	newObjId += QString("-%1").arg(global_id);
 
-	// Create a new QSurfaceMesh
-	all_objects[ newObjId ] = QSurfaceMesh();
-	QSurfaceMesh * newMesh = &all_objects[ newObjId ];
+	// Create a new QSegMesh
+	all_objects[ newObjId ] = QSegMesh();
+	QSegMesh * newMesh = &all_objects[ newObjId ];
 
-	// Using Surface_mesh library
-	newMesh->read(qPrintable(fileName));
-
-	// Default pre-processing
-	newMesh->moveCenterToOrigin();
-	newMesh->computeBoundingBox();
-	newMesh->setColorVertices(); // white
-	newMesh->assignFaceArray();
-	newMesh->assignVertexArray();
+	// Reading QSegMesh
+	newMesh->read(fileName);
 
 	// From Surface_mesh
 	newMesh->update_face_normals();
@@ -36,7 +29,7 @@ QString addNewObject( QString fileName )
 	return newObjId;
 }
 
-QSurfaceMesh * getObject( QString objectId )
+QSegMesh * getObject( QString objectId )
 {
 	if(all_objects.find(objectId) != all_objects.end())
 		return &all_objects[objectId];

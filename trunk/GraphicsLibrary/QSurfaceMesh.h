@@ -13,16 +13,14 @@ public:
 	QSurfaceMesh(const QSurfaceMesh& from);
 	QSurfaceMesh& operator=(const QSurfaceMesh& rhs);
 
-	std::vector<Vertex_iterator> vertex_array;
-	std::vector<Face_iterator> face_array;
 
-	void assignVertexArray();
-	void assignFaceArray();
 
 	std::vector<uint> vertexIndicesAroundFace( uint f_id );
 	
 	Point getVertexPos( uint v_id );
-	Point getVertexPos( const Vertex & v );
+	Point getVertexPos( const Vertex v );
+	Vertex getVertex( uint v_id);
+	Face getFace( uint f_id);
 
 	void computeBoundingBox();
 	void moveCenterToOrigin();

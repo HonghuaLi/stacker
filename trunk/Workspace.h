@@ -13,7 +13,7 @@
 #include "DeformerPanel.h"
 
 extern QStringList main_args;
-extern QMap<QString, QSurfaceMesh> all_objects;
+extern QMap<QString, QSegMesh> all_objects;
 
 class Workspace : public QMainWindow
 {

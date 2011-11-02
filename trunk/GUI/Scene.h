@@ -9,7 +9,7 @@
 #include "QGLViewer/qglviewer.h"
 using namespace qglviewer;
 
-#include "QSurfaceMesh.h"
+#include "QSegMesh.h"
 #include "VBO.h"
 #include "Wire.h"
 #include "QFFD.h"
@@ -87,7 +87,7 @@ private:
 	QFFD * activeDeformer;
 
 public:
-	QSurfaceMesh * activeObject();
+	QSegMesh * activeObject();
 	QString activeObjectId;
 
 	VBO * activeVBO();
@@ -101,6 +101,6 @@ public slots:
 
 signals:
 	void focusChanged( Scene* );
-	void objectInserted( QSurfaceMesh * );
+	void objectInserted( QSegMesh * );
 	void newSceneCreated();
 };

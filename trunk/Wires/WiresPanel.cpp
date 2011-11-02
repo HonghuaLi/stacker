@@ -15,7 +15,7 @@ void WiresPanel::analyzeButtonClicked()
 		return;
 
 	QVector<Wire> newWires = QVector<Wire>::fromStdVector(
-		AnalyzeWires::fromMesh(activeScene->activeObject(), ww.sharpnessThreshold->value(),
+		AnalyzeWires::fromMesh(activeScene->activeObject()->getSegment(0), ww.sharpnessThreshold->value(),
 		ww.strengthThreshold->value())); 
 
 	emit(wiresFound( newWires ));
