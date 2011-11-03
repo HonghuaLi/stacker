@@ -31,7 +31,7 @@ private:
 	public:
 		TriFace (int v0, int v1, int v2);
 
-		int GetSign( int id , std::vector<Vector3> &pnts);
+		int GetSign( int id , std::vector<Vector3> &pnts, Real epsilon);
 		void AttachTo (TriFace* adj0, TriFace* adj1, TriFace* adj2);
 		int DetachFrom (int adjIndex, TriFace* adj);
 
@@ -64,4 +64,10 @@ private:
 	int mNumSimplices;
 	std::vector<int> mIndices;
 	bool isReady;
+
+	// Threshold for the distance \d from a point to a plane
+	// Positive side: \d > epsilon
+	// On the plane:  ||\d|| <= epsilon
+	// Negtive side: \d < -epsilon
+	Real epsilon; 
 };

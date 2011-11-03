@@ -26,11 +26,12 @@ public:
 	class Box3
 	{
 	public:
+		Box3(){Axis.resize(3);}	
+	
+	public:
 		Vector3 Center;
 		std::vector<Vector3> Axis;
 		Vector3 Extent;
-	public:
-		Box3(){Axis.resize(3);}
 	};
 
 
