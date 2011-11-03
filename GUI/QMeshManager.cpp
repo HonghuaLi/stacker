@@ -20,12 +20,6 @@ QString addNewObject( QString fileName )
 	// Reading QSegMesh
 	newMesh->read(fileName);
 
-	// From Surface_mesh
-	newMesh->update_face_normals();
-	newMesh->update_vertex_normals();
-
-	newMesh->isReady = true;
-
 	return newObjId;
 }
 

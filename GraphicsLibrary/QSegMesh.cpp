@@ -51,8 +51,8 @@ QSegMesh& QSegMesh::operator=( const QSegMesh& rhs )
 void QSegMesh::read( QString fileName )
 {
 	// Load entire mesh geometry
-	QSurfaceMesh shape;
-	shape.read(qPrintable(fileName));
+	QSurfaceMesh mesh;
+	mesh.read(qPrintable(fileName));
 
 	// Load segmentation file
 	QString segFilename = fileName.replace(fileName.lastIndexOf('.')+1, 3, "seg");
@@ -60,9 +60,9 @@ void QSegMesh::read( QString fileName )
 	int nbSeg;
 	inF >> nbSeg;
 
-	std::vector<int> faceSeg(shape.n_faces());
+	std::vector<int> faceSeg(mesh.n_faces());
 	int fid, sid;
-	for (int i=0;i<shape.n_faces()&&inF;i++)
+	for (int i=0;i<mesh.n_faces()&&inF;i++)
 	{
 		inF >> fid >> sid;	
 		faceSeg[fid] = sid;
@@ -78,16 +78,16 @@ void QSegMesh::read( QString fileName )
 
 	// Create unique vertex set for each segment
 	std::vector<std::set<int>> segVertices(nbSeg);
-	Surface_mesh::Face_iterator fit, fend = shape.faces_end();
+	Surface_mesh::Face_iterator fit, fend = mesh.faces_end();
 	Surface_mesh::Vertex_around_face_circulator fvit;	
 	
-	for (fit = shape.faces_begin(); fit!=fend; ++fit)
+	for (fit = mesh.faces_begin(); fit!=fend; ++fit)
 	{
 		Surface_mesh::Face f = fit;
 		int fid = f.idx();
 		int sid = faceSeg[fid];
 
-		fvit = shape.vertices(fit);	
+		fvit = mesh.vertices(fit);	
 		Surface_mesh::Vertex v0, v1, v2;
 		v0 = fvit; v1 = ++fvit; v2 = ++fvit;
 		segVertices[sid].insert(v0.idx());
@@ -96,8 +96,8 @@ void QSegMesh::read( QString fileName )
 	}
 
 	// Add Vertices to each segment	
-	std::vector<std::map<int, int>> segVerMap(nbSeg);	
-	Surface_mesh::Vertex_property<Point>  points   = shape.vertex_property<Point>("v:point");
+	std::vector<std::map<Surface_mesh::Vertex, Surface_mesh::Vertex>> segVerMap(nbSeg);	
+	Surface_mesh::Vertex_property<Point>  points   = mesh.vertex_property<Point>("v:point");
 
 	for (int i=0;i<nbSeg;i++)
 	{
@@ -105,30 +105,26 @@ void QSegMesh::read( QString fileName )
 		int j = 0;
 		for (vit=segVertices[i].begin(); vit!=vend; vit++, j++)
 		{
-			segment[i]->add_vertex(shape.getVertexPos(*vit));			
-			segVerMap[i].insert(std::make_pair(*vit, j));  // Create a new index for each vertex
+			segment[i]->add_vertex(mesh.getVertexPos(*vit));
+
+			segVerMap[i].insert(std::make_pair(mesh.getVertex(*vit), mesh.getVertex(j)));  // Create a new index for each vertex
 		}
 	}
 
 	// Add Faces to each segment
 	std::vector<Surface_mesh::Vertex>  vertices(3);
-	for (fit = shape.faces_begin(); fit!=fend; ++fit)
+	for (fit = mesh.faces_begin(); fit!=fend; ++fit)
 	{
 		Surface_mesh::Face f = fit;
-		int fid = f.idx();
-		int sid = faceSeg[fid];
+		int sid = faceSeg[f.idx()];
 
-		Surface_mesh::Vertex v0, v1, v2;
-		fvit = shape.vertices(fit);	
-		v0 = fvit; v1 = ++fvit; v2 = ++fvit;		
-		
-		vertices[0] = Surface_mesh::Vertex(segVerMap[sid][v0.idx()]);
-		vertices[1] = Surface_mesh::Vertex(segVerMap[sid][v1.idx()]);
-		vertices[2] = Surface_mesh::Vertex(segVerMap[sid][v2.idx()]);
+		fvit = mesh.vertices(fit);
+		vertices[0] = segVerMap[sid][fvit];
+		vertices[1] = segVerMap[sid][++fvit];
+		vertices[2] = segVerMap[sid][++fvit];
 
 		segment[sid]->add_face(vertices);
 	}
-
 
 	// Build up
 	build_up();
@@ -138,6 +134,10 @@ void QSegMesh::build_up()
 {
 	setColorVertices();
 	moveCenterToOrigin();
+	update_face_normals();
+	update_vertex_normals();
+
+	isReady = true;
 }
 
 void QSegMesh::update_face_normals()

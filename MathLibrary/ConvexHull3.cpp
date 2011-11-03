@@ -119,7 +119,7 @@ bool ConvexHull3::Update (int i)
         for (j = 0; j < 3; ++j)
         {
             TriFace* adj = tri->Adj[j];
-            if (adj != nullptr)
+            if (adj)
             {
                 // Detach TriFace and adjacent TriFace from each other.
                 int nullIndex = tri->DetachFrom(j, adj);
@@ -167,10 +167,11 @@ bool ConvexHull3::Update (int i)
         edge = terminator.find(v1);
 		if (edge == terminator.end())
 		{
-			int a = 0;
+			break;
 		}
         v0 = v1;
         v1 = edge->second.V[1];
+
         TriFace* next = new TriFace(i, v0, v1);
         mHull.insert(next);
 
@@ -361,6 +362,11 @@ ConvexHull3::TriFace::TriFace (int v0, int v1, int v2)
 
 int ConvexHull3::TriFace::GetSign( int id , std::vector<Vector3> &pnts)
 {
+	if (V[0]>=pnts.size() || V[1]>=pnts.size() || V[2]>=pnts.size())
+	{
+		return -1;
+	}
+
 	Vector3 ab = pnts[V[1]] - pnts[V[0]];
 	ab.normalize();
 	Vector3 ac = pnts[V[2]] - pnts[V[0]];

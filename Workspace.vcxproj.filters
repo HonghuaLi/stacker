@@ -78,13 +78,19 @@
     <Filter Include="MathLibrary\Source">
       <UniqueIdentifier>{950efbf4-7534-4cd5-9fba-fdcd46e11fef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Stacker\Header">
+      <UniqueIdentifier>{b2c640c2-8acb-4c45-95ec-b4e50786cfb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stacker\Source">
+      <UniqueIdentifier>{2c4ab026-988c-46d4-9983-67e1d29aab68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stacker\ui">
+      <UniqueIdentifier>{5b340b63-49b3-401b-b1e9-84711f818138}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneratedFiles\qrc_Workspace.cpp">
       <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QSurfaceMesh.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_Scene.cpp">
       <Filter>Generated Files\Release</Filter>
@@ -97,9 +103,6 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_Workspace.cpp">
       <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_QSurfaceMesh.cpp">
-      <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_Scene.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -146,9 +149,6 @@
     <ClCompile Include="GraphicsLibrary\SurfaceMesh\Surface_mesh.cpp">
       <Filter>GraphicsLibrary\SurfaceMesh</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\StackerPanel.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
     <ClCompile Include="Wires\AnalyzeWires.cpp">
       <Filter>Wires</Filter>
     </ClCompile>
@@ -158,20 +158,11 @@
     <ClCompile Include="Wires\WiresPanel.cpp">
       <Filter>Wires</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\Stacker.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\Offset.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
     <ClCompile Include="Utility\ColorMap.cpp">
       <Filter>Utility\Source</Filter>
     </ClCompile>
     <ClCompile Include="Wires\Ridges.cpp">
       <Filter>Wires</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\StackerPreview.cpp">
-      <Filter>Stacker</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_StackerPreview.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -221,9 +212,6 @@
     <ClCompile Include="GeneratedFiles\Template\moc_QControlPoint.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
-    </ClCompile>
     <ClCompile Include="MathLibrary\BoundingBox.cpp">
       <Filter>MathLibrary\Source</Filter>
     </ClCompile>
@@ -259,6 +247,39 @@
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\QSegMesh.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QSurfaceMesh.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QSurfaceMesh.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_QSurfaceMesh.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\QSurfaceMesh.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Offset.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackerPreview.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Stacker.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackerPanel.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Controller.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Cuboid.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Primitive.cpp">
+      <Filter>Stacker\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -319,12 +340,6 @@
     <ClInclude Include="Wires\Wire.h">
       <Filter>Wires</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\Stacker.h">
-      <Filter>Stacker</Filter>
-    </ClInclude>
-    <ClInclude Include="Stacker\Offset.h">
-      <Filter>Stacker</Filter>
-    </ClInclude>
     <ClInclude Include="Utility\ColorMap.h">
       <Filter>Utility\Header</Filter>
     </ClInclude>
@@ -376,6 +391,21 @@
     <ClInclude Include="GraphicsLibrary\Octree.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
+    <ClInclude Include="Stacker\Offset.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Stacker.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Contoller.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Cuboid.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Primitive.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Workspace.rc" />
@@ -393,20 +423,11 @@
     <CustomBuild Include="Workspace.h">
       <Filter>GUI\Header</Filter>
     </CustomBuild>
-    <CustomBuild Include="Stacker\StackerPanel.h">
-      <Filter>Stacker</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Stacker\StackerWidget.ui">
-      <Filter>Stacker</Filter>
-    </CustomBuild>
     <CustomBuild Include="Wires\WiresPanel.h">
       <Filter>Wires</Filter>
     </CustomBuild>
     <CustomBuild Include="Wires\WiresWidget.ui">
       <Filter>Wires</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Stacker\StackerPreview.h">
-      <Filter>Stacker</Filter>
     </CustomBuild>
     <CustomBuild Include="Deformer\DeformerWidget.ui">
       <Filter>Deformer</Filter>
@@ -420,11 +441,20 @@
     <CustomBuild Include="Deformer\QControlPoint.h">
       <Filter>Deformer</Filter>
     </CustomBuild>
-    <CustomBuild Include="GraphicsLibrary\SurfaceMesh\QSurfaceMesh.h">
-      <Filter>GraphicsLibrary\Header</Filter>
-    </CustomBuild>
     <CustomBuild Include="GraphicsLibrary\QSegMesh.h">
       <Filter>GraphicsLibrary\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GraphicsLibrary\QSurfaceMesh.h">
+      <Filter>GraphicsLibrary\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerPanel.h">
+      <Filter>Stacker\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerPreview.h">
+      <Filter>Stacker\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerWidget.ui">
+      <Filter>Stacker\ui</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>
