@@ -30,8 +30,6 @@ public:
 	void moveCenterToOrigin();
 	void computeBoundingBox();
 	void setColorVertices();
-
-	// Form Mesh
 	void update_face_normals();
 	void update_vertex_normals();
 

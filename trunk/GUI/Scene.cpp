@@ -260,14 +260,14 @@ void Scene::keyPressEvent( QKeyEvent *e )
 	{
 		if (testCH) delete testCH;
 
-		testCH = new ConvexHull3( activeObject()->getSegment(0) );
+		testCH = new ConvexHull3( activeObject()->getSegment(1) );
 	}
 
 	if (e->key() == Qt::Key_M)
 	{
 		if (testMinOBB) delete testMinOBB;
 
-		testMinOBB = new MinOBB3( activeObject()->getSegment(0) );
+		testMinOBB = new MinOBB3( activeObject()->getSegment(2) );
 	}
 
 	// Regular behavior
