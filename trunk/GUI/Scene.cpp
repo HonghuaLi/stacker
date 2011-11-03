@@ -19,6 +19,9 @@ ConvexHull3 *testCH;
 #include "MinOBB3.h"
 MinOBB3 *testMinOBB;
 
+#include "Contoller.h"
+Controller* testController;
+
 Scene::Scene( QString loadObject, QWidget *parent)
 {
 	activeObjectId = "";
@@ -191,8 +194,8 @@ void Scene::draw()
 
 	if(testOBB) testOBB->draw();
 	if(testOBB2) testOBB2->draw();
-	if(testCH) testCH->draw();
 	if (testMinOBB) testMinOBB->draw();
+	if (testController) testController->draw();
 }
 
 void Scene::specialDraw()
@@ -258,16 +261,16 @@ void Scene::keyPressEvent( QKeyEvent *e )
 
 	if(e->key() == Qt::Key_C)
 	{
-		if (testCH) delete testCH;
+		if (testController) delete testController;
 
-		testCH = new ConvexHull3( activeObject()->getSegment(1) );
+		testController = new Controller( activeObject() );
 	}
 
 	if (e->key() == Qt::Key_M)
 	{
 		if (testMinOBB) delete testMinOBB;
 
-		testMinOBB = new MinOBB3( activeObject()->getSegment(2) );
+		testMinOBB = new MinOBB3( activeObject()->getSegment(0) );
 	}
 
 	// Regular behavior

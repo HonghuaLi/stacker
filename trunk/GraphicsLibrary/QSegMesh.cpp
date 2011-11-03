@@ -56,74 +56,92 @@ void QSegMesh::read( QString fileName )
 
 	// Load segmentation file
 	QString segFilename = fileName.replace(fileName.lastIndexOf('.')+1, 3, "seg");
-	std::ifstream inF(qPrintable(segFilename), std::ios::in);		
-	int nbSeg;
-	inF >> nbSeg;
+	std::ifstream inF(qPrintable(segFilename), std::ios::in);
 
-	std::vector<int> faceSeg(mesh.n_faces());
-	int fid, sid;
-	for (int i=0;i<mesh.n_faces()&&inF;i++)
+	if (!inF)
 	{
-		inF >> fid >> sid;	
-		faceSeg[fid] = sid;
+		// Unsegmented mesh
+		segment.push_back(new QSurfaceMesh(mesh));
 	}
-	inF.close();
-
-	// Create segments
-	for (int i=0;i<nbSeg;i++)
+	else
 	{
-		segment.push_back(new QSurfaceMesh());
-	}
+		int nbSeg;
+		inF >> nbSeg;
 
-
-	// Create unique vertex set for each segment
-	std::vector<std::set<int>> segVertices(nbSeg);
-	Surface_mesh::Face_iterator fit, fend = mesh.faces_end();
-	Surface_mesh::Vertex_around_face_circulator fvit;	
-	
-	for (fit = mesh.faces_begin(); fit!=fend; ++fit)
-	{
-		Surface_mesh::Face f = fit;
-		int fid = f.idx();
-		int sid = faceSeg[fid];
-
-		fvit = mesh.vertices(fit);	
-		Surface_mesh::Vertex v0, v1, v2;
-		v0 = fvit; v1 = ++fvit; v2 = ++fvit;
-		segVertices[sid].insert(v0.idx());
-		segVertices[sid].insert(v1.idx());
-		segVertices[sid].insert(v2.idx());
-	}
-
-	// Add Vertices to each segment	
-	std::vector<std::map<Surface_mesh::Vertex, Surface_mesh::Vertex>> segVerMap(nbSeg);	
-	Surface_mesh::Vertex_property<Point>  points   = mesh.vertex_property<Point>("v:point");
-
-	for (int i=0;i<nbSeg;i++)
-	{
-		std::set<int>::iterator vit, vend = segVertices[i].end();
-		int j = 0;
-		for (vit=segVertices[i].begin(); vit!=vend; vit++, j++)
+		std::vector<int> faceSeg(mesh.n_faces());
+		int fid, sid;
+		for (int i=0;i<mesh.n_faces()&&inF;i++)
 		{
-			segment[i]->add_vertex(mesh.getVertexPos(*vit));
-
-			segVerMap[i].insert(std::make_pair(mesh.getVertex(*vit), mesh.getVertex(j)));  // Create a new index for each vertex
+			inF >> fid >> sid;	
+			faceSeg[fid] = sid;
 		}
+		inF.close();
+
+		// Create segments
+		for (int i=0;i<nbSeg;i++)
+		{
+			segment.push_back(new QSurfaceMesh());
+		}
+
+
+		// Create unique vertex set for each segment
+		std::vector<std::set<Surface_mesh::Vertex>> segVertices(nbSeg);
+		Surface_mesh::Face_iterator fit, fend = mesh.faces_end();
+		Surface_mesh::Vertex_around_face_circulator fvit;	
+
+		for (fit = mesh.faces_begin(); fit!=fend; ++fit)
+		{
+			Surface_mesh::Face f = fit;
+			int sid = faceSeg[f.idx()];
+
+			fvit = mesh.vertices(fit);	
+			segVertices[sid].insert(fvit);
+			segVertices[sid].insert(++fvit);
+			segVertices[sid].insert(++fvit);
+		}
+
+		// Add Vertices to each segment	
+		std::vector<std::map<Surface_mesh::Vertex, Surface_mesh::Vertex>> segVerMap(nbSeg);	
+		Surface_mesh::Vertex_property<Point>  points   = mesh.vertex_property<Point>("v:point");
+
+		for (int i=0;i<nbSeg;i++)
+		{
+			std::set<Surface_mesh::Vertex>::iterator vit, vend = segVertices[i].end();
+			int j = 0;
+			for (vit=segVertices[i].begin(); vit!=vend; vit++, j++)
+			{
+				segment[i]->add_vertex(mesh.getVertexPos(*vit));
+
+				segVerMap[i].insert(std::make_pair(*vit, mesh.getVertex(j)));  // Create a new index for each vertex
+			}
+		}
+
+		// Add Faces to each segment
+		std::vector<Surface_mesh::Vertex>  vertices(3);
+		for (fit = mesh.faces_begin(); fit!=fend; ++fit)
+		{
+			Surface_mesh::Face f = fit;
+			int sid = faceSeg[f.idx()];
+
+			fvit = mesh.vertices(fit);
+			vertices[0] = segVerMap[sid][fvit];
+			vertices[1] = segVerMap[sid][++fvit];
+			vertices[2] = segVerMap[sid][++fvit];
+
+			segment[sid]->add_face(vertices);
+		}
+
 	}
 
-	// Add Faces to each segment
-	std::vector<Surface_mesh::Vertex>  vertices(3);
-	for (fit = mesh.faces_begin(); fit!=fend; ++fit)
+	// Clear the empty segment
+	for (std::vector<QSurfaceMesh*>::iterator itr=segment.begin(); itr!=segment.end(); )
 	{
-		Surface_mesh::Face f = fit;
-		int sid = faceSeg[f.idx()];
-
-		fvit = mesh.vertices(fit);
-		vertices[0] = segVerMap[sid][fvit];
-		vertices[1] = segVerMap[sid][++fvit];
-		vertices[2] = segVerMap[sid][++fvit];
-
-		segment[sid]->add_face(vertices);
+		if (!(*itr)->n_vertices())
+		{
+			itr = segment.erase(itr);
+		}
+		else
+			itr++;
 	}
 
 	// Build up

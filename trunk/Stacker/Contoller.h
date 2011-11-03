@@ -8,6 +8,7 @@ class Controller
 {
 public:
 	Controller(QSegMesh* mesh);
+	~Controller();
 
 
 public:
@@ -15,7 +16,7 @@ public:
 	void draw();
 
 private:
-	std::vector<Primitive> primitives;
+	std::vector<Primitive*> primitives;
 	QSegMesh* m_mesh;
 };
 
