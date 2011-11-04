@@ -4,6 +4,7 @@
 #include "QSurfaceMesh.h"
 #include <vector>
 
+
 class QSegMesh : public QObject
 {
 	Q_OBJECT

@@ -33,5 +33,5 @@ public slots:
 	void updateMesh();
 
 signals:
-	void meshDeformed(QString meshName);
+	void meshDeformed(QString objName);
 };
