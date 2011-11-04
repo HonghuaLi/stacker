@@ -151,7 +151,7 @@ void QSurfaceMesh::drawFaceNames()
 	// TODO:
 }
 
-void QSurfaceMesh::drawFacesUnique()
+void QSurfaceMesh::drawFacesUnique(uint offset)
 {
 	glDisable(GL_LIGHTING);
 
@@ -167,7 +167,7 @@ void QSurfaceMesh::drawFacesUnique()
 
 	for(fit = faces_begin(); fit != fend; ++fit)
 	{
-		uint f_id = ((Face)fit).idx() + 1;
+		uint f_id = ((Face)fit).idx() + 1 + offset;
 
 		GLubyte a = (f_id & 0xFF000000) >> 24;
 		GLubyte r = (f_id & 0x00FF0000) >> 16;
@@ -428,5 +428,8 @@ Vec3d QSurfaceMesh::faceCenter( Face f )
 		(v[0].y() + v[1].y() + v[2].y()) / 3.0, 
 		(v[0].z() + v[1].z() + v[2].z()) / 3.0);
 }
+
+
+
 
 

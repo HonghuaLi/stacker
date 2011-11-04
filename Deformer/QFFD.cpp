@@ -7,6 +7,8 @@ QFFD::QFFD( QSurfaceMesh * src_mesh, FFD_FitType fit_type, Vec3i gridResolution 
 {
 	isReady = false;
 
+	m_mesh = src_mesh;
+
 	current_ffd = FFD(src_mesh, fit_type);
 
 	// Fit control points using bounding box
@@ -122,5 +124,5 @@ void QFFD::updateMesh()
 {
 	ffd()->apply();
 
-	emit(meshDeformed());
+	emit(meshDeformed(m_mesh->objectName()));
 }

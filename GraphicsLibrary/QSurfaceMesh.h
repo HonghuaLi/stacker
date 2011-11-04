@@ -1,5 +1,6 @@
 #pragma once
 #include <QObject>
+#include <QString>
 #include "Macros.h"
 
 #include "Surface_mesh.h"
@@ -29,7 +30,7 @@ public:
 	double averageEdgeLength;
 
 	void drawFaceNames();
-	void drawFacesUnique();
+	void drawFacesUnique(uint offset);
 	void drawDebug();
 	void simpleDraw();
 

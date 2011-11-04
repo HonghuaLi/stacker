@@ -8,9 +8,8 @@ class StackerPreview : public QGLViewer
 
 private:
 	QColor backColor;
-
 	Scene * activeScene;
-	VBO activeObjectVBO;
+
 
 public:
 	StackerPreview(QWidget * parent = 0);
@@ -23,6 +22,15 @@ public:
 	void preDraw();
 	void draw();
 
+	// VBO
+	QMap<QString, VBO> vboCollection;
+	void updateVBOs();
+
+	// Stacking parameters
+	Vec3d stackDirection;
+	double O_max;
+
 public slots:
 	void setActiveScene(Scene * changedScene);
+	void updateActiveObject();
 };

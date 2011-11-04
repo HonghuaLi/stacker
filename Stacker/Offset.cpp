@@ -4,6 +4,7 @@
 Offset::Offset( Scene *scene )
 {
 	activeScene = scene;
+	isDirty = true;
 }
 
 Offset::~Offset()
@@ -13,7 +14,7 @@ Offset::~Offset()
 
 std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 {
-	QSurfaceMesh * activeObject = activeScene->activeObject()->getSegment(0);
+	QSegMesh * activeObject = activeScene->activeObject();
 
 	// Set camera
 	activeScene->camera()->setType(Camera::ORTHOGRAPHIC);
@@ -22,7 +23,7 @@ std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 	activeScene->camera()->setUpVector(Vec(1,0,0));
 	activeScene->camera()->fitBoundingBox(Vec(activeObject->bbmin), Vec(activeObject->bbmax));
 
-	// Save new camera state
+	// Save this new camera settings
 	activeScene->camera()->addKeyFrameToPath(direction + 2);
 
 	// Compute the envelop (z value)
@@ -59,11 +60,43 @@ std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 	return envelop;
 }
 
+void Offset::computeOffset()
+{
+	if(!activeScene) return;
+
+	QSegMesh * activeObject = activeScene->activeObject();
+
+	// Save original camera settings
+	activeScene->camera()->addKeyFrameToPath(0);
+
+	// Compute the offset function
+	upperEnvolope = computeEnvelope(1);
+	lowerEnvolope = computeEnvelope(-1);
+	offset = upperEnvolope; 
+	int h = upperEnvolope.size();
+	int w = upperEnvolope[0].size();
+	std::vector<double> row_max;	
+
+	for (int y = 0; y < h; y++){
+		for (int x = 0; x < w; x++)
+		{
+			if (upperEnvolope[y][x]==FLOAT_INFINITY | lowerEnvolope[y][(w-1)-x]==FLOAT_INFINITY)
+				offset[y][x] = 0.0; //out the shape domain
+			else
+				offset[y][x] = upperEnvolope[y][x] - lowerEnvolope[y][(w-1)-x]; //in the shape domain
+		}
+
+		row_max.push_back(*max_element(offset[y].begin(), offset[y].end()));
+	}
+
+	O_max = *max_element(row_max.begin(), row_max.end());
+}
+
 std::set<uint> Offset::verticesOnEnvelope( int direction )
 {
 	//return value
 	std::set<uint> vertices;	
-	QSurfaceMesh * activeObject = activeScene->activeObject()->getSegment(0);	
+	QSegMesh * activeObject = activeScene->activeObject();	
 
 	// restore camera
 	activeScene->camera()->playPath(direction + 2);
@@ -105,15 +138,16 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 
 void Offset::setOffsetColors( int direction, std::vector< std::vector<double> > &offset, double O_max )
 {
-	QSurfaceMesh * activeObject = activeScene->activeObject()->getSegment(0);
+	QSegMesh * activeObject = activeScene->activeObject();
 
-	// restore camera
+	// Restore camera settings
 	activeScene->camera()->playPath(direction + 2);
 
 	int h = offset.size();
 	int w = offset[0].size();
 	uchar * rgb = new uchar[3];	
 
+	// Get all the vertices on the current envelope 
 	std::set<uint> vindices = verticesOnEnvelope(direction);
 
 	double objectH = (activeObject->bbmax - activeObject->bbmin).z();
@@ -149,54 +183,57 @@ void Offset::run()
 {
 	if(!activeScene) return;
 
-	QSurfaceMesh * activeObject = activeScene->activeObject()->getSegment(0);
+	QSegMesh * activeObject = activeScene->activeObject();
 
-	// Save original camera state
-	activeScene->camera()->addKeyFrameToPath(0);
+	// Compute the height of the shape
+	objectH = (activeObject->bbmax - activeObject->bbmin).z();
 
-	// Compute the offset function
-	std::vector< std::vector<double> > upperEnvolope = computeEnvelope(1);	 //upper
-	std::vector< std::vector<double> > lowerEnvolope = computeEnvelope(-1);  //lower
-	std::vector< std::vector<double> > offset = upperEnvolope; 
-	int h = upperEnvolope.size();
-	int w = upperEnvolope[0].size();
-	std::vector<double> row_max;	
-
-	for (int y = 0; y < h; y++){
-		for (int x = 0; x < w; x++)
-		{
-			if (upperEnvolope[y][x]==FLOAT_INFINITY | lowerEnvolope[y][(w-1)-x]==FLOAT_INFINITY)
-				offset[y][x] = 0.0; //out the shape domain
-			else
-				offset[y][x] = upperEnvolope[y][x] - lowerEnvolope[y][(w-1)-x]; //in the shape domain
-		}
-
-		row_max.push_back(*max_element(offset[y].begin(), offset[y].end()));
-	}
-
-	double O_max = *max_element(row_max.begin(), row_max.end());
+	// Compute upper and lower envelops and offset function
+	computeOffset();
 
 	// Assign each vertex with offset color
 	setOffsetColors(1, offset, O_max);
 	setOffsetColors(-1, offset, O_max);
 
 	//// Save the offset function to an image
-	uchar * rgb = new uchar[3];	
-	double objectH = (activeObject->bbmax - activeObject->bbmin).z();
+	saveOffsetAsImage("offset_function.png");
+
+	// Restore original camera settings 
+	activeScene->camera()->setType(Camera::PERSPECTIVE);
+	activeScene->camera()->resetPath(0);
+
+	activeScene->displayMessage(QString("O_max / objectH = %1").arg(O_max / objectH));
+	activeScene->print(QString("Offset function computing has done!"));
+}
+
+
+
+void Offset::setDirty( bool dirty)
+{
+	isDirty = dirty;
+}
+
+double Offset::getMaxOffset()
+{
+	if (isDirty)	computeOffset();
+
+	return O_max;
+}
+
+void Offset::saveOffsetAsImage( QString fileName )
+{
+	int w = upperEnvolope[0].size();
+	int h = upperEnvolope.size();
 	QImage offset_img(w, h, QImage::Format_ARGB32);
+
+	uchar * rgb = new uchar[3];		
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
 			ColorMap::jetColorMap(rgb, Max(0., offset[y][x] / O_max), 0., 1.);
 			offset_img.setPixel(x, (h-1) - y, QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba());			
 		}
 	}
+
 	delete[] rgb;
-	offset_img.save("offset_function.png");
-
-	// Restore camera state
-	activeScene->camera()->setType(Camera::PERSPECTIVE);
-	activeScene->camera()->resetPath(0);
-
-	activeScene->displayMessage(QString("O_max / objectH = %1").arg(O_max / objectH));
-	activeScene->print(QString("Offset function computing has done!"));
+	offset_img.save(fileName);
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <QObject>
+#include <QString>
 #include "QSurfaceMesh.h"
 #include <vector>
 
@@ -12,6 +13,11 @@ public:
 	QSegMesh(const QSegMesh& from);
 	QSegMesh& operator=(const QSegMesh& rhs);
 
+	// Face, vertex
+	uint n_faces();
+	std::vector<uint> vertexIndicesAroundFace(uint fid);
+	Point getVertexPos( uint vid );
+	void setVertexColor( uint vid, const Color& newColor );
 
 	// Get segment
 	QSurfaceMesh* operator [] (int i);
@@ -38,8 +44,13 @@ public:
 	Point bbmin, bbmax, center;
 	Scalar radius;
 
+	// Set global unique name for QSegMesh and all its segments
+	void setObjectName(const QString &name);
+
 private:
 	std::vector<QSurfaceMesh*> segment;
+	void global2local_fid(uint fid, int& sid, uint& fid_local);
+	void global2local_vid(uint vid, int& sid, uint& vid_local);
 };
 
 

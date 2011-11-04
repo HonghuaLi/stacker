@@ -13,7 +13,7 @@ void Stacker::computeOffset()
 	offset.run();
 
 	// update colors
-	activeScene->activeVBO()->setDirty(true);
+	activeScene->updateActiveObject();
 }
 
 void Stacker::setScene( Scene * newScene )

@@ -26,9 +26,12 @@ public:
 	QControlPoint * getQControlPoint( int index );
 	FFD * ffd();
 
+private:
+	QSurfaceMesh* m_mesh;
+
 public slots:
 	void updateMesh();
 
 signals:
-	void meshDeformed();
+	void meshDeformed(QString meshName);
 };

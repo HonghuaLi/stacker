@@ -49,7 +49,6 @@ void Workspace::addNewScene()
 	newScene->showMaximized();
 	newScene->setWindowTitle("Untitled");
 
-	connect(newScene, SIGNAL(newSceneCreated()), sp, SLOT(sceneUpdated()));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*)));
 
 	connect(newScene, SIGNAL(focusChanged(Scene*)), wp, SLOT(setActiveScene(Scene*)));

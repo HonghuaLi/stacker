@@ -89,18 +89,17 @@ private:
 public:
 	QSegMesh * activeObject();
 	QString activeObjectId;
-
-	VBO * activeVBO();
+	bool isEmpty();
 
 public slots:
 	void insertObject( QString fileName );
-	uint numObjects();
 	void setActiveWires( QVector<Wire> );
 	void setActiveDeformer( QFFD * );
 	void updateActiveObject();
+	void updateSegment(QString& objId);
 
 signals:
 	void focusChanged( Scene* );
-	void objectInserted( QSegMesh * );
+	void objectInserted(  );
 	void newSceneCreated();
 };

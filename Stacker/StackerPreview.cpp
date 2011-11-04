@@ -6,6 +6,8 @@ StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
 	setMaximumWidth(200);
 
 	this->activeScene = NULL;
+	O_max = 1.0;
+	stackDirection = Vec3d(0., 0., 1.);
 }
 
 void StackerPreview::init()
@@ -53,36 +55,22 @@ void StackerPreview::draw()
 	// Background
 	setBackgroundColor(backColor);
 
-	if(!activeScene || !activeScene->activeObject())
-		return;
-
-	if(!activeObjectVBO.isReady || activeObjectVBO.objectId != qPrintable(activeScene->activeObjectId)){
-		QSurfaceMesh * mesh = activeScene->activeObject()->getSegment(0);
-
-		Surface_mesh::Vertex_property<Point>  points   = mesh->vertex_property<Point>("v:point");
-		Surface_mesh::Vertex_property<Point>  vnormals = mesh->vertex_property<Point>("v:normal");
-		Surface_mesh::Face_property<Point>    fnormals = mesh->face_property<Point>("f:normal");
-		Surface_mesh::Vertex_property<Color>  vcolors  = mesh->vertex_property<Color>("v:color");
-		Surface_mesh::Vertex_property<float>  vtex     = mesh->vertex_property<float>("v:tex1D", 0.0);
-
-		// Create VBO
-		mesh->fillTrianglesList();
-		activeObjectVBO = VBO(mesh->n_vertices(), points.data(), vnormals.data(), vcolors.data(), mesh->triangles);
-		activeObjectVBO.objectId = qPrintable(activeScene->activeObjectId);
-	}
+	// Update VBO is needed
+	updateVBOs();
 
 	int stackCount = 3;
-	Vec3d stackDirection(0, 0, 1.0);
-	double delta = activeScene->activeObject()->radius / 2.0;
+	Vec3d delta = O_max * stackDirection;
 
 	glPushMatrix();
 	glRotated(10, 0, 0, 1);
 
 	for(int i = 0; i < stackCount; i++)
 	{
-		activeObjectVBO.render();
+		// Draw object using VBO
+		for (QMap<QString, VBO>::iterator itr = vboCollection.begin(); itr != vboCollection.end(); ++itr)
+			itr->render();
 
-		glTranslated(0,0,delta);
+		glTranslated(delta[0],delta[1],delta[2]);
 	}
 
 	glPopMatrix();
@@ -92,10 +80,44 @@ void StackerPreview::setActiveScene( Scene * changedScene )
 {
 	this->activeScene = changedScene;
 
-	if(activeScene && activeScene->activeObject())
+	updateActiveObject();
+}
+
+void StackerPreview::updateVBOs()
+{
+	QSegMesh * mesh = activeScene->activeObject();
+
+	if(mesh && mesh->isReady)
+	{
+		// Create VBO for each segment if needed
+		for (int i=0;i<mesh->nbSegments();i++)
+		{			
+			QSurfaceMesh* seg = mesh->getSegment(i);
+			QString objId = seg->objectName();
+
+			if (vboCollection.find(objId) == vboCollection.end())
+			{
+				Surface_mesh::Vertex_property<Point>  points   = seg->vertex_property<Point>("v:point");
+				Surface_mesh::Vertex_property<Point>  vnormals = seg->vertex_property<Point>("v:normal");
+				Surface_mesh::Vertex_property<Color>  vcolors  = seg->vertex_property<Color>("v:color");			
+				seg->fillTrianglesList();
+
+				// Create VBO 
+				vboCollection[objId] = VBO( seg->n_vertices(), points.data(), vnormals.data(), vcolors.data(), seg->triangles );		
+			}
+		}
+	}
+}
+
+void StackerPreview::updateActiveObject()
+{
+	if(activeScene && !activeScene->isEmpty())
+	{
 		camera()->setSceneRadius(activeScene->activeObject()->radius);
+		camera()->showEntireScene();
 
-	camera()->showEntireScene();
+		O_max = activeScene->activeObject()->radius / 2;
+	}
 
-	this->updateGL();
+	vboCollection.clear();
 }
