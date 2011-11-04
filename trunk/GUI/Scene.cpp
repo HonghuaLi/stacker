@@ -52,7 +52,10 @@ Scene::Scene( QString loadObject, QWidget *parent)
 
 	emit(newSceneCreated());
 
+	// Offset function
+	m_offset = new Offset(this);
 
+	// Testing
 	testOBB = NULL;
 	testOBB2 = NULL;
 	testCH = NULL;
@@ -77,8 +80,12 @@ void Scene::insertObject( QString fileName )
 
 	QSegMesh * newMesh = getObject(activeObjectId);
 
+	// Set camera
 	camera()->setSceneRadius(newMesh->radius);
 	camera()->showEntireScene();
+
+	// Update the offset function
+	m_offset->computeOffset();
 
 	emit(objectInserted());
 }
@@ -396,16 +403,16 @@ QSegMesh * Scene::activeObject()
 }
 
 
-void Scene::updateSegment( QString& objId )
+void Scene::updateSegment( QString objId )
 {
 	QMap<QString, VBO>::iterator itr = vboCollection.find(objId);
 	if (itr != vboCollection.end())
 	{
-		itr->setDirty(true);
+		vboCollection.erase(itr);
 	}
 }
 
 bool Scene::isEmpty()
 {
-	return activeObject() == NULL;
+	return this->activeObject() == NULL;
 }

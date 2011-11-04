@@ -430,6 +430,19 @@ Vec3d QSurfaceMesh::faceCenter( Face f )
 }
 
 
+void QSurfaceMesh::read( const std::string& filename )
+{
+	Surface_mesh::read(filename);
+
+	// Build up the mesh
+	computeBoundingBox();
+	setColorVertices();
+	update_face_normals();
+	update_vertex_normals();
+}
+
+
+
 
 
 

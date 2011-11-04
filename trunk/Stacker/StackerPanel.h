@@ -2,7 +2,6 @@
 
 #include "ui_StackerWidget.h"
 #include "Scene.h"
-#include "Stacker.h"
 #include "StackerPreview.h"
 
 class StackerPanel : public QWidget
@@ -16,13 +15,12 @@ private:
 public:
 	StackerPanel();
 
-	Stacker * stacker;
 	StackerPreview * stacker_preview;
 
 public slots:
 	void onOffsetButtonClicked();
 	void setActiveScene(Scene *);
-	void sceneUpdated();
+	void updateActiveObject();
 
 signals:
 	void activeSceneChanged();

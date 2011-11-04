@@ -5,6 +5,8 @@ Offset::Offset( Scene *scene )
 {
 	activeScene = scene;
 	isDirty = true;
+
+	O_max = 0.;
 }
 
 Offset::~Offset()
@@ -62,9 +64,10 @@ std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 
 void Offset::computeOffset()
 {
-	if(!activeScene) return;
-
 	QSegMesh * activeObject = activeScene->activeObject();
+
+	// Compute the height of the shape
+	objectH = (activeObject->bbmax - activeObject->bbmin).z();
 
 	// Save original camera settings
 	activeScene->camera()->addKeyFrameToPath(0);
@@ -80,7 +83,7 @@ void Offset::computeOffset()
 	for (int y = 0; y < h; y++){
 		for (int x = 0; x < w; x++)
 		{
-			if (upperEnvolope[y][x]==FLOAT_INFINITY | lowerEnvolope[y][(w-1)-x]==FLOAT_INFINITY)
+			if (upperEnvolope[y][x]==DOUBLE_INFINITY | lowerEnvolope[y][(w-1)-x]==DOUBLE_INFINITY)
 				offset[y][x] = 0.0; //out the shape domain
 			else
 				offset[y][x] = upperEnvolope[y][x] - lowerEnvolope[y][(w-1)-x]; //in the shape domain
@@ -150,8 +153,6 @@ void Offset::setOffsetColors( int direction, std::vector< std::vector<double> > 
 	// Get all the vertices on the current envelope 
 	std::set<uint> vindices = verticesOnEnvelope(direction);
 
-	double objectH = (activeObject->bbmax - activeObject->bbmin).z();
-
 	// Assign each vertex with offset color
 	for (std::set<uint>::iterator it = vindices.begin(); it!=vindices.end(); it++)
 	{
@@ -184,9 +185,9 @@ void Offset::run()
 	if(!activeScene) return;
 
 	QSegMesh * activeObject = activeScene->activeObject();
+	if (!activeObject->isReady)	return;
 
-	// Compute the height of the shape
-	objectH = (activeObject->bbmax - activeObject->bbmin).z();
+
 
 	// Compute upper and lower envelops and offset function
 	computeOffset();
@@ -215,15 +216,13 @@ void Offset::setDirty( bool dirty)
 
 double Offset::getMaxOffset()
 {
-	if (isDirty)	computeOffset();
-
 	return O_max;
 }
 
 void Offset::saveOffsetAsImage( QString fileName )
 {
-	int w = upperEnvolope[0].size();
-	int h = upperEnvolope.size();
+	int h = offset.size();
+	int w = offset[0].size();
 	QImage offset_img(w, h, QImage::Format_ARGB32);
 
 	uchar * rgb = new uchar[3];		
@@ -236,4 +235,9 @@ void Offset::saveOffsetAsImage( QString fileName )
 
 	delete[] rgb;
 	offset_img.save(fileName);
+}
+
+double Offset::getStackability()
+{
+	return 1 - O_max/objectH;
 }

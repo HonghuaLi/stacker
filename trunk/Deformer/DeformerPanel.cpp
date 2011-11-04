@@ -22,7 +22,7 @@ void DeformerPanel::onCreateBoundingClicked()
 
 	activeDeformer = new QFFD(mesh, BoundingBoxFFD, Vec3i(dw.xRes->value(), dw.yRes->value(), dw.zRes->value()));
 
-	connect(activeDeformer, SIGNAL(meshDeformed(QString)), activeScene, SLOT(updateSegment(QString&)));
+	connect(activeDeformer, SIGNAL(meshDeformed(QString)), activeScene, SLOT(updateSegment(QString)));
 
 	emit( deformerCreated(activeDeformer) );
 }

@@ -13,6 +13,9 @@ using namespace qglviewer;
 #include "VBO.h"
 #include "Wire.h"
 #include "QFFD.h"
+#include "Offset.h"
+
+class Offset;
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX};
@@ -38,6 +41,10 @@ public:
 	virtual void specialDraw();
 
 	void* readBuffer( GLenum format, GLenum type );
+
+	// VBO
+	QMap<QString, VBO> vboCollection;
+	void updateVBOs();
 
 	// Scene Visualizations
 	void drawCornerAxis();
@@ -75,10 +82,7 @@ public slots:
 private:
 	QQueue<QString> osdMessages;
 	QTimer *timer;
-	
-	// drawing
-	QMap<QString, VBO> vboCollection;
-	void updateVBOs();
+
 
 // Objects in the scene
 private:
@@ -96,10 +100,14 @@ public slots:
 	void setActiveWires( QVector<Wire> );
 	void setActiveDeformer( QFFD * );
 	void updateActiveObject();
-	void updateSegment(QString& objId);
+	void updateSegment(QString objId);
 
 signals:
 	void focusChanged( Scene* );
 	void objectInserted(  );
 	void newSceneCreated();
+
+// Stacking properties of the activeObject
+public:
+	Offset* m_offset;
 };

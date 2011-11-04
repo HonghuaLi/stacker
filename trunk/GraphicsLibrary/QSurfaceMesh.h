@@ -41,6 +41,9 @@ public:
 	void resetVistedVertices(std::vector <Vertex>& all);
 	void resetVistedVertices(uint toState = false); // for entire mesh
 
+	// Load the mesh from file
+	void read(const std::string& filename);
+
 	// Properties
 	bool isReady;
 	Point bbmin, bbmax, center;

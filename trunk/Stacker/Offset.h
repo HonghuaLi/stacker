@@ -6,6 +6,7 @@
 #include "Scene.h"
 #include "QSegMesh.h"
 
+class Scene;
 
 class Offset
 {
@@ -14,14 +15,18 @@ public:
 	~Offset();
 
 public:
-	std::vector< std::vector<double> > computeEnvelope(int direction);
-	std::set<uint> verticesOnEnvelope(int direction);
-	void setOffsetColors(int direction, std::vector< std::vector<double> > &offset, double O_max);
 	void computeOffset();
 	void run();
 	void setDirty(bool dirty = true);
 	double getMaxOffset();
 	void saveOffsetAsImage(QString fileName);
+	double getStackability();
+
+private:
+	std::vector< std::vector<double> > computeEnvelope(int direction);
+	std::set<uint> verticesOnEnvelope(int direction);
+	void setOffsetColors(int direction, std::vector< std::vector<double> > &offset, double O_max);
+
 
 private:
 	Scene * activeScene;

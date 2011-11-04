@@ -28,7 +28,6 @@ public:
 
 	// Stacking parameters
 	Vec3d stackDirection;
-	double O_max;
 
 public slots:
 	void setActiveScene(Scene * changedScene);

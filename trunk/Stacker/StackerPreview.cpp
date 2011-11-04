@@ -6,7 +6,6 @@ StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
 	setMaximumWidth(200);
 
 	this->activeScene = NULL;
-	O_max = 1.0;
 	stackDirection = Vec3d(0., 0., 1.);
 }
 
@@ -59,6 +58,9 @@ void StackerPreview::draw()
 	updateVBOs();
 
 	int stackCount = 3;
+	double O_max = activeScene->m_offset->getMaxOffset();
+	double S = activeScene->m_offset->getStackability();
+	this->displayMessage(QString("O_max = %1; S = %2").arg(O_max).arg(S));
 	Vec3d delta = O_max * stackDirection;
 
 	glPushMatrix();
@@ -115,9 +117,7 @@ void StackerPreview::updateActiveObject()
 	{
 		camera()->setSceneRadius(activeScene->activeObject()->radius);
 		camera()->showEntireScene();
-
-		O_max = activeScene->activeObject()->radius / 2;
 	}
-
+		
 	vboCollection.clear();
 }
