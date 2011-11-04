@@ -243,12 +243,115 @@ QSurfaceMesh* QSegMesh::getSegment( int i )
 
 void QSegMesh::simpleDraw()
 {
-
+	// Render mesh regularly (inefficient)
+	for (int i=0;i<segment.size();i++)
+	{
+		segment[i]->simpleDraw();
+	}
 }
 
 
 
 void QSegMesh::drawFacesUnique()
 {
+	uint offset = 0;
+	for (int i=0;i<segment.size();i++)
+	{
+		segment[i]->drawFacesUnique(offset);
 
+		offset += segment[i]->n_vertices();
+	}
+}
+
+void QSegMesh::setObjectName( const QString &name )
+{
+	QObject::setObjectName(name);
+
+	for (int i=0;i<segment.size();i++)
+	{
+		segment[i]->setObjectName(name + QString("-seg%1").arg(i));
+	}
+}
+
+uint QSegMesh::n_faces()
+{
+	uint num = 0;
+	for (int i=0;i<segment.size();i++)
+	{
+		num += segment[i]->n_vertices();
+	}
+
+	return num;
+}
+
+std::vector<uint> QSegMesh::vertexIndicesAroundFace( uint fid )
+{
+	int sid;
+	uint fid_local;
+	global2local_fid(fid, sid, fid_local);
+
+	std::vector<uint> vertices = segment[sid]->vertexIndicesAroundFace(fid_local);
+	uint offset = fid - fid_local;
+	for (int i=0;i<vertices.size();i++)
+	{
+		vertices[i] += offset;
+	}
+
+	return vertices;
+}
+
+void QSegMesh::global2local_fid( uint fid, int& sid, uint& fid_local )
+{
+	uint offset = 0;
+	int i=0;
+	for (;i<segment.size();i++)
+	{
+		offset += segment[i]->n_vertices();
+
+		if (fid < offset)
+		{
+			offset -= segment[i]->n_vertices();
+			break;
+		}
+	}
+
+	sid = i;
+	fid_local = fid - offset;
+}
+
+Point QSegMesh::getVertexPos( uint vid )
+{
+	int sid;
+	uint vid_local;
+	global2local_fid(vid, sid, vid_local);
+
+	return segment[sid]->getVertexPos(vid_local);
+}
+
+void QSegMesh::global2local_vid( uint vid, int& sid, uint& vid_local )
+{
+	uint offset = 0;
+	int i=0;
+	for (;i<segment.size();i++)
+	{
+		offset += segment[i]->n_vertices();
+
+		if (vid < offset)
+		{
+			offset -= segment[i]->n_vertices();
+			break;
+		}
+	}
+
+	sid = i;
+	vid_local = vid - offset;
+}
+
+void QSegMesh::setVertexColor( uint vid, const Color& newColor )
+{
+	int sid;
+	uint vid_local;
+	global2local_fid(vid, sid, vid_local);
+
+	segment[sid]->setVertexColor(vid_local, newColor);
 }

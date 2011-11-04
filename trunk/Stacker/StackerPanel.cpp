@@ -18,7 +18,7 @@ StackerPanel::StackerPanel()
 
 void StackerPanel::onOffsetButtonClicked()
 {
-	if (activeScene && !activeScene->activeObjectId.size())
+	if (activeScene && !activeScene->isEmpty())
 	{
 		activeScene->print("There is no mesh opened!");
 		return;
@@ -34,7 +34,6 @@ void StackerPanel::setActiveScene( Scene * scene )
 	if(activeScene != scene)
 	{
 		activeScene = scene;
-		stacker->setScene(scene);
 		stacker_preview->setActiveScene(scene);
 	}
 
@@ -43,8 +42,7 @@ void StackerPanel::setActiveScene( Scene * scene )
 
 void StackerPanel::sceneUpdated()
 {
-	stacker_preview->setActiveScene(activeScene);
-	stacker_preview->updateGL();
+	stacker_preview->updateActiveObject();
 
 	emit(activeSceneChanged());
 }

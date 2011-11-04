@@ -38,8 +38,8 @@ Scene::Scene( QString loadObject, QWidget *parent)
 	timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
 
-	// Other events
-	connect(this, SIGNAL(objectInserted(QSurfaceMesh *)), SLOT(update()));
+	// Update the inserted object
+	connect(this, SIGNAL(objectInserted()), SLOT(updateActiveObject()));
 
 	if(loadObject.size())
 		insertObject(loadObject);
@@ -80,44 +80,40 @@ void Scene::insertObject( QString fileName )
 	camera()->setSceneRadius(newMesh->radius);
 	camera()->showEntireScene();
 
-	emit(objectInserted(newMesh));
+	emit(objectInserted());
 }
 
 void Scene::updateVBOs()
 {
 	QSegMesh * mesh = activeObject();
 
-	if(mesh && mesh->isReady && vboCollection.find(activeObjectId) == vboCollection.end())
+	if(mesh && mesh->isReady)
 	{
-		// Create a VBO for each segment
+		// Create VBO for each segment if needed
 		for (int i=0;i<mesh->nbSegments();i++)
-		{
+		{			
 			QSurfaceMesh* seg = mesh->getSegment(i);
+			QString objId = seg->objectName();
 
-			Surface_mesh::Vertex_property<Point>  points   = seg->vertex_property<Point>("v:point");
-			Surface_mesh::Vertex_property<Point>  vnormals = seg->vertex_property<Point>("v:normal");
-			Surface_mesh::Vertex_property<Color>  vcolors  = seg->vertex_property<Color>("v:color");
-			
-			seg->fillTrianglesList();
+			if (vboCollection.find(objId) == vboCollection.end())
+			{
+				Surface_mesh::Vertex_property<Point>  points   = seg->vertex_property<Point>("v:point");
+				Surface_mesh::Vertex_property<Point>  vnormals = seg->vertex_property<Point>("v:normal");
+				Surface_mesh::Vertex_property<Color>  vcolors  = seg->vertex_property<Color>("v:color");			
+				seg->fillTrianglesList();
 
-			// Create VBO 
-			vboCollection[activeObjectId+QString("-%1").arg(i)] = VBO( seg->n_vertices(), points.data(), vnormals.data(), vcolors.data(), seg->triangles );		
+				// Create VBO 
+				vboCollection[objId] = VBO( seg->n_vertices(), points.data(), vnormals.data(), vcolors.data(), seg->triangles );		
+			}
 		}
-
-
-
 	}
 }
 
 void Scene::updateActiveObject()
 {
-	vboCollection[activeObjectId].setDirty(true);
+	vboCollection.clear();
 }
 
-uint Scene::numObjects()
-{
-	return vboCollection.size();
-}
 
 void Scene::init()
 {
@@ -399,10 +395,17 @@ QSegMesh * Scene::activeObject()
 		return NULL;
 }
 
-VBO * Scene::activeVBO()
+
+void Scene::updateSegment( QString& objId )
 {
-	if(vboCollection.find(activeObjectId) != vboCollection.end())
-		return &vboCollection[activeObjectId];
-	else
-		return NULL;
+	QMap<QString, VBO>::iterator itr = vboCollection.find(objId);
+	if (itr != vboCollection.end())
+	{
+		itr->setDirty(true);
+	}
+}
+
+bool Scene::isEmpty()
+{
+	return activeObject() == NULL;
 }

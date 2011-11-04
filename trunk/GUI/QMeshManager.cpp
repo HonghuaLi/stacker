@@ -19,6 +19,7 @@ QString addNewObject( QString fileName )
 
 	// Reading QSegMesh
 	newMesh->read(fileName);
+	newMesh->setObjectName(newObjId);
 
 	return newObjId;
 }
