@@ -19,9 +19,9 @@ public:
 	void run();
 	void setDirty(bool dirty = true);
 	double getMaxOffset();
-	void saveOffsetAsImage(QString fileName);
 	double getStackability();
 
+	void saveOffsetAsImage(QString fileName);
 private:
 	std::vector< std::vector<double> > computeEnvelope(int direction);
 	std::set<uint> verticesOnEnvelope(int direction);

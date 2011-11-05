@@ -276,6 +276,11 @@ void Scene::keyPressEvent( QKeyEvent *e )
 		testMinOBB = new MinOBB3( activeObject()->getSegment(0) );
 	}
 
+	if (e->key() == Qt::Key_U)
+	{
+		m_offset->computeOffset();
+	}
+
 	// Regular behavior
 	QGLViewer::keyPressEvent(e);
 }
@@ -408,7 +413,8 @@ void Scene::updateSegment( QString objId )
 	QMap<QString, VBO>::iterator itr = vboCollection.find(objId);
 	if (itr != vboCollection.end())
 	{
-		vboCollection.erase(itr);
+		itr->setDirty(true);
+		emit(objectModified());
 	}
 }
 

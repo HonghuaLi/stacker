@@ -106,6 +106,7 @@ signals:
 	void focusChanged( Scene* );
 	void objectInserted(  );
 	void newSceneCreated();
+	void objectModified();
 
 // Stacking properties of the activeObject
 public:

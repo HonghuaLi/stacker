@@ -60,7 +60,8 @@ void StackerPreview::draw()
 	int stackCount = 3;
 	double O_max = activeScene->m_offset->getMaxOffset();
 	double S = activeScene->m_offset->getStackability();
-	this->displayMessage(QString("O_max = %1; S = %2").arg(O_max).arg(S));
+
+	this->displayMessage(QString("O_max = %1; S = %3").arg(O_max).arg(S));
 	Vec3d delta = O_max * stackDirection;
 
 	glPushMatrix();

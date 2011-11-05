@@ -434,7 +434,12 @@ void QSurfaceMesh::read( const std::string& filename )
 {
 	Surface_mesh::read(filename);
 
-	// Build up the mesh
+	buildUp();
+}
+
+// Build up the mesh
+void QSurfaceMesh::buildUp()
+{
 	computeBoundingBox();
 	setColorVertices();
 	update_face_normals();
