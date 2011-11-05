@@ -155,6 +155,11 @@ void QSegMesh::build_up()
 	update_face_normals();
 	update_vertex_normals();
 
+	for (int i=0;i<nbSegments();i++)
+	{
+		segment[i]->buildUp();
+	}
+
 	isReady = true;
 }
 

@@ -44,6 +44,9 @@ public:
 	// Load the mesh from file
 	void read(const std::string& filename);
 
+	// Build up
+	void buildUp();
+
 	// Properties
 	bool isReady;
 	Point bbmin, bbmax, center;

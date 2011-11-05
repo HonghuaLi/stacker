@@ -67,6 +67,7 @@ void Offset::computeOffset()
 	QSegMesh * activeObject = activeScene->activeObject();
 
 	// Compute the height of the shape
+	activeObject->computeBoundingBox();
 	objectH = (activeObject->bbmax - activeObject->bbmin).z();
 
 	// Save original camera settings
