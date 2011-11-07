@@ -81,11 +81,11 @@
     <Filter Include="Stacker\Header">
       <UniqueIdentifier>{b2c640c2-8acb-4c45-95ec-b4e50786cfb8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Stacker\Source">
-      <UniqueIdentifier>{2c4ab026-988c-46d4-9983-67e1d29aab68}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Stacker\ui">
       <UniqueIdentifier>{5b340b63-49b3-401b-b1e9-84711f818138}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stacker\Source">
+      <UniqueIdentifier>{2c4ab026-988c-46d4-9983-67e1d29aab68}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -281,6 +281,9 @@
     <ClCompile Include="Stacker\Primitive.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicsLibrary\glInfo.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -405,6 +408,9 @@
     </ClInclude>
     <ClInclude Include="Stacker\Primitive.h">
       <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\glInfo.h">
+      <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

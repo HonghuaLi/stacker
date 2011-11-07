@@ -3,10 +3,28 @@
 
 StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
 {
+	// Restrict the size of the preview window
 	setMaximumWidth(200);
 
+	// No active scene when initializing
 	this->activeScene = NULL;
+
+	// Stacking direction is always along z axis
 	stackDirection = Vec3d(0., 0., 1.);
+
+	// check if FBO is supported by your video card
+	glInfo glInfo;
+	glInfo.getInfo();
+	if(glInfo.isExtensionSupported("GL_EXT_framebuffer_object"))
+	{
+		fobSupported = true;
+		this->displayMessage("FBO is supported ;)");
+	}
+	else
+	{
+		fobSupported = false;
+		this->displayMessage("FBO isn't supported ;(");
+	}
 }
 
 void StackerPreview::init()
@@ -61,7 +79,7 @@ void StackerPreview::draw()
 	double O_max = activeScene->m_offset->getMaxOffset();
 	double S = activeScene->m_offset->getStackability();
 
-	this->displayMessage(QString("O_max = %1; S = %3").arg(O_max).arg(S));
+	this->displayMessage(QString("O_max = %1; S = %2").arg(O_max).arg(S));
 	Vec3d delta = O_max * stackDirection;
 
 	glPushMatrix();

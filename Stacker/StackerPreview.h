@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Stacker.h"
+
+#include "Scene.h"
+#include "glInfo.h"
+
 
 class StackerPreview : public QGLViewer
 {
@@ -9,6 +12,8 @@ class StackerPreview : public QGLViewer
 private:
 	QColor backColor;
 	Scene * activeScene;
+	bool fobSupported;
+	bool fboUsed;
 
 
 public:
