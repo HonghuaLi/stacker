@@ -52,9 +52,6 @@ Scene::Scene( QString loadObject, QWidget *parent)
 
 	emit(newSceneCreated());
 
-	// Offset function
-	m_offset = new Offset(this);
-
 	// Testing
 	testOBB = NULL;
 	testOBB2 = NULL;
@@ -83,9 +80,6 @@ void Scene::insertObject( QString fileName )
 	// Set camera
 	camera()->setSceneRadius(newMesh->radius);
 	camera()->showEntireScene();
-
-	// Update the offset function
-	m_offset->computeOffset();
 
 	emit(objectInserted());
 }
@@ -128,7 +122,6 @@ void Scene::init()
 	this->viewMode = VIEW;
 	this->selectMode = NONE;
 	this->modifyMode = DEFAULT;
-	this->specialRenderMode = REGULAR;
 
 	// Background
 	setBackgroundColor(backColor = QColor(50,50,60));
@@ -192,39 +185,12 @@ void Scene::draw()
 	// Deformer
 	if(activeDeformer) activeDeformer->draw();
 
-	// For depth buffer, selection, anything extraordinary
-	specialDraw();
-
 	if(testOBB) testOBB->draw();
 	if(testOBB2) testOBB2->draw();
 	if (testMinOBB) testMinOBB->draw();
 	if (testController) testController->draw();
 }
 
-void Scene::specialDraw()
-{
-	switch(specialRenderMode)
-	{
-	case REGULAR:
-		break;
-
-	case DEPTH:
-		glClearColor(0,0,0,0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_MULTISAMPLE);
-
-		activeObject()->simpleDraw();
-		break;
-
-	case UNIQUE_FACES:
-		glClearColor(0,0,0,0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_MULTISAMPLE);
-
-		activeObject()->drawFacesUnique();
-		break;
-	}
-}
 
 void Scene::drawWithNames()
 {
@@ -276,11 +242,6 @@ void Scene::keyPressEvent( QKeyEvent *e )
 		testMinOBB = new MinOBB3( activeObject()->getSegment(0) );
 	}
 
-	if (e->key() == Qt::Key_U)
-	{
-		m_offset->computeOffset();
-	}
-
 	// Regular behavior
 	QGLViewer::keyPressEvent(e);
 }
@@ -322,9 +283,6 @@ void Scene::setModifyMode(ModifyMode toMode)
 
 void Scene::postDraw()
 {
-	if(specialRenderMode != REGULAR)
-		return;
-
 	// Textual log messages
 	for(int i = 0; i < osdMessages.size(); i++){
 		int margin = 20; //px
@@ -376,28 +334,6 @@ void Scene::setActiveDeformer( QFFD * newFFD )
 	updateGL();
 }
 
-void* Scene::readBuffer( GLenum format, GLenum type )
-{
-	int w = width();
-	int h = height();
-
-	void * data = NULL;
-
-	switch(format)
-	{
-	case GL_DEPTH_COMPONENT:
-		data = new GLfloat[w*h];
-		break;
-
-	case GL_RGBA:
-		data = new GLubyte[w*h*4];
-		break;
-	}
-
-	glReadPixels(0, 0, w, h, format, type, data);
-
-	return data;
-}
 
 QSegMesh * Scene::activeObject()
 {

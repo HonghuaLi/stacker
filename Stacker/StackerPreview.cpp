@@ -1,4 +1,5 @@
 #include "StackerPreview.h"
+#include "StackerPanel.h"
 
 
 StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
@@ -11,20 +12,6 @@ StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
 
 	// Stacking direction is always along z axis
 	stackDirection = Vec3d(0., 0., 1.);
-
-	// check if FBO is supported by your video card
-	glInfo glInfo;
-	glInfo.getInfo();
-	if(glInfo.isExtensionSupported("GL_EXT_framebuffer_object"))
-	{
-		fobSupported = true;
-		this->displayMessage("FBO is supported ;)");
-	}
-	else
-	{
-		fobSupported = false;
-		this->displayMessage("FBO isn't supported ;(");
-	}
 }
 
 void StackerPreview::init()
@@ -76,8 +63,8 @@ void StackerPreview::draw()
 	updateVBOs();
 
 	int stackCount = 3;
-	double O_max = activeScene->m_offset->getMaxOffset();
-	double S = activeScene->m_offset->getStackability();
+	double O_max = activeOffset->getMaxOffset();
+	double S = activeOffset->getStackability();
 
 	this->displayMessage(QString("O_max = %1; S = %2").arg(O_max).arg(S));
 	Vec3d delta = O_max * stackDirection;
@@ -97,9 +84,9 @@ void StackerPreview::draw()
 	glPopMatrix();
 }
 
-void StackerPreview::setActiveScene( Scene * changedScene )
+void StackerPreview::setActiveScene( Scene * toScene )
 {
-	this->activeScene = changedScene;
+	this->activeScene = toScene;
 
 	updateActiveObject();
 }
@@ -140,3 +127,9 @@ void StackerPreview::updateActiveObject()
 		
 	vboCollection.clear();
 }
+
+void StackerPreview::setActiveOffset( Offset * offset )
+{
+	activeOffset = offset;
+}
+

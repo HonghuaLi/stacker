@@ -3,15 +3,14 @@
 #include "ColorMap.h"
 #include <vector>
 #include <set>
-#include "Scene.h"
 #include "QSegMesh.h"
 
-class Scene;
+class HiddenViewer;
 
 class Offset
 {
 public:
-	Offset(Scene* scene);
+	Offset(HiddenViewer* viewer);
 	~Offset();
 
 public:
@@ -29,7 +28,7 @@ private:
 
 
 private:
-	Scene * activeScene;
+	HiddenViewer * activeViewer;
 	std::vector< std::vector<double> > upperEnvolope;
 	std::vector< std::vector<double> > lowerEnvolope;
 	std::vector< std::vector<double> > offset; 

@@ -13,14 +13,13 @@ using namespace qglviewer;
 #include "VBO.h"
 #include "Wire.h"
 #include "QFFD.h"
-#include "Offset.h"
 
 class Offset;
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX};
 enum ModifyMode { DEFAULT, CP_REF_VECTOR, MOVE_VERTEX };
-enum SpecialRenderMode { REGULAR, DEPTH, UNIQUE_FACES };
+
 
 class Scene : public QGLViewer{
 
@@ -38,9 +37,6 @@ public:
 	virtual void draw();
 	virtual void drawWithNames();
 	virtual void postDraw();
-	virtual void specialDraw();
-
-	void* readBuffer( GLenum format, GLenum type );
 
 	// VBO
 	QMap<QString, VBO> vboCollection;
@@ -66,7 +62,6 @@ public:
 	ViewMode viewMode;
 	SelectMode selectMode;
 	ModifyMode modifyMode;
-	SpecialRenderMode specialRenderMode;
 
 	QColor backColor;
 
@@ -107,8 +102,4 @@ signals:
 	void objectInserted(  );
 	void newSceneCreated();
 	void objectModified();
-
-// Stacking properties of the activeObject
-public:
-	Offset* m_offset;
 };

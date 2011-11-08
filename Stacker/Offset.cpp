@@ -1,9 +1,9 @@
 #include "Offset.h"
+#include "HiddenViewer.h"
 
-
-Offset::Offset( Scene *scene )
+Offset::Offset( HiddenViewer *viewer )
 {
-	activeScene = scene;
+	activeViewer = viewer;
 	isDirty = true;
 
 	O_max = 0.;
@@ -16,31 +16,30 @@ Offset::~Offset()
 
 std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 {
-	QSegMesh * activeObject = activeScene->activeObject();
+	QSegMesh * activeObject = activeViewer->activeObject();
 
 	// Set camera
-	activeScene->camera()->setType(Camera::ORTHOGRAPHIC);
-	activeScene->camera()->setPosition(Vec(0,0, direction * activeObject->radius));
-	activeScene->camera()->lookAt(Vec());	
-	activeScene->camera()->setUpVector(Vec(1,0,0));
-	activeScene->camera()->fitBoundingBox(Vec(activeObject->bbmin), Vec(activeObject->bbmax));
+	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
+	activeViewer->camera()->setPosition(Vec(0,0, direction * activeObject->radius));
+	activeViewer->camera()->lookAt(Vec());	
+	activeViewer->camera()->setUpVector(Vec(1,0,0));
+	activeViewer->camera()->fitBoundingBox(Vec(activeObject->bbmin), Vec(activeObject->bbmax));
 
 	// Save this new camera settings
-	activeScene->camera()->addKeyFrameToPath(direction + 2);
+	activeViewer->camera()->addKeyFrameToPath(direction + 2);
 
 	// Compute the envelop (z value)
-	double zCamera = (activeScene->camera()->position()).z;
+	double zCamera = (activeViewer->camera()->position()).z;
 
-	activeScene->specialRenderMode = DEPTH;
-	activeScene->updateGL(); // draw
-	activeScene->specialRenderMode = REGULAR;
+	activeViewer->setMode(HV_DEPTH);
+	activeViewer->updateGL(); // draw
 
-	GLfloat* depthBuffer = (GLfloat*)activeScene->readBuffer(GL_DEPTH_COMPONENT, GL_FLOAT);
+	GLfloat* depthBuffer = (GLfloat*)activeViewer->readBuffer(GL_DEPTH_COMPONENT, GL_FLOAT);
 
-	int w = activeScene->width();
-	int h = activeScene->height();
-	double zNear = activeScene->camera()->zNear();
-	double zFar = activeScene->camera()->zFar();
+	int w = activeViewer->width();
+	int h = activeViewer->height();
+	double zNear = activeViewer->camera()->zNear();
+	double zFar = activeViewer->camera()->zFar();
 	std::vector< std::vector<double> > envelop(h);
 
 	for(int y = 0; y < h; y++)
@@ -64,14 +63,14 @@ std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 
 void Offset::computeOffset()
 {
-	QSegMesh * activeObject = activeScene->activeObject();
+	QSegMesh * activeObject = activeViewer->activeObject();
+	if (!activeObject) return;
 
 	// Compute the height of the shape
-	activeObject->computeBoundingBox();
 	objectH = (activeObject->bbmax - activeObject->bbmin).z();
 
 	// Save original camera settings
-	activeScene->camera()->addKeyFrameToPath(0);
+	activeViewer->camera()->addKeyFrameToPath(0);
 
 	// Compute the offset function
 	upperEnvolope = computeEnvelope(1);
@@ -100,20 +99,19 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 {
 	//return value
 	std::set<uint> vertices;	
-	QSegMesh * activeObject = activeScene->activeObject();	
+	QSegMesh * activeObject = activeViewer->activeObject();	
 
 	// restore camera
-	activeScene->camera()->playPath(direction + 2);
+	activeViewer->camera()->playPath(direction + 2);
 
 	//rend the faces with unique color
-	int w = activeScene->width();
-	int h = activeScene->height();	
+	int w = activeViewer->width();
+	int h = activeViewer->height();	
 
-	activeScene->specialRenderMode = UNIQUE_FACES;
-	activeScene->updateGL();
-	activeScene->specialRenderMode = REGULAR;
+	activeViewer->setMode(HV_UNIQUE_FACES);
+	activeViewer->updateGL();
 
-	GLubyte* colormap = (GLubyte*)activeScene->readBuffer(GL_RGBA, GL_UNSIGNED_BYTE);
+	GLubyte* colormap = (GLubyte*)activeViewer->readBuffer(GL_RGBA, GL_UNSIGNED_BYTE);
 
 	//get the indices back
 	for(int y = 0; y < h; y++){
@@ -142,10 +140,10 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 
 void Offset::setOffsetColors( int direction, std::vector< std::vector<double> > &offset, double O_max )
 {
-	QSegMesh * activeObject = activeScene->activeObject();
+	QSegMesh * activeObject = activeViewer->activeObject();
 
 	// Restore camera settings
-	activeScene->camera()->playPath(direction + 2);
+	activeViewer->camera()->playPath(direction + 2);
 
 	int h = offset.size();
 	int w = offset[0].size();
@@ -158,7 +156,7 @@ void Offset::setOffsetColors( int direction, std::vector< std::vector<double> > 
 	for (std::set<uint>::iterator it = vindices.begin(); it!=vindices.end(); it++)
 	{
 		Point src = activeObject->getVertexPos(*it);
-		Vec vpixel = activeScene->camera()->projectedCoordinatesOf(Vec(src));
+		Vec vpixel = activeViewer->camera()->projectedCoordinatesOf(Vec(src));
 
 		// For flipping
 		int _x = (direction) == 1 ? vpixel.x : (w-1) - vpixel.x;
@@ -183,12 +181,10 @@ void Offset::setOffsetColors( int direction, std::vector< std::vector<double> > 
 
 void Offset::run()
 {
-	if(!activeScene) return;
+	if(!activeViewer) return;
 
-	QSegMesh * activeObject = activeScene->activeObject();
+	QSegMesh * activeObject = activeViewer->activeObject();
 	if (!activeObject->isReady)	return;
-
-
 
 	// Compute upper and lower envelops and offset function
 	computeOffset();
@@ -201,11 +197,10 @@ void Offset::run()
 	saveOffsetAsImage("offset_function.png");
 
 	// Restore original camera settings 
-	activeScene->camera()->setType(Camera::PERSPECTIVE);
-	activeScene->camera()->resetPath(0);
+	activeViewer->camera()->setType(Camera::PERSPECTIVE);
+	activeViewer->camera()->resetPath(0);
 
-	activeScene->displayMessage(QString("O_max / objectH = %1").arg(O_max / objectH));
-	activeScene->print(QString("Offset function computing has done!"));
+	activeViewer->displayMessage(QString("O_max / objectH = %1").arg(O_max / objectH));
 }
 
 
