@@ -14,10 +14,7 @@ public:
 	QSurfaceMesh(const QSurfaceMesh& from);
 	QSurfaceMesh& operator=(const QSurfaceMesh& rhs);
 
-
-
-	std::vector<uint> vertexIndicesAroundFace( uint f_id );
-	
+	std::vector<uint> vertexIndicesAroundFace( uint f_id );	
 	Point getVertexPos( uint v_id );
 	Point getVertexPos( const Vertex v );
 	Vertex getVertex( uint v_id);

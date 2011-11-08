@@ -151,7 +151,12 @@ void QSegMesh::read( QString fileName )
 void QSegMesh::build_up()
 {
 	setColorVertices();
+	computeBoundingBox();
 	moveCenterToOrigin();
+	normalize();
+	computeBoundingBox();
+
+
 	update_face_normals();
 	update_vertex_normals();
 
@@ -204,8 +209,6 @@ void QSegMesh::computeBoundingBox()
 
 void QSegMesh::moveCenterToOrigin()
 {
-	computeBoundingBox();
-
 	for (int i=0;i<nbSegments();i++)
 	{
 		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
@@ -219,8 +222,6 @@ void QSegMesh::moveCenterToOrigin()
 			}
 		}
 	}
-
-	computeBoundingBox();
 }
 
 void QSegMesh::setColorVertices()
@@ -359,4 +360,21 @@ void QSegMesh::setVertexColor( uint vid, const Color& newColor )
 	global2local_fid(vid, sid, vid_local);
 
 	segment[sid]->setVertexColor(vid_local, newColor);
+}
+
+void QSegMesh::normalize()
+{
+	for (int i=0;i<nbSegments();i++)
+	{
+		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
+		Surface_mesh::Vertex_iterator vit, vend = segment[i]->vertices_end();
+
+		for (vit = segment[i]->vertices_begin(); vit != vend; ++vit)
+		{
+			if (!segment[i]->is_deleted(vit))
+			{
+				points[vit] = points[vit] / radius;
+			}
+		}
+	}
 }
