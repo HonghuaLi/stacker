@@ -39,6 +39,7 @@ public:
 	void setColorVertices();
 	void update_face_normals();
 	void update_vertex_normals();
+	void normalize();
 
 	// Properties
 	bool isReady;
