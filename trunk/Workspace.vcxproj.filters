@@ -266,9 +266,6 @@
     <ClCompile Include="Stacker\StackerPreview.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\Stacker.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
     <ClCompile Include="Stacker\StackerPanel.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
@@ -281,8 +278,17 @@
     <ClCompile Include="Stacker\Primitive.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsLibrary\glInfo.cpp">
-      <Filter>GraphicsLibrary\Source</Filter>
+    <ClCompile Include="GeneratedFiles\Debug\moc_HiddenViewer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_HiddenViewer.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_HiddenViewer.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\HiddenViewer.cpp">
+      <Filter>Stacker\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -397,9 +403,6 @@
     <ClInclude Include="Stacker\Offset.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\Stacker.h">
-      <Filter>Stacker\Header</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\Contoller.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
@@ -408,9 +411,6 @@
     </ClInclude>
     <ClInclude Include="Stacker\Primitive.h">
       <Filter>Stacker\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsLibrary\glInfo.h">
-      <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -461,6 +461,9 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\StackerWidget.ui">
       <Filter>Stacker\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\HiddenViewer.h">
+      <Filter>Stacker\Header</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

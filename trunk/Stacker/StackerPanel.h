@@ -3,19 +3,24 @@
 #include "ui_StackerWidget.h"
 #include "Scene.h"
 #include "StackerPreview.h"
+#include "HiddenViewer.h"
+#include "Offset.h"
 
 class StackerPanel : public QWidget
 {
 	Q_OBJECT
 
-private:
-	Ui::StackerWidget panel;
-	Scene * activeScene;
-
 public:
 	StackerPanel();
 
+private:
+	Ui::StackerWidget panel;
+	Scene * activeScene;
 	StackerPreview * stacker_preview;
+
+public:
+	HiddenViewer * hidden_viewer;
+	Offset * activeOffset;
 
 public slots:
 	void onOffsetButtonClicked();

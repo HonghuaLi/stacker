@@ -1,9 +1,9 @@
 #pragma once
 
-
 #include "Scene.h"
-#include "glInfo.h"
+#include "Offset.h"
 
+class StackerPanel;
 
 class StackerPreview : public QGLViewer
 {
@@ -12,8 +12,7 @@ class StackerPreview : public QGLViewer
 private:
 	QColor backColor;
 	Scene * activeScene;
-	bool fobSupported;
-	bool fboUsed;
+	Offset * activeOffset;
 
 
 public:
@@ -33,8 +32,9 @@ public:
 
 	// Stacking parameters
 	Vec3d stackDirection;
+	void setActiveOffset(Offset * offset);
 
 public slots:
-	void setActiveScene(Scene * changedScene);
+	void setActiveScene(Scene * toScene);
 	void updateActiveObject();
 };
