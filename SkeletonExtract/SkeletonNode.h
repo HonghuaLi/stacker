@@ -22,17 +22,11 @@ public:
 		index = newIndex;
 	}
 
-	SkeletonNode(const SkeletonNode & from)
+	static SkeletonNode Midpoint(SkeletonNode * n1, SkeletonNode * n2, int index)
 	{
-		x() = from.x();	y() = from.y();	z() = from.z();
-		index = from.index;
-	}
-
-	static SkeletonNode Midpoint(const SkeletonNode & n1, const SkeletonNode & n2, int index)
-	{
-		double x = (n1.x() + n2.x()) / 2;
-		double y = (n1.y() + n2.y()) / 2;
-		double z = (n1.z() + n2.z()) / 2;
+		double x = (n1->x() + n2->x()) / 2;
+		double y = (n1->y() + n2->y()) / 2;
+		double z = (n1->z() + n2->z()) / 2;
 
 		return SkeletonNode(x, y, z, index);
 	}
@@ -42,4 +36,10 @@ public:
 
 	double distanceTo(const SkeletonNode & n2)
 	{	return (*this - n2).norm();	}
+};
+
+struct ResampledPoint{
+	Vec3d pos;
+	uint corrNode;
+	ResampledPoint(const Vec3d& position, uint node){ pos = position; corrNode = node; }
 };

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "QSurfaceMesh.h"
+#include "Vector.h"
+#include <vector>
+#define StdVector std::vector
 
 class SimpleDraw
 {
@@ -46,5 +48,7 @@ public:
 	
 	// Misc.
 	static void drawCornerAxis(const double * cameraOrientation);
+
+	static std::vector<Vec4d> RandomColors(int count);
 
 };

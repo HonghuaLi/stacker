@@ -98,6 +98,9 @@ void VBO::render_regular( bool dynamic /*= false*/ )
 
 	if(vertex_vbo_id == 0) return; // something went wrong..
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glEnable(GL_LIGHTING);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset( 1.0, 1.0 );

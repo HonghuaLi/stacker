@@ -1,5 +1,6 @@
 // Geometric Tools, LLC
 #include "MinOBB3.h"
+#include "Macros.h"
 
 MinOBB3::MinOBB3( std::vector<Vector3> &points )
 {
@@ -26,8 +27,6 @@ MinOBB3::MinOBB3( Surface_mesh * mesh )
 }
 
 
-
-
 void MinOBB3::computeMinOBB( std::vector<Vector3> &points )
 {
     // Get the convex hull of the points.
@@ -41,8 +40,6 @@ void MinOBB3::computeMinOBB( std::vector<Vector3> &points )
     // Create the unique set of hull vertices to minimize the time spent
     // projecting vertices onto planes of the hull faces.
     std::set<int> uniqueIndices(hullIndices.begin(), hullIndices.end());
-
-
 
 	int i, j;
 	Vector3 origin, diff, U, V, W;

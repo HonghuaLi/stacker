@@ -3,7 +3,6 @@
 #include <set>
 #include <map>
 
-
 QSegMesh::QSegMesh()
 {
 	isReady = false;
@@ -43,10 +42,6 @@ QSegMesh& QSegMesh::operator=( const QSegMesh& rhs )
 
 	return *this;
 }
-
-
-
-
 
 void QSegMesh::read( QString fileName )
 {
@@ -224,11 +219,11 @@ void QSegMesh::moveCenterToOrigin()
 	}
 }
 
-void QSegMesh::setColorVertices()
+void QSegMesh::setColorVertices( double r, double g, double b, double a )
 {
 	for (int i=0;i<segment.size();i++)
 	{
-		segment[i]->setColorVertices();
+		segment[i]->setColorVertices(r,g,b,a);
 	}
 }
 

@@ -1,6 +1,7 @@
 #include "Wire.h"
 
 #include "SimpleDraw.h"
+#include <QtOpenGL>
 
 Wire::Wire()
 {

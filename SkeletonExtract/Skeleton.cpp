@@ -1,6 +1,8 @@
 #include "Skeleton.h"
 
 #include "SimpleDraw.h"
+#include <QtOpenGL>
+#include "Macros.h"
 
 Skeleton::Skeleton()
 {
@@ -8,6 +10,8 @@ Skeleton::Skeleton()
 	isVisible = false;
 	embedMesh = NULL;
 	originalStart = originalEnd = -1;
+
+	corr.clear();
 }
 
 Skeleton::~Skeleton()
@@ -123,8 +127,6 @@ void Skeleton::postSkeletonLoad()
 
 	// empty selection
 	deselectAll();
-
-	corr.clear();
 }
 
 void Skeleton::calculateEdgesLengths()
@@ -148,7 +150,7 @@ SkeletonGraph Skeleton::getGraph()
 	SkeletonGraph g;
 
 	for(int i = 0; i < (int)edges.size(); i++)
-		g.AddEdge(edges[i].n1->index, edges[i].n2->index, edges[i].length, edges[i].index);
+		g.AddEdge(edges[i].n1->index, edges[i].n2->index, edges[i].calculateLength(), edges[i].index);
 
 	return g;
 }
@@ -212,13 +214,13 @@ void Skeleton::selectEdges(int start, int end)
 	{
 		SkeletonGraph g = getGraph();
 
-		std::list<uint> path = g.DijkstraShortestPath(start, end);
+		std::list<int> path = g.DijkstraShortestPath(start, end);
 
 		deselectAll();
 
-		uint prevNode = *path.begin();
+		int prevNode = *path.begin();
 
-		for(std::list<uint>::iterator it = path.begin(); it != path.end(); it++)
+		for(std::list<int>::iterator it = path.begin(); it != path.end(); it++)
 		{
 			selectNode(*it);
 			selectEdge(getEdge(prevNode, *it), prevNode);
@@ -254,12 +256,13 @@ void Skeleton::smoothSelectedEdges(int numSmoothingIterations)
 	SkeletonNode *n1, *n2, *n3;
 	n1 = n2 = n3 = NULL;
 
+	smoothNodes.reserve(selectedEdges.size() * 3);
 	smoothNodes.push_back(SkeletonNode(*selectedEdges[0].n1, nCount));
 	n1 = &smoothNodes[nCount];
 
 	for(int i = 0; i < (int)selectedEdges.size(); i++)
 	{
-		smoothNodes.push_back(SkeletonNode::Midpoint(*n1, *selectedEdges[i].n2, nCount + 1));
+		smoothNodes.push_back(SkeletonNode::Midpoint(n1, selectedEdges[i].n2, nCount + 1));
 		smoothNodes.push_back(SkeletonNode(*selectedEdges[i].n2, nCount + 2));
 
 		n2 = &smoothNodes[nCount+1];
@@ -280,23 +283,21 @@ void Skeleton::smoothSelectedEdges(int numSmoothingIterations)
 	// Laplacian smoothing (best option?)
 	for(int stage = 0; stage < numSmoothingIterations; stage++)
 	{
-		std::vector<double*> positions = std::vector<double*>(smoothNodes.size());
+		std::vector<Vec3d> positions = std::vector<Vec3d>(smoothNodes.size());
 
 		for(int i = 1; i < (int)smoothNodes.size() - 1; i++)
 		{
-			positions[i] = new double[3];
-
-			positions[i][0] = (smoothNodes[i-1].x() + smoothNodes[i+1].x()) / 2;
-			positions[i][1] = (smoothNodes[i-1].y() + smoothNodes[i+1].y()) / 2;
-			positions[i][2] = (smoothNodes[i-1].z() + smoothNodes[i+1].z()) / 2;
+			positions[i] = ((smoothNodes[i-1] + smoothNodes[i+1]) / 2.0) - smoothNodes[i];
+			positions[i] = smoothNodes[i] + (positions[i] * 0.25);
 		}
 
 		for(int i = 1; i < (int)smoothNodes.size() - 1; i++)
-		{
 			smoothNodes[i].set(positions[i]);
-			delete [] positions[i];
-		}
 	}
+
+	// Recompute edge lengths
+	for(int i = 0; i < smoothEdges.size(); i++)
+		smoothEdges[i].calculateLength();
 
 	// clear old list of selected edges
 	selectedEdges.clear();
@@ -480,14 +481,35 @@ void Skeleton::draw(bool drawMeshPoints)
 		//drawUserFriendly();
 		return;
 	}
+	
+	glDisable(GL_LIGHTING);
+	glEnable(GL_POINT_SMOOTH);
+
+	//======================
+	// Draw segmentation
+	if(drawMeshPoints)
+	{
+		if(colors.size() != sortedSelectedNodes.size())
+			colors = SimpleDraw::RandomColors(sortedSelectedNodes.size());
+
+		int color_id = 0;
+
+		for(std::vector<int>::iterator it = sortedSelectedNodes.begin(); 
+			it != sortedSelectedNodes.end(); it++)
+		{
+			glColor4dv(colors[color_id]);
+			glBegin(GL_POINTS);
+
+			for(int i = 0; i < corr[*it].size(); i++)
+				glVertex3dv( embedMesh->getVertexPos(corr[*it][i]) );
+			
+			glEnd();
+
+			color_id++;
+		}
+	}
 
 	glClear(GL_DEPTH_BUFFER_BIT);
-	glDisable(GL_LIGHTING);
-
-	// Draw the nodes
-	glPointSize(4.0f);
-	glColor3f(1,0,0);
-	glEnable(GL_POINT_SMOOTH);
 
 	//======================
 	// Draw Skeleton Edges
@@ -544,6 +566,7 @@ void Skeleton::draw(bool drawMeshPoints)
 		glEnd();
 	}
 
+	//======================
 	// Draw smooth skeletons if any
 	glClear(GL_DEPTH_BUFFER_BIT);
 	for(int i = 0; i < (int)smoothEdges.size(); i++)
@@ -577,4 +600,120 @@ void Skeleton::draw(bool drawMeshPoints)
 	glColor3f(1,1,1);
 
 	glEnable(GL_LIGHTING);
+}
+
+std::vector<ResampledPoint> Skeleton::resampleSmoothSelectedPath( int numSteps /*= 20*/, int smoothSteps /*= 3*/ )
+{
+	std::vector<ResampledPoint> result;
+
+	smoothSelectedEdges(smoothSteps);
+
+	// Compute length of each segment
+	double totalLength = 0;
+	foreach(SkeletonEdge e, smoothEdges)
+		totalLength += e.length;
+	double segmentLength = totalLength / numSteps;
+
+	// Start at
+	double t =  0;
+	int index = 0;
+
+	// Compute equal-dist points on polyline
+	for(int s = 0; s < numSteps; s++)
+	{
+		// Which node does it belong too (based on distance)
+		int nid = smoothEdges[index].n1->index;
+		if( t > 0.5 ) nid = smoothEdges[index].n2->index;
+
+		result.push_back(ResampledPoint(smoothEdges[index].pointAt(t), nid));
+		walkSmoothEdges(segmentLength, t, index, t, index);
+	}
+
+	return result;
+}
+
+void Skeleton::walkSmoothEdges(double distance, double startTime, int index, double & destTime, int & destIndex)
+{
+	double remain = smoothEdges[index].lengthsAt(startTime).second;
+
+	// Case 1: the point is on the starting line
+	if(remain > distance)
+	{
+		double startLength = startTime * smoothEdges[index].length;
+		destTime = (startLength + distance) / smoothEdges[index].length;
+		destIndex = index;
+		return;
+	}
+
+	double walked = remain;
+
+	// Case 2: keep walking next lines
+	while(walked < distance)
+	{
+		index = (index + 1) % smoothEdges.size();		// step to next line
+		walked += smoothEdges[index].length;
+	}
+
+	// Step back to the start of this line
+	walked -= smoothEdges[index].length;
+
+	double remainDistance = distance - walked;
+	double endTime = remainDistance / smoothEdges[index].length;
+
+	destTime = endTime;
+	destIndex = index;
+}
+
+std::vector<uint> Skeleton::getSelectedFaces(bool growSelection)
+{
+	std::set<uint> faceResultSet;
+	int numVerticesSelected = 0;
+
+	SkeletonGraph g = getGraph();
+
+	std::set<int> activeNodes;
+	activeNodes.insert(originalSelectedNodes.front());
+	activeNodes.insert(originalSelectedNodes.back());
+
+	if(originalSelectedNodes.size() > 1)
+	{
+		// Explore branches, help us deal with branchy skeletons
+		g.explore(originalSelectedNodes[1], activeNodes);
+	}
+
+	// If we need a grown selection, we add the neighbor's nodes at the end points
+	if(growSelection)
+	{
+		std::set<int> startNeighbours = VECTOR_TO_SET(g.GetNeighbours(originalSelectedNodes.front()));
+		foreach(int n, startNeighbours) activeNodes.insert(n);
+
+		std::set<int> endNeighbours = VECTOR_TO_SET(g.GetNeighbours(originalSelectedNodes.back()));
+		foreach(int n, endNeighbours)	activeNodes.insert(n);
+
+		foreach(int i, endNeighbours) 
+		{
+			std::vector<int> NN = g.GetNeighbours(i);
+			foreach(int j, NN) activeNodes.insert(j);
+		}
+	}
+
+	foreach(int n, activeNodes)
+	{
+		numVerticesSelected += corr[n].size();
+
+		for(int v = 0; v < (int)corr[n].size(); v++)
+		{
+			int vIndex = corr[n][v];
+
+			std::set<uint> adjF = embedMesh->faceIndicesAroundVertex(embedMesh->vertex_array[vIndex]);
+
+			foreach(uint index, adjF)
+				faceResultSet.insert(index);
+		}
+	}
+
+	// Convert to vector
+	std::vector<uint> result = SET_TO_VECTOR(faceResultSet);
+	
+	return (lastSelectedFaces = result);
 }
