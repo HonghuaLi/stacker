@@ -2,10 +2,6 @@
 
 #pragma once
 
-//Visulization
-#include "Surface_mesh.h"
-#include "SimpleDraw.h"
-
 #include "SurfaceMesh/Vector.h"
 #include <vector>
 #include "ConvexHull3.h"
@@ -27,6 +23,7 @@ public:
 	{
 	public:
 		Box3(){Axis.resize(3);}	
+		void normalizeAxis(){ for (int i=0;i<3;i++)	Axis[i].normalize();}
 	
 	public:
 		Vector3 Center;
@@ -43,7 +40,6 @@ public:
 	void computeMinOBB( std::vector<Vector3> &points );
 	void GenerateComplementBasis (Vector3& u, Vector3& v, const Vector3& w);
 	void getCorners( std::vector<Vector3> &pnts );
-	void draw();
 
 private:
 	class EdgeKey
@@ -58,7 +54,7 @@ private:
 	};
     
 
-private:
+public:
 	Box3 mMinBox;
 	bool isReady;
 };

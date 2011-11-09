@@ -1,7 +1,6 @@
 #pragma once
 #include "QSegMesh.h"
 #include "Primitive.h"
-#include "Cuboid.h"
 
 
 class Controller
@@ -14,6 +13,8 @@ public:
 public:
 	void fitPrimitives();
 	void draw();
+	void test1();
+	void test2();
 
 private:
 	std::vector<Primitive*> primitives;
