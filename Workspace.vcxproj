@@ -416,8 +416,6 @@
     <ClInclude Include="MathLibrary\OBB.h" />
     <ClInclude Include="MathLibrary\OBB2.h" />
     <ClInclude Include="MathLibrary\OBB2_math.h" />
-    <ClInclude Include="Stacker\Contoller.h" />
-    <ClInclude Include="Stacker\Cuboid.h" />
     <CustomBuild Include="Stacker\HiddenViewer.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
@@ -432,6 +430,8 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DQT_DLL "-I." "-I.\GeneratedFiles" "-I." "-I."</Command>
     </CustomBuild>
+    <ClInclude Include="Stacker\Contoller.h" />
+    <ClInclude Include="Stacker\Cuboid.h" />
     <ClInclude Include="Stacker\Offset.h" />
     <ClInclude Include="Stacker\Primitive.h" />
     <CustomBuild Include="Stacker\StackerPreview.h">

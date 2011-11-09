@@ -18,7 +18,6 @@ public:
 	virtual void draw(){}
 
 protected:
-	Primitive*			pre_state;		// The previous state
 	QSurfaceMesh*		m_mesh;			// The underlying geometry
 	bool				isHot;			// Is this hot component?
 	bool				isDirty;		// Has the underlying geometry been updated?

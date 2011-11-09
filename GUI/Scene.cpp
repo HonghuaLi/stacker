@@ -6,19 +6,7 @@
 #include "QMeshManager.h"
 #include "SimpleDraw.h"
 
-// Debug OBB code
-#include "OBB.h"
-OBB * testOBB;
-
-#include "OBB2.h"
-OBB2 * testOBB2;
-
-#include "ConvexHull3.h"
-ConvexHull3 *testCH;
-
-#include "MinOBB3.h"
-MinOBB3 *testMinOBB;
-
+// Debugging codes
 #include "Contoller.h"
 Controller* testController;
 
@@ -53,10 +41,7 @@ Scene::Scene( QString loadObject, QWidget *parent)
 	emit(newSceneCreated());
 
 	// Testing
-	testOBB = NULL;
-	testOBB2 = NULL;
-	testCH = NULL;
-	testMinOBB = NULL;
+	testController = NULL;
 }
 
 void Scene::insertObject( QString fileName )
@@ -185,9 +170,7 @@ void Scene::draw()
 	// Deformer
 	if(activeDeformer) activeDeformer->draw();
 
-	if(testOBB) testOBB->draw();
-	if(testOBB2) testOBB2->draw();
-	if (testMinOBB) testMinOBB->draw();
+	// Debug
 	if (testController) testController->draw();
 }
 
@@ -217,17 +200,6 @@ void Scene::mouseMoveEvent( QMouseEvent* e )
 
 void Scene::keyPressEvent( QKeyEvent *e )
 {
-	if(e->key() == Qt::Key_O)
-	{
-		testOBB = new OBB();
-		testOBB->build_from_mesh( activeObject()->getSegment(0) );
-	}
-
-	if(e->key() == Qt::Key_P)
-	{
-		testOBB2 = new OBB2( activeObject()->getSegment(0) );
-	}
-
 	if(e->key() == Qt::Key_C)
 	{
 		if (testController) delete testController;
@@ -235,11 +207,17 @@ void Scene::keyPressEvent( QKeyEvent *e )
 		testController = new Controller( activeObject() );
 	}
 
-	if (e->key() == Qt::Key_M)
+	if(e->key() == Qt::Key_T)
 	{
-		if (testMinOBB) delete testMinOBB;
+		if (testController)
+		{
+			testController->test1();
+			testController->test2();
 
-		testMinOBB = new MinOBB3( activeObject()->getSegment(0) );
+			//updateSegment(activeObject()->getSegment(0)->objectName());
+			emit(objectInserted());
+		}
+
 	}
 
 	// Regular behavior
@@ -349,7 +327,8 @@ void Scene::updateSegment( QString objId )
 	QMap<QString, VBO>::iterator itr = vboCollection.find(objId);
 	if (itr != vboCollection.end())
 	{
-		itr->setDirty(true);
+		//itr->setDirty(true);
+		vboCollection.erase(itr);
 		emit(objectModified());
 	}
 }

@@ -269,12 +269,6 @@
     <ClCompile Include="Stacker\StackerPanel.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\Controller.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\Cuboid.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
     <ClCompile Include="Stacker\Primitive.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
@@ -288,6 +282,12 @@
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\HiddenViewer.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Cuboid.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Controller.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -403,13 +403,13 @@
     <ClInclude Include="Stacker\Offset.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\Contoller.h">
+    <ClInclude Include="Stacker\Primitive.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\Cuboid.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\Primitive.h">
+    <ClInclude Include="Stacker\Contoller.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
   </ItemGroup>

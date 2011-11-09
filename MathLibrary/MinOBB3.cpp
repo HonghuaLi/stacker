@@ -233,6 +233,7 @@ void MinOBB3::computeMinOBB( std::vector<Vector3> &points )
     //}
 
 
+	mMinBox.normalizeAxis();
 	isReady = true;
 }
 
@@ -278,7 +279,7 @@ void MinOBB3::getCorners( std::vector<Vector3> &pnts )
 	{
 		Axis.push_back( 2 * mMinBox.Extent[i] * mMinBox.Axis[i]);
 	}
-	
+
 	pnts[0] = mMinBox.Center - 0.5*Axis[0] - 0.5*Axis[1] + 0.5*Axis[2];
 	pnts[1] = pnts[0] + Axis[0];
 	pnts[2] = pnts[1] - Axis[2];
@@ -290,30 +291,6 @@ void MinOBB3::getCorners( std::vector<Vector3> &pnts )
 	pnts[7] = pnts[3] + Axis[1];
 }
 
-
-void MinOBB3::draw()
-{
-	if(!isReady) return;
-
-	std::vector<Vector3> pnts;
-	getCorners(pnts);
-
-	SimpleDraw::IdentifyPoint(mMinBox.Center);
-	SimpleDraw::IdentifyLine(pnts[0], pnts[1]);
-	SimpleDraw::IdentifyLine(pnts[1], pnts[2]);
-	SimpleDraw::IdentifyLine(pnts[2], pnts[3]);
-	SimpleDraw::IdentifyLine(pnts[3], pnts[0]);
-
-	SimpleDraw::IdentifyLine(pnts[0], pnts[4]);
-	SimpleDraw::IdentifyLine(pnts[1], pnts[5]);
-	SimpleDraw::IdentifyLine(pnts[2], pnts[6]);
-	SimpleDraw::IdentifyLine(pnts[3], pnts[7]);
-
-	SimpleDraw::IdentifyLine(pnts[4], pnts[5]);
-	SimpleDraw::IdentifyLine(pnts[5], pnts[6]);
-	SimpleDraw::IdentifyLine(pnts[6], pnts[7]);
-	SimpleDraw::IdentifyLine(pnts[7], pnts[4]);
-}
 
 
 
