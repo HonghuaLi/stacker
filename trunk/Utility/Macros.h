@@ -72,13 +72,13 @@ template <typename T> static inline StdVector<T> SET_TO_VECTOR(StdSet<T> fromSet
 		result.push_back(*it);
 	return result;
 }
-template <typename T> static inline StdSet<T> VectorTO_SET(StdVector<T> fromVector){
+template <typename T> static inline StdSet<T> VECTOR_TO_SET(StdVector<T> fromVector){
 	StdSet<T> result;
         for(typename StdVector<T>::iterator it = fromVector.begin(); it != fromVector.end(); it++)
 		result.insert(*it);
 	return result;
 }
-template <typename T> static inline StdList<T> VectorTO_LIST(StdVector<T> fromVector){
+template <typename T> static inline StdList<T> VECTOR_TO_LIST(StdVector<T> fromVector){
 	StdList<T> result;
         for(typename StdVector<T>::iterator it = fromVector.begin(); it != fromVector.end(); it++)
 		result.push_back(*it);

@@ -25,7 +25,7 @@ public:
 	std::vector<Point> embededVertexPos;
 	std::vector<Point> debugPoints, debugPoints2;
 
-	void SaveToSkeleton(Skeleton & s);
+	void SaveToSkeleton(Skeleton * s);
 
 private:
 	// Contraction Parameters
@@ -46,6 +46,7 @@ private:
 
 	// Pointer to mesh
 	QSurfaceMesh mesh;
+	QSurfaceMesh * src_mesh;
 
 	double scaleFactor;
 	double originalArea;
@@ -80,7 +81,7 @@ private:
 	void SetupLocalAdjacenciesLists();
 	void UpdateVertexRecords(VertexRecord&);
 	QVector<VertexRecord> simplifiedVertexRec;
-	QVector<VertexRecord> vRec;
+	QVector<VertexRecord> vRec, vRec_original;
 	double ShapeEnergyWeight;
 	bool isApplyJointMergingStep;
 

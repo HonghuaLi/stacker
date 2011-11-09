@@ -36,7 +36,7 @@ public:
 	void build_up();
 	void moveCenterToOrigin();
 	void computeBoundingBox();
-	void setColorVertices();
+	void setColorVertices( double r = 1.0, double g = 1.0, double b = 1.0, double a = 1.0);
 	void update_face_normals();
 	void update_vertex_normals();
 	void normalize();

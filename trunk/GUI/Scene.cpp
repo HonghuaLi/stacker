@@ -10,6 +10,13 @@
 #include "Contoller.h"
 Controller* testController;
 
+#include "SkeletonExtract.h"
+SkeletonExtract * skelExt;
+Skeleton * skel;
+
+#include "GeneralizedCylinder.h"
+GeneralizedCylinder * gc;
+
 Scene::Scene( QString loadObject, QWidget *parent)
 {
 	activeObjectId = "";
@@ -42,6 +49,9 @@ Scene::Scene( QString loadObject, QWidget *parent)
 
 	// Testing
 	testController = NULL;
+	skel = NULL;
+	skelExt = NULL;
+	gc = NULL;
 }
 
 void Scene::insertObject( QString fileName )
@@ -163,15 +173,15 @@ void Scene::draw()
 
 	// Wires
 	foreach(Wire w, activeWires)
-	{
 		w.draw();
-	}
 
 	// Deformer
 	if(activeDeformer) activeDeformer->draw();
 
 	// Debug
 	if (testController) testController->draw();
+	if(skel) skel->draw();
+	if(gc) gc->draw();
 }
 
 
@@ -218,6 +228,27 @@ void Scene::keyPressEvent( QKeyEvent *e )
 			emit(objectInserted());
 		}
 
+	}
+
+	if(e->key() == Qt::Key_K)
+	{
+		skel = new Skeleton();
+		skelExt = new SkeletonExtract(activeObject()->getSegment(0));
+		skelExt->SaveToSkeleton(skel);
+
+		std::list<int> path = skel->getGraph().GetLargestConnectedPath();
+		
+		if(path.size())
+		{	
+			skel->selectNode(path.front());	
+			skel->selectNode(path.back());
+			skel->selectEdges(path.front(), path.back());
+
+			gc = new GeneralizedCylinder(skel, activeObject()->getSegment(0));
+		}
+
+		activeObject()->setColorVertices(1,1,1,0.5);
+		updateActiveObject();
 	}
 
 	// Regular behavior

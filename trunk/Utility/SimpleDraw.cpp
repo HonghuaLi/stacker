@@ -1,4 +1,5 @@
 #include "SimpleDraw.h"
+#include "Macros.h"
 
 // Bad includes.. needed for rotations for now
 #include "QGLViewer/qglviewer.h"
@@ -154,7 +155,7 @@ void SimpleDraw::DrawTriangle(const Vec3d & v1, const Vec3d & v2, const Vec3d & 
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::DrawTriangles( const StdVector< StdVector<Vec3d> > & tris, float r, float g, float b, float a, bool isOpaque, bool isDrawPoints)
+void SimpleDraw::DrawTriangles( const StdVector< StdVector<Vec3d> > & tris, float r, float g, float b, float a, bool isOpaque, bool isDrawVec3ds)
 {
 	glDisable(GL_LIGHTING);
 
@@ -212,7 +213,7 @@ void SimpleDraw::DrawTriangles( const StdVector< StdVector<Vec3d> > & tris, floa
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	if(isDrawPoints)
+	if(isDrawVec3ds)
 	{
 		// Draw the points
 		int pointSize = 4;
@@ -562,7 +563,7 @@ void SimpleDraw::DrawArrowDoubleDirected( const Vec3d & pos, const Vec3d & norma
 	glEnable(GL_LIGHTING);
 }*/
 
-void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, float r, float g, float b, bool showPoints /*= true*/, float lineWidth /*= 3.0f*/ )
+void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, float r, float g, float b, bool showVec3ds /*= true*/, float lineWidth /*= 3.0f*/ )
 {
 	glDisable(GL_LIGHTING);
 
@@ -577,7 +578,7 @@ void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, float r, floa
 	glVertex3dv(p2);
 	glEnd();
 
-	if(showPoints)
+	if(showVec3ds)
 	{
 		// Draw colored end points
 		glPointSize(lineWidth * 4);
@@ -599,27 +600,27 @@ void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, float r, floa
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, bool showPoints /*= true*/ )
+void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, bool showVec3ds /*= true*/ )
 {
 	// Blue line
-	IdentifyLine(p1, p2, 0.2f, 0.2f, 1.0, showPoints);
+	IdentifyLine(p1, p2, 0.2f, 0.2f, 1.0, showVec3ds);
 }
 
 void SimpleDraw::IdentifyPoint( const Vec3d & p, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/, float pointSize /*= 10.0*/ )
 {
 	glDisable(GL_LIGHTING);
 
-	// Colored dot
-	glColor3f(r, g, b);
-	glPointSize(pointSize);
-	glBegin(GL_POINTS);
-	glVertex3f(p.x(), p.y(), p.z());
-	glEnd();
-
 	// White Border
 	glPointSize(pointSize + 2);
 	glColor3f(1, 1, 1);
 
+	glBegin(GL_POINTS);
+	glVertex3f(p.x(), p.y(), p.z());
+	glEnd();
+
+	// Colored dot
+	glColor3f(r, g, b);
+	glPointSize(pointSize);
 	glBegin(GL_POINTS);
 	glVertex3f(p.x(), p.y(), p.z());
 	glEnd();
@@ -657,15 +658,15 @@ void SimpleDraw::IdentifyPoints( StdVector<Vec3d > & points, float r /*= 1.0*/, 
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::IdentifyConnectedPoints( StdVector<Point> & points, float r /*= 0.4f*/, float g /*= 1.0*/, float b /*= 0.2f*/ )
+void SimpleDraw::IdentifyConnectedPoints( StdVector<Vec3d> & points, float r /*= 0.4f*/, float g /*= 1.0*/, float b /*= 0.2f*/ )
 {
 	glDisable(GL_LIGHTING);
 	glColor4f(r, g, b, 1);
 
-	glLineWidth(3.0 + (r * 2) + (g * 4) + (b * 6));
+	glLineWidth(2.0 + (r * 2) + (g * 4) + (b * 6));
 
 	glBegin(GL_LINE_STRIP);
-		foreach(Point p, points)
+		foreach(Vec3d p, points)
 			glVertex3dv(p);
 	glEnd();
 
@@ -711,10 +712,10 @@ void SimpleDraw::IdentifyConnectedPoints2( StdVector<Vec3d > & points, float r /
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::IdentifyLineRed( const Vec3d & p1, const Vec3d & p2, bool showPoints /*= true*/ )
+void SimpleDraw::IdentifyLineRed( const Vec3d & p1, const Vec3d & p2, bool showVec3ds /*= true*/ )
 {
 	// Red line
-	IdentifyLine(p1, p2, 1.0, 0.2f, 0.2f, showPoints);
+	IdentifyLine(p1, p2, 1.0, 0.2f, 0.2f, showVec3ds);
 }
 
 void SimpleDraw::IdentifyArrow( const Vec3d  & start, const Vec3d  & end, float lineWidth /*= 2.0*/, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/ )
@@ -849,4 +850,16 @@ void SimpleDraw::drawCornerAxis(const double * cameraOrientation)
 	// The viewport and the scissor are restored.
 	glScissor(scissor[0],scissor[1],scissor[2],scissor[3]);
 	glViewport(viewport[0],viewport[1],viewport[2],viewport[3]);
+}
+
+std::vector<Vec4d> SimpleDraw::RandomColors( int count )
+{
+	std::vector<Vec4d> colors;
+	for (int i = 0; i < count; i++){
+		float r = ((rand() % 225) + 30) / 255.0f;
+		float g = ((rand() % 230) + 25) / 255.0f;
+		float b = ((rand() % 235) + 20) / 255.0f;
+		colors.push_back(Vec4d(r, g, b, 1.0));
+	}
+	return colors;
 }

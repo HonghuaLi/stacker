@@ -5,9 +5,9 @@
 
 #include "Utility/Graph.h"
 
-#include "Surface_mesh.h"
+#include "QSurfaceMesh.h"
 
-typedef Graph<uint, double> SkeletonGraph;
+typedef Graph<int, double> SkeletonGraph;
 
 class Skeleton
 {
@@ -25,6 +25,7 @@ public:
 	std::vector<SkeletonEdge> edges;
 	std::map<int, std::vector<int> > corr;	// Node -> vertex indices
 	std::map<int, int> v_corr;				// vertex index -> Node
+	std::map<int, int> f_corr;				// face index -> Node
 
 	// DATA LOADING
 	void loadFromFile(const char* fileName);
@@ -68,30 +69,30 @@ public:
 	std::vector<Vec3d> getSelectedSkeletonPoints();
 
 	// FACE SELECTION
-	std::vector<int> getSelectedFaces(int start = 0, int end = 0);
-	std::vector<int> getSelectedFaces(bool growSelection);
-	std::vector<int> lastSelectedFaces;
+	std::vector<uint> getSelectedFaces(bool growSelection);
+	std::vector<uint> lastSelectedFaces;
 
 	// SMOOTH EDGES
 	std::vector<SkeletonEdge> smoothEdges;
 	std::vector<SkeletonNode> smoothNodes;
 	void smoothSelectedEdges(int numSmoothingIterations = 3);
 	void cropSelectedEdges(int start = 1, int end = 1);
+	std::vector<ResampledPoint> resampleSmoothSelectedPath(int numSteps = 20, int smoothSteps = 3);
+	void walkSmoothEdges(double distance, double startTime, int index, double & destTime, int & destIndex);
 
 	// MODIFY OPERATIONS
 	std::pair< std::vector<int>, std::vector<int> > Split(int edgeIndex);
 
 	// EMBEDDING
-	Surface_mesh * embedMesh;
+	QSurfaceMesh * embedMesh;
 
 	// RENDERING FOR SELECTION
 	void drawNodesNames();
 	void drawMeshFacesNames();
 
 	// VISUALIZATION
+	void draw(bool drawMeshPoints = false);
 	std::vector<Color> colors;
-
-	void draw(bool drawMeshPoints = true);
 
 	// DEBUG:
 	std::set<int> testNodes;

@@ -25,6 +25,7 @@ SkeletonExtract::SkeletonExtract( QSurfaceMesh * fromMesh )
 
 	// Save a copy of the mesh
 	this->mesh = *fromMesh;
+	this->src_mesh = fromMesh;
 
 	// Normalize
 	this->mesh.moveCenterToOrigin();
@@ -259,6 +260,8 @@ void SkeletonExtract::Simplification()
 	for (vit = mesh.vertices_begin(); vit != vend; ++vit)
 		vRec.push_back( VertexRecord(mesh, vit) );
 
+	vRec_original = vRec; // make a copy (used later for face correspondence)
+
 	// init weights
 	for (uint i = 0; i < n; i++)
 	{
@@ -401,7 +404,7 @@ void SkeletonExtract::Simplification()
 		simplifiedVertexPos.push_back(simplifiedVertexRec.back().pos);
 	}
 
-	printf("\nSimplification step took %d (ms).\n", timer.elapsed());
+	printf("\nWe got (%u) vertices. Simplification took %d(ms).\n", simplifiedVertexPos.size(), timer.elapsed());
 }
 
 void SkeletonExtract::UpdateVertexRecords(VertexRecord & rec1)
@@ -582,8 +585,6 @@ void SkeletonExtract::EmbeddingImproving()
 
 			if (totLen > 0) 
 				rec->pos += dis / totLen;
-
-			printf("%f,%f,%f\n", rec->pos.x(),rec->pos.y(),rec->pos.z() );
 		}
 
 		embededVertexPos.push_back(rec->pos);
@@ -808,8 +809,10 @@ void SkeletonExtract::SetupLocalAdjacenciesLists()
 	}
 }
 
-void SkeletonExtract::SaveToSkeleton( Skeleton & s )
+void SkeletonExtract::SaveToSkeleton( Skeleton * s )
 {
+	printf("\nSaving skeleton..");
+
 	Graph<uint, double> edgesGraph;
 	std::map<uint, uint> vMap;
 
@@ -828,7 +831,18 @@ void SkeletonExtract::SaveToSkeleton( Skeleton & s )
 
 		// insert node
 		Point p = rec->pos * scaleFactor;
-		s.nodes.push_back(SkeletonNode(p.x(), p.y(), p.z(), i));
+		s->nodes.push_back(SkeletonNode(p.x(), p.y(), p.z(), i));
+		
+		// Vertex correspondence
+		foreach(uint vi, rec->collapseFrom)
+		{
+			s->v_corr[vi] = i;
+			s->corr[i].push_back(vi);
+
+			// Face correspondence (overwrite as you go)
+			foreach(uint fi, vRec_original[vi].adjF)
+				s->f_corr[fi] = i;
+		}
 	}
 
 	// Extract unique edges from this undirected graph
@@ -838,11 +852,14 @@ void SkeletonExtract::SaveToSkeleton( Skeleton & s )
 	uint nEdges = 0;
 	for(Graph<uint, double>::EdgesSet::iterator e = edges.begin(); e != edges.end(); e++)
 	{
-		SkeletonNode * n1 = &s.nodes[vMap[e->target]];
-		SkeletonNode * n2 = &s.nodes[vMap[e->index]];
+		SkeletonNode * n1 = &s->nodes[vMap[e->target]];
+		SkeletonNode * n2 = &s->nodes[vMap[e->index]];
 
-		s.edges.push_back(SkeletonEdge(n1, n2, nEdges++));
+		s->edges.push_back(SkeletonEdge(n1, n2, nEdges++));
 	}
+	s->embedMesh = src_mesh;
+	s->postSkeletonLoad();
 
-	s.postSkeletonLoad();
+	printf("Done.\n");
 }
+

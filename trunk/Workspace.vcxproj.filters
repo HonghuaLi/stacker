@@ -87,6 +87,9 @@
     <Filter Include="Stacker\Source">
       <UniqueIdentifier>{2c4ab026-988c-46d4-9983-67e1d29aab68}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SkeletonExtract">
+      <UniqueIdentifier>{7e7066c5-8522-4c21-b9d4-e9910ef7c4ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneratedFiles\qrc_Workspace.cpp">
@@ -232,6 +235,21 @@
     </ClCompile>
     <ClCompile Include="Utility\kdtree.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonExtract\SkeletonExtract.cpp">
+      <Filter>SkeletonExtract</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonExtract\PriorityQueue.cpp">
+      <Filter>SkeletonExtract</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonExtract\Skeleton.cpp">
+      <Filter>SkeletonExtract</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonExtract\GeneralizedCylinder.cpp">
+      <Filter>SkeletonExtract</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonExtract\ClosedPolygon.cpp">
+      <Filter>SkeletonExtract</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\Octree.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
@@ -393,6 +411,33 @@
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Intersection.h">
       <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonExtract\SkeletonExtract.h">
+      <Filter>SkeletonExtract</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonExtract\VertexRecord.h">
+      <Filter>SkeletonExtract</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonExtract\PriorityQueue.h">
+      <Filter>SkeletonExtract</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonExtract\Skeleton.h">
+      <Filter>SkeletonExtract</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonExtract\SkeletonNode.h">
+      <Filter>SkeletonExtract</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonExtract\SkeletonEdge.h">
+      <Filter>SkeletonExtract</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonExtract\RMF.h">
+      <Filter>SkeletonExtract</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonExtract\GeneralizedCylinder.h">
+      <Filter>SkeletonExtract</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonExtract\ClosedPolygon.h">
+      <Filter>SkeletonExtract</Filter>
     </ClInclude>
     <ClInclude Include="Utility\kdtree.h">
       <Filter>GraphicsLibrary\Header</Filter>

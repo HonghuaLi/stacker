@@ -13,7 +13,7 @@
 #undef max
 #include <limits>
 
-template <typename VertexType = unsigned int, typename WeightType = float>
+template <typename VertexType = unsigned int, typename WeightType = double>
 class Graph
 {
 private:
@@ -34,6 +34,16 @@ public:
 			return (target == rhs.target && weight == rhs.weight && index == rhs.index);
 		}
 	};
+
+	struct CompareEdge{
+		bool operator()(const Edge &a, const Edge &b){
+			if (a.target < b.target) return true;
+			if (a.target > b.target) return false;
+			return a.index < b.index;
+		}
+	};
+
+	typedef std::set<Edge,CompareEdge> EdgesSet;
 
 private:
 	typedef std::map<vertex_t, std::list<Edge> > adjacency_map_t;
@@ -123,6 +133,11 @@ public:
 		return this->DijkstraGetShortestPathTo(end);
 	}
 
+	int NodeDistance(vertex_t n1, vertex_t n2)
+	{
+		if(!this->isConnected(n1, n2)) return -1;
+		return DijkstraShortestPath(n1, n2).size();
+	}
 
 private:
 	// Graph Variables:
@@ -304,9 +319,21 @@ public:
 			{
 				Edge e = *i;
 
-				result.push_back(Edge(e.target, e.weight, v1));
+				result.push_back(Edge(Min(e.target, v1), e.weight, Max(e.target, v1)));
 			}
 		}
+
+		return result;
+	}
+
+	EdgesSet GetEdgesSet()
+	{
+		std::vector<Edge> allEdges = GetEdges();
+
+		EdgesSet result;
+
+		for(std::vector<Edge>::iterator it = allEdges.begin(); it != allEdges.end(); it++)
+			result.insert(*it);
 
 		return result;
 	}
@@ -318,9 +345,7 @@ public:
 		for(typename adjacency_map_t::const_iterator it = adjacency_map.begin(); it != adjacency_map.end(); it++)
 		{
 			if(it->second.size() < 2)
-			{
 				leaves.push_back(it->first);
-			}
 		}
 
 		return leaves;
@@ -355,7 +380,7 @@ public:
 
 	vertex_t getNodeLargestConnected()
 	{
-		std::vector<std::set<vertex_t> > connectedComponents;
+		std::vector< std::set<vertex_t> > connectedComponents;
 		std::set<vertex_t> unvisited;
 
 		if(vertices.size() == 0)
@@ -399,6 +424,49 @@ public:
 		return *(connectedComponents[max_i].begin());
 	}
 
+	std::set<vertex_t> GetLargestConnectedComponent()
+	{
+		std::vector<std::set<vertex_t> > connectedComponents;
+		std::set<vertex_t> unvisited;
+
+		// fill unvisited set
+		for(typename vertices_set::const_iterator it = vertices.begin(); it != vertices.end(); it++)
+			unvisited.insert(*it);
+
+		while(unvisited.size() > 1)
+		{
+			// Take first unvisited node
+			vertex_t firstNode = *(unvisited.begin());
+
+			// Explore its tree
+			std::set<vertex_t> currVisit;
+			currVisit.insert(firstNode);
+			explore(firstNode, currVisit);
+
+			// Add as a connected component
+			connectedComponents.push_back(currVisit);
+
+			// Remove from unvisited set
+			for(typename std::set<vertex_t>::iterator it = currVisit.begin(); it != currVisit.end(); it++)
+				unvisited.erase(*it);
+		}
+
+		// Find set with maximum number of nodes
+		int maxConnectSize = -1, max_i = 0;
+		for(int i = 0; i < (int)connectedComponents.size(); i++)
+		{
+			int currSize = connectedComponents[i].size();
+
+			if(currSize > maxConnectSize){
+				maxConnectSize = currSize;
+				max_i = i;
+			}
+		}
+
+		// Return first node of that maximum set
+		return connectedComponents[max_i];
+	}
+
 	void subGraph(Graph & g, const std::set<vertex_t> & explored)
 	{
 		for(std::set<vertex_t>::const_iterator vi = explored.begin(); vi != explored.end(); vi++)
@@ -440,6 +508,36 @@ public:
 		}
 	
 		return result;
+	}
+
+	std::list<vertex_t> GetLargestConnectedPath()
+	{
+		std::set<vertex_t> seedSet = GetLargestConnectedComponent(); 
+		std::vector<vertex_t> leaves = GetLeaves();
+		vertex_t seed = leaves.front();
+
+		DijkstraComputePaths(seed);
+		std::list<vertex_t> longestPath;
+		
+		for(std::set<vertex_t>::iterator it = seedSet.begin(); it != seedSet.end(); it++)
+		{
+			std::list<vertex_t> curPath = DijkstraGetShortestPathTo(*it);
+
+			if(curPath.size() > longestPath.size())
+				longestPath = curPath;
+		}
+
+		return longestPath;
+	}
+
+	bool CheckAdjacent(vertex_t v1, vertex_t v2)
+	{
+		if(v1 == v2) return true;
+
+		for(std::list<Edge>::iterator e = adjacency_map[v1].begin(); e != adjacency_map[v1].end(); e++)
+			if(e->target == v2) return true;
+
+		return false;
 	}
 };
 

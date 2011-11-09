@@ -30,6 +30,9 @@ QSurfaceMesh::QSurfaceMesh( const QSurfaceMesh& from ) : Surface_mesh(from)
 	this->isReady = from.isReady;
 	this->isDirty = from.isDirty;
 	this->isDrawBB = from.isDrawBB;
+
+	this->assignFaceArray();
+	this->assignVertexArray();
 }
 
 QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
@@ -45,6 +48,9 @@ QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
 	this->isReady = rhs.isReady;
 	this->isDirty = rhs.isDirty;
 	this->isDrawBB = rhs.isDrawBB;
+
+	this->assignFaceArray();
+	this->assignVertexArray();
 
 	return *this;
 }
@@ -371,7 +377,7 @@ void QSurfaceMesh::collectEnoughRings(Vertex v, const size_t min_nb, std::vector
 	resetVistedVertices(all);
 }
 
-std::vector<Vec3d> QSurfaceMesh::pointsFace( Face f )
+std::vector<Vec3d> QSurfaceMesh::facePoints( Face f )
 {
 	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
 
@@ -389,7 +395,7 @@ std::vector<Vec3d> QSurfaceMesh::pointsFace( Face f )
 
 double QSurfaceMesh::faceArea( Face f )
 {
-	std::vector<Vec3d> v = pointsFace(f);
+	std::vector<Vec3d> v = facePoints(f);
 
 	Vec3d t = cross((v[1] - v[0]), (v[2] - v[0]));
 	return 0.5 * t.norm();
@@ -397,7 +403,7 @@ double QSurfaceMesh::faceArea( Face f )
 
 Vec3d QSurfaceMesh::getBaryFace( Face f, double U, double V )
 {
-	std::vector<Vec3d> v = pointsFace(f);
+	std::vector<Vec3d> v = facePoints(f);
 
 	if(U == 1.0) return v[1];
 	if(V == 1.0) return v[2];
@@ -423,12 +429,11 @@ Vec3d QSurfaceMesh::fn( Face f )
 
 Vec3d QSurfaceMesh::faceCenter( Face f )
 {
-	std::vector<Vec3d> v = pointsFace(f);
+	std::vector<Vec3d> v = facePoints(f);
 	return Vec3d ((v[0].x() + v[1].x() + v[2].x()) / 3.0, 
 		(v[0].y() + v[1].y() + v[2].y()) / 3.0, 
 		(v[0].z() + v[1].z() + v[2].z()) / 3.0);
 }
-
 
 void QSurfaceMesh::read( const std::string& filename )
 {
@@ -446,8 +451,98 @@ void QSurfaceMesh::buildUp()
 	update_vertex_normals();
 }
 
+void QSurfaceMesh::assignVertexArray()
+{
+	Vertex_iterator vit, vend = vertices_end();
 
+	for(vit = vertices_begin(); vit != vend; ++vit) 
+		vertex_array.push_back(vit);
+}
 
+void QSurfaceMesh::assignFaceArray()
+{
+	Face_iterator fit, fend = faces_end();
 
+	for(fit = faces_begin(); fit != fend; ++fit) 
+		face_array.push_back(fit);
+}
 
+double QSurfaceMesh::volume()
+{
+	double totalVolume = 0;
+	Face_iterator fit, fend = faces_end();
 
+	for(fit = faces_begin(); fit != fend; ++fit){
+		std::vector<Point> facePnts = this->facePoints(fit);
+
+		Point a = facePnts[0];
+		Point b = facePnts[1];
+		Point c = facePnts[2];
+
+		totalVolume += 	
+			a.x() * b.y() * c.z() - a.x() * b.z() * c.y() - 
+			a.y() * b.x() * c.z() + a.y() * b.z() * c.x() + 
+			a.z() * b.x() * c.y() - a.z() * b.y() * c.x();
+	}
+	return totalVolume;
+}
+
+double QSurfaceMesh::normalize()
+{
+	this->computeBoundingBox();
+
+	Point d = bbmax - bbmin;
+	double s = (d.x() > d.y())? d.x():d.y();
+	s = (s>d.z())? s: d.z();
+
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	for(vit = vertices_begin(); vit != vend; ++vit)
+		points[vit] /= s;
+
+	return s;
+}
+
+std::vector<Point> QSurfaceMesh::clonePoints()
+{
+	std::vector<Point> result;
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	for(vit = vertices_begin(); vit != vend; ++vit)
+		result.push_back(points[vit]);
+
+	return result;
+}
+
+void QSurfaceMesh::setFromPoints( const std::vector<Point>& fromPoints )
+{
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	for(vit = vertices_begin(); vit != vend; ++vit)
+		points[vit] = fromPoints[Vertex(vit).idx()];
+}
+
+std::set<uint> QSurfaceMesh::faceIndicesAroundVertex( const Vertex& v )
+{
+	std::set<uint> result;
+
+	Vertex_around_vertex_circulator vit, vend;
+	vit = vend = vertices(v);
+	do{ result.insert(Vertex(vit).idx()); } while(vit != vend);
+
+	return result;
+}
+
+std::set<uint> QSurfaceMesh::vertexIndicesAroundVertex( const Vertex& v )
+{
+	std::set<uint> result;
+
+	Face_around_vertex_circulator fit, fend;
+	fit = fend = faces(v);
+	do{ result.insert(Face(fit).idx()); } while(fit != fend);
+
+	return result;
+}

@@ -14,17 +14,32 @@ public:
 	QSurfaceMesh(const QSurfaceMesh& from);
 	QSurfaceMesh& operator=(const QSurfaceMesh& rhs);
 
+	std::vector<Vertex_iterator> vertex_array;
+	std::vector<Face_iterator> face_array;
+
+	void assignVertexArray();
+	void assignFaceArray();
+
 	std::vector<uint> vertexIndicesAroundFace( uint f_id );	
 	Point getVertexPos( uint v_id );
 	Point getVertexPos( const Vertex v );
 	Vertex getVertex( uint v_id);
 	Face getFace( uint f_id);
 
+	std::set<uint> faceIndicesAroundVertex(const Vertex& v);
+	std::set<uint> vertexIndicesAroundVertex(const Vertex& v);
+
 	void computeBoundingBox();
 	void moveCenterToOrigin();
 
 	double getAverageEdgeLength();
 	double averageEdgeLength;
+
+	double volume();
+	double normalize();
+
+	std::vector<Point> clonePoints();
+	void setFromPoints(const std::vector<Point>& fromPoints);
 
 	void drawFaceNames();
 	void drawFacesUnique(uint offset);
@@ -58,7 +73,7 @@ public:
 	Vec3d fn( Face f );
 	Vec3d faceCenter ( Face f );
 	double faceArea( Face f );
-	std::vector<Vec3d> pointsFace( Face f );
+	std::vector<Vec3d> facePoints( Face f );
 	Vec3d getBaryFace( Face f, double U, double V );
 	void fillTrianglesList();
 
