@@ -6,14 +6,14 @@
 
 GeneralizedCylinder::GeneralizedCylinder( Skeleton * skeleton, QSurfaceMesh * mesh )
 {
-	int numSteps = Max(skeleton->sortedSelectedNodes.size() * 0.75, 10);
+	int numSteps = Max(skeleton->sortedSelectedNodes.size(), 10);
 	std::vector<ResampledPoint> reSampledSpine = skeleton->resampleSmoothSelectedPath(numSteps, 3);
 
 	std::vector<Point> reSampledSpinePoints;
 	foreach(ResampledPoint sample, reSampledSpine) reSampledSpinePoints.push_back(sample.pos);
 
 	// Build minimum rotation frames on this spine
-	frames = RMF(reSampledSpinePoints);
+	frames = RMF (reSampledSpinePoints);
 
 	// Get faces structure
 	skeleton->getSelectedFaces(true);
@@ -25,8 +25,6 @@ GeneralizedCylinder::GeneralizedCylinder( Skeleton * skeleton, QSurfaceMesh * me
 	// Build cross-section
 	for(uint i = 0; i < reSampledSpine.size(); i++)
 	{
-		spine.push_back(frames.point[i]);
-
 		// Find radius from the cross-section
 		double radius = 0;
 		std::vector<Point> cur_cs;
@@ -60,12 +58,15 @@ GeneralizedCylinder::GeneralizedCylinder( Skeleton * skeleton, QSurfaceMesh * me
 		}
 	}
 
+	src_mesh = mesh;
+	isDrawFrames = false;
+
 	printf("\nGC generated.\n");
 }
 
 void GeneralizedCylinder::draw()
 {
-	if(!spine.size()) return;
+	if(!frames.U.size()) return;
 
 	glDisable(GL_DEPTH_TEST);
 
@@ -75,24 +76,39 @@ void GeneralizedCylinder::draw()
 		pnts.push_back(pnts.front());
 
 		SimpleDraw::IdentifyConnectedPoints(pnts, 0,0,0);
-		SimpleDraw::IdentifyPoint(spine[c.index]);
 	}
 
 	foreach(Point p, debugPoints)
 		SimpleDraw::IdentifyPoint(p);
 
+	// Draw frames
+	if(isDrawFrames)
+	{
+		std::vector<Point> dir1, dir2, dir3;
+		for(uint i = 0; i < frames.U.size(); i++){
+			dir1.push_back(frames.U[i].r);
+			dir2.push_back(frames.U[i].s);
+			dir3.push_back(frames.U[i].t);
+		}
+		SimpleDraw::DrawLineTick(frames.point, dir1, 0.1f, false, 1,0,0,1);
+		SimpleDraw::DrawLineTick(frames.point, dir2, 0.1f, false, 0,1,0,1);
+		SimpleDraw::DrawLineTick(frames.point, dir3, 0.1f, false, 0,0,1,1);
+	}
+
 	glEnable(GL_DEPTH_TEST);
 }
 
-std::vector<Point> GeneralizedCylinder::Circle::toSegments( int numSegments, const Vec3d& startVec )
+std::vector<Point> GeneralizedCylinder::Circle::toSegments( int numSegments, const Vec3d& startVec, double delta )
 {
 	std::vector<Point> result;
 	double theta = (2 * M_PI) / numSegments;
 	qglviewer::Vec v(startVec.x(), startVec.y(), startVec.z());
+	qglviewer::Quaternion q (qglviewer::Vec(n.x(), n.y(), n.z()), theta);
+	qglviewer::Vec vi = v;
 
 	for(int i = 0; i < numSegments; i++){
-		qglviewer::Vec r = qglviewer::Quaternion (qglviewer::Vec(n.x(), n.y(), n.z()), theta * i).rotate(v).unit();
-		result.push_back(center + (Point(r.x, r.y, r.z) * radius) );
+		result.push_back(center + (Point(vi.x, vi.y, vi.z) * radius * delta) );
+		vi = q.rotate(vi).unit();
 	}
 
 	return result;

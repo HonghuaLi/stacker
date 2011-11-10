@@ -2,7 +2,6 @@
 #include "QSegMesh.h"
 #include "Primitive.h"
 
-
 class Controller
 {
 public:
@@ -15,10 +14,10 @@ public:
 	void draw();
 	void test1();
 	void test2();
+	void test3();
 
 private:
 	std::vector<Primitive*> primitives;
 	QSegMesh* m_mesh;
 };
-
 

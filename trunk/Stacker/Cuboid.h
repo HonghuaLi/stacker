@@ -1,7 +1,6 @@
 #pragma once
 #include "Primitive.h"
 #include "MinOBB3.h"
-#include "SimpleDraw.h"
 
 class Cuboid : public Primitive
 {

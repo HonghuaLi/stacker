@@ -308,6 +308,9 @@
     <ClCompile Include="Stacker\Controller.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
+    <ClCompile Include="Stacker\GCylinder.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -455,6 +458,9 @@
       <Filter>Stacker\Header</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\Contoller.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\GCylinder.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
   </ItemGroup>
