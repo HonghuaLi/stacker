@@ -45,12 +45,12 @@ void Workspace::addNewScene()
 		newScene = new Scene;
 
 	ui.sceneArea->addSubWindow(newScene);
+	sceneCount++;
 
 	newScene->showMaximized();
 	newScene->setWindowTitle("Untitled");
 
-	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*)));
-
+	connect(newScene, SIGNAL(focusChanged(Scene*)), SLOT(sceneFocusChanged(Scene*))); // change window title, etc.
 	connect(newScene, SIGNAL(focusChanged(Scene*)), wp, SLOT(setActiveScene(Scene*)));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), sp, SLOT(setActiveScene(Scene*)));
 	connect(newScene, SIGNAL(focusChanged(Scene*)), dp, SLOT(setActiveScene(Scene*)));
@@ -64,9 +64,10 @@ void Workspace::addNewScene()
 	connect(wp, SIGNAL(wiresFound(QVector<Wire>)), newScene, SLOT(updateGL()));
 
 	// Deformation
-	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *))), 
+	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *)));
 
-	sceneCount++;
+	// Update stacker panel
+	sp->setActiveScene(newScene);
 }
 
 void Workspace::importObject()

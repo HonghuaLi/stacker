@@ -121,6 +121,13 @@ void VBO::render_regular( bool dynamic /*= false*/ )
 
 	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, faces_id);
 
+	// error checking
+	GLenum errCode;
+	const GLubyte *errString;
+	if ((errCode = glGetError()) != GL_NO_ERROR) {
+		printf ("OpenGL Error: %u\n", errCode);
+	}
+
 	// draw
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
 

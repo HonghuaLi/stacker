@@ -48,7 +48,6 @@ void HiddenViewer::setupLights()
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
 }
 
-
 void HiddenViewer::draw()
 {
 	if (!activeObject()) return;
@@ -56,7 +55,6 @@ void HiddenViewer::draw()
 	glClearColor(0,0,0,0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_MULTISAMPLE);
-
 
 	switch (mode)
 	{
@@ -76,6 +74,7 @@ void HiddenViewer::draw()
 void HiddenViewer::setActiveScene( Scene * changedScene )
 {
 	this->activeScene = changedScene;
+	this->updateGL();
 }
 
 void HiddenViewer::setMode( HVMode toMode )
@@ -85,7 +84,10 @@ void HiddenViewer::setMode( HVMode toMode )
 
 QSegMesh* HiddenViewer::activeObject()
 {
-	return activeScene->activeObject();
+	if(activeScene != NULL)
+		return activeScene->activeObject();
+	else
+		return NULL;
 }
 
 void* HiddenViewer::readBuffer( GLenum format, GLenum type )

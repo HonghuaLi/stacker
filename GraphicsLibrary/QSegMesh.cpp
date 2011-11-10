@@ -148,17 +148,12 @@ void QSegMesh::build_up()
 	setColorVertices();
 	computeBoundingBox();
 	moveCenterToOrigin();
-	normalize();
-	computeBoundingBox();
-
 
 	update_face_normals();
 	update_vertex_normals();
 
 	for (int i=0;i<nbSegments();i++)
-	{
 		segment[i]->buildUp();
-	}
 
 	isReady = true;
 }
@@ -166,17 +161,13 @@ void QSegMesh::build_up()
 void QSegMesh::update_face_normals()
 {
 	for (int i=0;i<nbSegments();i++)
-	{
 		segment[i]->update_face_normals();
-	}
 }
 
 void QSegMesh::update_vertex_normals()
 {
 	for (int i=0;i<nbSegments();i++)
-	{
 		segment[i]->update_vertex_normals();
-	}
 }
 
 
@@ -212,9 +203,7 @@ void QSegMesh::moveCenterToOrigin()
 		for (vit = segment[i]->vertices_begin(); vit != vend; ++vit)
 		{
 			if (!segment[i]->is_deleted(vit))
-			{
 				points[vit] -= center;
-			}
 		}
 	}
 }
@@ -245,13 +234,9 @@ QSurfaceMesh* QSegMesh::getSegment( int i )
 void QSegMesh::simpleDraw()
 {
 	// Render mesh regularly (inefficient)
-	for (int i=0;i<segment.size();i++)
-	{
+	for (int i = 0;i < segment.size(); i++)
 		segment[i]->simpleDraw();
-	}
 }
-
-
 
 void QSegMesh::drawFacesUnique()
 {
@@ -269,18 +254,15 @@ void QSegMesh::setObjectName( const QString &name )
 	QObject::setObjectName(name);
 
 	for (int i=0;i<segment.size();i++)
-	{
 		segment[i]->setObjectName(name + QString("-seg%1").arg(i));
-	}
 }
 
 uint QSegMesh::n_faces()
 {
 	uint num = 0;
+
 	for (int i=0;i<segment.size();i++)
-	{
 		num += segment[i]->n_vertices();
-	}
 
 	return num;
 }
@@ -293,10 +275,9 @@ std::vector<uint> QSegMesh::vertexIndicesAroundFace( uint fid )
 
 	std::vector<uint> vertices = segment[sid]->vertexIndicesAroundFace(fid_local);
 	uint offset = fid - fid_local;
+
 	for (int i=0;i<vertices.size();i++)
-	{
 		vertices[i] += offset;
-	}
 
 	return vertices;
 }
@@ -367,9 +348,7 @@ void QSegMesh::normalize()
 		for (vit = segment[i]->vertices_begin(); vit != vend; ++vit)
 		{
 			if (!segment[i]->is_deleted(vit))
-			{
 				points[vit] = points[vit] / radius;
-			}
 		}
 	}
 }

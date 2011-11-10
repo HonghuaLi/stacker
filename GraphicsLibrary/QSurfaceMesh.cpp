@@ -233,16 +233,11 @@ void QSurfaceMesh::fillTrianglesList()
 	for (fit = faces_begin(); fit != fend; ++fit)
 	{
 		fvit = fvend = vertices(fit);
-		v0 = fvit;
-		v2 = ++fvit;
+		v0 = fvit; v1 = ++fvit; v2 = ++fvit;
 
-		do{
-			v1 = v2;
-			v2 = fvit;
-			triangles.push_back(v0.idx());
-			triangles.push_back(v1.idx());
-			triangles.push_back(v2.idx());
-		} while (++fvit != fvend);
+		triangles.push_back(v0.idx());
+		triangles.push_back(v1.idx());
+		triangles.push_back(v2.idx());
 	}
 }
 
@@ -525,24 +520,24 @@ void QSurfaceMesh::setFromPoints( const std::vector<Point>& fromPoints )
 		points[vit] = fromPoints[Vertex(vit).idx()];
 }
 
-std::set<uint> QSurfaceMesh::faceIndicesAroundVertex( const Vertex& v )
+std::set<uint> QSurfaceMesh::vertexIndicesAroundVertex( const Vertex& v )
 {
 	std::set<uint> result;
 
 	Vertex_around_vertex_circulator vit, vend;
 	vit = vend = vertices(v);
-	do{ result.insert(Vertex(vit).idx()); } while(vit != vend);
+	do{ result.insert(Vertex(vit).idx()); ++vit;} while(vit != vend);
 
 	return result;
 }
 
-std::set<uint> QSurfaceMesh::vertexIndicesAroundVertex( const Vertex& v )
+std::set<uint> QSurfaceMesh::faceIndicesAroundVertex( const Vertex& v )
 {
 	std::set<uint> result;
 
 	Face_around_vertex_circulator fit, fend;
 	fit = fend = faces(v);
-	do{ result.insert(Face(fit).idx()); } while(fit != fend);
+	do{ result.insert(Face(fit).idx()); ++fit; } while(fit != fend);
 
 	return result;
 }

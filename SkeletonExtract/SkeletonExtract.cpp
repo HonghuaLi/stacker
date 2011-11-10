@@ -29,8 +29,7 @@ SkeletonExtract::SkeletonExtract( QSurfaceMesh * fromMesh )
 
 	// Normalize
 	this->mesh.moveCenterToOrigin();
-	this->mesh.computeBoundingBox();
-	scaleFactor = this->mesh.normalize();
+	this->scaleFactor = this->mesh.normalize();
 	this->mesh.computeBoundingBox();
 
 	// Element count
@@ -138,7 +137,6 @@ Eigen::SparseMatrix<double> SkeletonExtract::BuildMatrixA()
 
 	// Surface_mesh variables, to gain access to mesh elements
 	Surface_mesh::Vertex ver0, ver1, ver2;
-	Surface_mesh::Vertex_around_face_circulator fvit;
 
 	// Max weight parameters
 	double MAX_POS_WEIGHT = 10000;
@@ -149,8 +147,6 @@ Eigen::SparseMatrix<double> SkeletonExtract::BuildMatrixA()
 	{
 		double newAreaFace = abs(mesh.faceArea(mesh.face_array[i]));
 		areaRatio[i] = newAreaFace / originalFaceArea[i];
-
-		fvit = mesh.vertices(mesh.face_array[i]);
 
 		// Indices
 		uint f_id = Surface_mesh::Face(mesh.face_array[i]).idx();

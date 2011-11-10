@@ -124,7 +124,7 @@ void StackerPreview::updateActiveObject()
 		camera()->setSceneRadius(activeScene->activeObject()->radius);
 		camera()->showEntireScene();
 	}
-		
+	
 	vboCollection.clear();
 }
 

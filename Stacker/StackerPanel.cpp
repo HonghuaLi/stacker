@@ -10,7 +10,8 @@ StackerPanel::StackerPanel()
 
 	// Offset function
 	hidden_viewer = new HiddenViewer();
-	hidden_viewer->setVisible(true);
+	//hidden_viewer->setVisible(false);
+
 	panel.groupBox->layout()->addWidget(hidden_viewer);
 	activeOffset = new Offset(hidden_viewer);
 	stacker_preview->setActiveOffset(activeOffset);
@@ -44,7 +45,6 @@ void StackerPanel::setActiveScene( Scene * scene )
 
 	emit(activeSceneChanged());
 }
-
 
 void StackerPanel::updateActiveObject()
 {
