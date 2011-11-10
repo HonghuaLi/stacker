@@ -35,6 +35,8 @@ Scene::Scene( QString loadObject, QWidget *parent)
 
 	// Update the inserted object
 	connect(this, SIGNAL(objectInserted()), SLOT(updateActiveObject()));
+	connect(this, SIGNAL(objectInserted()), SLOT(updateGL()));
+	connect(this, SIGNAL(objectModified()), SLOT(updateGL()));
 
 	if(loadObject.size())
 		insertObject(loadObject);
@@ -180,8 +182,9 @@ void Scene::draw()
 
 	// Debug
 	if (testController) testController->draw();
-	if(skel) skel->draw();
+
 	if(gc) gc->draw();
+	if(skel) skel->draw();
 }
 
 

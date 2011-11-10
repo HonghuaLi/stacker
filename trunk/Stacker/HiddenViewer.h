@@ -4,7 +4,6 @@
 
 enum HVMode { HV_NONE, HV_DEPTH, HV_UNIQUE_FACES };
 
-
 class HiddenViewer : public QGLViewer
 {
 	Q_OBJECT
@@ -13,7 +12,6 @@ private:
 	QColor backColor;
 	Scene * activeScene;
 	HVMode mode;
-
 
 public:
 	HiddenViewer(QWidget * parent = 0);
