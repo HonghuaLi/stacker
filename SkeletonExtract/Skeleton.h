@@ -35,6 +35,7 @@ public:
 	// COMPUTATIONS
 	void calculateEdgesLengths();
 	SkeletonGraph getGraph();
+	void selectLongestPath();
 
 	// SELECTION
 	std::vector<SkeletonEdge> originalSelectedEdges;

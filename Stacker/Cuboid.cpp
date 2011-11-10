@@ -1,5 +1,5 @@
 #include "Cuboid.h"
-
+#include "SimpleDraw.h"
 
 Cuboid::Cuboid(QSurfaceMesh* mesh)
 	: Primitive(mesh)
@@ -7,12 +7,11 @@ Cuboid::Cuboid(QSurfaceMesh* mesh)
 	fit();
 }
 
-
- void Cuboid::fit()
- {	
+void Cuboid::fit()
+{	
 	MinOBB3 obb(m_mesh);
 	preBox = currBox = obb.mMinBox;
- }
+}
 
 void Cuboid::draw()
 {
@@ -58,16 +57,16 @@ Vector3 Cuboid::getCoordinatesInBox( MinOBB3::Box3 &box, Vector3 &p )
 	Vector3 local_p = p - box.Center;
 
 	return Vector3( dot(local_p, box.Axis[0]) / box.Extent[0],
-					dot(local_p, box.Axis[1]) / box.Extent[1],
-					dot(local_p, box.Axis[2]) / box.Extent[2]);
+		dot(local_p, box.Axis[1]) / box.Extent[1],
+		dot(local_p, box.Axis[2]) / box.Extent[2]);
 }
 
 Vector3 Cuboid::getPositionInBox( MinOBB3::Box3 &box, Vector3 &coord )
 {
 	Vector3 local_p = box.Extent[0] * coord[0] * box.Axis[0]
-					+ box.Extent[1] * coord[1] * box.Axis[1]
-					+ box.Extent[2] * coord[2] * box.Axis[2];
-	
+	+ box.Extent[1] * coord[1] * box.Axis[1]
+	+ box.Extent[2] * coord[2] * box.Axis[2];
+
 	return local_p + box.Center;
 }
 

@@ -47,7 +47,7 @@ public:
 		static Frame fromTR(const Vec3d& T, const Vec3d& R) { return Frame(R, cross(T,R), T); }
 		static Frame fromRS(const Vec3d& R, const Vec3d& S) { return Frame(R, S, cross(R,S)); }
 		static Frame fromST(const Vec3d& S, const Vec3d& T) { return Frame(cross(S,T), S, T); }
-		static Frame fromT(const Vec3d& T) { Vec3d S = orthogonalVector(T).normalized(); return fromST(S,T); }
+		static Frame fromT(const Vec3d& T) { Vec3d R = orthogonalVector(T).normalized(); return fromTR(T,R); }
 
 		static Vec3d orthogonalVector(const Vec3d& n) {
 			if ((abs(n.y()) >= 0.9f * abs(n.x())) && 

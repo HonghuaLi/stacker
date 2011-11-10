@@ -1,5 +1,6 @@
 #include "Contoller.h"
 #include "Cuboid.h"
+#include "GCylinder.h"
 
 Controller::Controller( QSegMesh* mesh )
 {
@@ -7,8 +8,6 @@ Controller::Controller( QSegMesh* mesh )
 	
 	fitPrimitives();
 }
-
-
 
 Controller::~Controller()
 {
@@ -18,18 +17,14 @@ Controller::~Controller()
 	}
 }
 
-
-
 void Controller::fitPrimitives()
 {
 	for (int i=0;i<m_mesh->nbSegments();i++)
 	{
-		Cuboid* cub = new Cuboid(m_mesh->getSegment(i));
+		GCylinder* cub = new GCylinder(m_mesh->getSegment(i));
 		primitives.push_back(cub);
 	}
 }
-
-
 
 void Controller::draw()
 {
@@ -38,7 +33,6 @@ void Controller::draw()
 		primitives[i]->draw();
 	}
 }
-
 
 void Controller::test1()
 {

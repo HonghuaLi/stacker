@@ -296,6 +296,7 @@
     <ClCompile Include="MathLibrary\Monge_via_jet_fitting.cpp" />
     <ClCompile Include="Stacker\Controller.cpp" />
     <ClCompile Include="Stacker\Cuboid.cpp" />
+    <ClCompile Include="Stacker\GCylinder.cpp" />
     <ClCompile Include="Stacker\HiddenViewer.cpp" />
     <ClCompile Include="Stacker\Offset.cpp" />
     <ClCompile Include="Stacker\Primitive.cpp" />
@@ -449,6 +450,7 @@
     </CustomBuild>
     <ClInclude Include="Stacker\Contoller.h" />
     <ClInclude Include="Stacker\Cuboid.h" />
+    <ClInclude Include="Stacker\GCylinder.h" />
     <ClInclude Include="Stacker\Offset.h" />
     <ClInclude Include="Stacker\Primitive.h" />
     <CustomBuild Include="Stacker\StackerPreview.h">
