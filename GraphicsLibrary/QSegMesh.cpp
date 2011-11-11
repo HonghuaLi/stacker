@@ -148,6 +148,8 @@ void QSegMesh::build_up()
 	setColorVertices();
 	computeBoundingBox();
 	moveCenterToOrigin();
+	normalize();
+	computeBoundingBox();
 
 	update_face_normals();
 	update_vertex_normals();
