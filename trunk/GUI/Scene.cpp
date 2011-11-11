@@ -3,7 +3,6 @@
 #include "Workspace.h"
 #include "Scene.h"
 
-#include "QMeshManager.h"
 #include "SimpleDraw.h"
 
 // Debugging codes
@@ -17,9 +16,9 @@ Skeleton * skel;
 #include "GeneralizedCylinder.h"
 GeneralizedCylinder * gc;
 
-Scene::Scene( QString loadObject, QWidget *parent)
+Scene::Scene( QWidget *parent)
 {
-	activeObjectId = "";
+	activeMesh = NULL;
 
 	activeFrame = new ManipulatedFrame();
 	setManipulatedFrame(activeFrame);
@@ -35,19 +34,11 @@ Scene::Scene( QString loadObject, QWidget *parent)
 
 	// Update the inserted object
 	connect(this, SIGNAL(objectInserted()), SLOT(updateActiveObject()));
-	connect(this, SIGNAL(objectInserted()), SLOT(updateGL()));
-	connect(this, SIGNAL(objectModified()), SLOT(updateGL()));
-
-	if(loadObject.size())
-		insertObject(loadObject);
-
-	displayMessage(tr("New scene created."));
 
 	// Mouse selection window
 	this->setSelectRegionHeight(10);
 	this->setSelectRegionWidth(10);
-
-	emit(newSceneCreated());
+	displayMessage(tr("New scene created."));
 
 	// Testing
 	testController = NULL;
@@ -56,26 +47,17 @@ Scene::Scene( QString loadObject, QWidget *parent)
 	gc = NULL;
 }
 
-void Scene::insertObject( QString fileName )
+void Scene::setActiveObject(QSegMesh* newMesh)
 {
-	// Get object name from file path
-	QFileInfo fInfo (fileName);
+	if (!this->hasFocus()) return;
 
-	if(!fInfo.exists()){
-		displayMessage(QString("Error: invalid file (%1).").arg(fileName));
-		return;
-	}
-
-	// Load mesh into memory
-	activeObjectId = addNewObject(fileName);
+	activeMesh = newMesh;
 
 	// Change title of scene
-	setWindowTitle(activeObjectId);
-
-	QSegMesh * newMesh = getObject(activeObjectId);
+	setWindowTitle(activeMesh->objectName());
 
 	// Set camera
-	camera()->setSceneRadius(newMesh->radius);
+	camera()->setSceneRadius(activeMesh->radius);
 	camera()->showEntireScene();
 
 	emit(objectInserted());
@@ -110,6 +92,7 @@ void Scene::updateVBOs()
 void Scene::updateActiveObject()
 {
 	vboCollection.clear();
+	updateGL();
 }
 
 
@@ -162,16 +145,15 @@ void Scene::draw()
 	// Background color
 	this->setBackgroundColor(backColor);
 
-	// Update if needed
+	if (isEmpty()) return;
+
+	// Update VBO if needed
 	updateVBOs();
 
 	// Draw objects using VBO
 	QMap<QString, VBO>::iterator i;
 	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
 		i->render();
-
-	if(activeObjectId.size())
-		activeObject()->getSegment(0)->drawDebug();
 
 	// Wires
 	foreach(Wire w, activeWires)
@@ -181,6 +163,8 @@ void Scene::draw()
 	if(activeDeformer) activeDeformer->draw();
 
 	// Debug
+	activeObject()->getSegment(0)->drawDebug();
+
 	if (testController) testController->draw();
 
 	if(gc) gc->draw();
@@ -327,12 +311,12 @@ void Scene::dequeueLastMessage()
 
 void Scene::focusInEvent( QFocusEvent * event )
 {
-	emit(focusChanged(this));
+	emit(gotFocus(this));
 }
 
-void Scene::focusOutEvent( QFocusEvent * event )
+void Scene::closeEvent( QCloseEvent * event )
 {
-	emit(focusChanged(this));
+
 }
 
 void Scene::setActiveWires( QVector<Wire> newWires )
@@ -349,25 +333,11 @@ void Scene::setActiveDeformer( QFFD * newFFD )
 
 QSegMesh * Scene::activeObject()
 {
-	if(all_objects.find(activeObjectId) != all_objects.end())
-		return &all_objects[activeObjectId];
-	else
-		return NULL;
+	return activeMesh;
 }
 
-
-void Scene::updateSegment( QString objId )
-{
-	QMap<QString, VBO>::iterator itr = vboCollection.find(objId);
-	if (itr != vboCollection.end())
-	{
-		//itr->setDirty(true);
-		vboCollection.erase(itr);
-		emit(objectModified());
-	}
-}
 
 bool Scene::isEmpty()
 {
-	return this->activeObject() == NULL;
+	return activeMesh == NULL;
 }

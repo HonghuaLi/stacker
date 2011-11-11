@@ -104,9 +104,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_WiresPanel.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_Workspace.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_Scene.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -116,16 +113,7 @@
     <ClCompile Include="GeneratedFiles\Debug\moc_WiresPanel.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_Workspace.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>GUI</Filter>
-    </ClCompile>
     <ClCompile Include="GUI\Scene.cpp">
-      <Filter>GUI\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Workspace.cpp">
       <Filter>GUI\Source</Filter>
     </ClCompile>
     <ClCompile Include="Utility\SimpleDraw.cpp">
@@ -175,9 +163,6 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Template\moc_StackerPreview.cpp">
       <Filter>Generated Files\Template</Filter>
-    </ClCompile>
-    <ClCompile Include="GUI\QMeshManager.cpp">
-      <Filter>GUI\Source</Filter>
     </ClCompile>
     <ClCompile Include="Deformer\DeformerPanel.cpp">
       <Filter>Deformer</Filter>
@@ -311,6 +296,33 @@
     <ClCompile Include="Stacker\GCylinder.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QMeshDoc.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QMeshDoc.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_QMeshDoc.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\QMeshDoc.cpp">
+      <Filter>GUI\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\main.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Workspace.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Workspace.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_Workspace.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Workspace.cpp">
+      <Filter>GUI\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -375,9 +387,6 @@
     </ClInclude>
     <ClInclude Include="Wires\Ridges.h">
       <Filter>Wires</Filter>
-    </ClInclude>
-    <ClInclude Include="GUI\QMeshManager.h">
-      <Filter>GUI\Header</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_DeformerWidget.h">
       <Filter>Generated Files</Filter>
@@ -477,9 +486,6 @@
     <CustomBuild Include="GUI\Scene.h">
       <Filter>GUI\Header</Filter>
     </CustomBuild>
-    <CustomBuild Include="Workspace.h">
-      <Filter>GUI\Header</Filter>
-    </CustomBuild>
     <CustomBuild Include="Wires\WiresPanel.h">
       <Filter>Wires</Filter>
     </CustomBuild>
@@ -515,6 +521,12 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\HiddenViewer.h">
       <Filter>Stacker\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\QMeshDoc.h">
+      <Filter>GUI\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\Workspace.h">
+      <Filter>GUI\Header</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

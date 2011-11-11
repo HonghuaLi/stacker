@@ -26,7 +26,7 @@ class Scene : public QGLViewer{
 	Q_OBJECT
 
 public:
-	Scene(QString loadObject = "", QWidget *parent = 0);
+	Scene(QWidget *parent = 0);
 
 	// Setup scene
 	virtual void init();
@@ -51,9 +51,9 @@ public:
 	virtual void mouseMoveEvent(QMouseEvent* e);
 	virtual void keyPressEvent(QKeyEvent *e);
 
-	// Focus stuff
+	// Focus, close
 	virtual void focusInEvent(QFocusEvent * event);
-	virtual void focusOutEvent(QFocusEvent * event);
+	virtual void closeEvent( QCloseEvent * event );
 
 	// SELECTION
 	virtual void postSelection(const QPoint& point);
@@ -84,22 +84,18 @@ private:
 	ManipulatedFrame * activeFrame;
 	QVector<Wire> activeWires;
 	QFFD * activeDeformer;
-
+	QSegMesh * activeMesh;
 public:
 	QSegMesh * activeObject();
-	QString activeObjectId;
 	bool isEmpty();
 
 public slots:
-	void insertObject( QString fileName );
+	void setActiveObject(QSegMesh* newMesh);
 	void setActiveWires( QVector<Wire> );
 	void setActiveDeformer( QFFD * );
 	void updateActiveObject();
-	void updateSegment(QString objId);
 
 signals:
-	void focusChanged( Scene* );
-	void objectInserted(  );
-	void newSceneCreated();
-	void objectModified();
+	void gotFocus( Scene* );
+	void objectInserted();
 };
