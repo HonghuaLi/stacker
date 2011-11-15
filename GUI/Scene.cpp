@@ -1,14 +1,10 @@
 #include <QFileInfo>
-
 #include "Workspace.h"
 #include "Scene.h"
-
 #include "SimpleDraw.h"
+#include "Contoller.h"
 
 // Debugging codes
-#include "Contoller.h"
-Controller* testController;
-
 #include "SkeletonExtract.h"
 SkeletonExtract * skelExt;
 Skeleton * skel;
@@ -41,7 +37,6 @@ Scene::Scene( QWidget *parent)
 	displayMessage(tr("New scene created."));
 
 	// Testing
-	testController = NULL;
 	skel = NULL;
 	skelExt = NULL;
 	gc = NULL;
@@ -75,7 +70,7 @@ void Scene::updateVBOs()
 			QSurfaceMesh* seg = mesh->getSegment(i);
 			QString objId = seg->objectName();
 
-			if (vboCollection.find(objId) == vboCollection.end())
+			if (!vboCollection.contains(objId))
 			{
 				Surface_mesh::Vertex_property<Point>  points   = seg->vertex_property<Point>("v:point");
 				Surface_mesh::Vertex_property<Point>  vnormals = seg->vertex_property<Point>("v:normal");
@@ -145,8 +140,6 @@ void Scene::draw()
 	// Background color
 	this->setBackgroundColor(backColor);
 
-	if (isEmpty()) return;
-
 	// Update VBO if needed
 	updateVBOs();
 
@@ -154,6 +147,11 @@ void Scene::draw()
 	QMap<QString, VBO>::iterator i;
 	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
 		i->render();
+
+
+	// Draw the controllers if exist
+	if (!isEmpty() && activeObject()->controller)
+		activeObject()->controller->draw();
 
 	// Wires
 	foreach(Wire w, activeWires)
@@ -163,9 +161,9 @@ void Scene::draw()
 	if(activeDeformer) activeDeformer->draw();
 
 	// Debug
-	activeObject()->getSegment(0)->drawDebug();
+	if (!isEmpty())
+		activeObject()->getSegment(0)->drawDebug();
 
-	if (testController) testController->draw();
 
 	if(gc) gc->draw();
 	if(skel) skel->draw();
@@ -197,26 +195,6 @@ void Scene::mouseMoveEvent( QMouseEvent* e )
 
 void Scene::keyPressEvent( QKeyEvent *e )
 {
-	if(e->key() == Qt::Key_C)
-	{
-		if (testController) delete testController;
-
-		testController = new Controller( activeObject() );
-	}
-
-	if(e->key() == Qt::Key_T)
-	{
-		if (testController)
-		{
-			testController->test1();
-			testController->test2();
-
-			//updateSegment(activeObject()->getSegment(0)->objectName());
-			emit(objectInserted());
-		}
-
-	}
-
 	if(e->key() == Qt::Key_K)
 	{
 		skel = new Skeleton();
@@ -316,7 +294,7 @@ void Scene::focusInEvent( QFocusEvent * event )
 
 void Scene::closeEvent( QCloseEvent * event )
 {
-
+	emit(sceneClosed(NULL));
 }
 
 void Scene::setActiveWires( QVector<Wire> newWires )

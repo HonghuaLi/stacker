@@ -4,6 +4,7 @@
 #include "QSurfaceMesh.h"
 #include <vector>
 
+class Controller;
 
 class QSegMesh : public QObject
 {
@@ -23,6 +24,7 @@ public:
 	// Get segment
 	QSurfaceMesh* operator [] (int i);
 	QSurfaceMesh* getSegment(int i);
+	std::vector<QSurfaceMesh*> getSegments();
 	int nbSegments();
 
 	// Draw
@@ -46,8 +48,15 @@ public:
 	Point bbmin, bbmax, center;
 	Scalar radius;
 
-	// Set global unique name for QSegMesh and all its segments
+	// Set global unique name for this and all its segments
 	void setObjectName(const QString &name);
+
+	// Controller
+	Controller* controller;
+
+	// Stackability
+	Scalar O_max;
+	Scalar stackability;
 
 private:
 	std::vector<QSurfaceMesh*> segment;

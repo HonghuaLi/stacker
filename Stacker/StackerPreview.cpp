@@ -59,12 +59,14 @@ void StackerPreview::draw()
 	// Background
 	setBackgroundColor(backColor);
 
+	if (!activeScene || activeScene->isEmpty()) return;
+
 	// Update VBO is needed
 	updateVBOs();
 
 	int stackCount = 3;
-	double O_max = activeOffset->getMaxOffset();
-	double S = activeOffset->getStackability();
+	double O_max = activeObject()->O_max;
+	double S = activeObject()->stackability;
 
 	this->displayMessage(QString("O_max = %1; S = %2").arg(O_max).arg(S));
 	Vec3d delta = O_max * stackDirection;
@@ -126,10 +128,14 @@ void StackerPreview::updateActiveObject()
 	}
 	
 	vboCollection.clear();
+	updateGL();
 }
 
-void StackerPreview::setActiveOffset( Offset * offset )
+QSegMesh* StackerPreview::activeObject()
 {
-	activeOffset = offset;
+	if (activeScene)
+	{
+		return activeScene->activeObject();
+	}
 }
 

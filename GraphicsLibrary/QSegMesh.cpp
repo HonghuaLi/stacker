@@ -1,4 +1,5 @@
 #include "QSegMesh.h"
+#include "Contoller.h"
 #include <fstream>
 #include <set>
 #include <map>
@@ -6,7 +7,7 @@
 QSegMesh::QSegMesh()
 {
 	isReady = false;
-	segment.clear();
+	controller = NULL;
 }
 
 QSegMesh::QSegMesh( const QSegMesh& from )
@@ -232,6 +233,13 @@ QSurfaceMesh* QSegMesh::getSegment( int i )
 {
 	return segment[i];
 }
+
+
+std::vector<QSurfaceMesh*> QSegMesh::getSegments()
+{
+	return segment;
+}
+
 
 void QSegMesh::simpleDraw()
 {

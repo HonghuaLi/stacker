@@ -12,8 +12,6 @@ class StackerPreview : public QGLViewer
 private:
 	QColor backColor;
 	Scene * activeScene;
-	Offset * activeOffset;
-
 
 public:
 	StackerPreview(QWidget * parent = 0);
@@ -32,7 +30,9 @@ public:
 
 	// Stacking parameters
 	Vec3d stackDirection;
-	void setActiveOffset(Offset * offset);
+
+	// Active object
+	QSegMesh* activeObject();
 
 public slots:
 	void setActiveScene(Scene * toScene);

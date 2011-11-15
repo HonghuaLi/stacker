@@ -7,6 +7,14 @@ QMeshDoc::QMeshDoc()
 	global_id = 0;
 }
 
+
+QMeshDoc::~QMeshDoc()
+{
+	foreach (const QString id, all_objects.keys())
+		delete all_objects.value(id);
+}
+
+
 void QMeshDoc::importObject( QString fileName )
 {
 	// Get object name from file path
@@ -24,20 +32,32 @@ void QMeshDoc::importObject( QString fileName )
 	newObjId += QString("-%1").arg(global_id);
 
 	// Create a new QSegMesh
-	all_objects[ newObjId ] = QSegMesh();
-	QSegMesh * newMesh = &all_objects[ newObjId ];
+	QSegMesh * newMesh = new QSegMesh();
+	all_objects[ newObjId ] = newMesh;
 
 	// Reading QSegMesh
 	newMesh->read(fileName);
+
+	// Set global ID for the mesh and all its segments
 	newMesh->setObjectName(newObjId);
 
 	emit(objectImported(newMesh));
+	emit(printMessage(newObjId+" has been imported."));
 }
 
 QSegMesh * QMeshDoc::getObject( QString objectId )
 {
-	if(all_objects.find(objectId) != all_objects.end())
-		return &all_objects[objectId];
+	if(all_objects.contains(objectId))
+		return all_objects[objectId];
 	else
 		return NULL;
+}
+
+void QMeshDoc::deleteObject( QString objectId )
+{
+	if(all_objects.contains(objectId))
+	{
+		delete all_objects[objectId];
+		all_objects.remove(objectId);
+	}
 }
