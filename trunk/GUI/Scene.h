@@ -98,4 +98,6 @@ public slots:
 signals:
 	void gotFocus( Scene* );
 	void objectInserted();
+	void sceneClosed( Scene* );
+	void objectDiscarded( QString );
 };

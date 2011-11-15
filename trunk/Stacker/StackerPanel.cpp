@@ -1,4 +1,5 @@
 #include "StackerPanel.h"
+#include "Contoller.h"
 
 StackerPanel::StackerPanel()
 {
@@ -10,22 +11,22 @@ StackerPanel::StackerPanel()
 
 	// Offset function
 	hidden_viewer = new HiddenViewer();
-	//hidden_viewer->setVisible(false);
-
 	panel.groupBox->layout()->addWidget(hidden_viewer);
 	activeOffset = new Offset(hidden_viewer);
-	stacker_preview->setActiveOffset(activeOffset);
 
 	// Connections
 	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
-	connect(this, SIGNAL(activeSceneChanged()), stacker_preview, SLOT(updateGL()));
+	connect(panel.controllerButton, SIGNAL(clicked()), SLOT(onControllerButtonClicked()));
+	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
+
+	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 }
 
 void StackerPanel::onOffsetButtonClicked()
 {
-	if (!activeScene && !activeScene->isEmpty())
+	if (!activeScene || activeScene->isEmpty())
 	{
-		activeScene->print("There is no object in the scene!");
+		emit(printMessage("There is no valid object."));
 		return;
 	}
 
@@ -33,6 +34,41 @@ void StackerPanel::onOffsetButtonClicked()
 	activeOffset->computeOffset();
 	activeOffset->saveOffsetAsImage("offset_image.png");
 }
+
+void StackerPanel::onControllerButtonClicked()
+{
+	if (!activeScene || activeScene->isEmpty())
+	{
+		emit(printMessage("There is no valid object."));
+		return;
+	}
+
+	activeObject()->controller = new Controller(activeObject());
+	activeObject()->controller->fitOBBs();
+
+	showMessage("Controller is build for " + activeObject()->objectName());
+}
+
+
+void StackerPanel::onImproveButtonClicked()
+{
+	if (!activeScene || activeScene->isEmpty())
+	{
+		showMessage("There is no valid object.");
+		return;
+	}
+
+	if (!activeObject()->controller)
+	{
+		showMessage("There is no controller built.");
+	}
+
+	Controller* ctrl = activeObject()->controller;
+	ctrl->test1();
+	emit(objectModified());
+}
+
+
 
 void StackerPanel::setActiveScene( Scene * scene )
 {
@@ -42,14 +78,23 @@ void StackerPanel::setActiveScene( Scene * scene )
 		stacker_preview->setActiveScene(scene);
 		hidden_viewer->setActiveScene(scene);
 	}
-
-	emit(activeSceneChanged());
 }
 
 void StackerPanel::updateActiveObject()
 {
+	activeOffset->computeOffset();	
 	stacker_preview->updateActiveObject();
-	activeOffset->computeOffset();
-
-	emit(activeSceneChanged());
 }
+
+QSegMesh* StackerPanel::activeObject()
+{
+	if (activeScene)
+		return activeScene->activeObject();
+}
+
+void StackerPanel::showMessage( QString message )
+{
+	emit(printMessage(message));
+}
+
+

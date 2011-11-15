@@ -4,7 +4,7 @@
 HiddenViewer::HiddenViewer( QWidget * parent ) : QGLViewer (parent)
 {
 	// Restrict the size of the window
-	setFixedSize(50,50);
+	setFixedSize(100,100);
 
 	// No active scene when initializing
 	this->activeScene = NULL;
@@ -50,20 +50,22 @@ void HiddenViewer::setupLights()
 
 void HiddenViewer::draw()
 {
-	if (!activeObject()) return;
-
-	glClearColor(0,0,0,0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDisable(GL_MULTISAMPLE);
-
 	switch (mode)
 	{
 	case HV_NONE:
+		// Background color
+		this->setBackgroundColor(backColor);
 		break;
 	case HV_DEPTH:
+		glClearColor(0,0,0,0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_MULTISAMPLE);
 		activeObject()->simpleDraw();
 		break;
 	case HV_UNIQUE_FACES:
+		glClearColor(0,0,0,0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_MULTISAMPLE);
 		activeObject()->drawFacesUnique();
 		break;
 	}

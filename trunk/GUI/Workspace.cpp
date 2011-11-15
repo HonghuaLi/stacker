@@ -45,23 +45,28 @@ void Workspace::addNewScene()
 	newScene->showMaximized();
 	newScene->setWindowTitle("Untitled");
 
+	// Workspace window
 	connect(newScene, SIGNAL(gotFocus(Scene*)), SLOT(setActiveScene(Scene*)));
-	connect(newScene, SIGNAL(gotFocus(Scene*)), wp, SLOT(setActiveScene(Scene*)));
-	connect(newScene, SIGNAL(gotFocus(Scene*)), sp, SLOT(setActiveScene(Scene*)));
-	connect(newScene, SIGNAL(gotFocus(Scene*)), dp, SLOT(setActiveScene(Scene*)));
 
 	// MeshDoc
 	connect(mDoc, SIGNAL(objectImported(QSegMesh*)), newScene, SLOT(setActiveObject(QSegMesh*)));
-	connect(mDoc, SIGNAL(printMessage(QString, long)), newScene, SLOT(print(QString, long)));
-
-	// Objects inserted
+	connect(mDoc, SIGNAL(printMessage(QString)), newScene, SLOT(print(QString)));
+	connect(newScene, SIGNAL(objectDiscarded(QString)), mDoc, SLOT(deleteObject(QString)));
+	
+	// Stack panel
+	connect(newScene, SIGNAL(gotFocus(Scene*)), sp, SLOT(setActiveScene(Scene*)));
 	connect(newScene, SIGNAL(objectInserted()), sp, SLOT(updateActiveObject()));
+	connect(newScene, SIGNAL(sceneClosed(Scene*)), sp, SLOT(setActiveScene(Scene*)));
+	connect(sp, SIGNAL(printMessage(QString)), newScene, SLOT(print(QString)));
+	connect(sp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
 
 	// Wires
+	connect(newScene, SIGNAL(gotFocus(Scene*)), wp, SLOT(setActiveScene(Scene*)));
 	connect(wp, SIGNAL(wiresFound(QVector<Wire>)), newScene, SLOT(setActiveWires(QVector<Wire>)));
 	connect(wp, SIGNAL(wiresFound(QVector<Wire>)), newScene, SLOT(updateGL()));
 
 	// Deformation
+	connect(newScene, SIGNAL(gotFocus(Scene*)), dp, SLOT(setActiveScene(Scene*)));
 	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *)));
 
 	// Update stacker panel

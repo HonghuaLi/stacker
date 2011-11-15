@@ -93,6 +93,10 @@ void Offset::computeOffset()
 	}
 
 	O_max = *max_element(row_max.begin(), row_max.end());
+
+	// Update the stackability in QSegMesh
+	activeObject->O_max = O_max;
+	activeObject->stackability = 1 - O_max/objectH;
 }
 
 std::set<uint> Offset::verticesOnEnvelope( int direction )

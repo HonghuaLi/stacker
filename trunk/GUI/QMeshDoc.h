@@ -11,17 +11,19 @@ class QMeshDoc : public QObject
 
 public:
 	QMeshDoc();
+	~QMeshDoc();
 
 	// Objects
-	QMap<QString, QSegMesh> all_objects;
+	QMap<QString, QSegMesh*> all_objects;
 	uint global_id;
 	QSegMesh * getObject( QString objectId );
 
 signals:
-	void objectImported(QSegMesh * mesh);
-	void printMessage(QString message);
+	void objectImported( QSegMesh* mesh );
+	void printMessage( QString message );
 
 public slots:
-	void importObject(QString fileName);
+	void importObject( QString fileName );
+	void deleteObject( QString objectId );
 };
 

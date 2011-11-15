@@ -13,20 +13,29 @@ class StackerPanel : public QWidget
 public:
 	StackerPanel();
 
-private:
+	// Active Object
+	QSegMesh* activeObject();
+
+	// Message
+	void showMessage( QString message );
+
 	Ui::StackerWidget panel;
 	Scene * activeScene;
 	StackerPreview * stacker_preview;
-
-public:
 	HiddenViewer * hidden_viewer;
 	Offset * activeOffset;
 
 public slots:
+	// Buttons
 	void onOffsetButtonClicked();
-	void setActiveScene(Scene *);
+	void onControllerButtonClicked();
+	void onImproveButtonClicked();
+
+	// Others
+	void setActiveScene( Scene * );
 	void updateActiveObject();
 
 signals:
-	void activeSceneChanged();
+	void printMessage( QString );
+	void objectModified();
 };
