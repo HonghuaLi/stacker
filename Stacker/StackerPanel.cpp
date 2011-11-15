@@ -9,10 +9,13 @@ StackerPanel::StackerPanel()
 	stacker_preview = new StackerPreview(this);
 	panel.groupBox->layout()->addWidget(stacker_preview);
 
-	// Offset function
+	// Offset function calculator
 	hidden_viewer = new HiddenViewer();
 	panel.groupBox->layout()->addWidget(hidden_viewer);
 	activeOffset = new Offset(hidden_viewer);
+
+	// Target stackability
+	
 
 	// Connections
 	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
@@ -64,8 +67,12 @@ void StackerPanel::onImproveButtonClicked()
 	}
 
 	Controller* ctrl = activeObject()->controller;
-	ctrl->test1();
-	emit(objectModified());
+
+	while (activeOffset->getStackability() < panel.targetS->value())
+	{
+		ctrl->test1();
+		emit(objectModified());
+	}
 }
 
 

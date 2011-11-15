@@ -13,26 +13,22 @@ public:
 	Offset(HiddenViewer* viewer);
 	~Offset();
 
-public:
+	QSegMesh* activeObject();
 	void computeOffset();
-	void run();
-	void setDirty(bool dirty = true);
-	double getMaxOffset();
+	void saveOffsetAsImage(QString fileName);
+
 	double getStackability();
 
-	void saveOffsetAsImage(QString fileName);
-private:
+	void run();
 	std::vector< std::vector<double> > computeEnvelope(int direction);
 	std::set<uint> verticesOnEnvelope(int direction);
 	void setOffsetColors(int direction, std::vector< std::vector<double> > &offset, double O_max);
 
 
-private:
 	HiddenViewer * activeViewer;
 	std::vector< std::vector<double> > upperEnvolope;
 	std::vector< std::vector<double> > lowerEnvolope;
 	std::vector< std::vector<double> > offset; 
 	double O_max;
-	bool isDirty;
 	double objectH;
 };
