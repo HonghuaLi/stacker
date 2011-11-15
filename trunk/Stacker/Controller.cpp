@@ -48,10 +48,10 @@ void Controller::test1()
 {
 	// Deform the primitive
 	Cuboid* cp = ( Cuboid* )primitives[0];
-	cp->scaleAlongAxis(0, 0.6);
-	cp->scaleAlongAxis(1, 0.6);
+	cp->scaleAlongAxis(0, 0.9);
+	cp->scaleAlongAxis(1, 0.9);
 	primitives[0]->deformMesh();
-	m_mesh->build_up();
+	m_mesh->computeBoundingBox();
 
 }
 

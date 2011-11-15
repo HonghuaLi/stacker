@@ -4,9 +4,6 @@
 Offset::Offset( HiddenViewer *viewer )
 {
 	activeViewer = viewer;
-	isDirty = true;
-
-	O_max = 0.;
 }
 
 Offset::~Offset()
@@ -16,14 +13,12 @@ Offset::~Offset()
 
 std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 {
-	QSegMesh * activeObject = activeViewer->activeObject();
-
 	// Set camera
 	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
-	activeViewer->camera()->setPosition(Vec(0,0, direction * activeObject->radius));
+	activeViewer->camera()->setPosition(Vec(0,0, direction * activeObject()->radius));
 	activeViewer->camera()->lookAt(Vec());	
 	activeViewer->camera()->setUpVector(Vec(1,0,0));
-	activeViewer->camera()->fitBoundingBox(Vec(activeObject->bbmin), Vec(activeObject->bbmax));
+	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin), Vec(activeObject()->bbmax));
 
 	// Save this new camera settings
 	activeViewer->camera()->addKeyFrameToPath(direction + 2);
@@ -63,11 +58,10 @@ std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 
 void Offset::computeOffset()
 {
-	QSegMesh * activeObject = activeViewer->activeObject();
-	if (!activeObject) return;
+	if (!activeObject()) return;
 
 	// Compute the height of the shape
-	objectH = (activeObject->bbmax - activeObject->bbmin).z();
+	objectH = (activeObject()->bbmax - activeObject()->bbmin).z();
 
 	// Save original camera settings
 	activeViewer->camera()->addKeyFrameToPath(0);
@@ -95,8 +89,8 @@ void Offset::computeOffset()
 	O_max = *max_element(row_max.begin(), row_max.end());
 
 	// Update the stackability in QSegMesh
-	activeObject->O_max = O_max;
-	activeObject->stackability = 1 - O_max/objectH;
+	activeObject()->O_max = O_max;
+	activeObject()->stackability = 1 - O_max/objectH;
 }
 
 std::set<uint> Offset::verticesOnEnvelope( int direction )
@@ -209,16 +203,6 @@ void Offset::run()
 
 
 
-void Offset::setDirty( bool dirty)
-{
-	isDirty = dirty;
-}
-
-double Offset::getMaxOffset()
-{
-	return O_max;
-}
-
 void Offset::saveOffsetAsImage( QString fileName )
 {
 	int h = offset.size();
@@ -240,4 +224,9 @@ void Offset::saveOffsetAsImage( QString fileName )
 double Offset::getStackability()
 {
 	return 1 - O_max/objectH;
+}
+
+QSegMesh* Offset::activeObject()
+{
+	return activeViewer->activeObject();
 }
