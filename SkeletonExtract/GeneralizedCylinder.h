@@ -18,6 +18,8 @@ public:
 	QSurfaceMesh geometry;
 	RMF frames;
 
+	void realignCrossSections();
+
 	void draw();
 	bool isDrawFrames;
 

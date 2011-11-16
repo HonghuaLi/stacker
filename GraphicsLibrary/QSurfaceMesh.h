@@ -41,6 +41,8 @@ public:
 	std::vector<Point> clonePoints();
 	void setFromPoints(const std::vector<Point>& fromPoints);
 
+	std::vector<Normal> cloneFaceNormals();
+
 	void drawFaceNames();
 	void drawFacesUnique(uint offset);
 	void drawDebug();
@@ -74,9 +76,9 @@ public:
 	Vec3d faceCenter ( Face f );
 	double faceArea( Face f );
 	std::vector<Vec3d> facePoints( Face f );
+	std::vector<uint> faceVerts( const Face& f );
 	Vec3d getBaryFace( Face f, double U, double V );
 	void fillTrianglesList();
-
 	std::vector<unsigned int> triangles, edges;
 
 private:

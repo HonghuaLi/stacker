@@ -7,17 +7,33 @@ typedef unsigned int uint;
 
 class RMF{
 public:
+	RMF(){}
+
 	RMF(const std::vector<Vec3d> & fromPoints)
 	{
 		point = fromPoints;
+
+		compute();
+	}
+
+	void compute()
+	{
+		// Reset computation
+		std::vector<Vec3d> tangent;
 
 		// Estimate tangents
 		for(uint i = 0; i < point.size() - 1; i++)
 			tangent.push_back(point[i+1] - point[i]);
 		tangent.push_back(tangent.back());
-		
+
 		// First frame
-		U.push_back( Frame::fromT( tangent.front() ) );
+		Frame firstFrame = Frame::fromT(tangent.front());
+
+		if(U.size())
+			firstFrame = U.front();
+
+		U.clear();
+		U.push_back( firstFrame );
 
 		// Double reflection method: compute rotation minimizing frames
 		for(uint i = 0; i < point.size() - 1; i++)
@@ -36,7 +52,8 @@ public:
 			U.push_back(Frame(rj, sj, tj));
 		}
 	}
-	RMF(){}
+
+	inline uint count() { return point.size(); }
 
 	class Frame{ 
 	public:
@@ -61,6 +78,5 @@ public:
 	};
 
 	std::vector<Vec3d> point;
-	std::vector<Vec3d> tangent;
 	std::vector<Frame> U;
 };

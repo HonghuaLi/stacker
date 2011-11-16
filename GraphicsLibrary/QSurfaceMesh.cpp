@@ -372,6 +372,18 @@ void QSurfaceMesh::collectEnoughRings(Vertex v, const size_t min_nb, std::vector
 	resetVistedVertices(all);
 }
 
+std::vector<uint> QSurfaceMesh::faceVerts( const Face& f )
+{
+	std::vector<uint> vi;
+
+	Vertex_around_face_circulator fvit, fvend;
+	fvit = fvend = vertices(f);
+
+	do{	vi.push_back(Vertex(fvit).idx()); } while (++fvit != fvend);
+
+	return vi;
+}
+
 std::vector<Vec3d> QSurfaceMesh::facePoints( Face f )
 {
 	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
@@ -511,6 +523,18 @@ std::vector<Point> QSurfaceMesh::clonePoints()
 	return result;
 }
 
+std::vector<Normal> QSurfaceMesh::cloneFaceNormals()
+{
+	std::vector<Point> result;
+	Face_property<Normal> fnormals = face_property<Normal>("f:normal");
+	Face_iterator fit, fend = faces_end();
+
+	for(fit = faces_begin(); fit != fend; ++fit)
+		result.push_back(fnormals[fit]);
+
+	return result;
+}
+
 void QSurfaceMesh::setFromPoints( const std::vector<Point>& fromPoints )
 {
 	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
@@ -541,3 +565,4 @@ std::set<uint> QSurfaceMesh::faceIndicesAroundVertex( const Vertex& v )
 
 	return result;
 }
+

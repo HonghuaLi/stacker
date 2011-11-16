@@ -17,6 +17,8 @@ public:
 	void test1();
 	void test2();
 
+	Primitive * getPrimitive(int id);
+
 private:
 	std::vector<Primitive*> primitives;
 	QSegMesh* m_mesh;

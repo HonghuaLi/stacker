@@ -13,9 +13,8 @@ StackerPanel::StackerPanel()
 
 	// Add a stacking preview widget
 	stacker_preview = new StackerPreview(this);
-	QVBoxLayout *previewLayout = new QVBoxLayout(this);
+	QVBoxLayout *previewLayout = new QVBoxLayout(panel.previewBox);
 	previewLayout->addWidget(stacker_preview);	
-	panel.previewBox->setLayout(previewLayout);
 
 	// Connections
 	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
