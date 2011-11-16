@@ -79,7 +79,8 @@ void StackerPanel::onImproveButtonClicked()
 
 void StackerPanel::onHotspotsButtonClicked()
 {
-	activeOffset->run();
+	activeOffset->detectHotspots();
+	activeOffset->showHotVertices();
 	emit(objectModified());
 	showMessage("Hot spots are detected.");
 }
