@@ -12,7 +12,7 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	ui.leftDockWidget->layout()->addWidget(sp);
 
 	wp = new WiresPanel();
-	ui.leftDockWidget->layout()->addWidget(wp);
+	ui.rightDockWidget->layout()->addWidget(wp);
 
 	dp = new DeformerPanel();
 	ui.rightDockWidget->layout()->addWidget(dp);

@@ -16,6 +16,8 @@ StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
 
 void StackerPreview::init()
 {
+	glEnable(GL_MULTISAMPLE);
+
 	setBackgroundColor(backColor = palette().color(QPalette::Window));
 
 	// Lights
@@ -56,6 +58,9 @@ void StackerPreview::preDraw()
 
 void StackerPreview::draw()
 {
+	// Anti aliasing 
+	glEnable(GL_MULTISAMPLE);
+
 	// Background
 	setBackgroundColor(backColor);
 
@@ -134,8 +139,8 @@ void StackerPreview::updateActiveObject()
 QSegMesh* StackerPreview::activeObject()
 {
 	if (activeScene)
-	{
 		return activeScene->activeObject();
-	}
+	else
+		return NULL;
 }
 

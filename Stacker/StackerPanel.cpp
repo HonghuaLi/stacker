@@ -1,26 +1,27 @@
 #include "StackerPanel.h"
 #include "Contoller.h"
+#include <QVBoxLayout>
 
 StackerPanel::StackerPanel()
 {
 	panel.setupUi(this);
-
-	// Add a stacking preview widget
-	stacker_preview = new StackerPreview(this);
-	panel.groupBox->layout()->addWidget(stacker_preview);
 
 	// Offset function calculator
 	hidden_viewer = new HiddenViewer();
 	panel.groupBox->layout()->addWidget(hidden_viewer);
 	activeOffset = new Offset(hidden_viewer);
 
-	// Target stackability
-	
+	// Add a stacking preview widget
+	stacker_preview = new StackerPreview(this);
+	QVBoxLayout *previewLayout = new QVBoxLayout(this);
+	previewLayout->addWidget(stacker_preview);	
+	panel.previewBox->setLayout(previewLayout);
 
 	// Connections
 	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
 	connect(panel.controllerButton, SIGNAL(clicked()), SLOT(onControllerButtonClicked()));
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
+	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
 
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 }
@@ -77,6 +78,15 @@ void StackerPanel::onImproveButtonClicked()
 
 
 
+void StackerPanel::onHotspotsButtonClicked()
+{
+	activeOffset->run();
+	emit(objectModified());
+	showMessage("Hot spots are detected.");
+}
+
+
+
 void StackerPanel::setActiveScene( Scene * scene )
 {
 	if(activeScene != scene)
@@ -97,6 +107,8 @@ QSegMesh* StackerPanel::activeObject()
 {
 	if (activeScene)
 		return activeScene->activeObject();
+	else 
+		return NULL;
 }
 
 void StackerPanel::showMessage( QString message )
