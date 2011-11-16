@@ -6,11 +6,6 @@ Offset::Offset( HiddenViewer *viewer )
 	activeViewer = viewer;
 }
 
-Offset::~Offset()
-{
-
-}
-
 std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 {
 	// Set camera
@@ -111,7 +106,7 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 
 	GLubyte* colormap = (GLubyte*)activeViewer->readBuffer(GL_RGBA, GL_UNSIGNED_BYTE);
 
-	//get the indices back
+	//get the indices of visable vertices
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
 
@@ -136,10 +131,8 @@ std::set<uint> Offset::verticesOnEnvelope( int direction )
 	return vertices;
 }
 
-void Offset::setOffsetColors( int direction, std::vector< std::vector<double> > &offset, double O_max )
+void Offset::setOffsetColors( int direction )
 {
-	QSegMesh * activeObject = activeViewer->activeObject();
-
 	// Restore camera settings
 	activeViewer->camera()->playPath(direction + 2);
 
@@ -153,7 +146,7 @@ void Offset::setOffsetColors( int direction, std::vector< std::vector<double> > 
 	// Assign each vertex with offset color
 	for (std::set<uint>::iterator it = vindices.begin(); it!=vindices.end(); it++)
 	{
-		Point src = activeObject->getVertexPos(*it);
+		Point src = activeObject()->getVertexPos(*it);
 		Vec vpixel = activeViewer->camera()->projectedCoordinatesOf(Vec(src));
 
 		// For flipping
@@ -171,34 +164,32 @@ void Offset::setOffsetColors( int direction, std::vector< std::vector<double> > 
 		double g = rgb[1] / 255.0;
 		double b = rgb[2] / 255.0;
 
-		activeObject->setVertexColor(*it, Color(r,g,b,1));
+		activeObject()->setVertexColor(*it, Color(r,g,b,1));
 	}
 
 	delete[] rgb;
 }
 
+
+std::vector<int> Offset::hotSegments()
+{
+	// Get all the vertices on the current envelope 
+	std::set<uint> vindices = verticesOnEnvelope(1);
+
+	std::vector<int> segIds;
+	return segIds;
+}
+
+
+
 void Offset::run()
 {
-	if(!activeViewer) return;
-
-	QSegMesh * activeObject = activeViewer->activeObject();
-	if (!activeObject->isReady)	return;
-
-	// Compute upper and lower envelops and offset function
-	computeOffset();
-
 	// Assign each vertex with offset color
-	setOffsetColors(1, offset, O_max);
-	setOffsetColors(-1, offset, O_max);
+	setOffsetColors(1);
+//	setOffsetColors(-1);
 
-	//// Save the offset function to an image
-	saveOffsetAsImage("offset_function.png");
-
-	// Restore original camera settings 
-	activeViewer->camera()->setType(Camera::PERSPECTIVE);
+	// Restore the camera
 	activeViewer->camera()->resetPath(0);
-
-	activeViewer->displayMessage(QString("O_max / objectH = %1").arg(O_max / objectH));
 }
 
 

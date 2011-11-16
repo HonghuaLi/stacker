@@ -272,7 +272,7 @@ void Scene::postDraw()
 	SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 }
 
-void Scene::print(QString message, long age)
+void Scene::print( QString message, long age )
 {
 	osdMessages.enqueue(message);
 	timer->start(age);
