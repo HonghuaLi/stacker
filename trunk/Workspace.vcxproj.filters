@@ -296,6 +296,15 @@
     <ClCompile Include="Stacker\GCylinder.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_GCylinder.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GCylinder.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_GCylinder.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_QMeshDoc.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -322,6 +331,9 @@
     </ClCompile>
     <ClCompile Include="GUI\Workspace.cpp">
       <Filter>GUI\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MathLibrary\GCDeformation.cpp">
+      <Filter>MathLibrary\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -469,8 +481,8 @@
     <ClInclude Include="Stacker\Contoller.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\GCylinder.h">
-      <Filter>Stacker\Header</Filter>
+    <ClInclude Include="MathLibrary\GCDeformation.h">
+      <Filter>MathLibrary\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -520,6 +532,9 @@
       <Filter>Stacker\ui</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\HiddenViewer.h">
+      <Filter>Stacker\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\GCylinder.h">
       <Filter>Stacker\Header</Filter>
     </CustomBuild>
     <CustomBuild Include="GUI\QMeshDoc.h">

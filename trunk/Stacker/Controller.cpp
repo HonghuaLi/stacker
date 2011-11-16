@@ -59,3 +59,8 @@ void Controller::test2()
 {
 
 }
+
+Primitive * Controller::getPrimitive( int id )
+{
+	return primitives[id];
+}

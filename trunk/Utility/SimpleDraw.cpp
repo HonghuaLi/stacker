@@ -610,17 +610,17 @@ void SimpleDraw::IdentifyPoint( const Vec3d & p, float r /*= 1.0*/, float g /*= 
 {
 	glDisable(GL_LIGHTING);
 
-	// White Border
-	glPointSize(pointSize + 2);
-	glColor3f(1, 1, 1);
-
+	// Colored dot
+	glColor3f(r, g, b);
+	glPointSize(pointSize);
 	glBegin(GL_POINTS);
 	glVertex3f(p.x(), p.y(), p.z());
 	glEnd();
 
-	// Colored dot
-	glColor3f(r, g, b);
-	glPointSize(pointSize);
+	// White Border
+	glPointSize(pointSize + 2);
+	glColor3f(1, 1, 1);
+
 	glBegin(GL_POINTS);
 	glVertex3f(p.x(), p.y(), p.z());
 	glEnd();

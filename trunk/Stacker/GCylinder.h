@@ -2,9 +2,13 @@
 
 #include "Primitive.h"
 #include "GeneralizedCylinder.h"
+#include "GCDeformation.h"
+#include "QGLViewer/manipulatedFrame.h"
 
-class GCylinder : public Primitive
+class GCylinder : public QObject, public Primitive
 {
+	Q_OBJECT
+
 public:
 	GCylinder(QSurfaceMesh* segment);
 
@@ -15,9 +19,16 @@ public:
 
 	void translate(Vec3d T);
 
+	qglviewer::ManipulatedFrame *mf1, *mf2;
+
+public slots:
+	void update();
+
 private:
 	GeneralizedCylinder * gc;
 
-private:
-	
+	QSurfaceMesh * cage;
+	void buildCage();
+	void updateCage();
+	GCDeformation * gcd;
 };
