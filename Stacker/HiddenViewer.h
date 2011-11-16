@@ -2,7 +2,7 @@
 
 #include "Scene.h"
 
-enum HVMode { HV_NONE, HV_DEPTH, HV_UNIQUE_FACES };
+enum HVMode { HV_NONE, HV_DEPTH };
 
 class HiddenViewer : public QGLViewer
 {

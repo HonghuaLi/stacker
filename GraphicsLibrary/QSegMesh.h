@@ -16,16 +16,18 @@ public:
 	QSegMesh& operator=(const QSegMesh& rhs);
 
 	// Face, vertex
-	uint n_faces();
+	uint nbVertices();
+	uint nbFaces();
 	std::vector<uint> vertexIndicesAroundFace(uint fid);
 	Point getVertexPos( uint vid );
 	void setVertexColor( uint vid, const Color& newColor );
 
 	// Get segment
-	QSurfaceMesh* operator [] (int i);
-	QSurfaceMesh* getSegment(int i);
+	QSurfaceMesh* operator [] (uint i);
+	QSurfaceMesh* getSegment(uint i);
 	std::vector<QSurfaceMesh*> getSegments();
-	int nbSegments();
+	uint nbSegments();
+	uint vertexInSegment( uint vid );
 
 	// Draw
 	void simpleDraw();
@@ -60,8 +62,8 @@ public:
 
 private:
 	std::vector<QSurfaceMesh*> segment;
-	void global2local_fid(uint fid, int& sid, uint& fid_local);
-	void global2local_vid(uint vid, int& sid, uint& vid_local);
+	void global2local_fid(uint fid, uint& sid, uint& fid_local);
+	void global2local_vid(uint vid, uint& sid, uint& vid_local);
 };
 
 

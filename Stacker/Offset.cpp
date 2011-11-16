@@ -1,6 +1,8 @@
 #include "Offset.h"
 #include "HiddenViewer.h"
 
+#define ZERO_TOLERANCE 0.001
+
 Offset::Offset( HiddenViewer *viewer )
 {
 	activeViewer = viewer;
@@ -62,20 +64,20 @@ void Offset::computeOffset()
 	activeViewer->camera()->addKeyFrameToPath(0);
 
 	// Compute the offset function
-	upperEnvolope = computeEnvelope(1);
-	lowerEnvolope = computeEnvelope(-1);
-	offset = upperEnvolope; 
-	int h = upperEnvolope.size();
-	int w = upperEnvolope[0].size();
+	upperEnvelope = computeEnvelope(1);
+	lowerEnvelope = computeEnvelope(-1);
+	offset = upperEnvelope; 
+	int h = upperEnvelope.size();
+	int w = upperEnvelope[0].size();
 	std::vector<double> row_max;	
 
 	for (int y = 0; y < h; y++){
 		for (int x = 0; x < w; x++)
 		{
-			if (upperEnvolope[y][x]==DOUBLE_INFINITY | lowerEnvolope[y][(w-1)-x]==DOUBLE_INFINITY)
+			if (upperEnvelope[y][x]==DOUBLE_INFINITY | lowerEnvelope[y][(w-1)-x]==DOUBLE_INFINITY)
 				offset[y][x] = 0.0; //out the shape domain
 			else
-				offset[y][x] = upperEnvolope[y][x] - lowerEnvolope[y][(w-1)-x]; //in the shape domain
+				offset[y][x] = upperEnvelope[y][x] - lowerEnvelope[y][(w-1)-x]; //in the shape domain
 		}
 
 		row_max.push_back(*max_element(offset[y].begin(), offset[y].end()));
@@ -88,110 +90,81 @@ void Offset::computeOffset()
 	activeObject()->stackability = 1 - O_max/objectH;
 }
 
-std::set<uint> Offset::verticesOnEnvelope( int direction )
+
+void Offset::hotspotsFromDirection( int direction, double threshold )
 {
-	//return value
-	std::set<uint> vertices;	
-	QSegMesh * activeObject = activeViewer->activeObject();	
+	// Restore the camera according to the direction
+	activeViewer->camera()->playPath( direction+2 );
 
-	// restore camera
-	activeViewer->camera()->playPath(direction + 2);
+	// Envelop
+	std::vector< std::vector<double> >& envelope 
+		= (direction == 1)? upperEnvelope : lowerEnvelope;
 
-	//rend the faces with unique color
+	// The size of current viewer
 	int w = activeViewer->width();
 	int h = activeViewer->height();	
 
-	activeViewer->setMode(HV_UNIQUE_FACES);
-	activeViewer->updateGL();
+	// Go through the mesh
+	uint i, nbV = activeObject()->nbVertices();
+	for (i=0; i<nbV; i++)
+	{
+		Point src = activeObject()->getVertexPos(i);
+		Vec vpixel = activeViewer->camera()->projectedCoordinatesOf(Vec(src));
 
-	GLubyte* colormap = (GLubyte*)activeViewer->readBuffer(GL_RGBA, GL_UNSIGNED_BYTE);
+		// Get the 2D projected coordinate
+		int x = (direction == 1) ? vpixel.x : (w - 1) - vpixel.x;
+		int y = (h - 1) - vpixel.y;
+		x = RANGED(0, x, (w - 1));
+		y = RANGED(0, y, (h - 1));
 
-	//get the indices of visable vertices
-	for(int y = 0; y < h; y++){
-		for(int x = 0; x < w; x++)	{
+		// Check whether it is visible
+		bool isVisible;
+		if (direction == 1)
+			isVisible = src.z() > envelope[x][y] - ZERO_TOLERANCE;
+		else
+			isVisible = src.z() < envelope[x][y] + ZERO_TOLERANCE;
 
-			uint indx = ((y*w)+x)*4;
-
-			uint r = (uint)colormap[indx+0];
-			uint g = (uint)colormap[indx+1];
-			uint b = (uint)colormap[indx+2];
-			uint a = (uint)colormap[indx+3];
-
-			uint f_id = ((255-a)<<24) + (r<<16) + (g<<8) + b;
-
-			if(f_id > 0 && f_id < (activeObject->n_faces() + 1))
-			{
-				std::vector<uint> cur_vertices = activeObject->vertexIndicesAroundFace(f_id - 1);
-				vertices.insert(cur_vertices.begin(), cur_vertices.end());
-			}
+		// Check whether it is hot
+		if (isVisible && offset[x][y] > threshold)
+		{
+			hotVertices.push_back(i);
+			hotSegments.insert(activeObject()->vertexInSegment(i));
 		}
 	}
 
-	delete colormap;
-	return vertices;
 }
 
-void Offset::setOffsetColors( int direction )
+
+void Offset::detectHotspots()
 {
-	// Restore camera settings
-	activeViewer->camera()->playPath(direction + 2);
+	// Initialization
+	hotVertices.clear();
+	hotSegments.clear();
 
-	int h = offset.size();
-	int w = offset[0].size();
-	uchar * rgb = new uchar[3];	
+	// Set the threshold for hot spots
+	double threshold = 0.8 * O_max;
 
-	// Get all the vertices on the current envelope 
-	std::set<uint> vindices = verticesOnEnvelope(direction);
+	// detect hot spots from both directions
+	hotspotsFromDirection(1, threshold);
+	hotspotsFromDirection(-1, threshold);
+}
 
-	// Assign each vertex with offset color
-	for (std::set<uint>::iterator it = vindices.begin(); it!=vindices.end(); it++)
+
+void Offset::showHotVertices()
+{
+	Color hotColor(1., 0., 0., 1.);
+
+	for (std::vector< uint >::iterator itr = hotVertices.begin(); itr != hotVertices.end(); itr++)
 	{
-		Point src = activeObject()->getVertexPos(*it);
-		Vec vpixel = activeViewer->camera()->projectedCoordinatesOf(Vec(src));
-
-		// For flipping
-		int _x = (direction) == 1 ? vpixel.x : (w-1) - vpixel.x;
-
-		int x = RANGED(0, _x, (w-1));
-		int y = RANGED(0, (h-1)-vpixel.y, (h - 1));
-
-		// Average color around pixel
-		double vertexColor = offset[y][x] / O_max;
-
-		ColorMap::jetColorMap(rgb, vertexColor, 0, 1);
-
-		double r = rgb[0] / 255.0;
-		double g = rgb[1] / 255.0;
-		double b = rgb[2] / 255.0;
-
-		activeObject()->setVertexColor(*it, Color(r,g,b,1));
+		activeObject()->setVertexColor(*itr, hotColor);
 	}
-
-	delete[] rgb;
 }
 
 
-std::vector<int> Offset::hotSegments()
+void Offset::showHotSegments()
 {
-	// Get all the vertices on the current envelope 
-	std::set<uint> vindices = verticesOnEnvelope(1);
 
-	std::vector<int> segIds;
-	return segIds;
 }
-
-
-
-void Offset::run()
-{
-	// Assign each vertex with offset color
-	setOffsetColors(1);
-//	setOffsetColors(-1);
-
-	// Restore the camera
-	activeViewer->camera()->resetPath(0);
-}
-
 
 
 void Offset::saveOffsetAsImage( QString fileName )

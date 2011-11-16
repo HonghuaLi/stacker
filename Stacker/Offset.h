@@ -13,31 +13,34 @@ public:
 	// Constructor
 	Offset(HiddenViewer* viewer);
 
-	// Active object
+	// Get active object
 	QSegMesh* activeObject();
 
+	// Compute the upper/lower envelops
+	std::vector< std::vector<double> > computeEnvelope(int direction);	
+	
 	// Compute offset function and stackability
 	void computeOffset();
 
-	// Save offset funciton as an color mapped image
+	// Detect hot spots
+	void hotspotsFromDirection( int direction, double threshold );
+	void detectHotspots();
+	void showHotVertices();
+	void showHotSegments();
+
+	// Save offset function as an color mapped image
 	void saveOffsetAsImage(QString fileName);
 
 	// Stackability = 1 - O_max/H
 	double getStackability();
 
-	// Detect hot spots (vertices on the mesh), where O_max occurs
-	std::vector<int> hotSegments();
-
-	void run();
-	std::vector< std::vector<double> > computeEnvelope(int direction);
-	std::set<uint> verticesOnEnvelope(int direction);
-	void setOffsetColors(int direction);
-
 
 	HiddenViewer * activeViewer;
-	std::vector< std::vector<double> > upperEnvolope;
-	std::vector< std::vector<double> > lowerEnvolope;
+	std::vector< std::vector<double> > upperEnvelope;
+	std::vector< std::vector<double> > lowerEnvelope;
 	std::vector< std::vector<double> > offset; 
 	double O_max;
 	double objectH;
+	std::vector< uint > hotVertices;
+	std::set< uint > hotSegments;
 };

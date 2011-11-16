@@ -219,17 +219,17 @@ void QSegMesh::setColorVertices( double r, double g, double b, double a )
 	}
 }
 
-int QSegMesh::nbSegments()
+uint QSegMesh::nbSegments()
 {
 	return segment.size();
 }
 
-QSurfaceMesh* QSegMesh::operator[]( int i )
+QSurfaceMesh* QSegMesh::operator[]( uint i )
 {
 	return segment[i];
 }
 
-QSurfaceMesh* QSegMesh::getSegment( int i )
+QSurfaceMesh* QSegMesh::getSegment( uint i )
 {
 	return segment[i];
 }
@@ -267,7 +267,8 @@ void QSegMesh::setObjectName( const QString &name )
 		segment[i]->setObjectName(name + QString("-seg%1").arg(i));
 }
 
-uint QSegMesh::n_faces()
+
+uint QSegMesh::nbVertices()
 {
 	uint num = 0;
 
@@ -277,9 +278,20 @@ uint QSegMesh::n_faces()
 	return num;
 }
 
+
+uint QSegMesh::nbFaces()
+{
+	uint num = 0;
+
+	for (int i=0;i<segment.size();i++)
+		num += segment[i]->n_faces();
+
+	return num;
+}
+
 std::vector<uint> QSegMesh::vertexIndicesAroundFace( uint fid )
 {
-	int sid;
+	uint sid;
 	uint fid_local;
 	global2local_fid(fid, sid, fid_local);
 
@@ -292,17 +304,17 @@ std::vector<uint> QSegMesh::vertexIndicesAroundFace( uint fid )
 	return vertices;
 }
 
-void QSegMesh::global2local_fid( uint fid, int& sid, uint& fid_local )
+void QSegMesh::global2local_fid( uint fid, uint& sid, uint& fid_local )
 {
 	uint offset = 0;
 	int i=0;
 	for (;i<segment.size();i++)
 	{
-		offset += segment[i]->n_vertices();
+		offset += segment[i]->n_faces();
 
 		if (fid < offset)
 		{
-			offset -= segment[i]->n_vertices();
+			offset -= segment[i]->n_faces();
 			break;
 		}
 	}
@@ -313,14 +325,14 @@ void QSegMesh::global2local_fid( uint fid, int& sid, uint& fid_local )
 
 Point QSegMesh::getVertexPos( uint vid )
 {
-	int sid;
+	uint sid;
 	uint vid_local;
-	global2local_fid(vid, sid, vid_local);
+	global2local_vid(vid, sid, vid_local);
 
 	return segment[sid]->getVertexPos(vid_local);
 }
 
-void QSegMesh::global2local_vid( uint vid, int& sid, uint& vid_local )
+void QSegMesh::global2local_vid( uint vid, uint& sid, uint& vid_local )
 {
 	uint offset = 0;
 	int i=0;
@@ -341,16 +353,16 @@ void QSegMesh::global2local_vid( uint vid, int& sid, uint& vid_local )
 
 void QSegMesh::setVertexColor( uint vid, const Color& newColor )
 {
-	int sid;
+	uint sid;
 	uint vid_local;
-	global2local_fid(vid, sid, vid_local);
+	global2local_vid(vid, sid, vid_local);
 
 	segment[sid]->setVertexColor(vid_local, newColor);
 }
 
 void QSegMesh::normalize()
 {
-	for (int i=0;i<nbSegments();i++)
+	for (uint i=0;i<nbSegments();i++)
 	{
 		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
 		Surface_mesh::Vertex_iterator vit, vend = segment[i]->vertices_end();
@@ -361,4 +373,13 @@ void QSegMesh::normalize()
 				points[vit] = points[vit] / radius;
 		}
 	}
+}
+
+uint QSegMesh::vertexInSegment( uint vid )
+{
+	uint sid;
+	uint vid_local;
+	global2local_vid(vid, sid, vid_local);
+
+	return sid;
 }
