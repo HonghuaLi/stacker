@@ -1,7 +1,7 @@
 #include "Offset.h"
 #include "HiddenViewer.h"
 
-#define ZERO_TOLERANCE 0.001
+#define ZERO_TOLERANCE 0.01
 
 Offset::Offset( HiddenViewer *viewer )
 {
@@ -74,10 +74,11 @@ void Offset::computeOffset()
 	for (int y = 0; y < h; y++){
 		for (int x = 0; x < w; x++)
 		{
+			// Two envelopes are horizontally flipped
 			if (upperEnvelope[y][x]==DOUBLE_INFINITY | lowerEnvelope[y][(w-1)-x]==DOUBLE_INFINITY)
-				offset[y][x] = 0.0; //out the shape domain
+				offset[y][x] = 0.0; 
 			else
-				offset[y][x] = upperEnvelope[y][x] - lowerEnvelope[y][(w-1)-x]; //in the shape domain
+				offset[y][x] = upperEnvelope[y][x] - lowerEnvelope[y][(w-1)-x];
 		}
 
 		row_max.push_back(*max_element(offset[y].begin(), offset[y].end()));
@@ -90,11 +91,11 @@ void Offset::computeOffset()
 	activeObject()->stackability = 1 - O_max/objectH;
 }
 
-
+// Still not very confident on screen coordinates converting
 void Offset::hotspotsFromDirection( int direction, double threshold )
 {
 	// Restore the camera according to the direction
-	activeViewer->camera()->playPath( direction+2 );
+	activeViewer->camera()->playPath( direction + 2 );
 
 	// Envelop
 	std::vector< std::vector<double> >& envelope 
@@ -112,26 +113,30 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 		Vec vpixel = activeViewer->camera()->projectedCoordinatesOf(Vec(src));
 
 		// Get the 2D projected coordinate
-		int x = (direction == 1) ? vpixel.x : (w - 1) - vpixel.x;
-		int y = (h - 1) - vpixel.y;
-		x = RANGED(0, x, (w - 1));
-		y = RANGED(0, y, (h - 1));
+		int x = ceil((w - 1) - vpixel.x);
+		int y = ceil((h - 1) - vpixel.y);
+		x = RANGED(0, x, w-1);
+		y = RANGED(0, y, h-1);
 
 		// Check whether it is visible
 		bool isVisible;
 		if (direction == 1)
-			isVisible = src.z() > envelope[x][y] - ZERO_TOLERANCE;
+			isVisible = src.z() > (envelope[y][x] - ZERO_TOLERANCE);
 		else
-			isVisible = src.z() < envelope[x][y] + ZERO_TOLERANCE;
+			isVisible = src.z() < (envelope[y][x] + ZERO_TOLERANCE);
 
 		// Check whether it is hot
-		if (isVisible && offset[x][y] > threshold)
+		if (isVisible)
 		{
-			hotVertices.push_back(i);
-			hotSegments.insert(activeObject()->vertexInSegment(i));
+			double off = offset[y][x];
+
+			if (off > threshold)
+			{
+				hotVertices.push_back(i);
+				hotSegments.insert(activeObject()->vertexInSegment(i));			
+			}
 		}
 	}
-
 }
 
 
