@@ -64,6 +64,7 @@ private:
 	std::vector<QSurfaceMesh*> segment;
 	void global2local_fid(uint fid, uint& sid, uint& fid_local);
 	void global2local_vid(uint vid, uint& sid, uint& vid_local);
+
+	// This is useful for segmented OBJs
+	void checkObjSegmentation ( QString fileName, QString segFilename);
 };
-
-

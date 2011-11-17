@@ -1,4 +1,7 @@
 #include "QSegMesh.h"
+#include <QFile>
+#include <QTextStream>
+#include <QVector>
 #include "Contoller.h"
 #include <fstream>
 #include <set>
@@ -44,14 +47,64 @@ QSegMesh& QSegMesh::operator=( const QSegMesh& rhs )
 	return *this;
 }
 
+void QSegMesh::checkObjSegmentation ( QString fileName, QString segFilename)
+{
+	QFile file(fileName);
+	file.open(QIODevice::ReadOnly | QIODevice::Text);
+	QTextStream in(&file);
+
+	QVector<int> faceGroups;
+	bool collectingFaces = false;
+
+	while (!in.atEnd()){
+		QString line = in.readLine();
+
+		// Possible face group is coming
+		if(line.startsWith("g ")){
+			collectingFaces = true;
+			faceGroups.push_back(0);
+		}
+		
+		// Count faces
+		if(line.startsWith("f ")){
+			if(collectingFaces)
+				faceGroups.back() += 1;
+			else
+				return;
+		}
+	}
+
+	// Write segmentation file
+	QFile segFile(segFilename);
+	segFile.open(QIODevice::WriteOnly | QIODevice::Text);
+	QTextStream out(&segFile);
+
+	out << (int)faceGroups.size() << "\n";
+
+	int offset = 0;
+
+	for(int i = 0; i < (int)faceGroups.size(); i++){
+		int fCount = faceGroups[i];
+		if(i > 0) offset += faceGroups[i-1];
+
+		for(int j = 0; j < fCount; j++)
+			out << j + offset << " " << i << "\n";
+	}
+}
+
 void QSegMesh::read( QString fileName )
 {
 	// Load entire mesh geometry
 	QSurfaceMesh mesh;
 	mesh.read(qPrintable(fileName));
 
+	QString file_name = fileName;
+	QString segFilename = file_name.replace(file_name.lastIndexOf('.') + 1, 3, "seg");
+
+	// Check if file include segments "g Object"
+	checkObjSegmentation(fileName, segFilename);
+
 	// Load segmentation file
-	QString segFilename = fileName.replace(fileName.lastIndexOf('.')+1, 3, "seg");
 	std::ifstream inF(qPrintable(segFilename), std::ios::in);
 
 	if (!inF)
