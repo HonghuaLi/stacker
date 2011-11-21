@@ -1,6 +1,7 @@
 #include "Cuboid.h"
 #include "SimpleDraw.h"
 
+
 Cuboid::Cuboid(QSurfaceMesh* mesh)
 	: Primitive(mesh)
 {
@@ -49,7 +50,7 @@ void Cuboid::deformMesh()
 		}
 	}
 
-	preBox = currBox;
+//	preBox = currBox;
 }
 
 Vector3 Cuboid::getCoordinatesInBox( MinOBB3::Box3 &box, Vector3 &p )
@@ -99,12 +100,84 @@ std::vector<Vector3> Cuboid::getBoxConners( MinOBB3::Box3 box )
 	return pnts;
 }
 
-void Cuboid::scaleAlongAxis( int axisId, double scale )
+
+Eigen::Vector3d Cuboid::V2E( Vector3 &vec )
 {
-	currBox.Extent[axisId] *= scale;
+	return Eigen::Vector3d(vec[0], vec[1], vec[2]);
 }
 
-void Cuboid::translate( Vector3 T )
+Vector3 Cuboid::E2V( Eigen::Vector3d &vec )
+{
+	return Vector3(vec[0], vec[1], vec[2]);
+}
+
+void Cuboid::scaleAlongAxis( Vector3 &scales )
+{
+	currBox.Extent[0] *= scales[0];
+	currBox.Extent[1] *= scales[1];
+	currBox.Extent[2] *= scales[2];
+}
+
+void Cuboid::translate( Vector3 &T )
 {
 	currBox.Center += T;
 }
+
+
+Eigen::Matrix3d Cuboid::rotationMatrixAroundAxis( int axisId, double theta )
+{
+	theta = 3.1415926 * theta / 180;
+	Vector3 u = currBox.Axis[axisId];
+	double x = u[0], y = u[1], z = u[2];
+
+	Eigen::Matrix3d I, cpm, tp, R;
+
+	I = Eigen::Matrix3d::Identity(3,3);
+
+	tp <<	x*x, x*y, x*z,
+			x*y, y*y, y*z,
+			x*z, y*z, z*z;
+
+	cpm <<  0, -z,  y,
+			z,  0, -x,
+		   -y,  x,  0;
+
+	R = cos(theta)*I + sin(theta)*cpm + (1-cos(theta))*tp;
+
+	return R;
+}
+
+
+void Cuboid::rotateAroundAxes( Vector3 &angles )
+{
+	Eigen::Matrix3d Rx = rotationMatrixAroundAxis(0, angles[0]);
+	Eigen::Matrix3d Ry = rotationMatrixAroundAxis(1, angles[1]);
+	Eigen::Matrix3d Rz = rotationMatrixAroundAxis(2, angles[2]);
+	Eigen::Matrix3d R = Rx * Ry * Rz;
+
+	Eigen::Vector3d p0 = R * V2E(currBox.Axis[0]);
+	Eigen::Vector3d p1 = R * V2E(currBox.Axis[1]);
+	Eigen::Vector3d p2 = R * V2E(currBox.Axis[2]);
+
+	currBox.Axis[0] = E2V(p0);
+	currBox.Axis[1] = E2V(p1);
+	currBox.Axis[2] = E2V(p2);
+}
+
+void Cuboid::transform( Vector3 &T, Vector3 &scales, Vector3 &angles )
+{
+	translate(T);
+	scaleAlongAxis(scales);
+	rotateAroundAxes(angles);
+}
+
+void Cuboid::undo()
+{
+	MinOBB3::Box3 box = preBox;
+	preBox = currBox;
+	currBox = box;
+	deformMesh();
+	preBox = box;
+}
+
+
