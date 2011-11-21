@@ -15,8 +15,8 @@ public:
 	void fitOBBs();
 	void draw();
 	void test1();
-	void test2();
-
+	void test2(Vec3d scale, Vec3d transl, Vec3d angles);
+	void undo();
 	Primitive * getPrimitive(int id);
 
 private:
