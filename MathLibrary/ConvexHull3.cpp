@@ -38,7 +38,7 @@ void ConvexHull3::computeCH()
 	int i2 = mExtreme[2];
 	int i3 = mExtreme[3];
 
-	epsilon = (mPnts[i0]-mPnts[i1]).norm() / (Real)1000000000;
+	epsilon = (mPnts[i0]-mPnts[i1]).norm() / (Real)1000000;
 
 
 	TriFace* tri0;
