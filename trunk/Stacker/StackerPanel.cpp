@@ -3,6 +3,7 @@
 #include <QVBoxLayout>
 #include "Vector.h"
 #include <fstream>
+#include <algorithm>
 
 StackerPanel::StackerPanel()
 {
@@ -69,11 +70,57 @@ void StackerPanel::onImproveButtonClicked()
 	}
 
 	Controller* ctrl = activeObject()->controller;
-	//ctrl->test2(Vec3d(0.8, 0.8, 1), Vec3d(-0.3, -0.4, 0.1), Vec3d(15,10,0));
-	//emit(objectModified());
-	//return;
+	ctrl->test2(Vec3d(0.625	, 0.625	, 1), Vec3d(0, 0, 0.25), Vec3d(-20,0,0));
+	emit(objectModified());
+	return;
+
+	std::vector< std::vector< double > > selectedParameters;
+	std::vector< double > stackabilities;
+	// Select the best results from the sample in deformation space
+	std::ifstream inF("selectedParameters.txt", std::ios::in);
+	double stackability, s1, s2, tx, ty, tz, a, b, c;
+	while (inF)
+	{
+		inF >> stackability >> s1 >> s2 >> tx >> ty >> tz >> a >> b >> c;
+		stackabilities.push_back(stackability);
+		double p[8] = {s1, s2, tx, ty, tz, a, b, c};
+		std::vector< double > param(p, p+8);
+		selectedParameters.push_back(param);
+	}
+
+	std::vector< std::vector< double > > bestParams;
+	std::vector< double > bestS;
+	int num = 20;
+	std::vector< double >::iterator maxItr;
+	for (int i=0;i<num;i++)
+	{
+		maxItr = std::max_element(stackabilities.begin(), stackabilities.end());
+		bestS.push_back(*maxItr);
+
+		int index = maxItr - stackabilities.begin();
+		bestParams.push_back(selectedParameters[index]);
+
+		stackabilities.erase(maxItr);
+		selectedParameters.erase(selectedParameters.begin()+index);
+	}
 
 
+	std::ofstream outF("bestParams.txt", std::ios::out);
+	for (int i=0; i<bestS.size(); i++)
+	{
+		outF<<bestS[i] << '\t'
+			<< bestParams[i][0] << '\t'
+			<< bestParams[i][1] << '\t'
+			<< bestParams[i][2] << '\t'
+			<< bestParams[i][3] << '\t'
+			<< bestParams[i][4] << '\t'
+			<< bestParams[i][5] << '\t'
+			<< bestParams[i][6] << '\t'
+			<< bestParams[i][7] << '\n';
+
+	}
+
+	return;
 	// Sampling in the deformation space
 	// top: 2 scales
 	// leg: 3 translations, 3 rotations
@@ -89,7 +136,7 @@ void StackerPanel::onImproveButtonClicked()
 		R[i] = i * R_step - 30;
 	}
 
-	std::vector< std::vector< double > > selectedParameters;
+//	std::vector< std::vector< double > > selectedParameters;
 
 	for (int i=0; i<N; i++){
 		for (int j=0; j<N; j++){
@@ -128,7 +175,7 @@ void StackerPanel::onImproveButtonClicked()
 		}
 	}
 
-	std::ofstream outF("selectedParameters.txt", std::ios::out);
+//	std::ofstream outF("bestParams.txt", std::ios::out);
 	for (int i=0; i<selectedParameters.size(); i++)
 	{
 		outF<< selectedParameters[i][0] << '\t'
@@ -141,7 +188,6 @@ void StackerPanel::onImproveButtonClicked()
 			<< selectedParameters[i][7] << '\t'
 			<< selectedParameters[i][8] << '\n';
 	}
-
 	showMessage("Searching is done.");
 }
 
