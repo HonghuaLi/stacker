@@ -25,6 +25,7 @@ StackerPanel::StackerPanel()
 	connect(panel.controllerButton, SIGNAL(clicked()), SLOT(onControllerButtonClicked()));
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
+	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 
@@ -56,6 +57,8 @@ void StackerPanel::onControllerButtonClicked()
 
 	activeObject()->controller = new Controller(activeObject());
 	activeObject()->controller->fitOBBs();
+
+	activeScene->setSelectMode(CONTROLLER);
 
 	showMessage("Controller is build for " + activeObject()->objectName());
 }
@@ -207,7 +210,6 @@ void StackerPanel::onHotspotsButtonClicked()
 }
 
 
-
 void StackerPanel::setActiveScene( Scene * scene )
 {
 	if(activeScene != scene)
@@ -240,4 +242,16 @@ void StackerPanel::showMessage( QString message )
 void StackerPanel::setConvexHullPrecision( int p )
 {
 	CH_PRECISION = p;
+}
+
+void StackerPanel::convertGC()
+{
+	Controller* ctrl = activeObject()->controller;
+
+	for(int i = 0; i < ctrl->numPrimitives(); i++){
+		Primitive * prim = ctrl->getPrimitive(i);
+
+		if(prim->isSelected)
+			ctrl->convertToGC(prim->id, !panel.basicFitGC->isChecked());
+	}
 }

@@ -13,16 +13,22 @@ GCylinder::GCylinder( QSurfaceMesh* mesh ) : Primitive(mesh)
 
 void GCylinder::fit()
 {
+	if(!m_mesh->vertex_array.size())
+	{
+		m_mesh->assignFaceArray();
+		m_mesh->assignVertexArray();
+	}
+
 	// Extract and save skeleton
 	SkeletonExtract skelExt( m_mesh );
-	Skeleton skel;
-	skelExt.SaveToSkeleton( &skel );
+	skel = new Skeleton();
+	skelExt.SaveToSkeleton( skel );
 
 	// Select part of skeleton
-	skel.selectLongestPath();
+	skel->selectLongestPath();
 
 	// Compute generalized cylinder
-	gc = new GeneralizedCylinder( &skel, m_mesh );
+	gc = new GeneralizedCylinder( skel, m_mesh );
 
 	Vec3d p = gc->frames.point.front();
 	Vec3d q = gc->frames.point.back();
@@ -84,7 +90,8 @@ void GCylinder::draw()
 	SimpleDraw::IdentifyPoint2(q);
 
 	//gc->draw();
-	//cage->simpleDraw();
+	cage->simpleDraw();
+	//skel->draw(true);
 }
 
 void GCylinder::update()
@@ -119,7 +126,7 @@ void GCylinder::buildCage()
 {
 	cage = new QSurfaceMesh;
 		
-	int sides = 5;
+	int sides = 6;
 	uint vindex = 0;
 	std::map<uint, Surface_mesh::Vertex> v;
 	std::vector<Surface_mesh::Vertex> verts(3), verts2(3);

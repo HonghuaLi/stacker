@@ -31,7 +31,8 @@ public:
 	static void DrawTriangle(const Vec3d& v1, const Vec3d& v2, const Vec3d& v3,float r = 0.2f, float g = 1.0, float b = 0.1f, float a = 1.0, bool isOpaque = true);
 	static void DrawTriangles(const StdVector< StdVector<Vec3d> > & tris, float r = 0.2f, float g = 1.0, float b = 0.1f, float a = 1.0, bool isOpaque = true, bool isDrawPoints = true);
 
-	static void DrawSquare(const Vec3d& v1, const Vec3d& v2, const Vec3d& v3, const Vec3d& v4, bool isOpaque = true, float r = 0.1f, float g = 0.2f, float b = 1.0, float a = 1.0);
+	static void DrawSquare(const Vec3d& v1, const Vec3d& v2, const Vec3d& v3, const Vec3d& v4, bool isOpaque = true, float lineWidth = 1.0f, float r = 0.1f, float g = 0.2f, float b = 1.0, float a = 1.0);
+	static void DrawSquare(const Vec3d & v1, const Vec3d & v2, const Vec3d & v3, const Vec3d & v4, bool isOpaque, float lineWidth, Vec4d color);
 	static void DrawSquares(const StdVector<StdVector<Vec3d> > & squares, bool isOpaque = true, float r = 0.1f, float g = 0.2f, float b = 1.0, float a = 1.0);
 	static void DrawLineTick(const StdVector<Vec3d>& start, const  StdVector<Vec3d>& direction, float len = 0.25f, bool border = false, float r = 0.65f, float g = 0.6f, float b = 0.8f, float a = 0.9f);
 

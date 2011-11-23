@@ -22,9 +22,11 @@ void Controller::fitPrimitives()
 	{
 		GCylinder* cub = new GCylinder(m_mesh->getSegment(i));
 		primitives.push_back(cub);
+
+		// Assign an ID
+		primitives.back()->id = primitives.size();
 	}
 }
-
 
 void Controller::fitOBBs()
 {
@@ -32,15 +34,69 @@ void Controller::fitOBBs()
 	{
 		Cuboid* cub = new Cuboid(segment);
 		primitives.push_back(cub);
+
+		// Assign an ID
+		primitives.back()->id = primitives.size();
 	}
 }
-
 
 void Controller::draw()
 {
 	for (uint i = 0; i < primitives.size(); i++)
 	{
 		primitives[i]->draw();
+	}
+}
+
+void Controller::drawNames()
+{
+	for (uint i = 0; i < primitives.size(); i++)
+	{
+		primitives[i]->drawNames();
+	}
+}
+
+void Controller::select(int id)
+{
+	// Deselect all if given '-1'
+	if(id < 0){
+		for (uint i = 0; i < primitives.size(); i++)
+			primitives[i]->isSelected = false;
+		return;
+	}
+
+	// Select primitives by setting flag
+	for (uint i = 0; i < primitives.size(); i++)
+	{
+		if(primitives[i]->id == id)
+			primitives[i]->isSelected = true;
+	}
+}
+
+void Controller::convertToGC( int primitiveId, bool isUsingSkeleton )
+{
+	int p_index = 0;
+
+	// Locate index of primitive (ID could be non-integer ?)
+	for (uint i = 0; i < primitives.size(); i++){
+		if(primitiveId == primitives[i]->id){
+			p_index = i;
+			break;
+		}
+	}
+
+	// Convert to generalized cylinder
+	if(isUsingSkeleton)
+	{
+		Primitive * oldPrimitive = primitives[p_index];
+
+		primitives[p_index] = new GCylinder(primitives[p_index]->getMesh());
+
+		delete oldPrimitive;
+	}
+	else
+	{
+
 	}
 }
 
@@ -88,7 +144,10 @@ Primitive * Controller::getPrimitive( int id )
 	return primitives[id];
 }
 
-
+int Controller::numPrimitives()
+{
+	return primitives.size();
+}
 
 void Controller::undo()
 {

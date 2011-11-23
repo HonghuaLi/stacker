@@ -308,7 +308,13 @@ void SimpleDraw::DrawLineTick(const StdVector<Vec3d >& start, const StdVector<Ve
 }
 
 void SimpleDraw::DrawSquare(const Vec3d & v1, const Vec3d & v2, const Vec3d & v3, const Vec3d & v4, 
-							bool isOpaque, float r, float g, float b, float a)
+	bool isOpaque, float lineWidth, Vec4d color)
+{
+	DrawSquare(v1,v2,v3,v4, isOpaque, lineWidth, color[0], color[1], color[2], color[3]);
+}
+
+void SimpleDraw::DrawSquare(const Vec3d & v1, const Vec3d & v2, const Vec3d & v3, const Vec3d & v4, 
+							bool isOpaque, float lineWidth, float r, float g, float b, float a)
 {
 	glEnable(GL_LIGHTING);
 
@@ -341,7 +347,7 @@ void SimpleDraw::DrawSquare(const Vec3d & v1, const Vec3d & v2, const Vec3d & v3
 	glDisable(GL_LIGHTING);
 
 	// Draw the edges
-	glLineWidth(1.0f);
+	glLineWidth(lineWidth);
 
 	glColor4f(r, g, b, a);
 

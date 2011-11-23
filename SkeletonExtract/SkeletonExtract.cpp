@@ -28,7 +28,6 @@ SkeletonExtract::SkeletonExtract( QSurfaceMesh * fromMesh )
 	this->src_mesh = fromMesh;
 
 	// Normalize
-	this->mesh.moveCenterToOrigin();
 	this->scaleFactor = this->mesh.normalize();
 	this->mesh.computeBoundingBox();
 
@@ -858,4 +857,3 @@ void SkeletonExtract::SaveToSkeleton( Skeleton * s )
 
 	printf("Done.\n");
 }
-
