@@ -11,25 +11,32 @@ Cuboid::Cuboid(QSurfaceMesh* mesh)
 void Cuboid::fit()
 {	
 	MinOBB3 obb(m_mesh);
-	preBox = currBox = obb.mMinBox;
+	originalBox = currBox = obb.mMinBox;
+
+	// Compute the OBB coordinates for all vertices
+	coordinates.clear();
+	Surface_mesh::Vertex_property<Point> points = m_mesh->vertex_property<Point>("v:point");
+	Surface_mesh::Vertex_iterator vit, vend = m_mesh->vertices_end();
+
+	for (vit = m_mesh->vertices_begin(); vit != vend; ++vit)
+	{
+		Vector3 coord = getCoordinatesInBox(originalBox, points[vit]);
+		coordinates.push_back(coord);
+	}
 }
 
 void Cuboid::deformMesh()
 {
+	if (currBox == originalBox) return;
+
 	Surface_mesh::Vertex_property<Point> points = m_mesh->vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_iterator vit, vend = m_mesh->vertices_end();
 
-	Vector3 coord;
 	for (vit = m_mesh->vertices_begin(); vit != vend; ++vit)
 	{
-		if (!m_mesh->is_deleted(vit))
-		{
-			coord = getCoordinatesInBox(preBox, points[vit]);
-			points[vit] = getPositionInBox(currBox, coord);
-		}
+		int vidx = ((Surface_mesh::Vertex)vit).idx();
+		points[vit] = getPositionInBox(currBox, coordinates[vidx]);
 	}
-
-//	preBox = currBox;
 }
 
 Vector3 Cuboid::getCoordinatesInBox( MinOBB3::Box3 &box, Vector3 &p )
@@ -176,16 +183,25 @@ void Cuboid::rotateAroundAxes( Vector3 &angles )
 
 void Cuboid::transform( Vector3 &T, Vector3 &scales, Vector3 &angles )
 {
+	if (preT==T && preS==scales && preR==angles)
+		return;
+		
+	// Deform the OBB
 	translate(T);
 	scaleAlongAxis(scales);
 	rotateAroundAxes(angles);
+
+	// Apply the deformation 
+	deformMesh();
+
+	// Record the transmation
+	preT==T;
+	preS==scales;
+	preR==angles;
 }
 
-void Cuboid::undo()
+void Cuboid::recoverMesh()
 {
-	MinOBB3::Box3 box = preBox;
-	preBox = currBox;
-	currBox = box;
+	currBox = originalBox;
 	deformMesh();
-	preBox = box;
 }

@@ -5,7 +5,7 @@
 
 int CH_PRECISION;
 
-ConvexHull3::ConvexHull3( std::vector<Vector3> &pnts )
+ConvexHull3::ConvexHull3( std::vector<Vector3> pnts )
 {
 	mPnts = pnts;
 	isReady = false;

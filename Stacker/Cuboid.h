@@ -18,7 +18,7 @@ public:
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
 	void transform( Vector3 &T, Vector3 &scales, Vector3 &angles );
-	void undo();
+	void recoverMesh();
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);
@@ -31,6 +31,7 @@ private:
 	Vector3 E2V(Eigen::Vector3d &vec);
 
 private:
-	MinOBB3::Box3 currBox;
-	MinOBB3::Box3 preBox;
+	std::vector< Vector3 > coordinates;
+	MinOBB3::Box3 originalBox, currBox;
+	Vector3 preT, preS, preR;
 };

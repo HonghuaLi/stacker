@@ -19,9 +19,9 @@ extern int CH_PRECISION;
 class  ConvexHull3
 {
 public:
-	ConvexHull3(std::vector<Vector3> &pnts);
 	ConvexHull3(Surface_mesh * mesh);
-    void computeCH();
+	ConvexHull3( std::vector<Vector3> pnts );
+	void computeCH();
 	void draw();
 
 	int getNumSimplices(){	return mNumSimplices;}
