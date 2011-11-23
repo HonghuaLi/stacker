@@ -79,8 +79,7 @@ public:
 	void smoothSelectedEdges(int numSmoothingIterations = 3);
 	void cropSelectedEdges(int start = 1, int end = 1);
 	std::vector<ResampledPoint> resampleSmoothSelectedPath(int numSteps = 20, int smoothSteps = 3);
-	void walkSmoothEdges(double distance, double startTime, int index, double & destTime, int & destIndex);
-
+	int walkSmoothEdges(double distance, double startTime, int index, double & destTime, int & destIndex);
 	// MODIFY OPERATIONS
 	std::pair< std::vector<int>, std::vector<int> > Split(int edgeIndex);
 
