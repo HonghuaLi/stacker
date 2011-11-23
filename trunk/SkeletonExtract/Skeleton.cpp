@@ -602,68 +602,6 @@ void Skeleton::draw(bool drawMeshPoints)
 	glEnable(GL_LIGHTING);
 }
 
-std::vector<ResampledPoint> Skeleton::resampleSmoothSelectedPath( int numSteps /*= 20*/, int smoothSteps /*= 3*/ )
-{
-	std::vector<ResampledPoint> result;
-
-	smoothSelectedEdges(smoothSteps);
-
-	// Compute length of each segment
-	double totalLength = 0;
-	foreach(SkeletonEdge e, smoothEdges)
-		totalLength += e.length;
-	double segmentLength = totalLength / numSteps;
-
-	// Start at
-	double t =  0;
-	int index = 0;
-
-	// Compute equal-dist points on polyline
-	for(int s = 0; s < numSteps; s++)
-	{
-		// Which node does it belong too (based on distance)
-		int nid = smoothEdges[index].n1->index;
-		if( t > 0.5 ) nid = smoothEdges[index].n2->index;
-
-		result.push_back(ResampledPoint(smoothEdges[index].pointAt(t), nid));
-		walkSmoothEdges(segmentLength, t, index, t, index);
-	}
-
-	return result;
-}
-
-void Skeleton::walkSmoothEdges(double distance, double startTime, int index, double & destTime, int & destIndex)
-{
-	double remain = smoothEdges[index].lengthsAt(startTime).second;
-
-	// Case 1: the point is on the starting line
-	if(remain > distance)
-	{
-		double startLength = startTime * smoothEdges[index].length;
-		destTime = (startLength + distance) / smoothEdges[index].length;
-		destIndex = index;
-		return;
-	}
-
-	double walked = remain;
-
-	// Case 2: keep walking next lines
-	while(walked < distance)
-	{
-		index = (index + 1) % smoothEdges.size();		// step to next line
-		walked += smoothEdges[index].length;
-	}
-
-	// Step back to the start of this line
-	walked -= smoothEdges[index].length;
-
-	double remainDistance = distance - walked;
-	double endTime = remainDistance / smoothEdges[index].length;
-
-	destTime = endTime;
-	destIndex = index;
-}
-
 std::vector<uint> Skeleton::getSelectedFaces(bool growSelection)
 {
 	std::set<uint> faceResultSet;
@@ -714,8 +652,83 @@ std::vector<uint> Skeleton::getSelectedFaces(bool growSelection)
 
 	// Convert to vector
 	std::vector<uint> result = SET_TO_VECTOR(faceResultSet);
-	
+
 	return (lastSelectedFaces = result);
+}
+
+std::vector<ResampledPoint> Skeleton::resampleSmoothSelectedPath( int numSteps /*= 20*/, int smoothSteps /*= 3*/ )
+{
+	std::vector<ResampledPoint> result;
+
+	smoothSelectedEdges(smoothSteps);
+
+	// Compute length of each segment
+	double totalLength = 0;
+	foreach(SkeletonEdge e, smoothEdges)
+		totalLength += e.length;
+	double segmentLength = totalLength / numSteps;
+
+	// Start at
+	double t =  0;
+	int index = 0;
+
+	// Compute equal-dist points on polyline
+	for(int s = 0; s <= numSteps; s++)
+	{
+		// Which node does it belong too (based on distance)
+		int nid = smoothEdges[index].n1->index;
+		if( t > 0.5 ) nid = smoothEdges[index].n2->index;
+
+		// Add sample
+		result.push_back(ResampledPoint(smoothEdges[index].pointAt(t), nid));
+
+		if(!walkSmoothEdges(segmentLength, t, index, t, index))
+		{
+			Vec3d delta = result.back().pos - result[result.size() - 2].pos;
+			result.push_back(ResampledPoint(delta + result.back().pos, nid));
+			break;
+		}
+	}
+
+	return result;
+}
+
+int Skeleton::walkSmoothEdges(double distance, double startTime, int index, double & destTime, int & destIndex)
+{
+	double remain = smoothEdges[index].lengthsAt(startTime).second;
+
+	// Case 1: the point is on the starting line
+	if(remain > distance)
+	{
+		double startLength = startTime * smoothEdges[index].length;
+		destTime = (startLength + distance) / smoothEdges[index].length;
+		destIndex = index;
+		return 1;
+	}
+
+	double walked = remain;
+
+	// Case 2: keep walking next lines
+	while(walked < distance)
+	{
+		index = index + 1;		// step to next line
+
+		if(index + 1 == smoothEdges.size())
+			return 0;
+
+		walked += smoothEdges[index].length;
+	}
+
+	// Step back to the start of this line
+	walked -= smoothEdges[index].length;
+
+	double remainDistance = distance - walked;
+	double endTime = remainDistance / smoothEdges[index].length;
+
+	destTime = endTime;
+	destIndex = index;
+
+	return 1;
 }
 
 void Skeleton::selectLongestPath()

@@ -3,9 +3,6 @@
 #include "QSurfaceMesh.h"
 #include "Skeleton.h"
 
-// For rotations..
-#include "QGLViewer/quaternion.h"
-
 #include "RMF.h"
 
 class GeneralizedCylinder{

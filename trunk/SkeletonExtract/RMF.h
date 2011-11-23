@@ -49,7 +49,7 @@ public:
 			/*7 */ Vec3d rj = rLi - (2.0 / c2) * dot(v2, rLi) * v2;
 			/*8 */ Vec3d sj = cross(tj,rj);
 
-			U.push_back(Frame(rj, sj, tj));
+			U.push_back(Frame::fromST(sj, tj));
 		}
 	}
 
