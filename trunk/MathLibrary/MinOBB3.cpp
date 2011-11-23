@@ -290,6 +290,18 @@ void MinOBB3::getCorners( std::vector<Vector3> &pnts )
 
 
 
+bool MinOBB3::Box3::operator==( Box3& box )
+{
+	return (Center == box.Center)
+		&& (Axis[0] == box.Axis[0])
+		&& (Axis[1] == box.Axis[1])
+		&& (Axis[2] == box.Axis[2])
+		&& (Extent[0] == box.Extent[0])
+		&& (Extent[1] == box.Extent[1])
+		&& (Extent[2] == box.Extent[2]);
+}
+
+
 
 
 MinOBB3::EdgeKey::EdgeKey (int v0, int v1)

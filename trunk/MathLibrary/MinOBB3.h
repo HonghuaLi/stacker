@@ -24,6 +24,7 @@ public:
 	public:
 		Box3(){Axis.resize(3);}	
 		void normalizeAxis(){ for (int i=0;i<3;i++)	Axis[i].normalize();}
+		bool operator == (Box3& box);
 	
 	public:
 		Vector3 Center;

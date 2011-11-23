@@ -10,22 +10,28 @@ public:
 	~Controller();
 
 public:
+	// Fitting
 	void fitPrimitives();
-	void fitOBBs();
-	
+	void fitOBBs();	
 	void convertToGC(int primitiveId, bool isUsingSkeleton = true);
 
+	// OpenGL stuff
 	void draw();
 	void drawNames();
-
 	void select(int id);
 
-	void test1();
-	void test2(Vec3d scale, Vec3d transl, Vec3d angles);
-	void undo();
-	Primitive * getPrimitive(int id);
+	// Deformation
+	void deformShape(Vec3d scale, Vec3d transl, Vec3d angles);
+	void recoverShape();
 
+	// SET and GET
+	Primitive * getPrimitive(int id);
 	int numPrimitives();
+	int numHotPrimitives();
+
+	// Testing
+	void test1();
+
 
 private:
 	std::vector<Primitive*> primitives;

@@ -19,6 +19,10 @@ public:
 	// Message
 	void showMessage( QString message );
 
+	// Optimization
+	void gradientDescentOptimize();
+	double sumEnergy();
+
 	Ui::StackerWidget panel;
 	Scene * activeScene;
 	StackerPreview * stacker_preview;
@@ -44,4 +48,5 @@ public slots:
 signals:
 	void printMessage( QString );
 	void objectModified();
+
 };

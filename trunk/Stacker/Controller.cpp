@@ -110,7 +110,7 @@ void Controller::test1()
 
 }
 
-void Controller::test2(Vector3 scale, Vector3 transl, Vector3 angles)
+void Controller::deformShape(Vector3 scale, Vector3 transl, Vector3 angles)
 {
 	
 	// top
@@ -149,12 +149,18 @@ int Controller::numPrimitives()
 	return primitives.size();
 }
 
-void Controller::undo()
+void Controller::recoverShape()
 {
 	for (int i=0;i<m_mesh->nbSegments();i++)
 	{
-		(( Cuboid* )primitives[i])->undo();
+		(( Cuboid* )primitives[i])->recoverMesh();
 	}
 
 	m_mesh->computeBoundingBox();
+}
+
+
+int Controller::numHotPrimitives()
+{
+	return 6;
 }
