@@ -6,6 +6,7 @@
 #include <fstream>
 #include <set>
 #include <map>
+#include "SimpleDraw.h"
 
 QSegMesh::QSegMesh()
 {
@@ -199,7 +200,6 @@ void QSegMesh::read( QString fileName )
 
 void QSegMesh::build_up()
 {
-	setColorVertices();
 	computeBoundingBox();
 	moveCenterToOrigin();
 	normalize();
@@ -210,6 +210,10 @@ void QSegMesh::build_up()
 
 	for (int i=0;i<nbSegments();i++)
 		segment[i]->buildUp();
+
+	setColorVertices();
+
+	printf("Segments loaded: %d \n", nbSegments());
 
 	isReady = true;
 }
@@ -266,9 +270,17 @@ void QSegMesh::moveCenterToOrigin()
 
 void QSegMesh::setColorVertices( double r, double g, double b, double a )
 {
+	bool assignRandomColors = true;
+	std::vector<Vec4d> randomColors;
+
+	if(assignRandomColors)
+		randomColors = SimpleDraw::RandomColors(segment.size());
+	else
+		randomColors = std::vector<Vec4d>(nbSegments(), Vec4d(1,1,1,1));
+
 	for (int i=0;i<segment.size();i++)
 	{
-		segment[i]->setColorVertices(r,g,b,a);
+		segment[i]->setColorVertices(randomColors[i]);
 	}
 }
 

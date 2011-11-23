@@ -74,6 +74,11 @@ void QSurfaceMesh::computeBoundingBox()
 	radius = (bbmax - bbmin).norm() * 0.5f;
 }
 
+void QSurfaceMesh::setColorVertices( Vec4d color )
+{
+	setColorVertices(color[0], color[1], color[2], color[3]);
+}
+
 void QSurfaceMesh::setColorVertices( double r, double g, double b, double a )
 {
 	Vertex_property<Color>  vcolors  = vertex_property<Color>("v:color");

@@ -49,6 +49,7 @@ public:
 	void simpleDraw();
 
 	void setColorVertices(double r = 1.0, double g = 1.0, double b = 1.0, double a = 1.0);
+	void setColorVertices( Vec4d color );
 	void setVertexColor( uint v_id, const Color& newColor );
 
 	void collectEnoughRings(Vertex v, const size_t min_nb, std::vector <Vertex>& all);

@@ -14,27 +14,6 @@ void Cuboid::fit()
 	preBox = currBox = obb.mMinBox;
 }
 
-void Cuboid::draw()
-{
-	std::vector<Vector3> pnts = getBoxConners(currBox);
-
-	SimpleDraw::IdentifyPoint(currBox.Center);
-	SimpleDraw::IdentifyLine(pnts[0], pnts[1]);
-	SimpleDraw::IdentifyLine(pnts[1], pnts[2]);
-	SimpleDraw::IdentifyLine(pnts[2], pnts[3]);
-	SimpleDraw::IdentifyLine(pnts[3], pnts[0]);
-
-	SimpleDraw::IdentifyLine(pnts[0], pnts[4]);
-	SimpleDraw::IdentifyLine(pnts[1], pnts[5]);
-	SimpleDraw::IdentifyLine(pnts[2], pnts[6]);
-	SimpleDraw::IdentifyLine(pnts[3], pnts[7]);
-
-	SimpleDraw::IdentifyLine(pnts[4], pnts[5]);
-	SimpleDraw::IdentifyLine(pnts[5], pnts[6]);
-	SimpleDraw::IdentifyLine(pnts[6], pnts[7]);
-	SimpleDraw::IdentifyLine(pnts[7], pnts[4]);
-}
-
 void Cuboid::deformMesh()
 {
 	Surface_mesh::Vertex_property<Point> points = m_mesh->vertex_property<Point>("v:point");
@@ -100,6 +79,26 @@ std::vector<Vector3> Cuboid::getBoxConners( MinOBB3::Box3 box )
 	return pnts;
 }
 
+void Cuboid::draw()
+{
+	std::vector<Vector3> pnts = getBoxConners(currBox);
+
+	SimpleDraw::IdentifyPoint(currBox.Center);
+
+	bool isOpaque = false;
+
+	SimpleDraw::DrawSquare(pnts[1], pnts[0], pnts[3], pnts[2], isOpaque);
+	SimpleDraw::DrawSquare(pnts[4], pnts[5], pnts[6], pnts[7], isOpaque);
+
+	SimpleDraw::DrawSquare(pnts[0], pnts[1], pnts[5], pnts[4], isOpaque);
+	SimpleDraw::DrawSquare(pnts[2], pnts[3], pnts[7], pnts[6], isOpaque);
+
+	SimpleDraw::DrawSquare(pnts[1], pnts[2], pnts[6], pnts[5], isOpaque);
+	SimpleDraw::DrawSquare(pnts[0], pnts[4], pnts[7], pnts[3], isOpaque);
+
+	if(isSelected)
+		SimpleDraw::IdentifyPoints(pnts);
+}
 
 Eigen::Vector3d Cuboid::V2E( Vector3 &vec )
 {
@@ -179,5 +178,4 @@ void Cuboid::undo()
 	deformMesh();
 	preBox = box;
 }
-
 
