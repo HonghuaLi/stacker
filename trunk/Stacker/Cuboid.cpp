@@ -81,23 +81,34 @@ std::vector<Vector3> Cuboid::getBoxConners( MinOBB3::Box3 box )
 
 void Cuboid::draw()
 {
-	std::vector<Vector3> pnts = getBoxConners(currBox);
-
+	// Draw center point
 	SimpleDraw::IdentifyPoint(currBox.Center);
 
-	bool isOpaque = false;
-
-	SimpleDraw::DrawSquare(pnts[1], pnts[0], pnts[3], pnts[2], isOpaque);
-	SimpleDraw::DrawSquare(pnts[4], pnts[5], pnts[6], pnts[7], isOpaque);
-
-	SimpleDraw::DrawSquare(pnts[0], pnts[1], pnts[5], pnts[4], isOpaque);
-	SimpleDraw::DrawSquare(pnts[2], pnts[3], pnts[7], pnts[6], isOpaque);
-
-	SimpleDraw::DrawSquare(pnts[1], pnts[2], pnts[6], pnts[5], isOpaque);
-	SimpleDraw::DrawSquare(pnts[0], pnts[4], pnts[7], pnts[3], isOpaque);
-
 	if(isSelected)
-		SimpleDraw::IdentifyPoints(pnts);
+		drawCube(5, Vec4d(1,1,0,1));
+	else
+		drawCube(2, Vec4d(0,0,1,1));
+}
+
+void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
+{
+	std::vector<Vector3> pnts = getBoxConners(currBox);
+
+	SimpleDraw::DrawSquare(pnts[1], pnts[0], pnts[3], pnts[2], isOpaque, lineWidth, color);
+	SimpleDraw::DrawSquare(pnts[4], pnts[5], pnts[6], pnts[7], isOpaque, lineWidth, color);
+
+	SimpleDraw::DrawSquare(pnts[0], pnts[1], pnts[5], pnts[4], isOpaque, lineWidth, color);
+	SimpleDraw::DrawSquare(pnts[2], pnts[3], pnts[7], pnts[6], isOpaque, lineWidth, color);
+
+	SimpleDraw::DrawSquare(pnts[1], pnts[2], pnts[6], pnts[5], isOpaque, lineWidth, color);
+	SimpleDraw::DrawSquare(pnts[0], pnts[4], pnts[7], pnts[3], isOpaque, lineWidth, color);
+}
+
+void Cuboid::drawNames()
+{
+	glPushName(this->id);
+	drawCube(1,Vec4d(1,1,1,1), true);
+	glPopName();
 }
 
 Eigen::Vector3d Cuboid::V2E( Vector3 &vec )
@@ -178,4 +189,3 @@ void Cuboid::undo()
 	deformMesh();
 	preBox = box;
 }
-

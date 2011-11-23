@@ -38,6 +38,9 @@ public slots:
 
 	void setConvexHullPrecision(int p);
 
+	// Primitives modification
+	void convertGC();
+
 signals:
 	void printMessage( QString );
 	void objectModified();

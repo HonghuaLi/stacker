@@ -148,7 +148,6 @@ void Scene::draw()
 	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
 		i->render();
 
-
 	// Draw the controllers if exist
 	if (!isEmpty() && activeObject()->controller)
 		activeObject()->controller->draw();
@@ -164,15 +163,18 @@ void Scene::draw()
 	if (!isEmpty())
 		activeObject()->getSegment(0)->drawDebug();
 
-
+	// DEBUG
 	if(gc) gc->draw();
 	if(skel) skel->draw();
 }
 
-
 void Scene::drawWithNames()
 {
 	if(activeDeformer) activeDeformer->drawNames();
+
+	// Draw the controllers if exist
+	if (!isEmpty() && activeObject()->controller)
+		activeObject()->controller->drawNames();
 }
 
 void Scene::mousePressEvent( QMouseEvent* e )
@@ -237,6 +239,14 @@ void Scene::postSelection( const QPoint& point )
 			setManipulatedFrame( activeDeformer->getQControlPoint(selected) );
 		else
 			setManipulatedFrame( activeFrame );
+	}
+
+	switch (selectMode)
+	{
+		case CONTROLLER:
+		if (!isEmpty() && activeObject()->controller)
+			activeObject()->controller->select(selected);
+		break;
 	}
 }
 

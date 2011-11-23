@@ -721,7 +721,18 @@ std::vector<uint> Skeleton::getSelectedFaces(bool growSelection)
 void Skeleton::selectLongestPath()
 {
 	std::list<int> path = getGraph().GetLargestConnectedPath();
-	selectNode(path.front());	
-	selectNode(path.back());
-	selectEdges(path.front(), path.back());
+
+	if(path.size())
+	{
+		selectNode(path.front());	
+		selectNode(path.back());
+		selectEdges(path.front(), path.back());
+	}
+	else
+	{
+		// Something went wrong, select stuff anyway..
+		selectNode(nodes.front().index);
+		selectNode(nodes.back().index);
+		selectEdges(nodes.front().index,nodes.back().index);
+	}
 }

@@ -26,6 +26,7 @@ public slots:
 
 private:
 	GeneralizedCylinder * gc;
+	Skeleton * skel;
 
 	QSurfaceMesh * cage;
 	void buildCage();

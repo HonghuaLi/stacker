@@ -512,13 +512,20 @@ public:
 
 	std::list<vertex_t> GetLargestConnectedPath()
 	{
+		std::list<vertex_t> longestPath;
+
 		std::set<vertex_t> seedSet = GetLargestConnectedComponent(); 
 		std::vector<vertex_t> leaves = GetLeaves();
+
+		if(!leaves.size())
+		{
+			leaves.push_back(*this->vertices.begin());
+		}
+
 		vertex_t seed = leaves.front();
 
 		DijkstraComputePaths(seed);
-		std::list<vertex_t> longestPath;
-		
+
 		for(std::set<vertex_t>::iterator it = seedSet.begin(); it != seedSet.end(); it++)
 		{
 			std::list<vertex_t> curPath = DijkstraGetShortestPathTo(*it);
