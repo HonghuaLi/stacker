@@ -1,5 +1,6 @@
 #include "StackerPanel.h"
 #include "Contoller.h"
+#include "ConvexHull3.h"
 #include <QVBoxLayout>
 #include "Vector.h"
 #include <fstream>
@@ -26,6 +27,10 @@ StackerPanel::StackerPanel()
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
 
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
+
+	// Convex Hull
+	connect(panel.chPrecision, SIGNAL(valueChanged (int)), this, SLOT(setConvexHullPrecision(int)));
+	CH_PRECISION = panel.chPrecision->value();
 }
 
 void StackerPanel::onOffsetButtonClicked()
@@ -232,4 +237,7 @@ void StackerPanel::showMessage( QString message )
 	emit(printMessage(message));
 }
 
-
+void StackerPanel::setConvexHullPrecision( int p )
+{
+	CH_PRECISION = p;
+}

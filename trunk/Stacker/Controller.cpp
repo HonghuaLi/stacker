@@ -38,7 +38,7 @@ void Controller::fitOBBs()
 
 void Controller::draw()
 {
-	for (int i=0;i<m_mesh->nbSegments();i++)
+	for (uint i = 0; i < primitives.size(); i++)
 	{
 		primitives[i]->draw();
 	}

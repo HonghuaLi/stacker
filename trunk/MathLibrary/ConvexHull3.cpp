@@ -3,6 +3,8 @@
 #include "ConvexHull3.h"
 #include "Macros.h"
 
+int CH_PRECISION;
+
 ConvexHull3::ConvexHull3( std::vector<Vector3> &pnts )
 {
 	mPnts = pnts;
@@ -38,7 +40,7 @@ void ConvexHull3::computeCH()
 	int i2 = mExtreme[2];
 	int i3 = mExtreme[3];
 
-	epsilon = (mPnts[i0]-mPnts[i1]).norm() / (Real)1000000;
+	epsilon = (mPnts[i0]-mPnts[i1]).norm() / (Real)pow(10.0, CH_PRECISION);
 
 
 	TriFace* tri0;

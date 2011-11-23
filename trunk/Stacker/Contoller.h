@@ -9,7 +9,6 @@ public:
 	Controller(QSegMesh* mesh);
 	~Controller();
 
-
 public:
 	void fitPrimitives();
 	void fitOBBs();

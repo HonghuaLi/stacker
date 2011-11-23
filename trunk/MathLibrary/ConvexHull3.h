@@ -14,6 +14,8 @@
 typedef double								Real;
 typedef Vector<Real, 3>						Vector3;
 
+extern int CH_PRECISION;
+
 class  ConvexHull3
 {
 public:

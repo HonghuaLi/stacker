@@ -36,6 +36,8 @@ public slots:
 	void setActiveScene( Scene * );
 	void updateActiveObject();
 
+	void setConvexHullPrecision(int p);
+
 signals:
 	void printMessage( QString );
 	void objectModified();

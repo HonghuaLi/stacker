@@ -17,9 +17,9 @@ using namespace qglviewer;
 class Offset;
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
-enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX};
 enum ModifyMode { DEFAULT, CP_REF_VECTOR, MOVE_VERTEX };
-
+enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, 
+	SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX, CONTROLLER};
 
 class Scene : public QGLViewer{
 
