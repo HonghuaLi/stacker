@@ -70,7 +70,7 @@ void Scene::updateVBOs()
 			QSurfaceMesh* seg = mesh->getSegment(i);
 			QString objId = seg->objectName();
 
-			if (!vboCollection.contains(objId))
+			if (VBO::isVBOSupported() && !vboCollection.contains(objId))
 			{
 				Surface_mesh::Vertex_property<Point>  points   = seg->vertex_property<Point>("v:point");
 				Surface_mesh::Vertex_property<Point>  vnormals = seg->vertex_property<Point>("v:normal");
@@ -147,6 +147,10 @@ void Scene::draw()
 	QMap<QString, VBO>::iterator i;
 	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
 		i->render();
+
+	// Fall back
+	if(vboCollection.isEmpty() && activeObject())
+		activeObject()->simpleDraw();
 
 	// Draw the controllers if exist
 	if (!isEmpty() && activeObject()->controller)

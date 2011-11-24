@@ -85,6 +85,10 @@ void StackerPreview::draw()
 		for (QMap<QString, VBO>::iterator itr = vboCollection.begin(); itr != vboCollection.end(); ++itr)
 			itr->render();
 
+		// Fall back
+		if(vboCollection.isEmpty() && activeObject())
+			activeObject()->simpleDraw();
+
 		glTranslated(delta[0],delta[1],delta[2]);
 	}
 
@@ -110,7 +114,7 @@ void StackerPreview::updateVBOs()
 			QSurfaceMesh* seg = mesh->getSegment(i);
 			QString objId = seg->objectName();
 
-			if (vboCollection.find(objId) == vboCollection.end())
+			if (VBO::isVBOSupported() && vboCollection.find(objId) == vboCollection.end())
 			{
 				Surface_mesh::Vertex_property<Point>  points   = seg->vertex_property<Point>("v:point");
 				Surface_mesh::Vertex_property<Point>  vnormals = seg->vertex_property<Point>("v:normal");

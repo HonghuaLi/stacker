@@ -47,6 +47,11 @@ VBO::~VBO()
 	}
 }
 
+bool VBO::isVBOSupported()
+{
+	return GLEE_ARB_vertex_buffer_object;
+}
+
 void VBO::update()
 {
 	if(this->isVBOEnabled)
