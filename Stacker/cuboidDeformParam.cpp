@@ -1,0 +1,81 @@
+#include "cuboidDeformParam.h"
+
+#include <cstdlib>
+
+
+cuboidDeformParam::cuboidDeformParam()
+{
+	double p[9] = {0, 0, 0, 0, 0, 0, 1, 1, 1};
+	params.clear();
+	params.insert(params.begin(), p, p+9);
+
+	double ranges[6] = {-0.5, 0.5, -30, 30, 0.5, 2};
+	setRanges(std::vector< double > (ranges, ranges+6));
+}
+
+// the range is normalized
+bool cuboidDeformParam::stepForward( int i, double step )
+{
+	if (i<0 || i>8)
+		return false;
+
+	bool isOkay = false;	// Check if tmp is in the range	
+	double tmp = params[i] + step * (sups[i]-infs[i]);
+	if (tmp>=infs[i] && tmp<=sups[i])
+	{
+		params[i] = tmp;
+		isOkay = true;
+	}
+
+	return isOkay;
+}
+
+void cuboidDeformParam::setRanges( std::vector< double > &ranges )
+{
+	infs.clear();
+	sups.clear();
+	for (int i=0;i<3;i++)
+	{
+		std::vector< double > inf(3, ranges[2*i]);
+		infs.insert(infs.end(), inf.begin(), inf.end());
+
+		std::vector< double > sup(3, ranges[2*i+1]);
+		sups.insert(sups.end(), sups.begin(), sups.end());
+	}
+}
+
+void cuboidDeformParam::randomSample()
+{
+	for (int i=0;i<9;i++)
+	{
+		double t = ((double)rand()/(double)RAND_MAX);
+		params[i] = infs[i] + t*(sups[i] - infs[i]);
+	}
+}
+
+Vec3d cuboidDeformParam::getT()
+{
+	return Vec3d(params[0], params[1], params[2]);
+}
+
+Vec3d cuboidDeformParam::getR()
+{
+	return Vec3d(params[3], params[4], params[5]);
+}
+
+Vec3d cuboidDeformParam::getS()
+{
+	return Vec3d(params[6], params[7], params[8]);
+}
+
+bool cuboidDeformParam::setParam( int i, double val )
+{
+	if (val>=infs[i] && val <=sups[i])
+	{
+		params[i] = val;
+		return true;
+	}
+	else
+		return false;
+	 
+}

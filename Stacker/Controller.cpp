@@ -110,30 +110,16 @@ void Controller::test1()
 
 }
 
-void Controller::deformShape(Vector3 scale, Vector3 transl, Vector3 angles)
+void Controller::deformShape( std::vector<cuboidDeformParam>& params )
 {
 	
 	// top
 	Cuboid* cp0 = ( Cuboid* )primitives[0];
-	cp0->transform( Vector3(0, 0, 0),scale, Vector3(0, 0, 0));
+	cp0->deform( params[0] );
 
-	// legs
-	double tx = transl[0], ty = transl[1], tz = transl[2];
-	double a = angles[0],  b = angles[1], c = angles[2];
+	// leg(s)
 	Cuboid* cp1 = ( Cuboid* )primitives[1];
-	cp1->transform( Vector3(tx, ty, tz), Vector3(1, 1, 1), Vector3(a, b, c));
-	Cuboid* cp2 = ( Cuboid* )primitives[2];
-	cp2->transform( Vector3(tx, -ty, tz), Vector3(1, 1, 1), Vector3(a, b, c));
-	Cuboid* cp3 = ( Cuboid* )primitives[3];
-	cp3->transform( Vector3(-tx, -ty, tz), Vector3(1, 1, 1), Vector3(a, -b, c));
-	Cuboid* cp4 = ( Cuboid* )primitives[4];
-	cp4->transform( Vector3(-tx, +ty, tz), Vector3(1, 1, 1), Vector3(a, b, c));
-
-	cp0->deformMesh();
-	cp1->deformMesh();
-	cp2->deformMesh();
-	cp3->deformMesh();
-	cp4->deformMesh();
+	cp1->deform( params[1] );
 
 	m_mesh->computeBoundingBox();
 
@@ -162,5 +148,11 @@ void Controller::recoverShape()
 
 int Controller::numHotPrimitives()
 {
-	return 6;
+	int num = 0;
+	for (int i=0;i<numPrimitives();i++)
+	{
+		if (primitives[i]->isHot)
+			num++;
+	}
+	return num;
 }

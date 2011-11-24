@@ -335,6 +335,9 @@
     <ClCompile Include="MathLibrary\GCDeformation.cpp">
       <Filter>MathLibrary\Source</Filter>
     </ClCompile>
+    <ClCompile Include="cuboidDeformParam.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -483,6 +486,9 @@
     </ClInclude>
     <ClInclude Include="MathLibrary\GCDeformation.h">
       <Filter>MathLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="cuboidDeformParam.h">
+      <Filter>Stacker\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

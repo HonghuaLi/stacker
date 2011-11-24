@@ -22,7 +22,6 @@ public:
 	bool isSelected;
 	QSurfaceMesh* getMesh(){ return m_mesh; }
 
-protected:
 	QSurfaceMesh*		m_mesh;			// The underlying geometry
 	bool				isHot;			// Is this hot component?
 	bool				isDirty;		// Has the underlying geometry been updated?
