@@ -24,6 +24,7 @@ public:
 	Vec3d getT();
 	Vec3d getR();
 	Vec3d getS();
+	void print();
 
 private:
 	// T(0:2) R(3:5) S(6:8)

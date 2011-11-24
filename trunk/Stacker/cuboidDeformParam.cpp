@@ -1,6 +1,7 @@
 #include "cuboidDeformParam.h"
 
 #include <cstdlib>
+#include <iostream>
 
 
 cuboidDeformParam::cuboidDeformParam()
@@ -9,7 +10,7 @@ cuboidDeformParam::cuboidDeformParam()
 	params.clear();
 	params.insert(params.begin(), p, p+9);
 
-	double ranges[6] = {-0.5, 0.5, -30, 30, 0.5, 2};
+	double ranges[6] = {-0.5, 0.5, -90, 90, 0.5, 2};
 	setRanges(std::vector< double > (ranges, ranges+6));
 }
 
@@ -36,11 +37,11 @@ void cuboidDeformParam::setRanges( std::vector< double > &ranges )
 	sups.clear();
 	for (int i=0;i<3;i++)
 	{
-		std::vector< double > inf(3, ranges[2*i]);
-		infs.insert(infs.end(), inf.begin(), inf.end());
+		std::vector< double > tmp1(3, ranges[2*i]);
+		infs.insert(infs.end(), tmp1.begin(), tmp1.end());
 
-		std::vector< double > sup(3, ranges[2*i+1]);
-		sups.insert(sups.end(), sups.begin(), sups.end());
+		std::vector< double > tmp2(3, ranges[2*i+1]);
+		sups.insert(sups.end(), tmp2.begin(), tmp2.end());
 	}
 }
 
@@ -49,7 +50,7 @@ void cuboidDeformParam::randomSample()
 	for (int i=0;i<9;i++)
 	{
 		double t = ((double)rand()/(double)RAND_MAX);
-		params[i] = infs[i] + t*(sups[i] - infs[i]);
+		params[i] += t/10 *(sups[i] - infs[i]);
 	}
 }
 
@@ -78,4 +79,11 @@ bool cuboidDeformParam::setParam( int i, double val )
 	else
 		return false;
 	 
+}
+
+void cuboidDeformParam::print()
+{
+	printf("T: %.3f, %.3f, %.3f,\nR: %.3f %.3f %.3f \nS: %.3f %.3f %.3f", params[0], params[1], 
+		params[2], params[3], params[4], params[5], params[6], params[7], params[8]);
+	std::cout << std::endl<< std::endl;
 }

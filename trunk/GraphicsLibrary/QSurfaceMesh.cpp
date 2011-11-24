@@ -61,8 +61,8 @@ void QSurfaceMesh::computeBoundingBox()
 	Surface_mesh::Vertex_iterator vit, vend = vertices_end();
 
 	// compute bounding box
-	bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
-	bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	bbmin = Point( DBL_MAX, DBL_MAX, DBL_MAX);
+	bbmax = Point( DBL_MIN, DBL_MIN, DBL_MIN);
 
 	for (vit = vertices_begin(); vit != vend; ++vit)
 	{

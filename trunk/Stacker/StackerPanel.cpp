@@ -76,10 +76,8 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-
+	gradientDescentOptimize();
 }
-
-
 
 void StackerPanel::onHotspotsButtonClicked()
 {
@@ -88,7 +86,6 @@ void StackerPanel::onHotspotsButtonClicked()
 	emit(objectModified());
 	showMessage("Hot spots are detected.");
 }
-
 
 void StackerPanel::setActiveScene( Scene * scene )
 {
@@ -139,57 +136,102 @@ void StackerPanel::convertGC()
 void StackerPanel::gradientDescentOptimize()
 {
 	Controller* ctrl = activeObject()->controller;
-	int nSeg = ctrl->numHotPrimitives();
+	int nSeg = ctrl->numPrimitives();
 
 	// Initialization
-	std::vector< cuboidDeformParam > params(nSeg);
+	std::vector< cuboidDeformParam > optimalParams(nSeg);
+	//optimalParams[0].randomSample();
+	//optimalParams[1].randomSample();
+	originalStats = ctrl->getStat();
 
-	// 
+	// Optimize
 	double currE = sumEnergy();
-	double step = 0.02;
+	double step = 0.3;
+	printf("Init energy = %f\n", currE);
+
+	printf("\nStarting search");
+
 	while(1)
 	{
 		double minE = DBL_MAX;
-		std::vector< cuboidDeformParam > bestParams = params;
-		// check all the neighbours
+		
+		std::vector< cuboidDeformParam > bestNeighborParams;
+
+
+		// check all the neighbors
 		for (int i=0;i<nSeg;i++)
 		{
 			for (int j=0;j<9;j++)
 			{
-				params[i].stepForward(j, step);
-				ctrl->deformShape(params);
-				double E = sumEnergy();
+				double E = 0;
+
+				// Forward
+				optimalParams[i].stepForward(j, step);
+				ctrl->deformShape(optimalParams);
+				E = sumEnergy();
+
+
 				if (E < minE)
 				{
 					minE = E;
-					bestParams = params;
+					bestNeighborParams = optimalParams;
 				}
+				optimalParams[i].stepForward(j, -step);
+				ctrl->recoverShape();
 
-				params[i].stepForward(j, -step);
 
-
-				params[i].stepForward(j, -step);
-				ctrl->deformShape(params);
-				double E = sumEnergy();
+				// Backward search
+				optimalParams[i].stepForward(j, -step);
+				ctrl->deformShape(optimalParams);
+				emit(objectModified());
+				E = sumEnergy();
 				if (E < minE)
 				{
 					minE = E;
-					bestParams = params;
+					bestNeighborParams = optimalParams;
 				}
-
-				params[i].stepForward(j, step);
-
+				optimalParams[i].stepForward(j, step);
+				ctrl->recoverShape();
 			}
 		}
 
+		printf(".");
+
 		if(currE <= minE)
 			break;
+		else
+		{
+			currE = minE;
+			optimalParams = bestNeighborParams;
+			ctrl->deformShape(optimalParams);
+			emit(objectModified());
+		
+
+			// Print optimal solution
+			printf("==============================\nThe current parameters:\n\n");
+			bestNeighborParams[0].print();
+			printf("\n");
+			bestNeighborParams[1].print();
+			printf("\n Stackability: %f.2\n Energy: %f.2\n", activeOffset->getStackability(), currE);
+		}
+
 	}
+
+	// Apply the optimal solution
+	ctrl->deformShape(optimalParams);
+	emit(objectModified());
+	printf("\nOptimization is done ;)\n");
+
 }
 
 double StackerPanel::sumEnergy()
 {
 	// Compute the energy based on the original and current controllers
-	return 0;
+
+	Controller* ctrl = activeObject()->controller;
+	
+	std::vector<double> penalties = ctrl->difference( originalStats );
+
+	return penalties[0] + penalties[1] - activeOffset->getStackability();
 }
 

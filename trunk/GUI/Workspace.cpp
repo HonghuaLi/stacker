@@ -1,5 +1,6 @@
 #include "Workspace.h"
 #include <QVBoxLayout>
+#include <QFileInfo>
 
 Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, flags)
 {
@@ -19,11 +20,11 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 
 	// Create MeshDoc, where stores all the meshes
 	mDoc = new QMeshDoc();
-	connect(this ,SIGNAL(importObject(QString)), mDoc, SLOT(importObject(QString)));
+	connect(ui.actionImportObject, SIGNAL(triggered()), mDoc, SLOT(importObject()));
+	connect(ui.actionExportObject, SIGNAL(triggered()), mDoc, SLOT(exportObject()));
 
 	// New scene action
 	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
-	connect(ui.actionImportObject, SIGNAL(triggered()), SLOT(importObject()));
 
 	// Create new scene when we start by default
 	sceneCount = 0;
@@ -71,19 +72,6 @@ void Workspace::addNewScene()
 
 	// Update stacker panel
 	sp->setActiveScene(newScene);
-}
-
-void Workspace::importObject()
-{
-	QMdiSubWindow * mdi_window = ui.sceneArea->activeSubWindow();
-	if(!mdi_window) return;
-
-	Scene * selectedScene = static_cast<Scene*>(mdi_window->widget());
-
-	QString fileName = QFileDialog::getOpenFileName(this, "Insert Mesh", "", "Mesh Files (*.obj *.off *.stl)");
-
-	if (!fileName.isEmpty())
-		emit(importObject(fileName));
 }
 
 void Workspace::setActiveScene(Scene* scene)

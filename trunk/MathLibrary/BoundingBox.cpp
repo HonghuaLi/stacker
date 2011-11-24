@@ -61,9 +61,9 @@ void BoundingBox::computeFromTris( const StdVector<BaseTriangle*>& tris )
 
 	this->center = (vmin + vmax) / 2.0;
 
-	this->xExtent = vmax.x() - center.x();
-	this->yExtent = vmax.y() - center.y();
-	this->zExtent = vmax.z() - center.z();
+	this->xExtent = abs(vmax.x() - center.x());
+	this->yExtent = abs(vmax.y() - center.y());
+	this->zExtent = abs(vmax.z() - center.z());
 }
 
 StdVector<Vec3d> BoundingBox::getCorners()

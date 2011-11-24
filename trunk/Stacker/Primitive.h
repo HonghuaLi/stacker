@@ -18,6 +18,9 @@ public:
 	virtual void draw(){}
 	virtual void drawNames(){}
 
+	virtual std::vector <Vec3d> points() = 0;
+	virtual double volume() = 0;
+
 	int id;
 	bool isSelected;
 	QSurfaceMesh* getMesh(){ return m_mesh; }
@@ -26,4 +29,3 @@ public:
 	bool				isHot;			// Is this hot component?
 	bool				isDirty;		// Has the underlying geometry been updated?
 };
-

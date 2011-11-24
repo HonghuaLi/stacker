@@ -4,7 +4,6 @@
 #include "ui_Workspace.h"
 
 #include <QMdiSubWindow>
-#include <QFileDialog>
 
 #include "QMeshDoc.h"
 #include "Scene.h"
@@ -23,11 +22,7 @@ public:
 
 public slots:
 	void addNewScene();
-	void importObject();
 	void setActiveScene(Scene* scene);
-
-signals:
-	void importObject(QString fileName);
 
 private:
 	Ui::WorkspaceClass ui;

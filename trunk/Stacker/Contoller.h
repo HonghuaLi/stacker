@@ -33,6 +33,16 @@ public:
 	// Testing
 	void test1();
 
+	// Computations
+	struct Stat{
+		double volumeBB;
+		std::vector< double > volumePrim;
+		std::map< std::pair<int, int>, double > proximity;
+		std::map< std::pair<int, int>, bool > coplanarity;
+	};
+
+	Stat getStat();
+	std::vector< double > difference( Controller::Stat s2 );
 
 private:
 	std::vector<Primitive*> primitives;
