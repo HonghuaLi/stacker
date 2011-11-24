@@ -21,9 +21,8 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	// Create MeshDoc, where stores all the meshes
 	mDoc = new QMeshDoc();
 	connect(ui.actionImportObject, SIGNAL(triggered()), mDoc, SLOT(importObject()));
-	connect(ui.actionExportObject, SIGNAL(triggered()), mDoc, SLOT(exportObject()));
 
-	// New scene action
+	// Add new scene action
 	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
 
 	// Create new scene when we start by default
@@ -50,8 +49,6 @@ void Workspace::addNewScene()
 	connect(newScene, SIGNAL(gotFocus(Scene*)), SLOT(setActiveScene(Scene*)));
 
 	// MeshDoc
-	connect(mDoc, SIGNAL(objectImported(QSegMesh*)), newScene, SLOT(setActiveObject(QSegMesh*)));
-	connect(mDoc, SIGNAL(printMessage(QString)), newScene, SLOT(print(QString)));
 	connect(newScene, SIGNAL(objectDiscarded(QString)), mDoc, SLOT(deleteObject(QString)));
 	
 	// Stack panel
@@ -72,13 +69,30 @@ void Workspace::addNewScene()
 
 	// Update stacker panel
 	sp->setActiveScene(newScene);
+
+	this->setActiveScene(newScene);
 }
 
 void Workspace::setActiveScene(Scene* scene)
 {
+	activeScene = scene;
+
 	QString title = QString("%1 - %2")
 		.arg(QFileInfo(QApplication::applicationFilePath()).baseName())
 		.arg(scene->windowTitle());
 
 	this->setWindowTitle(title);
+
+	// Disconnect Mesh Doc with from all scenes
+	foreach (QMdiSubWindow *window, ui.sceneArea->subWindowList()) {
+		Scene *s = qobject_cast<Scene *>(window->widget());
+		s->disconnect(mDoc);
+		s->disconnect(ui.actionExportObject);
+	}
+
+	activeScene->connect(mDoc, SIGNAL(objectImported(QSegMesh*)), SLOT(setActiveObject(QSegMesh*)), Qt::UniqueConnection);
+	activeScene->connect(ui.actionExportObject, SIGNAL(triggered()), SLOT(exportActiveObject()), Qt::UniqueConnection);
+	activeScene->connect(mDoc, SIGNAL(printMessage(QString)), SLOT(print(QString)), Qt::UniqueConnection);
+
+	mDoc->connect(activeScene, SIGNAL(exportActiveObject(QSegMesh*)), SLOT(exportObject(QSegMesh*)), Qt::UniqueConnection);
 }

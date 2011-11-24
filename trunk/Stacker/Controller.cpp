@@ -120,12 +120,12 @@ void Controller::deformShape( std::vector<cuboidDeformParam>& params )
 	// top
 	Cuboid* cp1 = ( Cuboid* )primitives[1];
 	cp1->deform( params[1] );
-	Cuboid* cp2 = ( Cuboid* )primitives[2];
+/*	Cuboid* cp2 = ( Cuboid* )primitives[2];
 	cp2->deform( params[2] );
 	Cuboid* cp3 = ( Cuboid* )primitives[3];
 	cp3->deform( params[3] );
 	Cuboid* cp4 = ( Cuboid* )primitives[4];
-	cp4->deform( params[4] );
+	cp4->deform( params[4] );*/
 
 	m_mesh->computeBoundingBox();
 

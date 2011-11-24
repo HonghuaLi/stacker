@@ -30,6 +30,8 @@ private:
 	WiresPanel * wp;
 	DeformerPanel * dp;
 
+	Scene * activeScene;
+
 	QMeshDoc * mDoc;
 	int sceneCount;
 };

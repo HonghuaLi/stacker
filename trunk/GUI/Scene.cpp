@@ -324,8 +324,12 @@ QSegMesh * Scene::activeObject()
 	return activeMesh;
 }
 
-
 bool Scene::isEmpty()
 {
 	return activeMesh == NULL;
+}
+
+void Scene::exportActiveObject()
+{
+	emit( exportActiveObject(activeObject()) );
 }

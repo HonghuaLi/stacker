@@ -94,10 +94,12 @@ public slots:
 	void setActiveWires( QVector<Wire> );
 	void setActiveDeformer( QFFD * );
 	void updateActiveObject();
+	void exportActiveObject();
 
 signals:
 	void gotFocus( Scene* );
 	void objectInserted();
+	void exportActiveObject( QSegMesh* newMesh );
 	void sceneClosed( Scene* );
 	void objectDiscarded( QString );
 };

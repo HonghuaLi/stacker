@@ -36,6 +36,9 @@ public:
 	// Load the mesh from file
 	void read(QString fileName);
 
+	// Save the mesh
+	void saveObj(QString fileName);
+
 	// Build up the mesh
 	void build_up();
 	void moveCenterToOrigin();
@@ -49,6 +52,7 @@ public:
 	bool isReady;
 	Point bbmin, bbmax, center;
 	Scalar radius;
+	Scalar scaleFactor;
 
 	// Set global unique name for this and all its segments
 	void setObjectName(const QString &name);

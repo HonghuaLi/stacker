@@ -37,6 +37,7 @@ public:
 
 	double volume();
 	double normalize();
+	double scalingFactor;
 
 	std::vector<Point> clonePoints();
 	void setFromPoints(const std::vector<Point>& fromPoints);
@@ -80,6 +81,7 @@ public:
 	std::vector<uint> faceVerts( const Face& f );
 	Vec3d getBaryFace( Face f, double U, double V );
 	void fillTrianglesList();
+	std::vector<unsigned int> cloneTriangleIndices();
 	std::vector<unsigned int> triangles, edges;
 
 private:

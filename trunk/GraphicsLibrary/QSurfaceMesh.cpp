@@ -235,6 +235,8 @@ void QSurfaceMesh::fillTrianglesList()
 	Vertex_around_face_circulator fvit, fvend;
 	Vertex v0, v1, v2;
 
+	triangles.clear();
+
 	for (fit = faces_begin(); fit != fend; ++fit)
 	{
 		fvit = fvend = vertices(fit);
@@ -244,6 +246,13 @@ void QSurfaceMesh::fillTrianglesList()
 		triangles.push_back(v1.idx());
 		triangles.push_back(v2.idx());
 	}
+}
+
+std::vector<unsigned int> QSurfaceMesh::cloneTriangleIndices()
+{
+	if(!triangles.size()) fillTrianglesList();
+
+	return triangles;
 }
 
 std::vector<uint> QSurfaceMesh::vertexIndicesAroundFace( uint f_id )
@@ -513,7 +522,7 @@ double QSurfaceMesh::normalize()
 	for(vit = vertices_begin(); vit != vend; ++vit)
 		points[vit] /= s;
 
-	return s;
+	return scalingFactor = s;
 }
 
 std::vector<Point> QSurfaceMesh::clonePoints()

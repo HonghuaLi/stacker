@@ -24,8 +24,7 @@ signals:
 
 public slots:
 	void importObject( );
-	void exportObject( );
-
+	void exportObject( QSegMesh * mesh );
 	void deleteObject( QString objectId );
 };
 
