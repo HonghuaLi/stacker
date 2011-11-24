@@ -81,6 +81,9 @@ void StackerPanel::onImproveButtonClicked()
 
 void StackerPanel::onHotspotsButtonClicked()
 {
+	if(!activeScene || !activeObject())
+		return;
+
 	activeOffset->detectHotspots();
 	activeOffset->showHotVertices();
 	emit(objectModified());
@@ -123,6 +126,8 @@ void StackerPanel::setConvexHullPrecision( int p )
 
 void StackerPanel::convertGC()
 {
+	if(!activeObject() || !activeObject()->controller) return;
+
 	Controller* ctrl = activeObject()->controller;
 
 	for(int i = 0; i < ctrl->numPrimitives(); i++){

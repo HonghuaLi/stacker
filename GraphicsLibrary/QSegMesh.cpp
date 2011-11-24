@@ -198,6 +198,39 @@ void QSegMesh::read( QString fileName )
 	build_up();
 }
 
+void QSegMesh::saveObj( QString fileName )
+{
+	FILE * outF = fopen (qPrintable(fileName) , "w");
+
+	uint faceOffset = 1;
+
+	double s = this->scaleFactor;
+
+	for (uint i = 0; i < nbSegments(); i++)
+	{
+		std::vector<Point> segPoints = segment[i]->clonePoints();
+		std::vector<uint> segFaces = segment[i]->cloneTriangleIndices();
+
+		foreach(Point p, segPoints)
+			fprintf(outF, "v %f %f %f\n", p.x() * s, p.y() * s, p.z() * s);
+		fprintf(outF,"# %u vertices\n\n\n", segPoints.size()); // info
+
+		fprintf(outF,"g %s\n", qPrintable(segment[i]->objectName()));
+
+		for(int vi = 0; vi < segFaces.size(); vi += 3)
+		{
+			uint v0 = segFaces[vi + 0], v1 = segFaces[vi + 1], v2 = segFaces[vi + 2];
+
+			fprintf(outF, "f %u %u %u\n", faceOffset + v0, faceOffset + v1, faceOffset + v2);
+		}
+		fprintf(outF,"# %u faces\n\n\n", segment[i]->n_faces()); // info
+
+		faceOffset += segment[i]->n_vertices();
+	}
+
+	fclose(outF);
+}
+
 void QSegMesh::build_up()
 {
 	computeBoundingBox();
@@ -208,7 +241,7 @@ void QSegMesh::build_up()
 	update_face_normals();
 	update_vertex_normals();
 
-	for (int i=0;i<nbSegments();i++)
+	for (int i = 0; i < nbSegments();i++)
 		segment[i]->buildUp();
 
 	setColorVertices();
@@ -220,13 +253,13 @@ void QSegMesh::build_up()
 
 void QSegMesh::update_face_normals()
 {
-	for (int i=0;i<nbSegments();i++)
+	for (int i = 0; i < nbSegments();i++)
 		segment[i]->update_face_normals();
 }
 
 void QSegMesh::update_vertex_normals()
 {
-	for (int i=0;i<nbSegments();i++)
+	for (int i = 0; i < nbSegments();i++)
 		segment[i]->update_vertex_normals();
 }
 
@@ -237,7 +270,7 @@ void QSegMesh::computeBoundingBox()
 	bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
 	bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);	
 	
-	for (int i=0;i<nbSegments();i++)
+	for (int i = 0; i < nbSegments();i++)
 	{
 		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
 		Surface_mesh::Vertex_iterator vit, vend = segment[i]->vertices_end();
@@ -255,7 +288,7 @@ void QSegMesh::computeBoundingBox()
 
 void QSegMesh::moveCenterToOrigin()
 {
-	for (int i=0;i<nbSegments();i++)
+	for (int i = 0; i < nbSegments();i++)
 	{
 		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
 		Surface_mesh::Vertex_iterator vit, vend = segment[i]->vertices_end();
@@ -427,7 +460,7 @@ void QSegMesh::setVertexColor( uint vid, const Color& newColor )
 
 void QSegMesh::normalize()
 {
-	for (uint i=0;i<nbSegments();i++)
+	for (uint i = 0; i < nbSegments();i++)
 	{
 		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
 		Surface_mesh::Vertex_iterator vit, vend = segment[i]->vertices_end();
@@ -438,6 +471,8 @@ void QSegMesh::normalize()
 				points[vit] = points[vit] / radius;
 		}
 	}
+
+	scaleFactor = radius;
 }
 
 uint QSegMesh::vertexInSegment( uint vid )

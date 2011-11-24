@@ -63,9 +63,22 @@ void QMeshDoc::deleteObject( QString objectId )
 	}
 }
 
-void QMeshDoc::exportObject()
+void QMeshDoc::exportObject(QSegMesh * mesh)
 {
+	if(!mesh){ 
+		emit(printMessage("Nothing to export."));
+		return;
+	}
+
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Mesh", "", "Mesh Files (*.obj *.off *.stl)"); 
 
+	// Based on file extension
+	QString ext = fileName.right(3).toLower();
 
+	if(ext == "obj")
+	{
+		mesh->saveObj(fileName);
+	}
+
+	emit(printMessage(mesh->objectName() + " has been exported."));
 }
