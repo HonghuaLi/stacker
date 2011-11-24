@@ -1,6 +1,5 @@
 #include "QMeshDoc.h"
-#include <QFileInfo>
-
+#include <QFileDialog>
 
 QMeshDoc::QMeshDoc()
 {
@@ -15,8 +14,10 @@ QMeshDoc::~QMeshDoc()
 }
 
 
-void QMeshDoc::importObject( QString fileName )
+void QMeshDoc::importObject()
 {
+	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", "", "Mesh Files (*.obj *.off *.stl)"); 
+
 	// Get object name from file path
 	QFileInfo fInfo (fileName);
 
@@ -60,4 +61,11 @@ void QMeshDoc::deleteObject( QString objectId )
 		delete all_objects[objectId];
 		all_objects.remove(objectId);
 	}
+}
+
+void QMeshDoc::exportObject()
+{
+	QString fileName = QFileDialog::getSaveFileName(0, "Export Mesh", "", "Mesh Files (*.obj *.off *.stl)"); 
+
+
 }

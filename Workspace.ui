@@ -41,6 +41,7 @@
     </property>
     <addaction name="actionNewScene"/>
     <addaction name="actionImportObject"/>
+    <addaction name="actionExportObject"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -124,6 +125,15 @@
    </property>
    <property name="toolTip">
     <string>Import object</string>
+   </property>
+  </action>
+  <action name="actionExportObject">
+   <property name="icon">
+    <iconset resource="Workspace.qrc">
+     <normaloff>:/Workspace/Resources/icons/export.png</normaloff>:/Workspace/Resources/icons/export.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export object</string>
    </property>
   </action>
  </widget>

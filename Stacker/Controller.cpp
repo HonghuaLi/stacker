@@ -113,13 +113,19 @@ void Controller::test1()
 void Controller::deformShape( std::vector<cuboidDeformParam>& params )
 {
 	
-	// top
+	// leg
 	Cuboid* cp0 = ( Cuboid* )primitives[0];
-	cp0->deform( params[0] );
+//	cp0->deform( params[0] );
 
-	// leg(s)
+	// top
 	Cuboid* cp1 = ( Cuboid* )primitives[1];
 	cp1->deform( params[1] );
+	Cuboid* cp2 = ( Cuboid* )primitives[2];
+	cp2->deform( params[2] );
+	Cuboid* cp3 = ( Cuboid* )primitives[3];
+	cp3->deform( params[3] );
+	Cuboid* cp4 = ( Cuboid* )primitives[4];
+	cp4->deform( params[4] );
 
 	m_mesh->computeBoundingBox();
 
@@ -145,7 +151,6 @@ void Controller::recoverShape()
 	m_mesh->computeBoundingBox();
 }
 
-
 int Controller::numHotPrimitives()
 {
 	int num = 0;
@@ -155,4 +160,84 @@ int Controller::numHotPrimitives()
 			num++;
 	}
 	return num;
+}
+
+Controller::Stat Controller::getStat()
+{
+	Stat stat;
+
+	// Compute volume of each controller + total volume of Bounding Box
+	Point bbmin = Point( DBL_MAX, DBL_MAX, DBL_MAX);
+	Point bbmax = Point( DBL_MIN, DBL_MIN, DBL_MIN);
+
+	int pi = 0;
+	stat.volumePrim = std::vector<double>(primitives.size());
+
+	foreach (Primitive * prim, primitives)
+	{
+		foreach (Point p, prim->points())
+		{
+			bbmin.minimize(p);
+			bbmax.maximize(p);
+		}
+
+		// Compute volume of each controller
+		stat.volumePrim[pi++] = prim->volume();
+	}
+
+	// Compute total volume of controllers BB
+	Point center = (bbmin + bbmax) / 2.0;
+
+	stat.volumeBB = abs((bbmax.x() - center.x()) * 
+						(bbmax.y() - center.y()) *
+						(bbmax.z() - center.z())) * 8;
+
+	// Compute proximity measure
+	for(uint i = 0; i < primitives.size(); i++)
+	{
+		for (uint j = i + 1; j < primitives.size(); j++)
+		{
+			Primitive * pi = primitives[i];
+			Primitive * pj = primitives[j];
+			
+			stat.proximity[std::make_pair(i, j)] = 0;
+		}
+	}
+
+	// Compute coplanarity measure
+	for(uint i = 0; i < primitives.size(); i++)
+	{
+		for (uint j = i + 1; j < primitives.size(); j++)
+		{
+			Primitive * pi = primitives[i];
+			Primitive * pj = primitives[j];
+
+			stat.coplanarity[std::make_pair(i, j)] = 0;
+		}
+	}
+
+	return stat;
+}
+
+std::vector< double > Controller::difference( Controller::Stat s2 )
+{
+	Stat s1 = this->getStat();
+
+	std::vector< double > E(4);	 // difference measures
+
+	E[0] = abs(s1.volumeBB - s2.volumeBB) / s2.volumeBB;
+
+	double sumV = 0;
+	for(int i = 0; i < primitives.size(); i++)
+	{
+		sumV += s2.volumePrim[i];
+		E[1] += abs(s1.volumePrim[i] - s2.volumePrim[i]);
+	}
+	E[1] /= sumV;
+
+
+//	E[2] = s1.proximity[std::make_pair(0, 1)] - s2.proximity[std::make_pair(0, 1)];
+//	E[3] = s1.coplanarity[std::make_pair(0, 1)] - s2.proximity[std::make_pair(0, 1)];
+
+	return E;
 }

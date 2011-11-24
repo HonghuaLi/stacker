@@ -27,8 +27,6 @@ void Cuboid::fit()
 
 void Cuboid::deformMesh()
 {
-	if (currBox == originalBox) return;
-
 	Surface_mesh::Vertex_property<Point> points = m_mesh->vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_iterator vit, vend = m_mesh->vertices_end();
 
@@ -197,4 +195,14 @@ void Cuboid::recoverMesh()
 {
 	currBox = originalBox;
 	deformMesh();
+}
+
+double Cuboid::volume()
+{
+	return 8 * currBox.Extent.x() * currBox.Extent.y() * currBox.Extent.z();
+}
+
+std::vector <Vec3d> Cuboid::points()
+{
+	return getBoxConners(currBox);
 }

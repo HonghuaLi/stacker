@@ -23,7 +23,9 @@ signals:
 	void printMessage( QString message );
 
 public slots:
-	void importObject( QString fileName );
+	void importObject( );
+	void exportObject( );
+
 	void deleteObject( QString objectId );
 };
 

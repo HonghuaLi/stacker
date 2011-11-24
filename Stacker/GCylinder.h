@@ -17,6 +17,9 @@ public:
 	virtual void deformMesh();
 	virtual void draw();
 
+	virtual double volume();
+	virtual std::vector <Vec3d> points();
+
 	void translate(Vec3d T);
 
 	qglviewer::ManipulatedFrame *mf1, *mf2;

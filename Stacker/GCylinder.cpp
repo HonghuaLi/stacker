@@ -214,3 +214,13 @@ void GCylinder::updateCage()
 	// Last point
 	//cagePoints[Surface_mesh::Vertex(cage->n_vertices() - 1)] = gc->crossSection.back().center;
 }
+
+std::vector <Vec3d> GCylinder::points()
+{
+	return cage->clonePoints();
+}
+
+double GCylinder::volume()
+{
+	return cage->volume();
+}

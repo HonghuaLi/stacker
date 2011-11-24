@@ -14,6 +14,9 @@ public:
 	virtual void deformMesh();
 	virtual void draw();
 	virtual void drawNames();
+	
+	virtual double volume();
+	virtual std::vector <Vec3d> points();
 
 	void translate( Vector3 &T );
 	void scaleAlongAxis( Vector3 &scales );

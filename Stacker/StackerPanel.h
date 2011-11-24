@@ -5,6 +5,7 @@
 #include "StackerPreview.h"
 #include "HiddenViewer.h"
 #include "Offset.h"
+#include "Contoller.h"
 
 class StackerPanel : public QWidget
 {
@@ -28,6 +29,8 @@ public:
 	StackerPreview * stacker_preview;
 	HiddenViewer * hidden_viewer;
 	Offset * activeOffset;
+
+	Controller::Stat originalStats;
 
 public slots:
 	// Buttons
