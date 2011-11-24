@@ -14,7 +14,7 @@
       <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
+    </Filter> 
     <Filter Include="Generated Files\Release">
       <UniqueIdentifier>{01dc1d1f-50ec-44a6-a857-64f2a1d2389d}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
@@ -335,7 +335,7 @@
     <ClCompile Include="MathLibrary\GCDeformation.cpp">
       <Filter>MathLibrary\Source</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\cuboidDeformParam.cpp">
+    <ClCompile Include="Stacker\cuboidDeformParam.cpp">    
       <Filter>Stacker\Source</Filter>
     </ClCompile>
   </ItemGroup>

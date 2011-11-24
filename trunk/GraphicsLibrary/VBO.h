@@ -32,6 +32,8 @@ public:
 	void free_vbo(Index vbo);
 	~VBO();
 
+	static bool isVBOSupported();
+
 	void update();
 	void update_vbo(Index *vbo, int vbo_size, const GLvoid *vbo_data);
 	void update_ebo(Index *ebo, int ebo_size, const GLvoid *ebo_data);
