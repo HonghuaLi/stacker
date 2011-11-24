@@ -181,23 +181,16 @@ void Cuboid::rotateAroundAxes( Vector3 &angles )
 	currBox.Axis[2] = E2V(p2);
 }
 
-void Cuboid::transform( Vector3 &T, Vector3 &scales, Vector3 &angles )
-{
-	if (preT==T && preS==scales && preR==angles)
-		return;
-		
+
+void Cuboid::deform( cuboidDeformParam& params )
+{		
 	// Deform the OBB
-	translate(T);
-	scaleAlongAxis(scales);
-	rotateAroundAxes(angles);
+	translate(params.getT());
+	rotateAroundAxes(params.getR());
+	scaleAlongAxis(params.getS());
 
 	// Apply the deformation 
 	deformMesh();
-
-	// Record the transmation
-	preT==T;
-	preS==scales;
-	preR==angles;
 }
 
 void Cuboid::recoverMesh()

@@ -76,7 +76,7 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-	Controller* ctrl = activeObject()->controller;
+
 }
 
 
@@ -138,14 +138,53 @@ void StackerPanel::convertGC()
 
 void StackerPanel::gradientDescentOptimize()
 {
-	int nSeg = activeObject()->nbSegments();
+	Controller* ctrl = activeObject()->controller;
+	int nSeg = ctrl->numHotPrimitives();
 
 	// Initialization
-	// T, R, S
-	double param[9] = {0, 0, 0, 0, 0, 0, 1, 1, 1};
-	std::vector< std::vector< double > >  params( nSeg, std::vector< double >(param, param+9));
+	std::vector< cuboidDeformParam > params(nSeg);
 
 	// 
+	double currE = sumEnergy();
+	double step = 0.02;
+	while(1)
+	{
+		double minE = DBL_MAX;
+		std::vector< cuboidDeformParam > bestParams = params;
+		// check all the neighbours
+		for (int i=0;i<nSeg;i++)
+		{
+			for (int j=0;j<9;j++)
+			{
+				params[i].stepForward(j, step);
+				ctrl->deformShape(params);
+				double E = sumEnergy();
+				if (E < minE)
+				{
+					minE = E;
+					bestParams = params;
+				}
+
+				params[i].stepForward(j, -step);
+
+
+				params[i].stepForward(j, -step);
+				ctrl->deformShape(params);
+				double E = sumEnergy();
+				if (E < minE)
+				{
+					minE = E;
+					bestParams = params;
+				}
+
+				params[i].stepForward(j, step);
+
+			}
+		}
+
+		if(currE <= minE)
+			break;
+	}
 }
 
 double StackerPanel::sumEnergy()

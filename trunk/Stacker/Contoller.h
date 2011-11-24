@@ -1,5 +1,6 @@
 #pragma once
 #include "Primitive.h"
+#include "cuboidDeformParam.h"
 
 class QSegMesh;
 
@@ -21,7 +22,7 @@ public:
 	void select(int id);
 
 	// Deformation
-	void deformShape(Vec3d scale, Vec3d transl, Vec3d angles);
+	void deformShape(std::vector<cuboidDeformParam>& params);
 	void recoverShape();
 
 	// SET and GET
