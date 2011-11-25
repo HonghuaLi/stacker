@@ -60,6 +60,9 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="windowTitle">
+    <string>Main Toolbar</string>
+   </property>
    <property name="toolButtonStyle">
     <enum>Qt::ToolButtonTextBesideIcon</enum>
    </property>
@@ -80,6 +83,9 @@
      <width>120</width>
      <height>38</height>
     </size>
+   </property>
+   <property name="windowTitle">
+    <string>Stacker Panel</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -109,7 +115,7 @@
   <action name="actionNewScene">
    <property name="icon">
     <iconset resource="Workspace.qrc">
-     <normaloff>:/Workspace/Resources/icons/newScene.ico</normaloff>:/Workspace/Resources/icons/newScene.ico</iconset>
+     <normaloff>:/Workspace/Resources/icons/newScene.png</normaloff>:/Workspace/Resources/icons/newScene.png</iconset>
    </property>
    <property name="text">
     <string>New scene</string>
