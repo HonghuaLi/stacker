@@ -1,10 +1,12 @@
 <RCC>
   <qresource prefix="Workspace">
-    <file>Resources/icons/move.png</file>
-    <file>Resources/icons/rotate.png</file>
-    <file>Resources/icons/scale.png</file>
+    <file>Resources/icons/newScene.png</file>
     <file>Resources/icons/export.png</file>
     <file>Resources/icons/insertObject.png</file>
-    <file>Resources/icons/newScene.ico</file>
+
+   <file>Resources/icons/move.png</file>
+    <file>Resources/icons/rotate.png</file>
+    <file>Resources/icons/scale.png</file>
+
   </qresource>
 </RCC>

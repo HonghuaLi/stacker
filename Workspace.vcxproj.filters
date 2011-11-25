@@ -490,6 +490,9 @@
     <ClInclude Include="Stacker\cuboidDeformParam.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_SpaceExplorer.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
@@ -555,5 +558,11 @@
     <CustomBuild Include="Stacker\SpaceExplorer.ui">
       <Filter>Stacker\ui</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="icon1.ico" />
+    <None Include="Resources\icons\stacker.png" />
+    <None Include="stacker.ico" />
+    <None Include="Workspace.ico" />
   </ItemGroup>
 </Project>

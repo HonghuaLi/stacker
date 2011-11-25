@@ -71,14 +71,11 @@ Vec3d cuboidDeformParam::getS()
 
 bool cuboidDeformParam::setParam( int i, double val )
 {
-	if (val>=infs[i] && val <=sups[i])
-	{
-		params[i] = val;
-		return true;
-	}
-	else
-		return false;
-	 
+	// Val is a percentage [0, 1]
+	if (val<0 || val>1) return false;
+
+	params[i] = infs[i] + val * (sups[i] - infs[i]);
+	return true;	 
 }
 
 bool cuboidDeformParam::setParams( std::vector< double > newParams )

@@ -23,7 +23,7 @@ public:
 
 	// Optimization
 	void gradientDescentOptimize();
-	double sumEnergy();
+	double sumEnergy(std::vector< cuboidDeformParam > &params);
 
 	Ui::StackerWidget panel;
 	Scene * activeScene;

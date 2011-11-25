@@ -43,7 +43,6 @@ public:
 	};
 
 	Stat getStat();
-	std::vector< double > difference( Controller::Stat s2 );
 
 private:
 	std::vector<Primitive*> primitives;
