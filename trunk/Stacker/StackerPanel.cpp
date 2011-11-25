@@ -1,5 +1,6 @@
 #include "StackerPanel.h"
 #include "Contoller.h"
+#include "Cuboid.h"
 #include "ConvexHull3.h"
 #include <QDockWidget>
 #include <QVBoxLayout>
@@ -11,17 +12,19 @@ StackerPanel::StackerPanel()
 {
 	panel.setupUi(this);
 
+	// Add controller deformer widget
+	ctrlDeformer.setupUi(panel.controllerDeformerPanel);
+
+	// Add a stacking preview widget
+	stacker_preview = new StackerPreview(this);
+	QDockWidget * previewDock = new QDockWidget();
+	previewDock->setWidget (stacker_preview);
+	panel.previewBox->layout()->addWidget(previewDock);
+
 	// Offset function calculator
 	hidden_viewer = new HiddenViewer();
 	panel.groupBox->layout()->addWidget(hidden_viewer);
 	activeOffset = new Offset(hidden_viewer);
-
-	// Add a stacking preview widget
-	stacker_preview = new StackerPreview(this);
-
-	QDockWidget * previewDock = new QDockWidget();
-	previewDock->setWidget (stacker_preview);
-	panel.previewBox->layout()->addWidget(previewDock);
 
 	// Connections
 	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
@@ -35,6 +38,19 @@ StackerPanel::StackerPanel()
 	// Convex Hull
 	connect(panel.chPrecision, SIGNAL(valueChanged (int)), this, SLOT(setConvexHullPrecision(int)));
 	CH_PRECISION = panel.chPrecision->value();
+
+	// Connect controller deformer
+	connect(ctrlDeformer.transX, SIGNAL(valueChanged(int)), SLOT(updateController()));
+	connect(ctrlDeformer.transY, SIGNAL(valueChanged(int)), SLOT(updateController()));
+	connect(ctrlDeformer.transZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
+	connect(ctrlDeformer.rotX, SIGNAL(valueChanged(int)), SLOT(updateController()));
+	connect(ctrlDeformer.rotY, SIGNAL(valueChanged(int)), SLOT(updateController()));
+	connect(ctrlDeformer.rotZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
+	connect(ctrlDeformer.scaleX, SIGNAL(valueChanged(int)), SLOT(updateController()));
+	connect(ctrlDeformer.scaleY, SIGNAL(valueChanged(int)), SLOT(updateController()));
+	connect(ctrlDeformer.scaleZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
+
+	connect(ctrlDeformer.resetButton, SIGNAL(clicked()), SLOT(resetCtrlDeformerPanel()));
 }
 
 void StackerPanel::onOffsetButtonClicked()
@@ -64,6 +80,9 @@ void StackerPanel::onControllerButtonClicked()
 	activeScene->setSelectMode(CONTROLLER);
 
 	showMessage("Controller is build for " + activeObject()->objectName());
+
+	// Save original stats about controller
+	originalStats = activeObject()->controller->getStat();
 }
 
 
@@ -150,8 +169,6 @@ void StackerPanel::gradientDescentOptimize()
 	std::vector< cuboidDeformParam > optimalParams(nSeg);
 	//optimalParams[0].randomSample();
 	//optimalParams[1].randomSample();
-
-	originalStats = ctrl->getStat();
 
 	// Optimize
 	double currE = sumEnergy();
@@ -250,5 +267,53 @@ double StackerPanel::sumEnergy()
 
 	// SIGGRAPH 2012: last siggraph... :D
 	return penalties[0] + penalties[1] + 0 * penalties[2] - activeOffset->getStackability();
+}
+
+void StackerPanel::updateController()
+{
+	if(!activeObject() || !activeObject()->controller) return;
+
+	Controller* ctrl = activeObject()->controller;
+
+	double scaling = 0.01;
+	std::vector<double> vals(9);
+	vals[0] = scaling * ctrlDeformer.transX->value();
+	vals[1] = scaling * ctrlDeformer.transY->value();
+	vals[2] = scaling * ctrlDeformer.transZ->value();
+
+	vals[3] = scaling * ctrlDeformer.rotX->value();
+	vals[4] = scaling * ctrlDeformer.rotY->value();
+	vals[5] = scaling * ctrlDeformer.rotZ->value();
+
+	vals[6] = scaling * ctrlDeformer.scaleX->value();
+	vals[7] = scaling * ctrlDeformer.scaleY->value();
+	vals[8] = scaling * ctrlDeformer.scaleZ->value();
+
+	cuboidDeformParam param;
+	param.setParams(vals);
+
+	for(uint i = 0; i < ctrl->numPrimitives(); i++){
+		Cuboid * prim = (Cuboid *) ctrl->getPrimitive(i);
+
+		if(prim->isSelected)
+			prim->deform(param);
+	}
+	
+	emit(objectModified());
+
+	printf("Stackability: %.3f | Energy: %.3f\n", activeOffset->getStackability(), sumEnergy());
+}
+
+void StackerPanel::resetCtrlDeformerPanel()
+{
+	ctrlDeformer.transX->setValue(0);
+	ctrlDeformer.transY->setValue(0);	
+	ctrlDeformer.transZ->setValue(0);
+	ctrlDeformer.rotX->setValue(0);
+	ctrlDeformer.rotY->setValue(0);	
+	ctrlDeformer.rotZ->setValue(0);
+	ctrlDeformer.scaleX->setValue(0);
+	ctrlDeformer.scaleY->setValue(0);	
+	ctrlDeformer.scaleZ->setValue(0);
 }
 

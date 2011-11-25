@@ -27,7 +27,8 @@ public:
 
 	// SET and GET
 	Primitive * getPrimitive(int id);
-	int numPrimitives();
+
+	uint numPrimitives();
 	int numHotPrimitives();
 
 	// Testing
