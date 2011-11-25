@@ -4,8 +4,8 @@
 
 StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
 {
-	// Restrict the size of the preview window
-	setMaximumWidth(200);
+	// Default size of the preview window
+	this->resize(200,200);
 
 	// No active scene when initializing
 	this->activeScene = NULL;
@@ -134,6 +134,10 @@ void StackerPreview::updateActiveObject()
 	{
 		camera()->setSceneRadius(activeScene->activeObject()->radius);
 		camera()->showEntireScene();
+		camera()->addKeyFrameToPath(0);
+		camera()->setSceneRadius(activeScene->activeObject()->radius * 4);
+		camera()->showEntireScene();
+		camera()->resetPath(0);
 	}
 	
 	vboCollection.clear();

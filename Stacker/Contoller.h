@@ -22,7 +22,7 @@ public:
 	void select(int id);
 
 	// Deformation
-	void deformShape(std::vector<cuboidDeformParam>& params);
+	void deformShape(std::vector<cuboidDeformParam>& params, bool isPermanent = false);
 	void recoverShape();
 
 	// SET and GET

@@ -89,6 +89,8 @@ void Offset::computeOffset()
 	// Update the stackability in QSegMesh
 	activeObject()->O_max = O_max;
 	activeObject()->stackability = 1 - O_max/objectH;
+
+	activeViewer->updateGL();
 }
 
 // Still not very confident on screen coordinates converting

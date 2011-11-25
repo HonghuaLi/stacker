@@ -53,8 +53,6 @@ void HiddenViewer::draw()
 	switch (mode)
 	{
 	case HV_NONE:
-		// Background color
-		this->setBackgroundColor(backColor);
 		break;
 	case HV_DEPTH:
 		glClearColor(0,0,0,0);
@@ -63,6 +61,9 @@ void HiddenViewer::draw()
 		activeObject()->simpleDraw();
 		break;
 	}
+
+	// Restore background color
+	this->setBackgroundColor(backColor);
 
 	setMode(HV_NONE);
 }

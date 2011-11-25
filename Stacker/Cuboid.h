@@ -21,7 +21,7 @@ public:
 	void translate( Vector3 &T );
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
-	void deform( cuboidDeformParam& params );
+	void deform( cuboidDeformParam& params, bool isPermanent = false);
 	void recoverMesh();
 
 private:
@@ -34,7 +34,7 @@ private:
 	Eigen::Vector3d V2E(Vector3 &vec);
 	Vector3 E2V(Eigen::Vector3d &vec);
 
-private:
+public:
 	std::vector< Vector3 > coordinates;
 	MinOBB3::Box3 originalBox, currBox;
 	Vector3 preT, preS, preR;
