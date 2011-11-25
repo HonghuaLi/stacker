@@ -45,6 +45,17 @@ void Controller::draw()
 	for (uint i = 0; i < primitives.size(); i++)
 	{
 		primitives[i]->draw();
+
+		for (uint j = i + 1; j < primitives.size(); j++)
+		{
+			Cuboid * c1 = (Cuboid *) primitives[i];
+			Cuboid * c2 = (Cuboid *) primitives[j];
+
+			Vec3d p,q;
+
+			c1->currBox.ClosestSegment(c2->currBox,p,q);
+			SimpleDraw::IdentifyLine(p,q,1,1,0);
+		}
 	}
 }
 
@@ -110,22 +121,23 @@ void Controller::test1()
 
 }
 
-void Controller::deformShape( std::vector<cuboidDeformParam>& params )
+void Controller::deformShape( std::vector<cuboidDeformParam>& params, bool isPermanent )
 {
 	
 	// leg
 	Cuboid* cp0 = ( Cuboid* )primitives[0];
-//	cp0->deform( params[0] );
+	cp0->deform( params[0], isPermanent );
 
 	// top
 	Cuboid* cp1 = ( Cuboid* )primitives[1];
-	cp1->deform( params[1] );
-/*	Cuboid* cp2 = ( Cuboid* )primitives[2];
-	cp2->deform( params[2] );
+	cp1->deform( params[1], isPermanent );
+	
+	/*Cuboid* cp2 = ( Cuboid* )primitives[2];
+	cp2->deform( params[2], isPermanent );
 	Cuboid* cp3 = ( Cuboid* )primitives[3];
-	cp3->deform( params[3] );
+	cp3->deform( params[3], isPermanent );
 	Cuboid* cp4 = ( Cuboid* )primitives[4];
-	cp4->deform( params[4] );*/
+	cp4->deform( params[4], isPermanent );*/
 
 	m_mesh->computeBoundingBox();
 
@@ -197,10 +209,14 @@ Controller::Stat Controller::getStat()
 	{
 		for (uint j = i + 1; j < primitives.size(); j++)
 		{
-			Primitive * pi = primitives[i];
-			Primitive * pj = primitives[j];
+			Cuboid * pi = (Cuboid *)primitives[i];
+			Cuboid * pj = (Cuboid *)primitives[j];
 			
-			stat.proximity[std::make_pair(i, j)] = 0;
+			Vec3d p, q;
+
+			pi->currBox.ClosestSegment(pj->currBox, p, q);
+
+			stat.proximity[std::make_pair(i, j)] = (p-q).norm();
 		}
 	}
 
@@ -225,18 +241,36 @@ std::vector< double > Controller::difference( Controller::Stat s2 )
 
 	std::vector< double > E(4);	 // difference measures
 
+	// SHAPE BB:
 	E[0] = abs(s1.volumeBB - s2.volumeBB) / s2.volumeBB;
 
+	// PART BB:
 	double sumV = 0;
 	for(int i = 0; i < primitives.size(); i++)
 	{
-		sumV += s2.volumePrim[i];
 		E[1] += abs(s1.volumePrim[i] - s2.volumePrim[i]);
+		sumV += s2.volumePrim[i];
 	}
 	E[1] /= sumV;
 
+	// PROXMIITY:
+	double sumP = 0;
+	for(uint i = 0; i < primitives.size(); i++)
+	{
+		for (uint j = i + 1; j < primitives.size(); j++)
+		{
+			E[2] += abs(s1.proximity[std::make_pair(i,j)] - s2.proximity[std::make_pair(i,j)]);
+			sumP += s2.proximity[std::make_pair(i,j)];
+		}
+	}
 
-//	E[2] = s1.proximity[std::make_pair(0, 1)] - s2.proximity[std::make_pair(0, 1)];
+	if(sumP == 0)
+		sumP = 1;
+
+	E[2] /= sumP;
+
+
+
 //	E[3] = s1.coplanarity[std::make_pair(0, 1)] - s2.proximity[std::make_pair(0, 1)];
 
 	return E;

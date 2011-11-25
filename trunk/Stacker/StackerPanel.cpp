@@ -1,6 +1,7 @@
 #include "StackerPanel.h"
 #include "Contoller.h"
 #include "ConvexHull3.h"
+#include <QDockWidget>
 #include <QVBoxLayout>
 #include "Vector.h"
 #include <fstream>
@@ -17,8 +18,10 @@ StackerPanel::StackerPanel()
 
 	// Add a stacking preview widget
 	stacker_preview = new StackerPreview(this);
-	QVBoxLayout *previewLayout = new QVBoxLayout(panel.previewBox);
-	previewLayout->addWidget(stacker_preview);	
+
+	QDockWidget * previewDock = new QDockWidget();
+	previewDock->setWidget (stacker_preview);
+	panel.previewBox->layout()->addWidget(previewDock);
 
 	// Connections
 	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
@@ -147,6 +150,7 @@ void StackerPanel::gradientDescentOptimize()
 	std::vector< cuboidDeformParam > optimalParams(nSeg);
 	//optimalParams[0].randomSample();
 	//optimalParams[1].randomSample();
+
 	originalStats = ctrl->getStat();
 
 	// Optimize
@@ -160,7 +164,8 @@ void StackerPanel::gradientDescentOptimize()
 	{
 		double minE = DBL_MAX;
 		
-		std::vector< cuboidDeformParam > bestNeighborParams;
+		std::vector< cuboidDeformParam > bestNeighborParams, currParams;
+		bestNeighborParams = currParams = optimalParams;
 
 
 		// check all the neighbors
@@ -171,32 +176,33 @@ void StackerPanel::gradientDescentOptimize()
 				double E = 0;
 
 				// Forward
-				optimalParams[i].stepForward(j, step);
-				ctrl->deformShape(optimalParams);
-				E = sumEnergy();
-
-
-				if (E < minE)
-				{
-					minE = E;
-					bestNeighborParams = optimalParams;
-				}
-				optimalParams[i].stepForward(j, -step);
-				ctrl->recoverShape();
-
-
-				// Backward search
-				optimalParams[i].stepForward(j, -step);
-				ctrl->deformShape(optimalParams);
+				currParams[i].stepForward(j, step);
+				ctrl->deformShape(currParams);
 				emit(objectModified());
 				E = sumEnergy();
 				if (E < minE)
 				{
 					minE = E;
-					bestNeighborParams = optimalParams;
+					bestNeighborParams = currParams;
 				}
-				optimalParams[i].stepForward(j, step);
+				currParams[i].stepForward(j, -step);
 				ctrl->recoverShape();
+				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
+
+
+				// Backward search
+				currParams[i].stepForward(j, -step);
+				ctrl->deformShape(currParams);
+				emit(objectModified());
+				E = sumEnergy();
+				if (E < minE)
+				{
+					minE = E;
+					bestNeighborParams = currParams;
+				}
+				currParams[i].stepForward(j, step);
+				ctrl->recoverShape();
+				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
 			}
 		}
 
@@ -207,17 +213,16 @@ void StackerPanel::gradientDescentOptimize()
 		else
 		{
 			currE = minE;
-			optimalParams = bestNeighborParams;
+			optimalParams = bestNeighborParams;		
 			ctrl->deformShape(optimalParams);
 			emit(objectModified());
-		
 
-			// Print optimal solution
+			// Print current best solution
 			printf("==============================\nThe current parameters:\n\n");
-			bestNeighborParams[0].print();
+			optimalParams[0].print();
 			printf("\n");
-			bestNeighborParams[1].print();
-			printf("\n Stackability: %f.2\n Energy: %f.2\n", activeOffset->getStackability(), currE);
+			optimalParams[1].print();
+			printf("\n Stackability: %.3f\n Energy: %.3f\n", activeOffset->getStackability(), currE);
 		}
 
 	}
@@ -227,6 +232,12 @@ void StackerPanel::gradientDescentOptimize()
 	emit(objectModified());
 	printf("\nOptimization is done ;)\n");
 
+	// Print optimal solution
+	printf("==============================\nThe current parameters:\n\n");
+	optimalParams[0].print();
+	printf("\n");
+	optimalParams[1].print();
+	printf("\n Stackability: %.3f\n Energy: %.3f\n", activeOffset->getStackability(), sumEnergy());
 }
 
 double StackerPanel::sumEnergy()
@@ -237,6 +248,7 @@ double StackerPanel::sumEnergy()
 	
 	std::vector<double> penalties = ctrl->difference( originalStats );
 
-	return penalties[0] + penalties[1] - activeOffset->getStackability();
+	// SIGGRAPH 2012: last siggraph... :D
+	return penalties[0] + penalties[1] + 0 * penalties[2] - activeOffset->getStackability();
 }
 

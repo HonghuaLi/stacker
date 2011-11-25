@@ -288,8 +288,6 @@ void MinOBB3::getCorners( std::vector<Vector3> &pnts )
 	pnts[7] = pnts[3] + Axis[1];
 }
 
-
-
 bool MinOBB3::Box3::operator==( Box3& box )
 {
 	return (Center == box.Center)
@@ -301,7 +299,36 @@ bool MinOBB3::Box3::operator==( Box3& box )
 		&& (Extent[2] == box.Extent[2]);
 }
 
+Vec3d MinOBB3::Box3::ClosestPoint( const Vec3d& p )
+{
+	Vec3d d = p - Center;
 
+	// Start result at center of box; make steps from there
+	Vec3d q = Center;
+
+	// For each OBB axis...
+	for (int i = 0; i < 3; i++) {
+		// ...project d onto that axis to get the distance
+		// along the axis of d from the box center
+		double dist = dot(d, Axis[i]);
+		
+		// If distance farther than the box extents, clamp to the box
+		if (dist > Extent[i]) dist = Extent[i];
+		if (dist < -Extent[i]) dist = -Extent[i];
+		
+		// Step that distance along the axis to get world coordinate
+		q += dist * Axis[i];
+	}
+
+	return q;
+}
+
+void MinOBB3::Box3::ClosestSegment( Box3 other, Vec3d & p, Vec3d & q)
+{
+	p = ClosestPoint(other.Center);
+	q = other.ClosestPoint(p);
+	p = ClosestPoint(q);
+}
 
 
 MinOBB3::EdgeKey::EdgeKey (int v0, int v1)

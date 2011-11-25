@@ -1,7 +1,6 @@
 #include "Cuboid.h"
 #include "SimpleDraw.h"
 
-
 Cuboid::Cuboid(QSurfaceMesh* mesh)
 	: Primitive(mesh)
 {
@@ -180,7 +179,7 @@ void Cuboid::rotateAroundAxes( Vector3 &angles )
 }
 
 
-void Cuboid::deform( cuboidDeformParam& params )
+void Cuboid::deform( cuboidDeformParam& params, bool isPermanent )
 {		
 	// Deform the OBB
 	translate(params.getT());
@@ -189,6 +188,10 @@ void Cuboid::deform( cuboidDeformParam& params )
 
 	// Apply the deformation 
 	deformMesh();
+
+	// Apply deformation forever...
+	if(isPermanent)
+		originalBox = currBox;
 }
 
 void Cuboid::recoverMesh()

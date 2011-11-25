@@ -26,12 +26,14 @@ public:
 		void normalizeAxis(){ for (int i=0;i<3;i++)	Axis[i].normalize();}
 		bool operator == (Box3& box);
 	
+		Vec3d ClosestPoint(const Vec3d& p);
+
+		void ClosestSegment( Box3 other, Vec3d & p, Vec3d & q);
 	public:
 		Vector3 Center;
 		std::vector<Vector3> Axis;
 		Vector3 Extent;
 	};
-
 
 
 public:
@@ -41,6 +43,8 @@ public:
 	void computeMinOBB( std::vector<Vector3> &points );
 	void GenerateComplementBasis (Vector3& u, Vector3& v, const Vector3& w);
 	void getCorners( std::vector<Vector3> &pnts );
+
+	Vec3d ClosestPtPointOBB(const Vec3d& p);
 
 private:
 	class EdgeKey
