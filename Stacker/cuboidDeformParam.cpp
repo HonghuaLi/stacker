@@ -81,6 +81,18 @@ bool cuboidDeformParam::setParam( int i, double val )
 	 
 }
 
+bool cuboidDeformParam::setParams( std::vector< double > newParams )
+{
+	bool result = true;
+
+	for(int i = 0; i < newParams.size(); i++)
+	{
+		result = result && setParam(i, newParams[i]);
+	}
+
+	return result;
+}
+
 void cuboidDeformParam::print()
 {
 	printf("T: %.3f, %.3f, %.3f,\nR: %.3f %.3f %.3f \nS: %.3f %.3f %.3f", params[0], params[1], 

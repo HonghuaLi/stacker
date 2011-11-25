@@ -148,7 +148,7 @@ Primitive * Controller::getPrimitive( int id )
 	return primitives[id];
 }
 
-int Controller::numPrimitives()
+uint Controller::numPrimitives()
 {
 	return primitives.size();
 }

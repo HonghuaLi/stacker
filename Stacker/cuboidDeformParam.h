@@ -19,6 +19,7 @@ public:
 
 	// Set param directly
 	bool setParam(int i, double val);
+	bool setParams(std::vector< double > newParams);
 
 	// GETs
 	Vec3d getT();
