@@ -224,3 +224,8 @@ double GCylinder::volume()
 {
 	return cage->volume();
 }
+
+void GCylinder::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
+{
+
+}
