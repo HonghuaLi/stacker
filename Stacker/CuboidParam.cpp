@@ -1,10 +1,11 @@
-#include "cuboidDeformParam.h"
+#include "CuboidParam.h"
 
 #include <cstdlib>
 #include <iostream>
+#include <math.h>
 
 
-cuboidDeformParam::cuboidDeformParam()
+CuboidParam::CuboidParam()
 {
 	double p[9] = {0, 0, 0, 0, 0, 0, 1, 1, 1};
 	params.clear();
@@ -15,7 +16,7 @@ cuboidDeformParam::cuboidDeformParam()
 }
 
 // the range is normalized
-bool cuboidDeformParam::stepForward( int i, double step )
+bool CuboidParam::stepForward( int i, double step )
 {
 	if (i<0 || i>8)
 		return false;
@@ -31,7 +32,7 @@ bool cuboidDeformParam::stepForward( int i, double step )
 	return isOkay;
 }
 
-void cuboidDeformParam::setRanges( std::vector< double > &ranges )
+void CuboidParam::setRanges( std::vector< double > &ranges )
 {
 	infs.clear();
 	sups.clear();
@@ -45,7 +46,7 @@ void cuboidDeformParam::setRanges( std::vector< double > &ranges )
 	}
 }
 
-void cuboidDeformParam::randomSample()
+void CuboidParam::randomSample()
 {
 	for (int i=0;i<9;i++)
 	{
@@ -54,31 +55,36 @@ void cuboidDeformParam::randomSample()
 	}
 }
 
-Vec3d cuboidDeformParam::getT()
+Vec3d CuboidParam::getT()
 {
 	return Vec3d(params[0], params[1], params[2]);
 }
 
-Vec3d cuboidDeformParam::getR()
+Vec3d CuboidParam::getR()
 {
 	return Vec3d(params[3], params[4], params[5]);
 }
 
-Vec3d cuboidDeformParam::getS()
+Vec3d CuboidParam::getS()
 {
 	return Vec3d(params[6], params[7], params[8]);
 }
 
-bool cuboidDeformParam::setParam( int i, double val )
+bool CuboidParam::setParam( int i, double val )
 {
 	// Val is a percentage [0, 1]
 	if (val<0 || val>1) return false;
 
-	params[i] = infs[i] + val * (sups[i] - infs[i]);
+	// T(0:2) R(3:5) S(6:8)
+	if (i<6)
+		params[i] = infs[i] + val * (sups[i] - infs[i]);
+	else
+		params[i] = exp(log(infs[i]) + val*log(sups[i]/infs[i]));
+
 	return true;	 
 }
 
-bool cuboidDeformParam::setParams( std::vector< double > newParams )
+bool CuboidParam::setParams( std::vector< double > newParams )
 {
 	bool result = true;
 
@@ -90,9 +96,33 @@ bool cuboidDeformParam::setParams( std::vector< double > newParams )
 	return result;
 }
 
-void cuboidDeformParam::print()
+void CuboidParam::print()
 {
 	printf("T: %.3f, %.3f, %.3f,\nR: %.3f %.3f %.3f \nS: %.3f %.3f %.3f", params[0], params[1], 
 		params[2], params[3], params[4], params[5], params[6], params[7], params[8]);
 	std::cout << std::endl<< std::endl;
+}
+
+
+std::vector< double > CuboidParam::getDefaulParam()
+{
+	std::vector< double > pp;
+	int i = 0;
+
+	// T, R
+	for (; i<6; i++)	{
+		pp.push_back( (0-infs[i])/(sups[i]-infs[i]) );
+	}
+
+	//S
+	for (; i<9;i++)	{
+		pp.push_back( (log(1/infs[i]))/log(sups[i]/infs[i]) );
+	}
+
+	return pp;
+}
+
+int CuboidParam::numParams()
+{
+	return 9;
 }

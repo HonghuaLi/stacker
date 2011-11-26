@@ -6,8 +6,3 @@ Primitive::Primitive( QSurfaceMesh* mesh )
 
 	isSelected = false;
 }
-
-Primitive::~Primitive(void)
-{
-
-}

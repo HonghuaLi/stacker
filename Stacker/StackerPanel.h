@@ -23,16 +23,14 @@ public:
 
 	// Optimization
 	void gradientDescentOptimize();
-	double sumEnergy(std::vector< cuboidDeformParam > &params);
 
+	double sumEnergy( );
 	Ui::StackerWidget panel;
 	Scene * activeScene;
 	StackerPreview * stacker_preview;
 	HiddenViewer * hidden_viewer;
 	Offset * activeOffset;
 	Ui::ControllerDeformerWidget ctrlDeformer;
-
-	Controller::Stat originalStats;
 
 public slots:
 	// Buttons

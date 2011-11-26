@@ -6,6 +6,13 @@
 Controller::Controller( QSegMesh* mesh )
 {
 	m_mesh = mesh;
+
+	// Fit
+	// fitPrimitives()
+	fitOBBs();
+
+	// Save original stats
+	originalStat = getStat();
 }
 
 Controller::~Controller()
@@ -37,6 +44,8 @@ void Controller::fitOBBs()
 
 		// Assign an ID
 		primitives.back()->id = primitives.size();
+
+		originalStat.params.push_back(new CuboidParam());
 	}
 }
 
@@ -121,23 +130,14 @@ void Controller::test1()
 
 }
 
-void Controller::deformShape( std::vector<cuboidDeformParam>& params, bool isPermanent )
+void Controller::deformShape( PrimitiveParamMap primParams, bool isPermanent )
 {
-	
-	// leg
-	Cuboid* cp0 = ( Cuboid* )primitives[0];
-	cp0->deform( params[0], isPermanent );
-
-	// top
-	Cuboid* cp1 = ( Cuboid* )primitives[1];
-	cp1->deform( params[1], isPermanent );
-	
-	/*Cuboid* cp2 = ( Cuboid* )primitives[2];
-	cp2->deform( params[2], isPermanent );
-	Cuboid* cp3 = ( Cuboid* )primitives[3];
-	cp3->deform( params[3], isPermanent );
-	Cuboid* cp4 = ( Cuboid* )primitives[4];
-	cp4->deform( params[4], isPermanent );*/
+	std::map<uint, PrimitiveParam *>::iterator i = primParams.params.begin();
+	for(; i != primParams.params.end(); i++)
+	{
+		Primitive * pri = primitives[i->first];
+		pri->deform(i->second);
+	}
 
 	m_mesh->computeBoundingBox();
 
@@ -233,4 +233,9 @@ Controller::Stat Controller::getStat()
 	}
 
 	return stat;
+}
+
+Controller::Stat Controller::getOriginalStat()
+{
+	return this->originalStat;
 }

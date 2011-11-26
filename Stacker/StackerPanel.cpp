@@ -76,16 +76,11 @@ void StackerPanel::onControllerButtonClicked()
 	}
 
 	activeObject()->controller = new Controller(activeObject());
-	activeObject()->controller->fitOBBs();
 
 	activeScene->setSelectMode(CONTROLLER);
 
 	showMessage("Controller is build for " + activeObject()->objectName());
-
-	// Save original stats about controller
-	originalStats = activeObject()->controller->getStat();
 }
-
 
 void StackerPanel::onImproveButtonClicked()
 {
@@ -164,15 +159,18 @@ void StackerPanel::convertGC()
 void StackerPanel::gradientDescentOptimize()
 {
 	Controller* ctrl = activeObject()->controller;
-	int nSeg = ctrl->numPrimitives();
+
+	// Get hot segments
+	std::vector< uint > hotSegs = activeOffset->getHotSegments();
+	int nHotSeg = hotSegs.size();
 
 	// Initialization
-	std::vector< cuboidDeformParam > optimalParams(nSeg);
-	//optimalParams[0].randomSample();
-	//optimalParams[1].randomSample();
+	PrimitiveParamMap optimalParams;
+	foreach (uint i, hotSegs) 
+		optimalParams[i] = new CuboidParam();
 
 	// Optimize
-	double currE = sumEnergy(optimalParams);
+	double currE = sumEnergy();
 	double step = 0.3;
 	printf("Init energy = %f\n", currE);
 
@@ -182,43 +180,45 @@ void StackerPanel::gradientDescentOptimize()
 	{
 		double minE = DBL_MAX;
 		
-		std::vector< cuboidDeformParam > bestNeighborParams, currParams;
-		bestNeighborParams = currParams = optimalParams;
+		// make deep copies..
+		PrimitiveParamMap bestNeighborParams, currParams;
 
+		bestNeighborParams = optimalParams.clone();
+		currParams = optimalParams.clone();
 
 		// Check all the neighbors
-		for (int i=0;i<nSeg;i++)
+		for (int i=0; i<nHotSeg; i++)
 		{
-			for (int j=0;j<9;j++)
+			for (int j=0; j < currParams[i]->numParams(); j++)
 			{
 				double E = 0;
 
 				// Forward
-				currParams[i].stepForward(j, step);
+				currParams[i]->stepForward(j, step);
 				ctrl->deformShape(currParams);
 				emit(objectModified());
-				E = sumEnergy(currParams);
+				E = sumEnergy();
 				if (E < minE)
 				{
 					minE = E;
-					bestNeighborParams = currParams;
+					bestNeighborParams = currParams.clone();
 				}
-				currParams[i].stepForward(j, -step);
+				currParams[i]->stepForward(j, -step);
 				ctrl->recoverShape();
 				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
 
 
 				// Backward
-				currParams[i].stepForward(j, -step);
+				currParams[i]->stepForward(j, -step);
 				ctrl->deformShape(currParams);
 				emit(objectModified());
-				E = sumEnergy(currParams);
+				E = sumEnergy();
 				if (E < minE)
 				{
 					minE = E;
-					bestNeighborParams = currParams;
+					bestNeighborParams = currParams.clone();
 				}
-				currParams[i].stepForward(j, step);
+				currParams[i]->stepForward(j, step);
 				ctrl->recoverShape();
 				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
 			}
@@ -233,12 +233,14 @@ void StackerPanel::gradientDescentOptimize()
 		{
 			// Update the current state the to best neighbor
 			currE = minE;
-			optimalParams = bestNeighborParams;		
+			optimalParams = bestNeighborParams.clone();		
 
 			// Print current state
 			printf("==============================\nThe current deformation parameters:\n\n");
-			foreach (cuboidDeformParam p, optimalParams){
-				p.print();
+			std::map< uint, PrimitiveParam *>::iterator it = optimalParams.params.begin();
+			for (; it != optimalParams.params.end(); it++)
+			{
+				it->second->print();
 				printf("\n");
 			}
 			printf("Stackability: %.3f\n Energy: %.3f\n", activeOffset->getStackability(), currE);
@@ -252,17 +254,16 @@ void StackerPanel::gradientDescentOptimize()
 	printf("\nOptimization is done ;)\n");
 
 	// Print optimal solution
-	printf("==============================\nThe optimal deformation parameters are:\n\n");
-	foreach (cuboidDeformParam p, optimalParams){
-		p.print();
+	std::map< uint, PrimitiveParam *>::iterator it = optimalParams.params.begin();
+	for (; it != optimalParams.params.end(); it++)
+	{
+		it->second->print();
 		printf("\n");
 	}
 	printf("Stackability: %.3f\n Energy: %.3f\n", activeOffset->getStackability(), currE);
 }
 
-
-
-double StackerPanel::sumEnergy( std::vector< cuboidDeformParam > &params )
+double StackerPanel::sumEnergy( )
 {
 	// Energy terms
 	std::vector< double > E; 	
@@ -272,8 +273,7 @@ double StackerPanel::sumEnergy( std::vector< cuboidDeformParam > &params )
 	int numPrimitive = ctrl->numPrimitives();
 
 	Controller::Stat s1 = ctrl->getStat();
-	Controller::Stat& s2 = originalStats;
-
+	Controller::Stat s2 = ctrl->getOriginalStat();
 
 	// SHAPE BB:
 	E.push_back(abs(s1.volumeBB - s2.volumeBB) / s2.volumeBB);
@@ -299,14 +299,14 @@ double StackerPanel::sumEnergy( std::vector< cuboidDeformParam > &params )
 	E.push_back( sumP==0 ? diffP : diffP/sumP);
 
 	// ROTATION
-	double sumR = 0;
-	for(int i = 0; i < numPrimitive; i++)	{		
-		Vec3d R = params[i].getR();
-		double sumAngles = abs(R[0]) + abs(R[1]) + abs(R[2]);
-		sumR += (s1.volumePrim[i]/s1.volumeBB) * (sumAngles/3/360);
-	}
+	//double sumR = 0;
+	//for(int i = 0; i < numPrimitive; i++)	{		
+	//	Vec3d R = params[i].getR();
+	//	double sumAngles = abs(R[0]) + abs(R[1]) + abs(R[2]);
+	//	sumR += (s1.volumePrim[i]/s1.volumeBB) * (sumAngles/3/360);
+	//}
 
-	// SIGGRAPH 2012: last siggraph... :D
+	// SIGGRAPH 2012: last one... :D
 	return  std::accumulate(E.begin(), E.end(), 0)- activeOffset->getStackability();
 }
 
@@ -331,14 +331,14 @@ void StackerPanel::updateController()
 	vals[7] = scaling * ctrlDeformer.scaleY->value();
 	vals[8] = scaling * ctrlDeformer.scaleZ->value();
 
-	cuboidDeformParam param;
+	CuboidParam param;
 	param.setParams(vals);
 
 	for(uint i = 0; i < ctrl->numPrimitives(); i++){
 		Cuboid * prim = (Cuboid *) ctrl->getPrimitive(i);
 
 		if(prim->isSelected)
-			prim->deform(param);
+			prim->deform(&param);
 	}
 	
 	emit(objectModified());
@@ -348,15 +348,18 @@ void StackerPanel::updateController()
 
 void StackerPanel::resetCtrlDeformerPanel()
 {
-	ctrlDeformer.transX->setValue(50);
-	ctrlDeformer.transY->setValue(50);	
-	ctrlDeformer.transZ->setValue(50);
-	ctrlDeformer.rotX->setValue(50);
-	ctrlDeformer.rotY->setValue(50);	
-	ctrlDeformer.rotZ->setValue(50);
-	ctrlDeformer.scaleX->setValue(50);
-	ctrlDeformer.scaleY->setValue(50);	
-	ctrlDeformer.scaleZ->setValue(50);
+	CuboidParam param;
+	std::vector< double > defaultParams = param.getDefaulParam();
+
+	ctrlDeformer.transX->setValue( defaultParams[0] * 100 );
+	ctrlDeformer.transY->setValue( defaultParams[1] * 100 );	
+	ctrlDeformer.transZ->setValue( defaultParams[2] * 100 );
+	ctrlDeformer.rotX->setValue( defaultParams[3] * 100 );
+	ctrlDeformer.rotY->setValue( defaultParams[4] * 100 );	
+	ctrlDeformer.rotZ->setValue( defaultParams[5] * 100 );
+	ctrlDeformer.scaleX->setValue( defaultParams[6] * 100 );
+	ctrlDeformer.scaleY->setValue( defaultParams[7] * 100 );	
+	ctrlDeformer.scaleZ->setValue( defaultParams[8] * 100 );
 
 	emit(objectModified());
 }

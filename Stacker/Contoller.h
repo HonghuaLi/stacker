@@ -1,6 +1,6 @@
 #pragma once
 #include "Primitive.h"
-#include "cuboidDeformParam.h"
+#include "CuboidParam.h"
 
 class QSegMesh;
 
@@ -22,7 +22,7 @@ public:
 	void select(int id);
 
 	// Deformation
-	void deformShape(std::vector<cuboidDeformParam>& params, bool isPermanent = false);
+	void deformShape( PrimitiveParamMap primParams, bool isPermanent = false );
 	void recoverShape();
 
 	// SET and GET
@@ -40,12 +40,17 @@ public:
 		std::vector< double > volumePrim;
 		std::map< std::pair<int, int>, double > proximity;
 		std::map< std::pair<int, int>, bool > coplanarity;
+		std::vector< PrimitiveParam * > params;
 	};
 
 	Stat getStat();
+	Stat getOriginalStat();
 
 private:
 	std::vector<Primitive*> primitives;
 	QSegMesh* m_mesh;
+	Stat originalStat;
+
+
 };
 

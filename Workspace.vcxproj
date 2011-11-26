@@ -326,7 +326,7 @@
     <ClCompile Include="MathLibrary\Monge_via_jet_fitting.cpp" />
     <ClCompile Include="Stacker\Controller.cpp" />
     <ClCompile Include="Stacker\Cuboid.cpp" />
-    <ClCompile Include="Stacker\cuboidDeformParam.cpp" />
+    <ClCompile Include="Stacker\CuboidParam.cpp" />
     <ClCompile Include="Stacker\GCylinder.cpp" />
     <ClCompile Include="Stacker\HiddenViewer.cpp" />
     <ClCompile Include="Stacker\Offset.cpp" />
@@ -514,8 +514,9 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DQT_DLL "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\Spline" "-I.\GraphicsLibrary" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Utility" "-I.\MathLibrary" "-I.\Stacker" "-I.\Wires" "-I.\Deformer" "-I.\SkeletonExtract" "-I.\SkeletonExtract\Solver\UmfPack_include\AMD" "-I.\SkeletonExtract\Solver\UmfPack_include\UFconfig" "-I.\SkeletonExtract\Solver\UmfPack_include\UMFPACK" "-I.\SkeletonExtract\Solver\SuperLU" "-I." "-I."</Command>
     </CustomBuild>
-    <ClInclude Include="Stacker\cuboidDeformParam.h" />
+    <ClInclude Include="Stacker\CuboidParam.h" />
     <ClInclude Include="Stacker\Offset.h" />
+    <ClInclude Include="Stacker\PrimativeParam.h" />
     <ClInclude Include="Stacker\Primitive.h" />
     <CustomBuild Include="Stacker\StackerPreview.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

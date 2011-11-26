@@ -179,12 +179,14 @@ void Cuboid::rotateAroundAxes( Vector3 &angles )
 }
 
 
-void Cuboid::deform( cuboidDeformParam& params, bool isPermanent )
+void Cuboid::deform( PrimitiveParam *fromParams, bool isPermanent )
 {		
+	CuboidParam* params = (CuboidParam*) fromParams;
+
 	// Deform the OBB
-	translate(params.getT());
-	rotateAroundAxes(params.getR());
-	scaleAlongAxis(params.getS());
+	translate(params->getT());
+	rotateAroundAxes(params->getR());
+	scaleAlongAxis(params->getS());
 
 	// Apply the deformation 
 	deformMesh();

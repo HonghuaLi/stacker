@@ -201,3 +201,14 @@ QSegMesh* Offset::activeObject()
 {
 	return activeViewer->activeObject();
 }
+
+std::vector< uint > Offset::getHotSegments()
+{
+	std::vector< uint > hotSegs;
+	// need the real hot segments detection
+
+	hotSegs.push_back(0);
+	hotSegs.push_back(1);
+
+	return hotSegs;
+}

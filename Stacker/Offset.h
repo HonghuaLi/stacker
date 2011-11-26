@@ -25,6 +25,7 @@ public:
 	// Detect hot spots
 	void hotspotsFromDirection( int direction, double threshold );
 	void detectHotspots();
+	std::vector< uint > getHotSegments();
 	void showHotVertices();
 	void showHotSegments();
 

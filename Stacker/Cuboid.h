@@ -2,7 +2,7 @@
 #include "Primitive.h"
 #include "MinOBB3.h"
 #include <Eigen/Dense>
-#include "cuboidDeformParam.h"
+#include "CuboidParam.h"
 
 class Cuboid : public Primitive
 {
@@ -11,6 +11,7 @@ public:
 
 public:
 	virtual void fit();
+	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
 	virtual void deformMesh();
 	virtual void draw();
 	virtual void drawNames();
@@ -21,7 +22,6 @@ public:
 	void translate( Vector3 &T );
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
-	void deform( cuboidDeformParam& params, bool isPermanent = false);
 	void recoverMesh();
 
 private:
