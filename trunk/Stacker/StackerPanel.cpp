@@ -8,7 +8,6 @@
 #include <fstream>
 #include <algorithm>
 #include <numeric>
-#include <memory>
 
 StackerPanel::StackerPanel()
 {
@@ -168,7 +167,7 @@ void StackerPanel::gradientDescentOptimize()
 	// Initialization
 	PrimitiveParamMap optimalParams;
 	foreach (uint i, hotSegs) 
-		optimalParams[i] = std::shared_ptr<PrimitiveParam> ( new CuboidParam );
+		optimalParams[i] = (PrimitiveParam*) new CuboidParam;
 
 	// Optimize
 	double currE = sumEnergy();
@@ -324,7 +323,7 @@ void StackerPanel::updateController()
 	vals[7] = scaling * ctrlDeformer.scaleY->value();
 	vals[8] = scaling * ctrlDeformer.scaleZ->value();
 
-	std::shared_ptr<PrimitiveParam> param( new CuboidParam );
+	PrimitiveParam* param = ( CuboidParam* ) new CuboidParam;
 	param->setParams(vals);
 
 	for(uint i = 0; i < ctrl->numPrimitives(); i++){

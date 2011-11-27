@@ -45,7 +45,7 @@ void Controller::fitOBBs()
 		// Assign an ID
 		primitives.back()->id = primitives.size();
 
-		currStat.params.params.push_back(std::shared_ptr<PrimitiveParam>(new CuboidParam));
+		currStat.params.push_back( (PrimitiveParam*) new CuboidParam);
 	}
 }
 
@@ -132,14 +132,15 @@ void Controller::test1()
 
 void Controller::deformShape( PrimitiveParamMap& primParams, bool isPermanent )
 {
-	std::map< unsigned int, std::shared_ptr<PrimitiveParam> >::iterator it;
+	std::map< unsigned int, PrimitiveParam* >::iterator it;
 	for( it= primParams.begin(); it != primParams.end(); it++)
 	{
 		Primitive * pri = primitives[it->first];
 		pri->deform(it->second);
 
 		// Update param for each primitive
-		currStat.params[it->first].reset(it->second->clone());
+		delete currStat.params[it->first];
+		currStat.params[it->first] = it->second->clone();
 	}
 
 	m_mesh->computeBoundingBox();
