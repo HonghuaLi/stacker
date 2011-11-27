@@ -179,14 +179,14 @@ void Cuboid::rotateAroundAxes( Vector3 &angles )
 }
 
 
-void Cuboid::deform( std::shared_ptr<PrimitiveParam>& fromParams, bool isPermanent )
+void Cuboid::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
 {
-	CuboidParam* params = (CuboidParam*) (&*fromParams);
+	CuboidParam* cp = (CuboidParam*) params;
 
 	// Deform the OBB
-	translate(params->getT());
-	rotateAroundAxes(params->getR());
-	scaleAlongAxis(params->getS());
+	translate(cp->getT());
+	rotateAroundAxes(cp->getR());
+	scaleAlongAxis(cp->getS());
 
 	// Apply the deformation 
 	deformMesh();
@@ -195,6 +195,8 @@ void Cuboid::deform( std::shared_ptr<PrimitiveParam>& fromParams, bool isPermane
 	if(isPermanent)
 		originalBox = currBox;
 }
+
+
 
 void Cuboid::recoverMesh()
 {

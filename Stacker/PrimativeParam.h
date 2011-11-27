@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <memory>
 
 class PrimitiveParam{
 	
@@ -20,23 +19,35 @@ public:
 // With deep copying
 class PrimitiveParamMap{
 
-	typedef std::map< unsigned int, std::shared_ptr<PrimitiveParam> >::iterator Iterator;
+	typedef std::map< unsigned int, PrimitiveParam* >::iterator Iterator;
 
 public:
+	~PrimitiveParamMap()
+	{
+		this->clear();
+	}
 
 	PrimitiveParamMap& operator = (PrimitiveParamMap& from)
 	{
-		this->params.clear();
+		this->clear();
 
 		for(Iterator it= from.begin(); it != from.end(); it++)
-			this->params[it->first] = std::shared_ptr<PrimitiveParam>(it->second->clone());	
+			this->params[it->first] = it->second->clone();	
 
 		return *this;
 	}
 
-	std::shared_ptr<PrimitiveParam>& operator[](unsigned int i)
+	PrimitiveParam*& operator[](unsigned int i)
 	{
 		return params[i];
+	}
+
+	void clear()
+	{
+		for(Iterator it= params.begin(); it != params.end(); it++)
+			delete it->second;
+
+		params.clear();
 	}
 
 	void print()
@@ -50,32 +61,47 @@ public:
 	Iterator begin(){return params.begin();}
 	Iterator end(){return params.end();}
 
-	std::map< unsigned int, std::shared_ptr<PrimitiveParam> > params;
+	std::map< unsigned int, PrimitiveParam* > params;
 };
 
 // Vector with deep copying
 class PrimitiveParamVector{
 
-	typedef std::vector< std::shared_ptr<PrimitiveParam> >::iterator Iterator;
+	typedef std::vector< PrimitiveParam* >::iterator Iterator;
 
 public:
+	~PrimitiveParamVector()
+	{
+		this->clear();
+	}
+
 	PrimitiveParamVector& operator = (PrimitiveParamVector& from)
 	{
-		this->params.clear();
+		this->clear();
 
 		for(Iterator it= from.begin(); it != from.end(); it++)
-			this->params.push_back( std::shared_ptr<PrimitiveParam>((*it)->clone()) );	
+			this->params.push_back( (*it)->clone() );	
 
 		return *this;
 	}
 
-	std::shared_ptr<PrimitiveParam>& operator[](unsigned int i)
+	PrimitiveParam*& operator[](unsigned int i)
 	{
 		return params[i];
 	}
 
+	void clear()
+	{
+		for(Iterator it= params.begin(); it != params.end(); it++)
+			delete *it;
+
+		params.clear();
+	}
+
 	Iterator begin(){return params.begin();}
 	Iterator end(){return params.end();}
+	void push_back(PrimitiveParam* param){params.push_back(param);}
 
-	std::vector< std::shared_ptr<PrimitiveParam> > params;
+
+	std::vector< PrimitiveParam* > params;
 };
