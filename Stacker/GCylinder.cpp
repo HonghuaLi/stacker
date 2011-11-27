@@ -225,7 +225,8 @@ double GCylinder::volume()
 	return cage->volume();
 }
 
-void GCylinder::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
+
+void GCylinder::deform( std::shared_ptr<PrimitiveParam>& params, bool isPermanent /*= false*/ )
 {
 
 }

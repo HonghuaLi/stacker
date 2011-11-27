@@ -84,7 +84,7 @@ bool CuboidParam::setParam( int i, double val )
 	return true;	 
 }
 
-bool CuboidParam::setParams( std::vector< double > newParams )
+bool CuboidParam::setParams( std::vector< double >& newParams )
 {
 	bool result = true;
 
@@ -95,6 +95,7 @@ bool CuboidParam::setParams( std::vector< double > newParams )
 
 	return result;
 }
+
 
 void CuboidParam::print()
 {
@@ -125,4 +126,10 @@ std::vector< double > CuboidParam::getDefaulParam()
 int CuboidParam::numParams()
 {
 	return 9;
+}
+
+PrimitiveParam* CuboidParam::clone()
+{
+	CuboidParam* result = new CuboidParam( static_cast<CuboidParam&> (*this));
+	return (PrimitiveParam*)result;
 }

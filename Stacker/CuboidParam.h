@@ -3,11 +3,12 @@
 #include "Vector.h"
 #include "PrimativeParam.h"
 
-class CuboidParam : public CloneImpl<CuboidParam, PrimitiveParam>
+class CuboidParam : public PrimitiveParam
 {
 public:
 	// Constructor
 	CuboidParam();
+	virtual PrimitiveParam* clone();
 
 	// Ranges for each parameter
 	void setRanges(std::vector< double > &new_ranges);
@@ -20,7 +21,7 @@ public:
 
 	// Set param directly
 	bool setParam(int i, double val);
-	bool setParams(std::vector< double > newParams);
+	virtual bool setParams(std::vector< double >& newParams);
 
 	std::vector< double > getDefaulParam();
 

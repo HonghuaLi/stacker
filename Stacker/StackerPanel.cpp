@@ -8,6 +8,7 @@
 #include <fstream>
 #include <algorithm>
 #include <numeric>
+#include <memory>
 
 StackerPanel::StackerPanel()
 {
@@ -167,7 +168,7 @@ void StackerPanel::gradientDescentOptimize()
 	// Initialization
 	PrimitiveParamMap optimalParams;
 	foreach (uint i, hotSegs) 
-		optimalParams[i] = new CuboidParam();
+		optimalParams[i] = std::shared_ptr<PrimitiveParam> ( new CuboidParam );
 
 	// Optimize
 	double currE = sumEnergy();
@@ -182,9 +183,7 @@ void StackerPanel::gradientDescentOptimize()
 		
 		// make deep copies..
 		PrimitiveParamMap bestNeighborParams, currParams;
-
-		bestNeighborParams = optimalParams.clone();
-		currParams = optimalParams.clone();
+		currParams = optimalParams;
 
 		// Check all the neighbors
 		for (int i=0; i<nHotSeg; i++)
@@ -201,7 +200,7 @@ void StackerPanel::gradientDescentOptimize()
 				if (E < minE)
 				{
 					minE = E;
-					bestNeighborParams = currParams.clone();
+					bestNeighborParams = currParams;
 				}
 				currParams[i]->stepForward(j, -step);
 				ctrl->recoverShape();
@@ -216,7 +215,7 @@ void StackerPanel::gradientDescentOptimize()
 				if (E < minE)
 				{
 					minE = E;
-					bestNeighborParams = currParams.clone();
+					bestNeighborParams = currParams;
 				}
 				currParams[i]->stepForward(j, step);
 				ctrl->recoverShape();
@@ -233,16 +232,11 @@ void StackerPanel::gradientDescentOptimize()
 		{
 			// Update the current state the to best neighbor
 			currE = minE;
-			optimalParams = bestNeighborParams.clone();		
+			optimalParams = bestNeighborParams;		
 
 			// Print current state
 			printf("==============================\nThe current deformation parameters:\n\n");
-			std::map< uint, PrimitiveParam *>::iterator it = optimalParams.params.begin();
-			for (; it != optimalParams.params.end(); it++)
-			{
-				it->second->print();
-				printf("\n");
-			}
+			optimalParams.print();
 			printf("Stackability: %.3f\n Energy: %.3f\n", activeOffset->getStackability(), currE);
 		}
 
@@ -254,12 +248,7 @@ void StackerPanel::gradientDescentOptimize()
 	printf("\nOptimization is done ;)\n");
 
 	// Print optimal solution
-	std::map< uint, PrimitiveParam *>::iterator it = optimalParams.params.begin();
-	for (; it != optimalParams.params.end(); it++)
-	{
-		it->second->print();
-		printf("\n");
-	}
+	optimalParams.print();
 	printf("Stackability: %.3f\n Energy: %.3f\n", activeOffset->getStackability(), currE);
 }
 
@@ -273,17 +262,17 @@ double StackerPanel::sumEnergy( )
 	int numPrimitive = ctrl->numPrimitives();
 
 	Controller::Stat s1 = ctrl->getStat();
-	Controller::Stat s2 = ctrl->getOriginalStat();
+	Controller::Stat s0 = ctrl->getOriginalStat();
 
 	// SHAPE BB:
-	E.push_back(abs(s1.volumeBB - s2.volumeBB) / s2.volumeBB);
+	E.push_back(abs(s1.volumeBB - s0.volumeBB) / s0.volumeBB);
 
 
 	// PART BB:
 	double diffV = 0, sumV = 0;
 	for(int i = 0; i < numPrimitive; i++)	{
-		diffV += abs(s1.volumePrim[i] - s2.volumePrim[i]);
-		sumV += s2.volumePrim[i];
+		diffV += abs(s1.volumePrim[i] - s0.volumePrim[i]);
+		sumV += s0.volumePrim[i];
 	}
 	E.push_back(diffV/sumV);
 
@@ -292,19 +281,23 @@ double StackerPanel::sumEnergy( )
 	double diffP = 0, sumP = 0;
 	for(uint i = 0; i <numPrimitive; i++)	{
 		for (uint j = i + 1; j < numPrimitive; j++)		{
-			diffP += abs(s1.proximity[std::make_pair(i,j)] - s2.proximity[std::make_pair(i,j)]);
-			sumP += s2.proximity[std::make_pair(i,j)];
+			diffP += abs(s1.proximity[std::make_pair(i,j)] - s0.proximity[std::make_pair(i,j)]);
+			sumP += s0.proximity[std::make_pair(i,j)];
 		}
 	}
 	E.push_back( sumP==0 ? diffP : diffP/sumP);
 
 	// ROTATION
-	//double sumR = 0;
-	//for(int i = 0; i < numPrimitive; i++)	{		
-	//	Vec3d R = params[i].getR();
-	//	double sumAngles = abs(R[0]) + abs(R[1]) + abs(R[2]);
-	//	sumR += (s1.volumePrim[i]/s1.volumeBB) * (sumAngles/3/360);
-	//}
+	double sumR = 0;
+	for(int i = 0; i < numPrimitive; i++)	{	
+		CuboidParam* params = (CuboidParam*) (&*(s1.params[i]));
+		Vec3d R = params->getR();
+		double diffR = ( abs(R[0]) + abs(R[1]) + abs(R[2]) ) / ( 3*360 );
+		double w = s1.volumePrim[i];///s1.volumeBB;
+
+		sumR += diffR ;
+	}
+	E.push_back( sumR );
 
 	// SIGGRAPH 2012: last one... :D
 	return  std::accumulate(E.begin(), E.end(), 0)- activeOffset->getStackability();
@@ -331,14 +324,14 @@ void StackerPanel::updateController()
 	vals[7] = scaling * ctrlDeformer.scaleY->value();
 	vals[8] = scaling * ctrlDeformer.scaleZ->value();
 
-	CuboidParam param;
-	param.setParams(vals);
+	std::shared_ptr<PrimitiveParam> param( new CuboidParam );
+	param->setParams(vals);
 
 	for(uint i = 0; i < ctrl->numPrimitives(); i++){
 		Cuboid * prim = (Cuboid *) ctrl->getPrimitive(i);
 
 		if(prim->isSelected)
-			prim->deform(&param);
+			prim->deform(param);
 	}
 	
 	emit(objectModified());

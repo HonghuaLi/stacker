@@ -22,7 +22,7 @@ public:
 	void select(int id);
 
 	// Deformation
-	void deformShape( PrimitiveParamMap primParams, bool isPermanent = false );
+	void deformShape( PrimitiveParamMap& primParams, bool isPermanent = false );
 	void recoverShape();
 
 	// SET and GET
@@ -36,21 +36,23 @@ public:
 
 	// Computations
 	struct Stat{
+		// stats that can be easily computed in run time
 		double volumeBB;
 		std::vector< double > volumePrim;
 		std::map< std::pair<int, int>, double > proximity;
 		std::map< std::pair<int, int>, bool > coplanarity;
-		std::vector< PrimitiveParam * > params;
+
+		// stats that are stored and keep updating by other member functions
+		PrimitiveParamVector params;
 	};
 
-	Stat getStat();
-	Stat getOriginalStat();
+	Stat& getStat();
+	Stat& getOriginalStat();
 
 private:
 	std::vector<Primitive*> primitives;
 	QSegMesh* m_mesh;
 	Stat originalStat;
-
-
+	Stat currStat;
 };
 
