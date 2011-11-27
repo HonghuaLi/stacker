@@ -14,7 +14,7 @@ public:
 
 public:
 	virtual void fit();
-	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
+	virtual void deform( std::shared_ptr<PrimitiveParam>& params, bool isPermanent = false);
 	virtual void deformMesh();
 	virtual void draw();
 

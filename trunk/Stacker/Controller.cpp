@@ -45,7 +45,7 @@ void Controller::fitOBBs()
 		// Assign an ID
 		primitives.back()->id = primitives.size();
 
-		originalStat.params.push_back(new CuboidParam());
+		currStat.params.params.push_back(std::shared_ptr<PrimitiveParam>(new CuboidParam));
 	}
 }
 
@@ -130,17 +130,19 @@ void Controller::test1()
 
 }
 
-void Controller::deformShape( PrimitiveParamMap primParams, bool isPermanent )
+void Controller::deformShape( PrimitiveParamMap& primParams, bool isPermanent )
 {
-	std::map<uint, PrimitiveParam *>::iterator i = primParams.params.begin();
-	for(; i != primParams.params.end(); i++)
+	std::map< unsigned int, std::shared_ptr<PrimitiveParam> >::iterator it;
+	for( it= primParams.begin(); it != primParams.end(); it++)
 	{
-		Primitive * pri = primitives[i->first];
-		pri->deform(i->second);
+		Primitive * pri = primitives[it->first];
+		pri->deform(it->second);
+
+		// Update param for each primitive
+		currStat.params[it->first].reset(it->second->clone());
 	}
 
 	m_mesh->computeBoundingBox();
-
 }
 
 Primitive * Controller::getPrimitive( int id )
@@ -160,6 +162,9 @@ void Controller::recoverShape()
 		(( Cuboid* )primitives[i])->recoverMesh();
 	}
 
+	// recovery the stat
+	currStat.params = originalStat.params;
+
 	m_mesh->computeBoundingBox();
 }
 
@@ -174,16 +179,14 @@ int Controller::numHotPrimitives()
 	return num;
 }
 
-Controller::Stat Controller::getStat()
+Controller::Stat& Controller::getStat()
 {
-	Stat stat;
-
 	// Compute volume of each controller + total volume of Bounding Box
 	Point bbmin = Point( DBL_MAX, DBL_MAX, DBL_MAX);
 	Point bbmax = Point( DBL_MIN, DBL_MIN, DBL_MIN);
 
 	int pi = 0;
-	stat.volumePrim = std::vector<double>(primitives.size());
+	currStat.volumePrim = std::vector<double>(primitives.size());
 
 	foreach (Primitive * prim, primitives)
 	{
@@ -194,13 +197,13 @@ Controller::Stat Controller::getStat()
 		}
 
 		// Compute volume of each controller
-		stat.volumePrim[pi++] = prim->volume();
+		currStat.volumePrim[pi++] = prim->volume();
 	}
 
 	// Compute total volume of controllers BB
 	Point center = (bbmin + bbmax) / 2.0;
 
-	stat.volumeBB = abs((bbmax.x() - center.x()) * 
+	currStat.volumeBB = abs((bbmax.x() - center.x()) * 
 						(bbmax.y() - center.y()) *
 						(bbmax.z() - center.z())) * 8;
 
@@ -216,7 +219,7 @@ Controller::Stat Controller::getStat()
 
 			pi->currBox.ClosestSegment(pj->currBox, p, q);
 
-			stat.proximity[std::make_pair(i, j)] = (p-q).norm();
+			currStat.proximity[std::make_pair(i, j)] = (p-q).norm();
 		}
 	}
 
@@ -228,14 +231,14 @@ Controller::Stat Controller::getStat()
 			Primitive * pi = primitives[i];
 			Primitive * pj = primitives[j];
 
-			stat.coplanarity[std::make_pair(i, j)] = 0;
+			currStat.coplanarity[std::make_pair(i, j)] = 0;
 		}
 	}
 
-	return stat;
+	return currStat;
 }
 
-Controller::Stat Controller::getOriginalStat()
+Controller::Stat& Controller::getOriginalStat()
 {
 	return this->originalStat;
 }

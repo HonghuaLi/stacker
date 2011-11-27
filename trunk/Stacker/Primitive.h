@@ -13,7 +13,7 @@ public:
 
 	// Deform the underlying geometry according to the \pre_state and current state
 	virtual void deformMesh() = 0;
-	virtual void deform( PrimitiveParam* params, bool isPermanent = false) = 0;
+	virtual void deform( std::shared_ptr<PrimitiveParam>& params, bool isPermanent = false) = 0;
 
 	// Visualize the primitive and potential actions
 	virtual void draw(){}

@@ -179,9 +179,9 @@ void Cuboid::rotateAroundAxes( Vector3 &angles )
 }
 
 
-void Cuboid::deform( PrimitiveParam *fromParams, bool isPermanent )
-{		
-	CuboidParam* params = (CuboidParam*) fromParams;
+void Cuboid::deform( std::shared_ptr<PrimitiveParam>& fromParams, bool isPermanent )
+{
+	CuboidParam* params = (CuboidParam*) (&*fromParams);
 
 	// Deform the OBB
 	translate(params->getT());
