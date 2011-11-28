@@ -161,6 +161,7 @@ void StackerPanel::gradientDescentOptimize()
 	Controller* ctrl = activeObject()->controller;
 
 	// Get hot segments
+	activeOffset->detectHotspots();
 	std::set< uint > hotSegs = activeOffset->hotSegments;
 	int nHotSeg = hotSegs.size();
 
@@ -184,15 +185,15 @@ void StackerPanel::gradientDescentOptimize()
 		PrimitiveParamMap bestNeighborParams, currParams;
 		currParams = optimalParams;
 
-		// Check all the neighbors
-		for (int i=0; i<nHotSeg; i++)
+		// Check all the neighbors in the deformation space
+		for (std::set< uint >::iterator i=hotSegs.begin(); i!=hotSegs.end(); i++)
 		{
-			for (int j=0; j < currParams[i]->numParams(); j++)
+			for (int j=0; j < currParams[*i]->numParams(); j++)
 			{
 				double E = 0;
 
 				// Forward
-				currParams[i]->stepForward(j, step);
+				currParams[*i]->stepForward(j, step);
 				ctrl->deformShape(currParams);
 				emit(objectModified());
 				E = sumEnergy();
@@ -201,13 +202,13 @@ void StackerPanel::gradientDescentOptimize()
 					minE = E;
 					bestNeighborParams = currParams;
 				}
-				currParams[i]->stepForward(j, -step);
+				currParams[*i]->stepForward(j, -step);
 				ctrl->recoverShape();
 				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
 
 
 				// Backward
-				currParams[i]->stepForward(j, -step);
+				currParams[*i]->stepForward(j, -step);
 				ctrl->deformShape(currParams);
 				emit(objectModified());
 				E = sumEnergy();
@@ -216,7 +217,7 @@ void StackerPanel::gradientDescentOptimize()
 					minE = E;
 					bestNeighborParams = currParams;
 				}
-				currParams[i]->stepForward(j, step);
+				currParams[*i]->stepForward(j, step);
 				ctrl->recoverShape();
 				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
 			}
