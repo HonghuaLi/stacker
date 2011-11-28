@@ -222,6 +222,21 @@ void Scene::keyPressEvent( QKeyEvent *e )
 		updateActiveObject();
 	}
 
+	if(e->key() == Qt::Key_W)
+	{
+		this->setRenderMode(RENDER_WIREFRAME);
+	}
+
+	if(e->key() == Qt::Key_R)
+	{
+		this->setRenderMode(RENDER_REGULAR);
+	}
+
+	if(e->key() == Qt::Key_P)
+	{
+		this->setRenderMode(RENDER_POINT);
+	}
+
 	// Regular behavior
 	QGLViewer::keyPressEvent(e);
 }
@@ -336,4 +351,13 @@ bool Scene::isEmpty()
 void Scene::exportActiveObject()
 {
 	emit( exportActiveObject(activeObject()) );
+}
+
+void Scene::setRenderMode( RENDER_MODE toMode )
+{
+	QMap<QString, VBO>::iterator i;
+	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
+		i->render_mode = toMode;
+
+	updateGL();
 }

@@ -27,7 +27,7 @@ public:
 	QSurfaceMesh* getSegment(uint i);
 	std::vector<QSurfaceMesh*> getSegments();
 	uint nbSegments();
-	uint vertexInSegment( uint vid );
+	uint segmentIdOfVertex( uint vid );
 
 	// Draw
 	void simpleDraw();

@@ -139,8 +139,9 @@ void Controller::deformShape( PrimitiveParamMap& primParams, bool isPermanent )
 		pri->deform(it->second);
 
 		// Update param for each primitive
-		delete currStat.params[it->first];
+		PrimitiveParam* tmp = currStat.params[it->first];
 		currStat.params[it->first] = it->second->clone();
+		delete tmp;
 	}
 
 	m_mesh->computeBoundingBox();

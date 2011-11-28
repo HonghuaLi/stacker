@@ -41,6 +41,7 @@ public:
 	// VBO
 	QMap<QString, VBO> vboCollection;
 	void updateVBOs();
+	void setRenderMode(RENDER_MODE toMode);
 
 	// Scene Visualizations
 	void drawCornerAxis();

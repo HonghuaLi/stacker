@@ -93,6 +93,7 @@ void Offset::computeOffset()
 	activeViewer->updateGL();
 }
 
+
 // Still not very confident on screen coordinates converting
 void Offset::hotspotsFromDirection( int direction, double threshold )
 {
@@ -107,7 +108,8 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 	int w = activeViewer->width();
 	int h = activeViewer->height();	
 
-	// Go through the mesh
+	// Go through all vertices on the mesh
+	// Since the mesh always has irregular triangles, better to do uniform sampling!!!
 	uint i, nbV = activeObject()->nbVertices();
 	for (i=0; i<nbV; i++)
 	{
@@ -135,7 +137,7 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 			if (off > threshold)
 			{
 				hotVertices.push_back(i);
-				hotSegments.insert(activeObject()->vertexInSegment(i));			
+				hotSegments.insert(activeObject()->segmentIdOfVertex(i));			
 			}
 		}
 	}
@@ -149,7 +151,7 @@ void Offset::detectHotspots()
 	hotSegments.clear();
 
 	// Set the threshold for hot spots
-	double threshold = 0.8 * O_max;
+	double threshold = 0.9 * O_max;
 
 	// detect hot spots from both directions
 	hotspotsFromDirection(1, threshold);
@@ -170,7 +172,10 @@ void Offset::showHotVertices()
 
 void Offset::showHotSegments()
 {
-
+	for (std::set< uint >::iterator i=hotSegments.begin();i!=hotSegments.end();i++)
+	{
+		activeObject()->getSegment(*i)->setColorVertices(Vec4d(1, 0, 0, 1));
+	}
 }
 
 
@@ -202,13 +207,3 @@ QSegMesh* Offset::activeObject()
 	return activeViewer->activeObject();
 }
 
-std::vector< uint > Offset::getHotSegments()
-{
-	std::vector< uint > hotSegs;
-	// need the real hot segments detection
-
-	hotSegs.push_back(0);
-	hotSegs.push_back(1);
-
-	return hotSegs;
-}
