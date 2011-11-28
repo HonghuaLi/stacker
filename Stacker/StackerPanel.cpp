@@ -236,7 +236,7 @@ void StackerPanel::gradientDescentOptimize()
 			// Print current state
 			printf("==============================\nThe current deformation parameters:\n\n");
 			optimalParams.print();
-			printf("Stackability: %.3f\n Energy: %.3f\n", activeOffset->getStackability(), currE);
+			printf("Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), currE);
 		}
 
 	}
@@ -244,11 +244,11 @@ void StackerPanel::gradientDescentOptimize()
 	// Apply the optimal solution
 	ctrl->deformShape(optimalParams);
 	emit(objectModified());
-	printf("\nOptimization is done ;)\n");
+	printf("\n===\nOptimization is done ;)\n");
 
 	// Print optimal solution
 	optimalParams.print();
-	printf("Stackability: %.3f\n Energy: %.3f\n", activeOffset->getStackability(), currE);
+	printf("\nStackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), currE);
 }
 
 double StackerPanel::sumEnergy( )
@@ -336,7 +336,7 @@ void StackerPanel::updateController()
 	
 	emit(objectModified());
 
-	printf("Stackability: %.3f | Energy: %.3f\n", activeOffset->getStackability(), -99);
+	printf("Stackability: %.3f | Energy: %.3f\n", activeOffset->getStackability(), 0.0);
 }
 
 void StackerPanel::resetCtrlDeformerPanel()

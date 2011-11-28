@@ -563,9 +563,6 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <None Include="icon1.ico" />
-    <None Include="Resources\icons\stacker.png" />
     <None Include="stacker.ico" />
-    <None Include="Workspace.ico" />
   </ItemGroup>
 </Project>
