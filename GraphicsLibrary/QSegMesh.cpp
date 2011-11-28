@@ -303,7 +303,7 @@ void QSegMesh::moveCenterToOrigin()
 
 void QSegMesh::setColorVertices( double r, double g, double b, double a )
 {
-	bool assignRandomColors = true;
+	bool assignRandomColors = false;
 	std::vector<Vec4d> randomColors;
 
 	if(assignRandomColors)
@@ -475,7 +475,7 @@ void QSegMesh::normalize()
 	scaleFactor = radius;
 }
 
-uint QSegMesh::vertexInSegment( uint vid )
+uint QSegMesh::segmentIdOfVertex( uint vid )
 {
 	uint sid;
 	uint vid_local;

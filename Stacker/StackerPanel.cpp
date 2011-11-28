@@ -103,7 +103,7 @@ void StackerPanel::onHotspotsButtonClicked()
 		return;
 
 	activeOffset->detectHotspots();
-	activeOffset->showHotVertices();
+	activeOffset->showHotSegments();
 	emit(objectModified());
 	showMessage("Hot spots are detected.");
 }
@@ -161,7 +161,7 @@ void StackerPanel::gradientDescentOptimize()
 	Controller* ctrl = activeObject()->controller;
 
 	// Get hot segments
-	std::vector< uint > hotSegs = activeOffset->getHotSegments();
+	std::set< uint > hotSegs = activeOffset->hotSegments;
 	int nHotSeg = hotSegs.size();
 
 	// Initialization
@@ -260,8 +260,9 @@ double StackerPanel::sumEnergy( )
 	Controller* ctrl = activeObject()->controller;
 	int numPrimitive = ctrl->numPrimitives();
 
-	Controller::Stat s1 = ctrl->getStat();
-	Controller::Stat s0 = ctrl->getOriginalStat();
+	// NOTE: struct Stat cannot deep copy params, so have to use reference here!!!
+	Controller::Stat& s1 = ctrl->getStat();
+	Controller::Stat& s0 = ctrl->getOriginalStat();
 
 	// SHAPE BB:
 	E.push_back(abs(s1.volumeBB - s0.volumeBB) / s0.volumeBB);
@@ -289,7 +290,7 @@ double StackerPanel::sumEnergy( )
 	// ROTATION
 	double sumR = 0;
 	for(int i = 0; i < numPrimitive; i++)	{	
-		CuboidParam* params = (CuboidParam*) (&*(s1.params[i]));
+		CuboidParam* params = (CuboidParam*) (s1.params[i]);
 		Vec3d R = params->getR();
 		double diffR = ( abs(R[0]) + abs(R[1]) + abs(R[2]) ) / ( 3*360 );
 		double w = s1.volumePrim[i];///s1.volumeBB;

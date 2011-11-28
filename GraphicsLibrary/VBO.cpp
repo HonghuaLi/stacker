@@ -25,10 +25,8 @@ VBO::VBO( unsigned int vert_count, const PointType * v, const NormalType * n, co
 	isReady = false;
 
 	// Default rendering settings
-	isDrawRegular = true;
-	isDrawWireframe = false;
-	isDrawAsPoints = false;
 	isFlatShade = false;
+	render_mode = RENDER_REGULAR;
 }
 
 VBO::~VBO()
@@ -248,9 +246,20 @@ void VBO::render( bool dynamic )
 	if(isFlatShade) glShadeModel(GL_FLAT);
 
 	// render
-	if(isDrawRegular) render_regular();
-	if(isDrawWireframe) render_wireframe();
-	if(isDrawAsPoints) render_as_points();
+	switch (render_mode)
+	{
+	case RENDER_REGULAR:
+		render_regular();
+		break;
+
+	case RENDER_WIREFRAME:
+		render_wireframe();
+		break;
+
+	case RENDER_POINT:
+		render_as_points();
+		break;
+	}
 }
 
 void VBO::setDirty( bool state )

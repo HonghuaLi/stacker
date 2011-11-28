@@ -27,6 +27,10 @@ public:
 	// VBO
 	QMap<QString, VBO> vboCollection;
 	void updateVBOs();
+	void setRenderMode( RENDER_MODE toMode );
+
+	// Keyboard
+	virtual void keyPressEvent(QKeyEvent *e);
 
 	// Stacking parameters
 	Vec3d stackDirection;
@@ -37,4 +41,5 @@ public:
 public slots:
 	void setActiveScene(Scene * toScene);
 	void updateActiveObject();
+
 };

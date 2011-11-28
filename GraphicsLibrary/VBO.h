@@ -10,6 +10,8 @@ typedef Vec3d NormalType;
 typedef Vec4d ColorType;
 typedef uint Index;
 
+enum RENDER_MODE{ RENDER_WIREFRAME, RENDER_POINT, RENDER_REGULAR};
+
 class VBO
 {
 	unsigned int vertex_vbo_id;
@@ -52,8 +54,6 @@ public:
 	bool isVBOEnabled;
 
 	// Rendering flags
-	bool isDrawRegular;
-	bool isDrawWireframe;
-	bool isDrawAsPoints;
 	bool isFlatShade;
+	RENDER_MODE	render_mode;
 };

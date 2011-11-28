@@ -152,3 +152,32 @@ QSegMesh* StackerPreview::activeObject()
 		return NULL;
 }
 
+void StackerPreview::keyPressEvent( QKeyEvent *e )
+{
+	if(e->key() == Qt::Key_W)
+	{
+		this->setRenderMode(RENDER_WIREFRAME);
+	}
+
+	if(e->key() == Qt::Key_R)
+	{
+		this->setRenderMode(RENDER_REGULAR);
+	}
+
+	if(e->key() == Qt::Key_P)
+	{
+		this->setRenderMode(RENDER_POINT);
+	}
+
+	// Regular behavior
+	QGLViewer::keyPressEvent(e);
+}
+
+void StackerPreview::setRenderMode( RENDER_MODE toMode )
+{
+	QMap<QString, VBO>::iterator i;
+	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
+		i->render_mode = toMode;
+
+	updateGL();
+}
