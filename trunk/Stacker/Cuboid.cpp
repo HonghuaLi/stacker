@@ -5,6 +5,8 @@ Cuboid::Cuboid(QSurfaceMesh* mesh)
 	: Primitive(mesh)
 {
 	fit();
+
+	selectedPartId = -1;
 }
 
 void Cuboid::fit()
@@ -83,6 +85,22 @@ std::vector<Vector3> Cuboid::getBoxConners( MinOBB3::Box3 box )
 	return pnts;
 }
 
+std::vector< std::vector<Vector3> > Cuboid::getBoxFaces()
+{
+	std::vector< std::vector<Vector3> > faces;
+	std::vector<Vector3> pnts = getBoxConners(currBox);
+	std::vector<Vector3> f0 (4), f1 (4), f2 (4), f3 (4), f4 (4), f5 (4);
+
+	f0[0] = pnts[1]; f0[1] = pnts[0]; f0[2] = pnts[3]; f0[3] = pnts[2];faces.push_back(f0);
+	f1[0] = pnts[4]; f1[1] = pnts[5]; f1[2] = pnts[6]; f1[3] = pnts[7];faces.push_back(f1);
+	f2[0] = pnts[0]; f2[1] = pnts[1]; f2[2] = pnts[5]; f2[3] = pnts[4];faces.push_back(f2);
+	f3[0] = pnts[2]; f3[1] = pnts[3]; f3[2] = pnts[7]; f3[3] = pnts[6];faces.push_back(f3);
+	f4[0] = pnts[1]; f4[1] = pnts[2]; f4[2] = pnts[6]; f4[3] = pnts[5];faces.push_back(f4);
+	f5[0] = pnts[0]; f5[1] = pnts[4]; f5[2] = pnts[7]; f5[3] = pnts[3];faces.push_back(f5);
+	 
+	return faces;
+}
+
 void Cuboid::draw()
 {
 	// Draw center point
@@ -96,23 +114,40 @@ void Cuboid::draw()
 
 void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
 {
-	std::vector<Vector3> pnts = getBoxConners(currBox);
+	std::vector< std::vector<Vector3> > faces = getBoxFaces();
 
-	SimpleDraw::DrawSquare(pnts[1], pnts[0], pnts[3], pnts[2], isOpaque, lineWidth, color);
-	SimpleDraw::DrawSquare(pnts[4], pnts[5], pnts[6], pnts[7], isOpaque, lineWidth, color);
+	if(selectedPartId >= 0)
+	{
+		SimpleDraw::DrawSquare(faces[this->selectedPartId], false, 6, Vec4d(1,0,0,1));
+		SimpleDraw::IdentifyPoint(selectedPartPos(), 0,1,0,20);
+	}
 
-	SimpleDraw::DrawSquare(pnts[0], pnts[1], pnts[5], pnts[4], isOpaque, lineWidth, color);
-	SimpleDraw::DrawSquare(pnts[2], pnts[3], pnts[7], pnts[6], isOpaque, lineWidth, color);
-
-	SimpleDraw::DrawSquare(pnts[1], pnts[2], pnts[6], pnts[5], isOpaque, lineWidth, color);
-	SimpleDraw::DrawSquare(pnts[0], pnts[4], pnts[7], pnts[3], isOpaque, lineWidth, color);
+	for(int i = 0; i < faces.size(); i++)
+		SimpleDraw::DrawSquare(faces[i], isOpaque, lineWidth, color);
 }
 
-void Cuboid::drawNames()
+void Cuboid::drawNames(bool isDrawParts)
 {
-	glPushName(this->id);
-	drawCube(1,Vec4d(1,1,1,1), true);
-	glPopName();
+	if(isDrawParts)
+	{
+		int faceId = 0;
+
+		std::vector< std::vector<Vector3> > faces = getBoxFaces();
+
+		for(int i = 0; i < faces.size(); i++)
+		{
+			glPushName(faceId++);
+			SimpleDraw::DrawSquare(faces[i]);
+			glPopName();
+		}
+
+	}
+	else
+	{
+		glPushName(this->id);
+		drawCube(1,Vec4d(1,1,1,1), true);
+		glPopName();
+	}
 }
 
 Eigen::Vector3d Cuboid::V2E( Vector3 &vec )
@@ -178,7 +213,6 @@ void Cuboid::rotateAroundAxes( Vector3 &angles )
 	currBox.Axis[2] = E2V(p2);
 }
 
-
 void Cuboid::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
 {
 	CuboidParam* cp = (CuboidParam*) params;
@@ -196,8 +230,6 @@ void Cuboid::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
 		originalBox = currBox;
 }
 
-
-
 void Cuboid::recoverMesh()
 {
 	currBox = originalBox;
@@ -212,4 +244,56 @@ double Cuboid::volume()
 std::vector <Vec3d> Cuboid::points()
 {
 	return getBoxConners(currBox);
+}
+
+Vec3d Cuboid::selectedPartPos()
+{
+	Vec3d partPos(0,0,0);
+
+	std::vector< std::vector<Vector3> > faces = getBoxFaces();
+
+	std::vector<Vector3> face = faces[selectedPartId];
+
+	for(int i = 0; i < face.size(); i++)
+		partPos += face[i];
+
+	return partPos / face.size();
+}
+
+void Cuboid::reshapePart( Vec3d q )
+{
+	debugPoints.clear();
+	debugLines.clear();
+
+	Vec3d currCenter, oppositeCenter;
+	
+	currCenter = selectedPartPos();
+
+	debugLines.push_back(std::make_pair(currCenter, q));
+
+	std::vector< std::vector<Vector3> > faces = getBoxFaces();
+
+	// even / odd
+	int k = selectedPartId;
+	int j = k + 1;
+	if(k % 2 != 0)	j = k - 1;
+
+	for(int i = 0; i < faces[j].size(); i++) oppositeCenter += faces[j][i];
+	oppositeCenter = oppositeCenter / faces[j].size();
+
+	debugLines.push_back(std::make_pair(currCenter, oppositeCenter));
+
+	Vec3d v1 = currCenter - oppositeCenter;
+	Vec3d v2 = q - oppositeCenter;
+
+	Vec3d axis = cross(v1,v2).normalized();
+
+	std::vector<Vector3> newCurrFace = faces[k];
+
+	for(int i = 0; i < 4; i++)
+	{
+		Vec3d rotated = ((newCurrFace[i] - currCenter));
+
+		newCurrFace[i] = rotated + q;
+	}
 }

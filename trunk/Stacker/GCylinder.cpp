@@ -94,6 +94,11 @@ void GCylinder::draw()
 	//skel->draw(true);
 }
 
+void GCylinder::drawNames( bool isDrawParts)
+{
+
+}
+
 void GCylinder::update()
 {
 	int N = gc->frames.count();

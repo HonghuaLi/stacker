@@ -2,7 +2,7 @@
 #include "Workspace.h"
 #include "Scene.h"
 #include "SimpleDraw.h"
-#include "Contoller.h"
+#include "Controller.h"
 
 // Debugging codes
 #include "SkeletonExtract.h"
@@ -11,6 +11,8 @@ Skeleton * skel;
 
 #include "GeneralizedCylinder.h"
 GeneralizedCylinder * gc;
+
+ManipulatedFrame * controllerFrame;
 
 Scene::Scene( QWidget *parent)
 {
@@ -40,6 +42,8 @@ Scene::Scene( QWidget *parent)
 	skel = NULL;
 	skelExt = NULL;
 	gc = NULL;
+
+	controllerFrame = new ManipulatedFrame;
 }
 
 void Scene::setActiveObject(QSegMesh* newMesh)
@@ -149,7 +153,7 @@ void Scene::draw()
 		i->render();
 
 	// Fall back
-	if(vboCollection.isEmpty() && activeObject())
+	if(!isEmpty() && vboCollection.isEmpty())
 		activeObject()->simpleDraw();
 
 	// Draw the controllers if exist
@@ -170,6 +174,13 @@ void Scene::draw()
 	// DEBUG
 	if(gc) gc->draw();
 	if(skel) skel->draw();
+
+	if(manipulatedFrame() == controllerFrame)
+	{
+		Vec q = controllerFrame->position();
+		Vec3d p(q.x,q.y,q.z);
+		activeObject()->controller->reshapePrimitive(p);
+	}
 }
 
 void Scene::drawWithNames()
@@ -178,7 +189,14 @@ void Scene::drawWithNames()
 
 	// Draw the controllers if exist
 	if (!isEmpty() && activeObject()->controller)
-		activeObject()->controller->drawNames();
+	{
+		bool isDrawParts = false;
+
+		if(this->selectMode == CONTROLLER_ELEMENT)
+			isDrawParts = true;
+
+		activeObject()->controller->drawNames(isDrawParts);
+	}
 }
 
 void Scene::mousePressEvent( QMouseEvent* e )
@@ -208,7 +226,7 @@ void Scene::keyPressEvent( QKeyEvent *e )
 		skelExt->SaveToSkeleton(skel);
 
 		std::list<int> path = skel->getGraph().GetLargestConnectedPath();
-		
+
 		if(path.size())
 		{	
 			skel->selectNode(path.front());	
@@ -225,11 +243,6 @@ void Scene::keyPressEvent( QKeyEvent *e )
 	if(e->key() == Qt::Key_W)
 	{
 		this->setRenderMode(RENDER_WIREFRAME);
-	}
-
-	if(e->key() == Qt::Key_R)
-	{
-		this->setRenderMode(RENDER_REGULAR);
 	}
 
 	if(e->key() == Qt::Key_P)
@@ -262,9 +275,29 @@ void Scene::postSelection( const QPoint& point )
 
 	switch (selectMode)
 	{
-		case CONTROLLER:
+	case CONTROLLER:
 		if (!isEmpty() && activeObject()->controller)
 			activeObject()->controller->select(selected);
+		break;
+
+	case CONTROLLER_ELEMENT:
+		if (!isEmpty() && activeObject()->controller)
+		{
+			if(activeObject()->controller->selectPrimitivePart(selected))
+			{
+				setManipulatedFrame( controllerFrame );
+
+				Vec3d q = activeObject()->controller->getPrimPartPos();
+				Vec p(q.x(), q.y(), q.z());
+
+				manipulatedFrame()->setPosition(p);
+			}
+			else
+			{
+				setSelectMode(CONTROLLER);
+				setManipulatedFrame( activeFrame );
+			}
+		}
 		break;
 	}
 }
@@ -286,6 +319,10 @@ void Scene::setModifyMode(ModifyMode toMode)
 
 void Scene::postDraw()
 {
+	QGLViewer::postDraw();
+
+	SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
+
 	// Textual log messages
 	for(int i = 0; i < osdMessages.size(); i++){
 		int margin = 20; //px
@@ -295,10 +332,6 @@ void Scene::postDraw()
 		qglColor(Qt::white);
 		renderText(x, y, osdMessages.at(i));
 	}
-
-	QGLViewer::postDraw();
-
-	SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 }
 
 void Scene::print( QString message, long age )
@@ -357,7 +390,12 @@ void Scene::setRenderMode( RENDER_MODE toMode )
 {
 	QMap<QString, VBO>::iterator i;
 	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
-		i->render_mode = toMode;
+	{
+		if(i->render_mode == toMode)
+			i->render_mode = RENDER_REGULAR;
+		else
+			i->render_mode = toMode;
+	}
 
 	updateGL();
 }

@@ -1,4 +1,4 @@
-#include "Contoller.h"
+#include "Controller.h"
 #include "QSegMesh.h"
 #include "Cuboid.h"
 #include "GCylinder.h"
@@ -65,14 +65,16 @@ void Controller::draw()
 			c1->currBox.ClosestSegment(c2->currBox,p,q);
 			SimpleDraw::IdentifyLine(p,q,1,1,0);
 		}
+
+		primitives[i]->drawDebug();
 	}
 }
 
-void Controller::drawNames()
+void Controller::drawNames(bool isDrawParts)
 {
 	for (uint i = 0; i < primitives.size(); i++)
 	{
-		primitives[i]->drawNames();
+		primitives[i]->drawNames(isDrawParts);
 	}
 }
 
@@ -90,6 +92,42 @@ void Controller::select(int id)
 	{
 		if(primitives[i]->id == id)
 			primitives[i]->isSelected = true;
+	}
+}
+
+bool Controller::selectPrimitivePart( int id )
+{
+	bool beenSelected = false;
+
+	for (uint i = 0; i < primitives.size(); i++)
+	{
+		if(primitives[i]->isSelected)
+		{
+			primitives[i]->selectedPartId = id;
+			beenSelected = true;
+		}
+	}
+
+	return beenSelected;
+}
+
+Vec3d Controller::getPrimPartPos()
+{
+	for (uint i = 0; i < primitives.size(); i++)
+	{
+		if(primitives[i]->isSelected)
+			return primitives[i]->selectedPartPos();
+	}
+
+	return Vec3d();
+}
+
+void Controller::reshapePrimitive( Vec3d q )
+{
+	for (uint i = 0; i < primitives.size(); i++)
+	{
+		if(primitives[i]->isSelected)
+			primitives[i]->reshapePart(q);
 	}
 }
 
@@ -127,7 +165,6 @@ void Controller::test1()
 	cp->scaleAlongAxis( Vector3(0.9, 0.9, 0) );
 	cp->deformMesh();
 	m_mesh->computeBoundingBox();
-
 }
 
 void Controller::deformShape( PrimitiveParamMap& primParams, bool isPermanent )

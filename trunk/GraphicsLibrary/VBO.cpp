@@ -99,33 +99,40 @@ void VBO::render_regular( bool dynamic /*= false*/ )
 	if(dynamic || isDirty)
 		update();
 
-	if(vertex_vbo_id == 0) return; // something went wrong..
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	glEnable(GL_LIGHTING);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset( 1.0, 1.0 );
 
-	// bind
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo_id);
-	glVertexPointer(3, GL_DOUBLE, 0, 0);
+	glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
-	glBindBuffer(GL_ARRAY_BUFFER, Normalvbo_id);
-	glNormalPointer(GL_DOUBLE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, color_vbo_id);
-	glColorPointer(4, GL_DOUBLE, 0, 0);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faces_id);
-
+	// Bind vertex positions
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertex_vbo_id);
+	glVertexPointer(3, GL_DOUBLE, 0, NULL);
 	glEnableClientState(GL_VERTEX_ARRAY);
+
+	// Bind normals
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, Normalvbo_id);
+	glNormalPointer(GL_DOUBLE, 0, NULL);
 	glEnableClientState(GL_NORMAL_ARRAY);
+
+	// Bind colors
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, color_vbo_id);
+	glColorPointer(4, GL_DOUBLE, 0, NULL);
 	glEnableClientState(GL_COLOR_ARRAY);
 
-	// draw
+	// Alpha blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Bind faces
+	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, faces_id);
+
+	// Draw all faces
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
+
+	glPopClientAttrib();
+
+	glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 }
@@ -140,28 +147,35 @@ void VBO::render_wireframe( bool dynamic /*= false*/ )
 
 	if(vertex_vbo_id == 0) return;
 
-	glLineWidth(1.0f); // default?
-
-	glDisable(GL_LIGHTING);
-	glEnable(GL_BLEND); 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glColor4f(0, 0.6f, 0.2f, 0.5);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_CULL_FACE);
+
+	glLineWidth(1.0f); // default?
+	glColor4dv(Vec4d(0,1,0,1));
+
 	glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo_id);
+	// Bind vertex positions
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertex_vbo_id);
 	glVertexPointer(3, GL_DOUBLE, 0, NULL);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	
+	// Alpha blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faces_id);
+	// Bind faces
+	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, faces_id);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
 
-	glDisableClientState(GL_VERTEX_ARRAY);
-
 	glPopClientAttrib();
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_BLEND); 
+
+	glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+	glDisable(GL_CULL_FACE);
 	glEnable(GL_LIGHTING);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void VBO::render_vertices( bool dynamic /*= false*/ )
