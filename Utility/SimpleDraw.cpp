@@ -307,6 +307,11 @@ void SimpleDraw::DrawLineTick(const StdVector<Vec3d >& start, const StdVector<Ve
 
 }
 
+void SimpleDraw::DrawSquare(const std::vector<Vec3d> & v, bool isOpaque, float lineWidth, Vec4d color)
+{
+	DrawSquare(v[0],v[1],v[2],v[3], isOpaque, lineWidth, color[0], color[1], color[2], color[3]);
+}
+
 void SimpleDraw::DrawSquare(const Vec3d & v1, const Vec3d & v2, const Vec3d & v3, const Vec3d & v4, 
 	bool isOpaque, float lineWidth, Vec4d color)
 {

@@ -1,5 +1,5 @@
 #include "StackerPanel.h"
-#include "Contoller.h"
+#include "Controller.h"
 #include "Cuboid.h"
 #include "ConvexHull3.h"
 #include <QDockWidget>
@@ -33,6 +33,7 @@ StackerPanel::StackerPanel()
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
+	connect(panel.userControl, SIGNAL(clicked()), SLOT(userControlledPrimatives()));
 
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 
@@ -356,4 +357,11 @@ void StackerPanel::resetCtrlDeformerPanel()
 	ctrlDeformer.scaleZ->setValue( defaultParams[8] * 100 );
 
 	emit(objectModified());
+}
+
+void StackerPanel::userControlledPrimatives()
+{
+	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
+	
+	activeScene->setSelectMode(CONTROLLER_ELEMENT);
 }

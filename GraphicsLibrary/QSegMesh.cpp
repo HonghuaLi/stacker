@@ -2,7 +2,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QVector>
-#include "Contoller.h"
+#include "Controller.h"
 #include <fstream>
 #include <set>
 #include <map>

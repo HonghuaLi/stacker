@@ -481,9 +481,6 @@
     <ClInclude Include="Stacker\Cuboid.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\Contoller.h">
-      <Filter>Stacker\Header</Filter>
-    </ClInclude>
     <ClInclude Include="MathLibrary\GCDeformation.h">
       <Filter>MathLibrary\Header</Filter>
     </ClInclude>
@@ -497,6 +494,9 @@
       <Filter>Stacker\Header</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\PrimativeParam.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Controller.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
   </ItemGroup>

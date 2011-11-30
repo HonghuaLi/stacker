@@ -85,7 +85,7 @@
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;QtMultimediad4.lib;QtXmld4.lib;QtOpenGLd4.lib;GLee.lib;QtScriptd4.lib;QGLViewerd2.lib;OpenGL32.lib;Glu32.lib;libamd.lib;libumfpack.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;QtMultimediad4.lib;QtXmld4.lib;QtOpenGLd4.lib;GLee.lib;QtScriptd4.lib;QGLViewerd2.lib;opengl32.lib;glu32.lib;libamd.lib;libumfpack.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.\libQGLViewer\QGLViewer\lib;.\GL;.\OpenMesh\lib;.\SkeletonExtract\Solver\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -498,7 +498,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\Spline" "-I.\GraphicsLibrary" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Utility" "-I.\MathLibrary" "-I.\Stacker" "-I.\Wires" "-I.\Deformer" "-I.\SkeletonExtract" "-I.\SkeletonExtract\Solver\UmfPack_include\AMD" "-I.\SkeletonExtract\Solver\UmfPack_include\UFconfig" "-I.\SkeletonExtract\Solver\UmfPack_include\UMFPACK" "-I.\SkeletonExtract\Solver\SuperLU" "-I." "-I." "Stacker\HiddenViewer.h" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
-    <ClInclude Include="Stacker\Contoller.h" />
+    <ClInclude Include="Stacker\Controller.h" />
     <ClInclude Include="Stacker\Cuboid.h" />
     <CustomBuild Include="Stacker\GCylinder.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);%(AdditionalInputs)</AdditionalInputs>

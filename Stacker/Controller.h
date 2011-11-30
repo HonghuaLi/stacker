@@ -18,8 +18,13 @@ public:
 
 	// OpenGL stuff
 	void draw();
-	void drawNames();
+	void drawNames(bool isDrawParts = false);
+	
+	// Interaction
 	void select(int id);
+	bool selectPrimitivePart( int id );
+	Vec3d getPrimPartPos();
+	void reshapePrimitive(Vec3d q);
 
 	// Deformation
 	void deformShape( PrimitiveParamMap& primParams, bool isPermanent = false );

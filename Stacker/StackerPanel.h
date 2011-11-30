@@ -5,7 +5,7 @@
 #include "StackerPreview.h"
 #include "HiddenViewer.h"
 #include "Offset.h"
-#include "Contoller.h"
+#include "Controller.h"
 #include "ui_SpaceExplorer.h"
 
 class StackerPanel : public QWidget
@@ -49,6 +49,7 @@ public slots:
 	void convertGC();
 	void updateController();
 	void resetCtrlDeformerPanel();
+	void userControlledPrimatives();
 
 signals:
 	void printMessage( QString );
