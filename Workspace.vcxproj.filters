@@ -338,6 +338,18 @@
     <ClCompile Include="Stacker\CuboidParam.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
+    <ClCompile Include="Stacker\QDeformController.cpp">
+      <Filter>Stacker\Header</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QDeformController.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QDeformController.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_QDeformController.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -560,6 +572,9 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\SpaceExplorer.ui">
       <Filter>Stacker\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\QDeformController.h">
+      <Filter>Stacker\Source</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
