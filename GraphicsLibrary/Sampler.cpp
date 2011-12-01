@@ -2,6 +2,7 @@
 
 #include "SimpleDraw.h"
 #include "Stats.h"
+#include "ColorMap.h"
 
 Sampler::Sampler(QSurfaceMesh * srcMesh, SamplingMethod samplingMethod)
 {
@@ -56,7 +57,7 @@ Sampler::Sampler(QSurfaceMesh * srcMesh, SamplingMethod samplingMethod)
 	isReady = true;
 }
 
-SamplePoint Sampler::getSample()
+SamplePoint Sampler::getSample(double weight)
 {
 	SamplePoint sp;
 
@@ -73,7 +74,7 @@ SamplePoint Sampler::getSample()
 		// Add sample from that face
 		double b[3]; RandomBaricentric(b);
 
-		sp = SamplePoint( mesh->getBaryFace(face, b[0], b[1]), mesh->fn(face), 1.0, face_id, b[0], b[1]);
+		sp = SamplePoint( mesh->getBaryFace(face, b[0], b[1]), mesh->fn(face), weight, face_id, b[0], b[1]);
 	}
 	else if( method ==  FACE_CENTER )
 	{
@@ -97,13 +98,13 @@ SamplePoint Sampler::getSample()
 	return sp;
 }
 
-StdVector<SamplePoint> Sampler::getSamples(int numberSamples)
+StdVector<SamplePoint> Sampler::getSamples(int numberSamples, double weight)
 {
 	StdVector<SamplePoint> samples;
 
 	for(int i = 0; i < numberSamples; i++)
 	{
-		samples.push_back( getSample() );
+		samples.push_back( getSample(weight) );
 	}
 
 	return samples;
@@ -161,11 +162,13 @@ void Sampler::draw(const StdVector<SamplePoint> & samples)
 	glPointSize(4.0);
 
 	glBegin(GL_POINTS);
+	uchar * rgb = new uchar[3];	
 	for(int i = 0; i < (int)samples.size(); i++)
 	{
 		const SamplePoint * p = &samples[i];
 
-		glColor4f(1,0,0, p->weight);
+		ColorMap::jetColorMap(rgb, p->weight, 0., 1.);	
+		glColor4f(rgb[0],rgb[1],rgb[2],1);
 		glNormal3dv(p->n);
 		glVertex3dv(p->pos);
 	}

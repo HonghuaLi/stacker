@@ -483,3 +483,14 @@ uint QSegMesh::segmentIdOfVertex( uint vid )
 
 	return sid;
 }
+
+void QSegMesh::sample( int numSamples )
+{
+	samples.clear();
+
+	for (int i=0;i<nbSegments();i++)
+	{
+		Sampler sampler(getSegment(i), RANDOM_BARYCENTRIC);
+		samples.push_back(sampler.getSamples(numSamples));
+	}
+}
