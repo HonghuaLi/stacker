@@ -12,7 +12,8 @@ Skeleton * skel;
 #include "GeneralizedCylinder.h"
 GeneralizedCylinder * gc;
 
-ManipulatedFrame * controllerFrame;
+#include "QDeformController.h"
+QDeformController * defCtrl;
 
 Scene::Scene( QWidget *parent)
 {
@@ -42,8 +43,7 @@ Scene::Scene( QWidget *parent)
 	skel = NULL;
 	skelExt = NULL;
 	gc = NULL;
-
-	controllerFrame = new ManipulatedFrame;
+	defCtrl = NULL;
 }
 
 void Scene::setActiveObject(QSegMesh* newMesh)
@@ -61,6 +61,208 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 
 	emit(objectInserted());
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void Scene::updateVBOs()
 {
@@ -121,7 +323,6 @@ void Scene::init()
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 	glMaterialf(GL_FRONT, GL_SHININESS, high_shininess);
-
 }
 
 void Scene::setupCamera()
@@ -175,6 +376,15 @@ void Scene::draw()
 	if(gc) gc->draw();
 	if(skel) skel->draw();
 
+	if(defCtrl)
+	{
+		/*Vec q = controllerFrame->position();
+		Vec3d p(q.x,q.y,q.z);
+		SimpleDraw::IdentifyPoint(p);*/
+
+		defCtrl->drawDebug();
+	}
+
 	// Samples
 	if (!isEmpty())
 	{
@@ -182,14 +392,6 @@ void Scene::draw()
 		{
 			Sampler::draw(activeObject()->samples[i]);
 		}
-
-	}
-
-	if(manipulatedFrame() == controllerFrame)
-	{
-		Vec q = controllerFrame->position();
-		Vec3d p(q.x,q.y,q.z);
-		activeObject()->controller->reshapePrimitive(p);
 	}
 }
 
@@ -295,7 +497,10 @@ void Scene::postSelection( const QPoint& point )
 		{
 			if(activeObject()->controller->selectPrimitivePart(selected))
 			{
-				setManipulatedFrame( controllerFrame );
+				defCtrl = new QDeformController();
+				defCtrl->setController(activeObject()->controller);
+
+				setManipulatedFrame( defCtrl->getFrame() );
 
 				Vec3d q = activeObject()->controller->getPrimPartPos();
 				Vec p(q.x(), q.y(), q.z());
@@ -379,7 +584,6 @@ void Scene::setActiveDeformer( QFFD * newFFD )
 	activeDeformer = newFFD;
 	updateGL();
 }
-
 
 QSegMesh * Scene::activeObject()
 {
