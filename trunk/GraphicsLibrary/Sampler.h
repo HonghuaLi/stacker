@@ -47,9 +47,8 @@ public:
 	Sampler(QSurfaceMesh * srcMesh = NULL, SamplingMethod samplingMethod = RANDOM_BARYCENTRIC );
 	Sampler(void * srcMesh, SamplingMethod samplingMethod);
 	// Get samples
-	SamplePoint getSample();
-	StdVector<SamplePoint> getSamples(int numberSamples);
-
+	SamplePoint getSample(double weight = 0.0);
+	StdVector<SamplePoint> getSamples(int numberSamples, double weight = 0.0);
 	// Bias samples
 	void resampleWithBias();
 	void clearBias();
@@ -64,7 +63,7 @@ public:
 	StdVector<double> faceProbability;
 
 	// DEBUG:
-	void draw(const StdVector<SamplePoint> & samples);
+	static void draw(const StdVector<SamplePoint> & samples);
 
 	bool isReady;
 };

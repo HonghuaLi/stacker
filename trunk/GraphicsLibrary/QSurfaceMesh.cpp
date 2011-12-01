@@ -57,8 +57,8 @@ QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
 
 void QSurfaceMesh::computeBoundingBox()
 {
-	Surface_mesh::Vertex_property<Point> points = vertex_property<Point>("v:point");
-	Surface_mesh::Vertex_iterator vit, vend = vertices_end();
+	Vertex_property<Point> points = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
 
 	// compute bounding box
 	bbmin = Point( DBL_MAX, DBL_MAX, DBL_MAX);

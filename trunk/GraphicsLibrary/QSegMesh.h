@@ -3,6 +3,7 @@
 #include <QString>
 #include "QSurfaceMesh.h"
 #include <vector>
+#include "Sampler.h"
 
 class Controller;
 
@@ -63,6 +64,10 @@ public:
 	// Stackability
 	Scalar O_max;
 	Scalar stackability;
+
+	// Samples
+	StdVector< StdVector < SamplePoint >> samples;
+	void sample(int numSamples);
 
 private:
 	std::vector<QSurfaceMesh*> segment;

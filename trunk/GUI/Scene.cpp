@@ -175,6 +175,16 @@ void Scene::draw()
 	if(gc) gc->draw();
 	if(skel) skel->draw();
 
+	// Samples
+	if (!isEmpty())
+	{
+		for (int i=0;i<activeObject()->samples.size();i++)
+		{
+			Sampler::draw(activeObject()->samples[i]);
+		}
+
+	}
+
 	if(manipulatedFrame() == controllerFrame)
 	{
 		Vec q = controllerFrame->position();

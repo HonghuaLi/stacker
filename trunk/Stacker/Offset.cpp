@@ -1,7 +1,9 @@
 #include "Offset.h"
 #include "HiddenViewer.h"
+#include "ColorMap.h"
 
 #define ZERO_TOLERANCE 0.01
+#define BIG_NUMBER 9999
 
 Offset::Offset( HiddenViewer *viewer )
 {
@@ -42,7 +44,7 @@ std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 		{
 			double zU = depthBuffer[(y*w) + x];
 			if (zU == 1.0)
-				envelop[y][x] = FLOAT_INFINITY;
+				envelop[y][x] = BIG_NUMBER;
 			else
 				envelop[y][x] = zCamera - direction * ( zU * zFar + (1-zU) * zNear );
 		}
@@ -75,7 +77,7 @@ void Offset::computeOffset()
 		for (int x = 0; x < w; x++)
 		{
 			// Two envelopes are horizontally flipped
-			if (upperEnvelope[y][x]==DOUBLE_INFINITY | lowerEnvelope[y][(w-1)-x]==DOUBLE_INFINITY)
+			if (upperEnvelope[y][x]== BIG_NUMBER | lowerEnvelope[y][(w-1)-x] == BIG_NUMBER)
 				offset[y][x] = 0.0; 
 			else
 				offset[y][x] = upperEnvelope[y][x] - lowerEnvelope[y][(w-1)-x];
@@ -108,39 +110,65 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 	int w = activeViewer->width();
 	int h = activeViewer->height();	
 
-	// Go through all vertices on the mesh
-	// Since the mesh always has irregular triangles, better to do uniform sampling!!!
-	uint i, nbV = activeObject()->nbVertices();
-	for (i=0; i<nbV; i++)
+	// Go through all samples on the mesh
+	// Since the mesh always has irregular triangles, we can not just simply go through all vertices on the mesh
+	std::vector< std::vector < SamplePoint > >& samples = activeObject()->samples;
+	std::vector< std::vector < uint > > hotSamples(activeObject()->nbSegments());
+
+	// visualizing
+	QImage proj(w, h, QImage::Format_ARGB32);
+
+	for (int i=0; i<samples.size(); i++)
 	{
-		Point src = activeObject()->getVertexPos(i);
-		Vec vpixel = activeViewer->camera()->projectedCoordinatesOf(Vec(src));
-
-		// Get the 2D projected coordinate
-		int x = ceil((w - 1) - vpixel.x);
-		int y = ceil((h - 1) - vpixel.y);
-		x = RANGED(0, x, w-1);
-		y = RANGED(0, y, h-1);
-
-		// Check whether it is visible
-		bool isVisible;
-		if (direction == 1)
-			isVisible = src.z() > (envelope[y][x] - ZERO_TOLERANCE);
-		else
-			isVisible = src.z() < (envelope[y][x] + ZERO_TOLERANCE);
-
-		// Check whether it is hot
-		if (isVisible)
+		for (int j=0; j<samples[i].size();j++)
 		{
-			double off = offset[y][x];
+			Point src = samples[i][j].pos;
 
-			if (off > threshold)
+			Vec vpixel = activeViewer->camera()->projectedCoordinatesOf(Vec(src));
+
+			// Get the 2D projected coordinate
+			int x = RANGED(0, vpixel.x, w-1);
+			int y = RANGED(0, vpixel.y, h-1);
+	
+			double offsetValue = getValue(offset, (w-1)-x, (h-1)-y);
+			double envelopeValue = getValue(envelope, x, y); // right
+
+			// Check whether it is visible
+			bool isVisible;
+			if (direction == 1)
+				isVisible = src.z() > (envelopeValue - ZERO_TOLERANCE);
+			else
+				isVisible = src.z() < (envelopeValue + ZERO_TOLERANCE);
+
+			// Check whether it is hot
+			std::vector<uchar> rgb(3, 0);		
+			if (isVisible)
 			{
-				hotVertices.push_back(i);
-				hotSegments.insert(activeObject()->segmentIdOfVertex(i));			
+				if (offsetValue > threshold)				
+					hotSamples[i].push_back(j);
+
+				samples[i][j].weight = offsetValue/O_max;
+
+				rgb[0] = 255;
 			}
-		}
+
+
+			//ColorMap::jetColorMap(rgb, samples[i][j].weight, 0, 1);
+			proj.setPixel(x, y, QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba());
+		}// end of j
+
+	}//end of i
+
+	// Detect hot segments
+	for (int i=0;i<activeObject()->nbSegments();i++)
+	{
+		if (!hotSamples[i].empty())
+			hotSegments.insert(i);
 	}
+
+	QString filename = (direction == 1)? "proj1.png" : "proj2.png";
+	proj.save(filename);
+	
 }
 
 
@@ -151,9 +179,13 @@ void Offset::detectHotspots()
 	hotSegments.clear();
 
 	// Set the threshold for hot spots
-	double threshold = 0.9 * O_max;
+	double threshold = 0.95 * O_max;
+
+	// Uniform random sampling on the mesh
+	activeObject()->sample(10000);
 
 	// detect hot spots from both directions
+	hotSegments.clear();
 	hotspotsFromDirection(1, threshold);
 	hotspotsFromDirection(-1, threshold);
 }
@@ -189,7 +221,7 @@ void Offset::saveOffsetAsImage( QString fileName )
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
 			ColorMap::jetColorMap(rgb, Max(0., offset[y][x] / O_max), 0., 1.);
-			offset_img.setPixel(x, (h-1) - y, QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba());			
+			offset_img.setPixel(x, y, QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba());			
 		}
 	}
 
@@ -205,5 +237,28 @@ double Offset::getStackability()
 QSegMesh* Offset::activeObject()
 {
 	return activeViewer->activeObject();
+}
+
+double Offset::getValue( std::vector< std::vector < double > >& image, uint x, uint y )
+{
+	// The window size of smoothing
+	uint r = 1;
+
+	int w = activeViewer->width();
+	int h = activeViewer->height();	
+
+	uint min_x = RANGED(0, x-r ,w);
+	uint max_x = RANGED(0, x+r, w);
+	uint min_y = RANGED(0, y-r ,w);
+	uint max_y = RANGED(0, y+r, w);
+
+	// Uniform smoothing in an window
+	// Maybe Gaussian smoothing is better
+	double sumVal = 0;
+	for (int i=min_y;i<=max_y;i++)
+		for (int j=min_x;j<=max_x;j++)
+			sumVal += image[y][x];
+
+	return sumVal/((2*r+1)*(2*r+1));
 }
 

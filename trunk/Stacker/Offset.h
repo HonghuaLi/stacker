@@ -34,6 +34,8 @@ public:
 	// Stackability = 1 - O_max/H
 	double getStackability();
 
+	// Guassian kernel
+	double getValue( std::vector< std::vector < double > >& image, uint x, uint y );
 
 	HiddenViewer * activeViewer;
 	std::vector< std::vector<double> > upperEnvelope;
