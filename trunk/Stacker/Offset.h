@@ -17,7 +17,7 @@ public:
 	QSegMesh* activeObject();
 
 	// Compute the upper/lower envelops
-	std::vector< std::vector<double> > computeEnvelope(int direction);	
+	void computeEnvelope(int direction, std::vector< std::vector<double> > &envelope, std::vector< std::vector<double> > &depth);	
 	
 	// Compute offset function and stackability
 	void computeOffset();
@@ -39,9 +39,12 @@ public:
 
 	HiddenViewer * activeViewer;
 	std::vector< std::vector<double> > upperEnvelope;
-	std::vector< std::vector<double> > lowerEnvelope;
+	std::vector< std::vector<double> > lowerEnvelope;	
+	std::vector< std::vector<double> > upperDepth;
+	std::vector< std::vector<double> > lowerDepth;
 	std::vector< std::vector<double> > offset; 
 	double O_max;
 	double objectH;
 	std::map< uint, std::set<uint> > hotFaces;
+	std::map< uint, std::set<Vec3d> > hotPoints;
 };

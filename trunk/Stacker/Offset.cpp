@@ -12,7 +12,8 @@ Offset::Offset( HiddenViewer *viewer )
 	activeViewer = viewer;
 }
 
-std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
+
+void Offset::computeEnvelope( int direction, std::vector< std::vector<double> > &envelope, std::vector< std::vector<double> > &depth )
 {
 	// Set camera
 	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
@@ -36,25 +37,28 @@ std::vector< std::vector<double> > Offset::computeEnvelope( int direction )
 	int h = activeViewer->height();
 	double zNear = activeViewer->camera()->zNear();
 	double zFar = activeViewer->camera()->zFar();
-	std::vector< std::vector<double> > envelop(h);
+	envelope.resize(h);
+	depth.resize(h);
 
 	for(int y = 0; y < h; y++)
 	{
-		envelop[y].resize(w);
+		envelope[y].resize(w);
+		depth[y].resize(w);
 
 		for(int x = 0;x < w; x++)
 		{
 			double zU = depthBuffer[(y*w) + x];
+
+			depth[y][x] = zU;
+
 			if (zU == 1.0)
-				envelop[y][x] = BIG_NUMBER;
+				envelope[y][x] = BIG_NUMBER;
 			else
-				envelop[y][x] = zCamera - direction * ( zU * zFar + (1-zU) * zNear );
+				envelope[y][x] = zCamera - direction * ( zU * zFar + (1-zU) * zNear );
 		}
 	}
 
 	delete[] depthBuffer;
-
-	return envelop;
 }
 
 void Offset::computeOffset()
@@ -68,8 +72,8 @@ void Offset::computeOffset()
 	activeViewer->camera()->addKeyFrameToPath(0);
 
 	// Compute the offset function
-	upperEnvelope = computeEnvelope(1);
-	lowerEnvelope = computeEnvelope(-1);
+	computeEnvelope(1, upperEnvelope, upperDepth);
+	computeEnvelope(-1, lowerEnvelope, lowerDepth);
 	offset = upperEnvelope; 
 	int h = upperEnvelope.size();
 	int w = upperEnvelope[0].size();
@@ -113,6 +117,9 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 	int w = activeViewer->width();
 	int h = activeViewer->height();	
 
+	// The depth buffer
+	std::vector< std::vector<double> > &depth = (direction == 1)? upperDepth : lowerDepth;
+
 	// Detect hot spots
 	//QImage unique_image(w, h, QImage::Format_ARGB32);
 	uint sid, fid_local;
@@ -139,11 +146,14 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 
 			uint f_id = ((255-a)<<24) + (r<<16) + (g<<8) + b - 1;
 
-			// Get the segment index of this face
+			// Segment index of this face
 			if (f_id >= activeObject()->nbFaces()) continue;
 			activeObject()->global2local_fid(f_id, sid, fid_local);
 			hotFaces[sid].insert(fid_local);
 
+			// 3d position of this hot pixel
+			Vec hotP= activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, y, depth[y][x]));
+			hotPoints[sid].insert(Vec3d(hotP.x, hotP.y, hotP.z));
 
 			//unique_image.setPixel(x, y, QColor::fromRgb(r,g,b).rgba());
 		}
@@ -157,6 +167,7 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 void Offset::detectHotspots()
 {
 	// Initialization
+	hotPoints.clear();
 	hotFaces.clear();
 
 	// Set the threshold for hot spots
@@ -164,12 +175,13 @@ void Offset::detectHotspots()
 
 	// detect hot spots from both directions
 	hotspotsFromDirection(1, threshold);
-	hotspotsFromDirection(-1, threshold);
+//	hotspotsFromDirection(-1, threshold);
 }
 
 
 void Offset::showHotSegments()
 {
+	// Show hot faces
 	for (std::map< uint, std::set< uint > >::iterator i=hotFaces.begin();i!=hotFaces.end();i++)
 	{
 		uint sid = i->first;
@@ -180,6 +192,18 @@ void Offset::showHotSegments()
 		for (std::set< uint >::iterator fit = i->second.begin(); fit != i->second.end(); fit++)
 		{
 			segment->debug_points.push_back(segment->faceCenter((Surface_mesh::Face)*fit));
+		}
+	}
+
+	// Show hot points
+	for (std::map< uint, std::set< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
+	{
+		uint sid = i->first;
+		QSurfaceMesh* segment = activeObject()->getSegment(sid);
+
+		for (std::set< Vec3d >::iterator pit = i->second.begin(); pit != i->second.end(); pit++)
+		{
+			segment->debug_points.push_back(*pit);
 		}
 	}
 }
