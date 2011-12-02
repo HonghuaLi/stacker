@@ -353,8 +353,14 @@ void QSegMesh::drawFacesUnique()
 	{
 		segment[i]->drawFacesUnique(offset);
 
-		offset += segment[i]->n_vertices();
+		offset += segment[i]->n_faces();
 	}
+}
+
+void QSegMesh::drawDebug()
+{
+	for (int i=0;i<segment.size();i++)
+		segment[i]->drawDebug();
 }
 
 void QSegMesh::setObjectName( const QString &name )
@@ -404,6 +410,8 @@ std::vector<uint> QSegMesh::vertexIndicesAroundFace( uint fid )
 
 void QSegMesh::global2local_fid( uint fid, uint& sid, uint& fid_local )
 {
+	if (fid >= nbFaces()) return;
+
 	uint offset = 0;
 	int i=0;
 	for (;i<segment.size();i++)
@@ -484,13 +492,3 @@ uint QSegMesh::segmentIdOfVertex( uint vid )
 	return sid;
 }
 
-void QSegMesh::sample( int numSamples )
-{
-	samples.clear();
-
-	for (int i=0;i<nbSegments();i++)
-	{
-		Sampler sampler(getSegment(i), RANDOM_BARYCENTRIC);
-		samples.push_back(sampler.getSamples(numSamples));
-	}
-}

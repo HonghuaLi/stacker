@@ -57,13 +57,17 @@ void HiddenViewer::draw()
 	case HV_DEPTH:
 		glClearColor(0,0,0,0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glDisable(GL_MULTISAMPLE);
 		activeObject()->simpleDraw();
+		break;
+	case HV_FACEUNIQUE:
+		glClearColor(0,0,0,0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		activeObject()->drawFacesUnique();
 		break;
 	}
 
 	// Restore background color
-	this->setBackgroundColor(backColor);
+	//this->setBackgroundColor(backColor);
 
 	setMode(HV_NONE);
 }
