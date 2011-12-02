@@ -117,6 +117,7 @@ unsigned inline int fact(unsigned int n){
 #define MaxElement(v) (*max_element(v.begin(), v.end()))
 #define MinElement(v) (*min_element(v.begin(), v.end()))
 #define DivideVector(a,value) for(int i = 0; i < a.size(); ++i) a[i] /= value;
+#define Sum(v)  (std::accumulate(v.begin(), v.end(), 0.0))
 
 // Timer
 #include <QElapsedTimer>

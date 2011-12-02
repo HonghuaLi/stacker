@@ -62,208 +62,6 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 	emit(objectInserted());
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void Scene::updateVBOs()
 {
 	QSegMesh * mesh = activeObject();
@@ -295,7 +93,6 @@ void Scene::updateActiveObject()
 	vboCollection.clear();
 	updateGL();
 }
-
 
 void Scene::init()
 {
@@ -370,29 +167,14 @@ void Scene::draw()
 
 	// Debug
 	if (!isEmpty())
-		activeObject()->getSegment(0)->drawDebug();
+		activeObject()->drawDebug();
 
 	// DEBUG
 	if(gc) gc->draw();
 	if(skel) skel->draw();
 
 	if(defCtrl)
-	{
-		/*Vec q = controllerFrame->position();
-		Vec3d p(q.x,q.y,q.z);
-		SimpleDraw::IdentifyPoint(p);*/
-
 		defCtrl->drawDebug();
-	}
-
-	// Samples
-	if (!isEmpty())
-	{
-		for (int i=0;i<activeObject()->samples.size();i++)
-		{
-			Sampler::draw(activeObject()->samples[i]);
-		}
-	}
 }
 
 void Scene::drawWithNames()

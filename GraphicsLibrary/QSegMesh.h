@@ -22,6 +22,8 @@ public:
 	std::vector<uint> vertexIndicesAroundFace(uint fid);
 	Point getVertexPos( uint vid );
 	void setVertexColor( uint vid, const Color& newColor );
+	void global2local_fid( uint fid, uint& sid, uint& fid_local );
+	void global2local_vid(uint vid, uint& sid, uint& vid_local);
 
 	// Get segment
 	QSurfaceMesh* operator [] (uint i);
@@ -33,6 +35,7 @@ public:
 	// Draw
 	void simpleDraw();
 	void drawFacesUnique();
+	void drawDebug();
 
 	// Load the mesh from file
 	void read(QString fileName);
@@ -65,15 +68,11 @@ public:
 	Scalar O_max;
 	Scalar stackability;
 
-	// Samples
-	StdVector< StdVector < SamplePoint >> samples;
-	void sample(int numSamples);
-
 private:
 	std::vector<QSurfaceMesh*> segment;
-	void global2local_fid(uint fid, uint& sid, uint& fid_local);
-	void global2local_vid(uint vid, uint& sid, uint& vid_local);
+
 
 	// This is useful for segmented OBJs
 	void checkObjSegmentation ( QString fileName, QString segFilename);
+
 };

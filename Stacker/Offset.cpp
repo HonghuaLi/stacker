@@ -1,6 +1,8 @@
 #include "Offset.h"
 #include "HiddenViewer.h"
 #include "ColorMap.h"
+#include <numeric>
+#include "SimpleDraw.h"
 
 #define ZERO_TOLERANCE 0.01
 #define BIG_NUMBER 9999
@@ -96,117 +98,89 @@ void Offset::computeOffset()
 }
 
 
-// Still not very confident on screen coordinates converting
 void Offset::hotspotsFromDirection( int direction, double threshold )
 {
 	// Restore the camera according to the direction
 	activeViewer->camera()->playPath( direction + 2 );
 
-	// Envelop
-	std::vector< std::vector<double> >& envelope 
-		= (direction == 1)? upperEnvelope : lowerEnvelope;
+	// Draw Faces Unique
+	activeViewer->setMode(HV_FACEUNIQUE);
+	activeViewer->updateGL(); 
+
+	GLubyte* colormap = (GLubyte*)activeViewer->readBuffer(GL_RGBA, GL_UNSIGNED_BYTE);
 
 	// The size of current viewer
 	int w = activeViewer->width();
 	int h = activeViewer->height();	
 
-	// Go through all samples on the mesh
-	// Since the mesh always has irregular triangles, we can not just simply go through all vertices on the mesh
-	std::vector< std::vector < SamplePoint > >& samples = activeObject()->samples;
-	std::vector< std::vector < uint > > hotSamples(activeObject()->nbSegments());
+	// Detect hot spots
+	//QImage unique_image(w, h, QImage::Format_ARGB32);
+	uint sid, fid_local;
+	for(int y = 0; y < h; y++){
+		for(int x = 0; x < w; x++)	{
 
-	// visualizing
-	QImage proj(w, h, QImage::Format_ARGB32);
-
-	for (int i=0; i<samples.size(); i++)
-	{
-		for (int j=0; j<samples[i].size();j++)
-		{
-			Point src = samples[i][j].pos;
-
-			Vec vpixel = activeViewer->camera()->projectedCoordinatesOf(Vec(src));
-
-			// Get the 2D projected coordinate
-			int x = RANGED(0, vpixel.x, w-1);
-			int y = RANGED(0, vpixel.y, h-1);
-	
-			double offsetValue = getValue(offset, (w-1)-x, (h-1)-y);
-			double envelopeValue = getValue(envelope, x, y); // right
-
-			// Check whether it is visible
-			bool isVisible;
+			double offsetVal;
 			if (direction == 1)
-				isVisible = src.z() > (envelopeValue - ZERO_TOLERANCE);
+				offsetVal = getValue(offset, x, y);
 			else
-				isVisible = src.z() < (envelopeValue + ZERO_TOLERANCE);
+				offsetVal = getValue(offset, (w-1)-x, y);
 
-			// Check whether it is hot
-			std::vector<uchar> rgb(3, 0);		
-			if (isVisible)
-			{
-				if (offsetValue > threshold)				
-					hotSamples[i].push_back(j);
+			// If this is not hot, skip
+			// If this is on the edge, skip
+			if (offsetVal == BIG_NUMBER || offsetVal/O_max < threshold) continue;
+			
 
-				samples[i][j].weight = offsetValue/O_max;
+			// Get the face index back
+			uint indx = ((y*w)+x)*4;
+			uint r = (uint)colormap[indx+0];
+			uint g = (uint)colormap[indx+1];
+			uint b = (uint)colormap[indx+2];
+			uint a = (uint)colormap[indx+3];
 
-				rgb[0] = 255;
-			}
+			uint f_id = ((255-a)<<24) + (r<<16) + (g<<8) + b - 1;
+
+			// Get the segment index of this face
+			if (f_id >= activeObject()->nbFaces()) continue;
+			activeObject()->global2local_fid(f_id, sid, fid_local);
+			hotFaces[sid].insert(fid_local);
 
 
-			//ColorMap::jetColorMap(rgb, samples[i][j].weight, 0, 1);
-			proj.setPixel(x, y, QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba());
-		}// end of j
-
-	}//end of i
-
-	// Detect hot segments
-	for (int i=0;i<activeObject()->nbSegments();i++)
-	{
-		if (!hotSamples[i].empty())
-			hotSegments.insert(i);
+			//unique_image.setPixel(x, y, QColor::fromRgb(r,g,b).rgba());
+		}
 	}
 
-	QString filename = (direction == 1)? "proj1.png" : "proj2.png";
-	proj.save(filename);
-	
+	delete colormap;	
+	//unique_image.save("unique_image.png");
 }
 
 
 void Offset::detectHotspots()
 {
 	// Initialization
-	hotVertices.clear();
-	hotSegments.clear();
+	hotFaces.clear();
 
 	// Set the threshold for hot spots
-	double threshold = 0.95 * O_max;
-
-	// Uniform random sampling on the mesh
-	activeObject()->sample(10000);
+	double threshold = 0.9999;
 
 	// detect hot spots from both directions
-	hotSegments.clear();
 	hotspotsFromDirection(1, threshold);
 	hotspotsFromDirection(-1, threshold);
 }
 
 
-void Offset::showHotVertices()
-{
-	Color hotColor(1., 0., 0., 1.);
-
-	for (std::vector< uint >::iterator itr = hotVertices.begin(); itr != hotVertices.end(); itr++)
-	{
-		activeObject()->setVertexColor(*itr, hotColor);
-	}
-}
-
-
 void Offset::showHotSegments()
 {
-	for (std::set< uint >::iterator i=hotSegments.begin();i!=hotSegments.end();i++)
+	for (std::map< uint, std::set< uint > >::iterator i=hotFaces.begin();i!=hotFaces.end();i++)
 	{
-		activeObject()->getSegment(*i)->setColorVertices(Vec4d(1, 0, 0, 1));
+		uint sid = i->first;
+		QSurfaceMesh* segment = activeObject()->getSegment(sid);
+
+		segment->setColorVertices(Color(1, 0, 0, 1));
+
+		for (std::set< uint >::iterator fit = i->second.begin(); fit != i->second.end(); fit++)
+		{
+			segment->debug_points.push_back(segment->faceCenter((Surface_mesh::Face)*fit));
+		}
 	}
 }
 
@@ -247,18 +221,37 @@ double Offset::getValue( std::vector< std::vector < double > >& image, uint x, u
 	int w = activeViewer->width();
 	int h = activeViewer->height();	
 
-	uint min_x = RANGED(0, x-r ,w);
-	uint max_x = RANGED(0, x+r, w);
-	uint min_y = RANGED(0, y-r ,w);
-	uint max_y = RANGED(0, y+r, w);
+	uint min_x = RANGED(0, x-r ,w-1);
+	uint max_x = RANGED(0, x+r, w-1);
+	uint min_y = RANGED(0, y-r ,h-1);
+	uint max_y = RANGED(0, y+r, h-1);
 
-	// Uniform smoothing in an window
-	// Maybe Gaussian smoothing is better
-	double sumVal = 0;
+	// Collect all the values in the neighborhood
+	std::vector<double> vals;
 	for (int i=min_y;i<=max_y;i++)
 		for (int j=min_x;j<=max_x;j++)
-			sumVal += image[y][x];
+			vals.push_back(image[i][j]);
 
-	return sumVal/((2*r+1)*(2*r+1));
+	if (vals.empty())
+		return BIG_NUMBER;
+
+	// Check if (x, y) is on an edge by comparing the min and max
+	double result;
+	if (MaxElement(vals) - MinElement(vals) > ZERO_TOLERANCE)
+		result = BIG_NUMBER;
+	else
+		result = Sum(vals) / ((2*r+1)*(2*r+1));
+
+	return result;
+}
+
+std::set<uint> Offset::getHotSegment()
+{
+	std::set< uint > hs;
+
+	for (std::map< uint, std::set< uint > >::iterator i=hotFaces.begin();i!=hotFaces.end();i++)
+		hs.insert(i->first);
+
+	return hs;
 }
 

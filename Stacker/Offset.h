@@ -25,8 +25,8 @@ public:
 	// Detect hot spots
 	void hotspotsFromDirection( int direction, double threshold );
 	void detectHotspots();
-	void showHotVertices();
 	void showHotSegments();
+	std::set<uint> getHotSegment();
 
 	// Save offset function as an color mapped image
 	void saveOffsetAsImage(QString fileName);
@@ -43,6 +43,5 @@ public:
 	std::vector< std::vector<double> > offset; 
 	double O_max;
 	double objectH;
-	std::vector< uint > hotVertices;
-	std::set< uint > hotSegments;
+	std::map< uint, std::set<uint> > hotFaces;
 };

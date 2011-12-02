@@ -8,6 +8,7 @@
 #include <fstream>
 #include <algorithm>
 #include <numeric>
+#include "Macros.h"
 
 StackerPanel::StackerPanel()
 {
@@ -163,7 +164,7 @@ void StackerPanel::gradientDescentOptimize()
 
 	// Get hot segments
 	activeOffset->detectHotspots();
-	std::set< uint > hotSegs = activeOffset->hotSegments;
+	std::set< uint > hotSegs = activeOffset->getHotSegment();
 	int nHotSeg = hotSegs.size();
 
 	// Initialization
@@ -302,7 +303,7 @@ double StackerPanel::sumEnergy( )
 	E.push_back( sumR );
 
 	// SIGGRAPH 2012: last one... :D
-	return  std::accumulate(E.begin(), E.end(), 0)- activeOffset->getStackability();
+	return Sum(E)- activeOffset->getStackability();
 }
 
 void StackerPanel::updateController()
