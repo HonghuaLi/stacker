@@ -117,8 +117,8 @@ void QSurfaceMesh::drawDebug()
 			directions2.push_back(d2[vit]);
 		}
 
-		SimpleDraw::DrawLineTick(starts, directions1, getAverageEdgeLength() * 0.5, false, 1,0,0,0.25);
-		SimpleDraw::DrawLineTick(starts, directions2, getAverageEdgeLength() * 0.5, false, 0,0,1,0.25);
+		SimpleDraw::DrawLineTick(starts, directions1, getAverageEdgeLength() * 0.5, false, 1,0,0, 0.25);
+		SimpleDraw::DrawLineTick(starts, directions2, getAverageEdgeLength() * 0.5, false, 0,0,1, 0.25);
 	}
 
 	// Debug points

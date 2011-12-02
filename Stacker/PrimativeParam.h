@@ -13,8 +13,8 @@ public:
 	virtual int numParams() = 0;
 	virtual void print() = 0;
 	virtual bool setParams( std::vector< double >& newParams ) = 0;
+	virtual bool forceParam( int i, double val ) = 0;
 };
-
 
 // With deep copying
 class PrimitiveParamMap{

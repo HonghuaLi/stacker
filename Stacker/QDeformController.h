@@ -11,18 +11,9 @@ public:
 	qglviewer::ManipulatedFrame * getFrame();
 	Vec3d pos();
 
-	void setController(Controller * c);
-
-	void drawDebug();
-
-public slots:
-	void updateController();
+signals:
+	void primitiveReshaped();
 
 private:
 	qglviewer::ManipulatedFrame * frame;
-	Controller * ctrl;
-
-	// Helpful for debugging
-	std::vector<Vec3d> debugPoints;
-	std::vector< std::pair<Vec3d,Vec3d> > debugLines;
 };

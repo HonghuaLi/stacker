@@ -127,7 +127,11 @@ void Controller::reshapePrimitive( Vec3d q )
 	for (uint i = 0; i < primitives.size(); i++)
 	{
 		if(primitives[i]->isSelected)
-			primitives[i]->reshapePart(q);
+		{
+			PrimitiveParam * params = primitives[i]->reshapePart(q);
+
+			primitives[i]->deform(params);
+		}
 	}
 }
 

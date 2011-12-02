@@ -21,6 +21,9 @@ enum ModifyMode { DEFAULT, CP_REF_VECTOR, MOVE_VERTEX };
 enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE, 
 	SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX, CONTROLLER, CONTROLLER_ELEMENT};
 
+#include "QDeformController.h"
+extern QDeformController * defCtrl;
+
 class Scene : public QGLViewer{
 
 	Q_OBJECT

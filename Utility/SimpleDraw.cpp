@@ -251,6 +251,23 @@ void SimpleDraw::DrawTriangles( const StdVector< StdVector<Vec3d> > & tris, floa
 	glEnable(GL_LIGHTING);
 }
 
+void SimpleDraw::DrawPoly( const std::vector<Vec3d> & poly, float r, float g, float b)
+{	
+	glDisable(GL_LIGHTING);
+
+	glColor3f(r, g, b);
+
+	float lineWidth = 15.0f;
+	glLineWidth(lineWidth);
+
+	glBegin(GL_LINE_STRIP);
+	for(uint i = 0; i <= poly.size(); i++)
+		glVertex3dv(poly[i%poly.size()]);
+	glEnd();
+
+	glEnable(GL_LIGHTING);
+}
+
 void SimpleDraw::DrawLineTick(const StdVector<Vec3d >& start, const StdVector<Vec3d >& direction, 
 							  float len, bool border, float r, float g, float b, float a)
 {

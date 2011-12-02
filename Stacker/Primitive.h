@@ -22,6 +22,7 @@ public:
 	// Helpful for debugging
 	std::vector<Vec3d> debugPoints;
 	std::vector< std::pair<Vec3d,Vec3d> > debugLines;
+	std::vector< std::vector<Vec3d> > debugPoly;
 	void drawDebug();
 
 	virtual std::vector <Vec3d> points() = 0;
@@ -32,7 +33,7 @@ public:
 	int selectedPartId;
 
 	virtual Vec3d selectedPartPos() {return Vec3d(0,0,0);}
-	virtual void reshapePart(Vec3d q){};
+	virtual PrimitiveParam * reshapePart(Vec3d q) { return NULL; }
 
 	QSurfaceMesh* getMesh(){ return m_mesh; }
 

@@ -1,12 +1,13 @@
 #pragma once
 
 #include "ui_StackerWidget.h"
+#include "ui_SpaceExplorer.h"
 #include "Scene.h"
 #include "StackerPreview.h"
 #include "HiddenViewer.h"
 #include "Offset.h"
 #include "Controller.h"
-#include "ui_SpaceExplorer.h"
+#include "QDeformController.h"
 
 class StackerPanel : public QWidget
 {
@@ -26,11 +27,11 @@ public:
 
 	double sumEnergy( );
 	Ui::StackerWidget panel;
+	Ui::ControllerDeformerWidget ctrlDeformer;
 	Scene * activeScene;
 	StackerPreview * stacker_preview;
 	HiddenViewer * hidden_viewer;
 	Offset * activeOffset;
-	Ui::ControllerDeformerWidget ctrlDeformer;
 
 public slots:
 	// Buttons
@@ -50,6 +51,7 @@ public slots:
 	void updateController();
 	void resetCtrlDeformerPanel();
 	void userControlledPrimatives();
+	void reshapePrimitive();
 
 signals:
 	void printMessage( QString );

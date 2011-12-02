@@ -30,6 +30,7 @@ public:
 	static void DrawSolidBox(const Vec3d& center, float width, float length, float height, float r = 0, float g = 1.0, float b = 0, float a = 1.0);
 	static void DrawTriangle(const Vec3d& v1, const Vec3d& v2, const Vec3d& v3,float r = 0.2f, float g = 1.0, float b = 0.1f, float a = 1.0, bool isOpaque = true);
 	static void DrawTriangles(const StdVector< StdVector<Vec3d> > & tris, float r = 0.2f, float g = 1.0, float b = 0.1f, float a = 1.0, bool isOpaque = true, bool isDrawPoints = true);
+	static void DrawPoly( const std::vector<Vec3d> & poly, float r = 1.0f, float g = 1.0f, float b = 1.0f);
 
 	static void DrawSquare(const Vec3d& v1, const Vec3d& v2, const Vec3d& v3, const Vec3d& v4, bool isOpaque = true, float lineWidth = 1.0f, float r = 0.1f, float g = 0.2f, float b = 1.0, float a = 1.0);
 	static void DrawSquare(const Vec3d & v1, const Vec3d & v2, const Vec3d & v3, const Vec3d & v4, bool isOpaque, float lineWidth, Vec4d color);

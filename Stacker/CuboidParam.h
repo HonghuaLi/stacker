@@ -22,6 +22,7 @@ public:
 	// Set param directly
 	bool setParam(int i, double val);
 	virtual bool setParams(std::vector< double >& newParams);
+	virtual bool forceParam( int i, double val );
 
 	std::vector< double > getDefaulParam();
 

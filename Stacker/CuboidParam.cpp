@@ -84,6 +84,12 @@ bool CuboidParam::setParam( int i, double val )
 	return true;	 
 }
 
+bool CuboidParam::forceParam( int i, double val )
+{
+	params[i] = val;
+	return true;
+}
+
 bool CuboidParam::setParams( std::vector< double >& newParams )
 {
 	bool result = true;
