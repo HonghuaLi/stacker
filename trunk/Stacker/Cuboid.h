@@ -25,14 +25,14 @@ public:
 	void recoverMesh();
 
 	virtual Vec3d selectedPartPos();
-	virtual void reshapePart(Vec3d q);
+	virtual PrimitiveParam * reshapePart(Vec3d q);
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);
 	Vector3 getPositionInBox(MinOBB3::Box3 &box, Vector3 &coord);	
 	Eigen::Matrix3d rotationMatrixAroundAxis(int axisId, double theta);
 	std::vector<Vector3> getBoxConners(MinOBB3::Box3 box);
-	std::vector< std::vector<Vector3> > getBoxFaces();
+	std::vector< std::vector<Vector3> > getBoxFaces(MinOBB3::Box3 fromBox);
 
 	void drawCube(double lineWidth, Vec4d color, bool isOpaque = false);
 	Eigen::Vector3d V2E(Vector3 &vec);

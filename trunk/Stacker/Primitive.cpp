@@ -15,4 +15,7 @@ void Primitive::drawDebug()
 
 	for(int i = 0; i < debugLines.size(); i++)
 		SimpleDraw::IdentifyLine(debugLines[i].first, debugLines[i].second);
+
+	foreach(std::vector<Vec3d> poly, debugPoly)
+		SimpleDraw::DrawPoly(poly);
 }

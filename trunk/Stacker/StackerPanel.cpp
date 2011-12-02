@@ -10,6 +10,7 @@
 #include <numeric>
 #include "Macros.h"
 
+
 StackerPanel::StackerPanel()
 {
 	panel.setupUi(this);
@@ -52,8 +53,10 @@ StackerPanel::StackerPanel()
 	connect(ctrlDeformer.scaleX, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.scaleY, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.scaleZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
-
 	connect(ctrlDeformer.resetButton, SIGNAL(clicked()), SLOT(resetCtrlDeformerPanel()));
+
+	connect(panel.reshapePrimitiveButton, SIGNAL(clicked()), SLOT(reshapePrimitive()));
+
 }
 
 void StackerPanel::onOffsetButtonClicked()
@@ -80,6 +83,9 @@ void StackerPanel::onControllerButtonClicked()
 	activeObject()->controller = new Controller(activeObject());
 
 	activeScene->setSelectMode(CONTROLLER);
+
+	// Build deformer
+	defCtrl = new QDeformController();
 
 	showMessage("Controller is build for " + activeObject()->objectName());
 }
@@ -365,4 +371,12 @@ void StackerPanel::userControlledPrimatives()
 	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
 	
 	activeScene->setSelectMode(CONTROLLER_ELEMENT);
+}
+
+void StackerPanel::reshapePrimitive()
+{
+	activeObject()->controller->reshapePrimitive(defCtrl->pos());
+	
+	emit(objectModified());
+	activeObject()->controller->recoverShape();
 }
