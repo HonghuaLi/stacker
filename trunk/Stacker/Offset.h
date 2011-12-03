@@ -23,8 +23,8 @@ public:
 	void computeOffset();
 
 	// Detect hot spots
-	void hotspotsFromDirection( int direction, double threshold );
-	void detectHotspots();
+	void hotspotsFromDirection( int direction );
+	void detectHotspots(int useFilterSize = 1, double hotRange = 0.99);
 	void showHotSegments();
 	std::set<uint> getHotSegment();
 
@@ -47,4 +47,8 @@ public:
 	double objectH;
 	std::map< uint, std::set<uint> > hotFaces;
 	std::map< uint, std::set<Vec3d> > hotPoints;
+	
+	// Paramters
+	int filterSize;
+	double hotRangeThreshold;
 };

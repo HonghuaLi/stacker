@@ -18,6 +18,9 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	dp = new DeformerPanel();
 	ui.rightDockWidget->layout()->addWidget(dp);
 
+	tp = new TransformationPanel();
+	ui.rightDockWidget->layout()->addWidget(tp);
+
 	// Create MeshDoc, where stores all the meshes
 	mDoc = new QMeshDoc();
 	connect(ui.actionImportObject, SIGNAL(triggered()), mDoc, SLOT(importObject()));
@@ -66,6 +69,11 @@ void Workspace::addNewScene()
 	// Deformation
 	connect(newScene, SIGNAL(gotFocus(Scene*)), dp, SLOT(setActiveScene(Scene*)));
 	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *)));
+
+	// Object transformation
+	connect(newScene, SIGNAL(gotFocus(Scene*)), tp, SLOT(setActiveScene(Scene*)));
+	connect(tp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
+	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 
 	// Update stacker panel
 	sp->setActiveScene(newScene);

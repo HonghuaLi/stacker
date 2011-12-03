@@ -28,4 +28,5 @@ public:
 
 public slots:
 	void setActiveScene(Scene * changedScene);
+	void setResolution( int newRes );
 };

@@ -10,8 +10,9 @@
 Offset::Offset( HiddenViewer *viewer )
 {
 	activeViewer = viewer;
-}
 
+	filterSize = 1;
+}
 
 void Offset::computeEnvelope( int direction, std::vector< std::vector<double> > &envelope, std::vector< std::vector<double> > &depth )
 {
@@ -102,7 +103,7 @@ void Offset::computeOffset()
 }
 
 
-void Offset::hotspotsFromDirection( int direction, double threshold )
+void Offset::hotspotsFromDirection( int direction )
 {
 	// Restore the camera according to the direction
 	activeViewer->camera()->playPath( direction + 2 );
@@ -134,7 +135,7 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 
 			// If this is not hot, skip
 			// If this is on the edge, skip
-			if (offsetVal == BIG_NUMBER || offsetVal/O_max < threshold) continue;
+			if (offsetVal == BIG_NUMBER || offsetVal/O_max < hotRangeThreshold) continue;
 			
 
 			// Get the face index back
@@ -152,7 +153,10 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 			hotFaces[sid].insert(fid_local);
 
 			// 3d position of this hot pixel
-			Vec hotP= activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, y, depth[y][x]));
+			double depthVal = getValue(depth, x, y);
+			if (depthVal == BIG_NUMBER) continue;
+
+			Vec hotP= activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (h-1)-y, depthVal));
 			hotPoints[sid].insert(Vec3d(hotP.x, hotP.y, hotP.z));
 
 			//unique_image.setPixel(x, y, QColor::fromRgb(r,g,b).rgba());
@@ -163,31 +167,42 @@ void Offset::hotspotsFromDirection( int direction, double threshold )
 	//unique_image.save("unique_image.png");
 }
 
-
-void Offset::detectHotspots()
+void Offset::detectHotspots( int useFilterSize, double hotRange )
 {
+	// Check if the envelopes and offset are updated
+	if (activeViewer->size().width() != offset.size())
+		computeOffset();
+
+	filterSize = useFilterSize;
+	hotRangeThreshold = hotRange;
+
 	// Initialization
 	hotPoints.clear();
 	hotFaces.clear();
 
-	// Set the threshold for hot spots
-	double threshold = 0.9999;
-
 	// detect hot spots from both directions
-	hotspotsFromDirection(1, threshold);
-//	hotspotsFromDirection(-1, threshold);
+	hotspotsFromDirection(1);
+	hotspotsFromDirection(-1);
 }
-
 
 void Offset::showHotSegments()
 {
+	// Clear past states
+	for(uint i = 0; i < activeObject()->nbSegments(); i++)
+	{
+		QSurfaceMesh * seg = activeObject()->getSegment(i);
+
+		seg->debug_points.clear();
+		seg->setColorVertices(Color(1,1,1,1)); // white
+	}
+
 	// Show hot faces
 	for (std::map< uint, std::set< uint > >::iterator i=hotFaces.begin();i!=hotFaces.end();i++)
 	{
 		uint sid = i->first;
 		QSurfaceMesh* segment = activeObject()->getSegment(sid);
 
-		segment->setColorVertices(Color(1, 0, 0, 1));
+		segment->setColorVertices(Color(1, 0, 0, 1)); // red
 
 		for (std::set< uint >::iterator fit = i->second.begin(); fit != i->second.end(); fit++)
 		{
@@ -240,7 +255,7 @@ QSegMesh* Offset::activeObject()
 double Offset::getValue( std::vector< std::vector < double > >& image, uint x, uint y )
 {
 	// The window size of smoothing
-	uint r = 1;
+	uint r = this->filterSize;
 
 	int w = activeViewer->width();
 	int h = activeViewer->height();	

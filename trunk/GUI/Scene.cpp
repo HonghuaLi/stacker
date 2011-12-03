@@ -12,6 +12,7 @@ Skeleton * skel;
 #include "GeneralizedCylinder.h"
 GeneralizedCylinder * gc;
 
+#include "QDeformController.h"
 QDeformController * defCtrl;
 
 Scene::Scene( QWidget *parent)
@@ -93,7 +94,6 @@ void Scene::updateActiveObject()
 	updateGL();
 }
 
-
 void Scene::init()
 {
 	// Options
@@ -167,16 +167,14 @@ void Scene::draw()
 
 	// Debug
 	if (!isEmpty())
-		activeObject()->getSegment(0)->drawDebug();
+		activeObject()->drawDebug();
 
 	// DEBUG
 	if(gc) gc->draw();
 	if(skel) skel->draw();
-	
-	if(defCtrl)
-	{
-		SimpleDraw::IdentifyPoint(defCtrl->pos());
-	}
+
+	//if(defCtrl)
+	//	defCtrl->drawDebug();
 }
 
 void Scene::drawWithNames()
@@ -281,8 +279,11 @@ void Scene::postSelection( const QPoint& point )
 		{
 			if(activeObject()->controller->selectPrimitivePart(selected))
 			{
-				setManipulatedFrame ( defCtrl->getFrame() );
-				
+				defCtrl = new QDeformController();
+				//defCtrl->setController(activeObject()->controller);
+
+				setManipulatedFrame( defCtrl->getFrame() );
+
 				Vec3d q = activeObject()->controller->getPrimPartPos();
 				Vec p(q.x(), q.y(), q.z());
 

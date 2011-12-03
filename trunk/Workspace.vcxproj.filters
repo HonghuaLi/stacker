@@ -90,6 +90,9 @@
     <Filter Include="SkeletonExtract">
       <UniqueIdentifier>{7e7066c5-8522-4c21-b9d4-e9910ef7c4ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GUI\Tools">
+      <UniqueIdentifier>{ff2038dc-98bb-46d7-8220-ab44da6f66f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneratedFiles\qrc_Workspace.cpp">
@@ -350,6 +353,18 @@
     <ClCompile Include="GeneratedFiles\Template\moc_QDeformController.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\TransformationPanel.cpp">
+      <Filter>GUI\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_TransformationPanel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_TransformationPanel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_TransformationPanel.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -511,6 +526,9 @@
     <ClInclude Include="Stacker\Controller.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_RotationWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Workspace.rc" />
@@ -575,6 +593,12 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\QDeformController.h">
       <Filter>Stacker\Source</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\RotationWidget.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\TransformationPanel.h">
+      <Filter>GUI\Tools</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
