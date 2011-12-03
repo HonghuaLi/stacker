@@ -10,7 +10,7 @@
 #include "StackerPanel.h"
 #include "WiresPanel.h"
 #include "DeformerPanel.h"
-
+#include "TransformationPanel.h"
 
 class Workspace : public QMainWindow
 {
@@ -29,6 +29,7 @@ private:
 	StackerPanel * sp;
 	WiresPanel * wp;
 	DeformerPanel * dp;
+	TransformationPanel * tp;
 
 	Scene * activeScene;
 

@@ -113,3 +113,8 @@ void* HiddenViewer::readBuffer( GLenum format, GLenum type )
 
 	return data;
 }
+
+void HiddenViewer::setResolution( int newRes )
+{
+	setFixedSize(newRes,newRes);
+}

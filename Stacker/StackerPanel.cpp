@@ -10,7 +10,6 @@
 #include <numeric>
 #include "Macros.h"
 
-
 StackerPanel::StackerPanel()
 {
 	panel.setupUi(this);
@@ -57,6 +56,7 @@ StackerPanel::StackerPanel()
 
 	connect(panel.reshapePrimitiveButton, SIGNAL(clicked()), SLOT(reshapePrimitive()));
 
+	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
 }
 
 void StackerPanel::onOffsetButtonClicked()
@@ -110,7 +110,7 @@ void StackerPanel::onHotspotsButtonClicked()
 	if(!activeScene || !activeObject())
 		return;
 
-	activeOffset->detectHotspots();
+	activeOffset->detectHotspots(panel.hotspotFilter->value(), panel.hotRange->value());
 	activeOffset->showHotSegments();
 	emit(objectModified());
 	showMessage("Hot spots are detected.");
