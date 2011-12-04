@@ -110,7 +110,7 @@ std::vector< std::vector<Vector3> > Cuboid::getBoxFaces(MinOBB3::Box3 fromBox)
 void Cuboid::draw()
 {
 	// Draw center point
-	SimpleDraw::IdentifyPoint(currBox.Center);
+	//SimpleDraw::IdentifyPoint(currBox.Center);
 
 	if(isSelected)
 		drawCube(5, Vec4d(1,1,0,1));

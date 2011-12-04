@@ -55,18 +55,19 @@ void Controller::draw()
 	{
 		primitives[i]->draw();
 
-		for (uint j = i + 1; j < primitives.size(); j++)
-		{
-			Cuboid * c1 = (Cuboid *) primitives[i];
-			Cuboid * c2 = (Cuboid *) primitives[j];
+		// Draw debug 
+		//for (uint j = i + 1; j < primitives.size(); j++)
+		//{
+		//	Cuboid * c1 = (Cuboid *) primitives[i];
+		//	Cuboid * c2 = (Cuboid *) primitives[j];
 
-			Vec3d p,q;
+		//	Vec3d p,q;
 
-			c1->currBox.ClosestSegment(c2->currBox,p,q);
-			SimpleDraw::IdentifyLine(p,q,1,1,0);
-		}
+		//	c1->currBox.ClosestSegment(c2->currBox,p,q);
+		//	SimpleDraw::IdentifyLine(p,q,1,1,0);
+		//}
 
-		primitives[i]->drawDebug();
+		//primitives[i]->drawDebug();
 	}
 }
 
