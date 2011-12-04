@@ -112,29 +112,14 @@ void Offset::computeOffset()
 	activeObject()->stackability = 1 - O_max/objectH;
 
 	activeViewer->updateGL();
+
+	// Save offset as image
+	saveAsImage(offset, O_max, "offset function.png");
 }
 
 double Offset::getStackability()
 {
 	return 1 - O_max/objectH;
-}
-
-void Offset::saveOffsetAsImage( QString fileName )
-{
-	int h = offset.size();
-	int w = offset[0].size();
-	QImage offset_img(w, h, QImage::Format_ARGB32);
-
-	uchar * rgb = new uchar[3];		
-	for(int y = 0; y < h; y++){
-		for(int x = 0; x < w; x++)	{
-			ColorMap::jetColorMap(rgb, Max(0., offset[y][x] / O_max), 0., 1.);
-			offset_img.setPixel(x, y, QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba());			
-		}
-	}
-
-	delete[] rgb;
-	offset_img.save(fileName);
 }
 
 
@@ -154,47 +139,71 @@ void Offset::hotspotsFromDirection( int direction )
 	int w = activeViewer->width();
 	int h = activeViewer->height();	
 
-	// The depth buffer
-	std::vector< std::vector<double> > &depth = (direction == 1)? upperDepth : lowerDepth;
+	// Switch between directions
+	bool isUpper = (direction == 1);
+	std::vector< std::vector<double> > &depth = isUpper? upperDepth : lowerDepth;
+	std::vector< HotSpot > &hotSpots = isUpper? upperHotSpots : lowerHotSpots;
 
 	// Detect hot spots
-	//QImage unique_image(w, h, QImage::Format_ARGB32);
-	uint sid, fid_local;
-	for(int y = 0; y < h; y++){
-		for(int x = 0; x < w; x++)	{
+	uint sid, fid, fid_local;
+	uint x, y;
+	for (int i=0;i<hotRegions.size();i++)	{
 
-			double offsetVal;
-			if (direction == 1)
-				offsetVal = getValue(offset, x, y);
-			else
-				offsetVal = getValue(offset, (w-1)-x, y);
+		HotSpot HS;
+		HS.hotRegionID = i;
+		HS.defineHeight = defineHeight( direction, hotRegions[i] );
+		std::map< uint, uint > sidCount;
 
-			// If this is not hot, skip
-			// If this is on the edge, skip
-			if (offsetVal == BIG_NUMBER || offsetVal/O_max < hotRangeThreshold) continue;
-			
+		for (int j=0;j<hotRegions[i].size();j++){
 
-			// Get the face index back
+			x = hotRegions[i][j].x();
+			y = hotRegions[i][j].y();
+			if (direction == -1) 
+				x = (w-1) - x;		
+
+			// 3d position of this hot sample
+			double depthVal = getValue(depth, x, y, filterSize);
+
+			if (depthVal == BIG_NUMBER) 
+				continue;
+
+			Vec hotP= activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (h-1)-y, depthVal));
+
+
+			// Get the face index and segment index back
 			uint indx = ((y*w)+x)*4;
 			uint r = (uint)colormap[indx+0];
 			uint g = (uint)colormap[indx+1];
 			uint b = (uint)colormap[indx+2];
 			uint a = (uint)colormap[indx+3];
 
-			uint f_id = ((255-a)<<24) + (r<<16) + (g<<8) + b - 1;
+			fid = ((255-a)<<24) + (r<<16) + (g<<8) + b - 1;
 
-			// 3d position of this hot pixel
-			double depthVal = getValue(depth, x, y);
-			if (depthVal == BIG_NUMBER) 
-				continue;			
-			Vec hotP= activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (h-1)-y, depthVal));
-			
-			// Segment index of this face
-			if (f_id >= activeObject()->nbFaces()) 
+			if (fid >= activeObject()->nbFaces()) 
 				continue;
-			activeObject()->global2local_fid(f_id, sid, fid_local);
-			hotSpots[sid].insert(Vec3d(hotP.x, hotP.y, hotP.z));
+
+			activeObject()->global2local_fid(fid, sid, fid_local);
+			
+			// Store informations
+			Vec3d hotSample(hotP.x, hotP.y, hotP.z);
+			hotPoints[sid].insert(hotSample);
+			HS.hotSamples.push_back(hotSample);
+
+			sidCount[sid]++;
 		}
+
+		// Get the segment id of this hot region
+		uint count = 0;
+		for (std::map<uint, uint>::iterator itr = sidCount.begin(); itr != sidCount.end(); itr++)
+		{
+			if (itr->second > count)
+			{
+				count = itr->second;
+				HS.segmentID = itr->first;
+			}
+		}
+
+		hotSpots.push_back(HS);
 	}
 
 	delete colormap;	
@@ -205,15 +214,14 @@ void Offset::detectHotspots( int useFilterSize, double hotRange )
 	filterSize = useFilterSize;
 	hotRangeThreshold = hotRange;
 
+	// Initialization
+	clear();
+
 	// Recompute envelopes and offset
 	computeOffset();
 
-	// Initialization
-	hotSpots.clear();
-
 	// Detect hot regions
-	hotRegions.clear();
-	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>, O_max * hotRange);
+	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * hotRange));
 
 	// Detect hot spots from both directions
 	hotspotsFromDirection(1);
@@ -232,7 +240,7 @@ void Offset::showHotSpots()
 	}
 
 	// Show hot segments and hot spots
-	for (std::map< uint, std::set< Vec3d > >::iterator i=hotSpots.begin();i!=hotSpots.end();i++)
+	for (std::map< uint, std::set< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
 	{
 		uint sid = i->first;
 		QSurfaceMesh* segment = activeObject()->getSegment(sid);
@@ -250,19 +258,39 @@ std::set<uint> Offset::getHotSegment()
 {
 	std::set< uint > hs;
 
-	for (std::map< uint, std::set< Vec3d > >::iterator i=hotSpots.begin();i!=hotSpots.end();i++)
+	for (std::map< uint, std::set< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
 		hs.insert(i->first);
 
 	return hs;
 }
 
 
-
-double Offset::getValue( std::vector< std::vector < double > >& image, uint x, uint y )
+template< typename T >
+void Offset::makeImage( std::vector< std::vector < T > >& image, int w, int h, T intial )
 {
-	// The window size of smoothing
-	uint r = this->filterSize;
+	image.clear();
+	image.resize( h, std::vector<T>(w, intial) );
+}
 
+void Offset::saveAsImage( std::vector< std::vector < double > >& image, double maxV, QString fileName )
+{
+	int h = image.size();
+	int w = image[0].size();
+	QImage Output(w, h, QImage::Format_ARGB32);
+
+	uchar rgb[3];		
+	for(int y = 0; y < h; y++){
+		for(int x = 0; x < w; x++)	{
+			ColorMap::jetColorMap(rgb, Max(0., image[y][x] / maxV), 0., 1.);
+			Output.setPixel(x, y, QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba());			
+		}
+	}
+
+	Output.save(fileName);
+}
+
+double Offset::getValue( std::vector< std::vector < double > >& image, uint x, uint y, uint r )
+{
 	int w = image[0].size();
 	int h = image.size();	
 
@@ -322,27 +350,28 @@ std::vector< Vec2ui >
 	int w = image[0].size();
 	int h = image.size();		
 	
-	std::stack activePnts;
+	std::stack<Vec2ui> activePnts;
 	activePnts.push(seed);
 
 	while (!activePnts.empty())
 	{
 		// Add the top point to region
-		Vec2ui currP = activePnts.pop();
-		mask[currP.y][currP.x] = true;
+		Vec2ui currP = activePnts.top();
+		mask[currP.y()][currP.x()] = true;
 		region.push_back(currP);
+		activePnts.pop();
 
 		// Push all the neighbors to the stack
-		uint min_x = RANGED(0, currP.x-1 ,w-1);
-		uint max_x = RANGED(0, currP.x+1, w-1);
-		uint min_y = RANGED(0, currP.y-1 ,h-1);
-		uint max_y = RANGED(0, currP.y+1, h-1);
+		uint min_x = RANGED(0, currP.x()-1 ,w-1);
+		uint max_x = RANGED(0, currP.x()+1, w-1);
+		uint min_y = RANGED(0, currP.y()-1 ,h-1);
+		uint max_y = RANGED(0, currP.y()+1, h-1);
 
 		for (uint y = min_y; y <= max_y; y++)
 			for (uint x = min_x; x <= max_x; x++)
 			{
 				if (!mask[y][x] && predicate(image[y][x]))
-					activePnts.push( Vec2ui<x, y> );
+					activePnts.push( Vec2ui(x, y) );
 			}
 	}
 
@@ -359,7 +388,8 @@ std::vector< std::vector< Vec2ui > >
 	int w = image[0].size();
 	int h = image.size();
 
-	std::vector< std::vector< bool > > mask(h, std::vector< bool >(w, false));
+	std::vector< std::vector< bool > > mask;
+	makeImage(mask, w, h, false);
 
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
@@ -371,4 +401,57 @@ std::vector< std::vector< Vec2ui > >
 	}
 
 	return regions;
+}
+
+void Offset::clear()
+{
+	lowerEnvelope.clear();
+	upperEnvelope.clear();
+	offset.clear();
+
+	lowerDepth.clear();
+	upperDepth.clear();
+
+	hotRegions.clear();
+	hotPoints.clear();
+	upperHotSpots.clear();
+	lowerHotSpots.clear();
+}
+
+bool Offset::defineHeight( int direction, std::vector< Vec2ui >& region )
+{
+	std::vector< double > values;
+	bool result;
+
+	if ( direction == 1 )
+	{
+		values = getValuesInRegion( upperEnvelope, region, false);		
+		result = MaxElement(values) > getMaxValue(upperEnvelope) - ZERO_TOLERANCE;
+	}
+	else
+	{
+		values = getValuesInRegion( lowerEnvelope, region, true);
+		result = MinElement(values) < getMinValue(upperEnvelope) + ZERO_TOLERANCE;
+	}	
+
+	return result;
+}
+
+std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < double > >& image, 
+												 std::vector< Vec2ui >& region, bool xFlipped /*= false*/ )
+{
+	std::vector< double > values;
+
+	int w = image[0].size();
+	uint x, y;
+	for (int i = 0; i < region.size(); i++)
+	{
+		x = region[i].x();
+		y = region[i].y();
+		if(xFlipped) x = (w-1) - x;
+
+		values.push_back(getValue(image, x, y, 0));
+	}
+
+	return values;
 }

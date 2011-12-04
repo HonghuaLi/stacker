@@ -3,9 +3,6 @@
 #include "ColorMap.h"
 #include "QSegMesh.h"
 
-
-#include <vector>
-#include <set>
 #include <functional>
 
 class HiddenViewer;
@@ -13,34 +10,41 @@ class HiddenViewer;
 class Offset
 {
 public:
+	class HotSpot
+	{
+	public:
+		uint hotRegionID;
+		uint segmentID;
+		bool defineHeight;
+		std::vector< Vec3d > hotSamples;
+	};
+
+public:
 	// Constructor
 	Offset(HiddenViewer* viewer);
 
-	// Get active object
+	// Shorteners
+	void clear();
 	QSegMesh* activeObject();
-
-	// Compute the upper/lower envelops
-	void computeEnvelope(int direction, std::vector< std::vector<double> > &envelope, std::vector< std::vector<double> > &depth);	
 	
-	// Compute offset function and stackability
+	// Compute offset function and stackability (1 - O_max/objectH)
+	void computeEnvelope(int direction, std::vector< std::vector<double> > &envelope, std::vector< std::vector<double> > &depth);	
 	void computeOffset();
+	double getStackability();
 
 	// Detect hot spots
 	void hotspotsFromDirection( int direction );
 	void detectHotspots(int useFilterSize = 1, double hotRange = 0.99);
 	std::set<uint> getHotSegment();
 	void showHotSpots();
-
-	// Save offset function as an color mapped image
-	void saveOffsetAsImage(QString fileName);
-
-	// Stackability = 1 - O_max/H
-	double getStackability();
+	bool defineHeight( int direction, std::vector< Vec2ui >& region);
 
 	// Numeric
-	double getValue( std::vector< std::vector < double > >& image, uint x, uint y );
+	double getValue( std::vector< std::vector < double > >& image, uint x, uint y, uint r );
 	double getMinValue( std::vector< std::vector < double > >& image );
 	double getMaxValue( std::vector< std::vector < double > >& image );	
+	std::vector< double > getValuesInRegion( std::vector< std::vector < double > >& image, 
+											 std::vector< Vec2ui >& region, bool xFlipped = false );	
 	template< typename PREDICATE >
 	std::vector< Vec2ui > getRegion( std::vector< std::vector < double > >& image, 
 									 std::vector< std::vector < bool > >& mask, 
@@ -48,22 +52,30 @@ public:
 	template< typename PREDICATE >
 	std::vector< std::vector< Vec2ui > > getRegions(std::vector< std::vector < double > >& image, 
 																			PREDICATE predicate);
-
+	
+	// Utilities 
+	template< typename T >
+	void makeImage( std::vector< std::vector < T > >& image, int w, int h, T intial);
+	void saveAsImage( std::vector< std::vector < double > >& image, double maxV, QString fileName );
 
 public:
 	HiddenViewer * activeViewer;
+	int filterSize;
+	double hotRangeThreshold;
+
+	double O_max;
+	double objectH;
+
 	std::vector< std::vector<double> > upperEnvelope;
 	std::vector< std::vector<double> > lowerEnvelope;	
 	std::vector< std::vector<double> > upperDepth;
 	std::vector< std::vector<double> > lowerDepth;
-	std::vector< std::vector<double> > offset; 
+	std::vector< std::vector<double> > offset; 	
+
+	std::map< uint, std::set<Vec3d> > hotPoints;
 	std::vector< std::vector<Vec2ui> > hotRegions;
+	std::vector < HotSpot >  upperHotSpots;
+	std::vector < HotSpot >  lowerHotSpots;
 	
-	double O_max;
-	double objectH;
-	std::map< uint, std::set<Vec3d> > hotSpots;
-	
-	// Paramters
-	int filterSize;
-	double hotRangeThreshold;
+
 };
