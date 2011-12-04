@@ -69,7 +69,6 @@ void StackerPanel::onOffsetButtonClicked()
 
 	// compute offset
 	activeOffset->computeOffset();
-	activeOffset->saveOffsetAsImage("offset_image.png");
 }
 
 void StackerPanel::onControllerButtonClicked()
