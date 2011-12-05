@@ -231,6 +231,7 @@ void MinOBB3::computeMinOBB( std::vector<Vector3> &points )
 
 
 	mMinBox.normalizeAxis();
+	mMinBox.makeRightHanded();
 	isReady = true;
 }
 

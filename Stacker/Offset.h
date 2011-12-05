@@ -17,6 +17,12 @@ public:
 		uint segmentID;
 		bool defineHeight;
 		std::vector< Vec3d > hotSamples;
+
+		void print(){
+			std::cout << " hotRegionID="   << hotRegionID 
+					  << " segmentID="	  << segmentID 
+					  << " defineHeight=" << defineHeight << std::endl; 
+		}
 	};
 
 public:
@@ -38,6 +44,9 @@ public:
 	std::set<uint> getHotSegment();
 	void showHotSpots();
 	bool defineHeight( int direction, std::vector< Vec2ui >& region);
+
+	// Improve stackability
+	void applyHeuristics();
 
 	// Numeric
 	double getValue( std::vector< std::vector < double > >& image, uint x, uint y, uint r );
@@ -72,7 +81,7 @@ public:
 	std::vector< std::vector<double> > lowerDepth;
 	std::vector< std::vector<double> > offset; 	
 
-	std::map< uint, std::set<Vec3d> > hotPoints;
+	std::map< uint, std::vector<Vec3d> > hotPoints;
 	std::vector< std::vector<Vec2ui> > hotRegions;
 	std::vector < HotSpot >  upperHotSpots;
 	std::vector < HotSpot >  lowerHotSpots;

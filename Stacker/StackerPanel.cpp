@@ -106,6 +106,7 @@ void StackerPanel::onHotspotsButtonClicked()
 
 	activeOffset->detectHotspots(panel.hotspotFilter->value(), panel.hotRange->value());
 	activeOffset->showHotSpots();
+	activeOffset->applyHeuristics();
 	emit(objectModified());
 	showMessage("Hot spots are detected.");
 }

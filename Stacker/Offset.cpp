@@ -145,21 +145,20 @@ void Offset::hotspotsFromDirection( int direction )
 	std::vector< HotSpot > &hotSpots = isUpper? upperHotSpots : lowerHotSpots;
 
 	// Detect hot spots
+	std::vector< std::vector<Vec2ui> > newHotRegions;
+
 	uint sid, fid, fid_local;
 	uint x, y;
 	for (int i=0;i<hotRegions.size();i++)	{
 
-		HotSpot HS;
-		HS.hotRegionID = i;
-		HS.defineHeight = defineHeight( direction, hotRegions[i] );
-		std::map< uint, uint > sidCount;
+		std::map< uint,  std::vector< Vec2ui > > subHotRegions;
+		std::map< uint,  std::vector< Vec3d > > subHotSamples;
 
 		for (int j=0;j<hotRegions[i].size();j++){
 
-			x = hotRegions[i][j].x();
-			y = hotRegions[i][j].y();
-			if (direction == -1) 
-				x = (w-1) - x;		
+			Vec2ui &hotPixel = hotRegions[i][j];
+			x = (direction == 1) ? hotPixel.x() : (w-1) - hotPixel.x();
+			y = hotPixel.y();
 
 			// 3d position of this hot sample
 			double depthVal = getValue(depth, x, y, filterSize);
@@ -185,26 +184,31 @@ void Offset::hotspotsFromDirection( int direction )
 			activeObject()->global2local_fid(fid, sid, fid_local);
 			
 			// Store informations
-			Vec3d hotSample(hotP.x, hotP.y, hotP.z);
-			hotPoints[sid].insert(hotSample);
-			HS.hotSamples.push_back(hotSample);
-
-			sidCount[sid]++;
+			Vec3d hotPoint(hotP.x, hotP.y, hotP.z);
+			hotPoints[sid].push_back(hotPoint);
+			subHotRegions[sid].push_back(hotPixel);
+			subHotSamples[sid].push_back(hotPoint);
 		}
 
-		// Get the segment id of this hot region
-		uint count = 0;
-		for (std::map<uint, uint>::iterator itr = sidCount.begin(); itr != sidCount.end(); itr++)
+		// Split the hot region if necessary
+		std::map< uint,  std::vector< Vec2ui > >::iterator itr;
+		for ( itr = subHotRegions.begin(); itr != subHotRegions.end(); itr++)
 		{
-			if (itr->second > count)
-			{
-				count = itr->second;
-				HS.segmentID = itr->first;
-			}
+			uint sid = itr->first;
+			newHotRegions.push_back(itr->second);
+
+			HotSpot HS;
+			HS.hotRegionID = hotSpots.size();
+			HS.segmentID = sid;
+			HS.defineHeight = defineHeight( direction, itr->second );
+			HS.hotSamples = subHotSamples[sid];
+			hotSpots.push_back(HS);	
 		}
 
-		hotSpots.push_back(HS);
 	}
+
+	// Update hotRegions
+	hotRegions = newHotRegions;
 
 	delete colormap;	
 }
@@ -226,6 +230,19 @@ void Offset::detectHotspots( int useFilterSize, double hotRange )
 	// Detect hot spots from both directions
 	hotspotsFromDirection(1);
 	hotspotsFromDirection(-1);
+	if (upperHotSpots.size() < lowerHotSpots.size())
+	{
+		// Lower hot spots are splitted, so re-detect upper hot spots
+		hotspotsFromDirection(1);
+	}
+
+	std::cout << "Hot spots: " << std::endl;
+	for (int i=0;i<hotRegions.size();i++)
+	{
+		upperHotSpots[i].print();
+		lowerHotSpots[i].print();
+	}
+	std::cout << std::endl;
 }
 
 void Offset::showHotSpots()
@@ -240,14 +257,14 @@ void Offset::showHotSpots()
 	}
 
 	// Show hot segments and hot spots
-	for (std::map< uint, std::set< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
+	for (std::map< uint, std::vector< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
 	{
 		uint sid = i->first;
 		QSurfaceMesh* segment = activeObject()->getSegment(sid);
 
 		segment->setColorVertices(Color(1, 0, 0, 1)); // red
 
-		for (std::set< Vec3d >::iterator pit = i->second.begin(); pit != i->second.end(); pit++)
+		for (std::vector< Vec3d >::iterator pit = i->second.begin(); pit != i->second.end(); pit++)
 		{
 			segment->debug_points.push_back(*pit);
 		}
@@ -258,7 +275,7 @@ std::set<uint> Offset::getHotSegment()
 {
 	std::set< uint > hs;
 
-	for (std::map< uint, std::set< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
+	for (std::map< uint, std::vector< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
 		hs.insert(i->first);
 
 	return hs;
@@ -320,13 +337,18 @@ double Offset::getValue( std::vector< std::vector < double > >& image, uint x, u
 
 double Offset::getMaxValue( std::vector< std::vector < double > >& image )
 {
+	int w = image[0].size();
 	int h = image.size();
 
-	std::vector< double > row_max;
-	for (int y = 0; y < h; y++)
-		row_max.push_back(MaxElement(image[y]));
+	double maxVal = - BIG_NUMBER;
+	for (int y = 0; y < h; y++){
+		for (int x = 0; x < w; x++){
+			if (image[y][x] != BIG_NUMBER && image[y][x] > maxVal)
+				maxVal = image[y][x];
+		}
+	}
 
-	return MaxElement(row_max);
+	return maxVal;
 }
 
 double Offset::getMinValue( std::vector< std::vector < double > >& image )
@@ -431,7 +453,7 @@ bool Offset::defineHeight( int direction, std::vector< Vec2ui >& region )
 	else
 	{
 		values = getValuesInRegion( lowerEnvelope, region, true);
-		result = MinElement(values) < getMinValue(upperEnvelope) + ZERO_TOLERANCE;
+		result = MinElement(values) < getMinValue(lowerEnvelope) + ZERO_TOLERANCE;
 	}	
 
 	return result;
@@ -454,4 +476,19 @@ std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < doub
 	}
 
 	return values;
+}
+
+void Offset::applyHeuristics()
+{
+	Controller *ctrl = activeObject()->controller;
+	// Heuristics are applied for each pair of hot spots
+	for (int i = 0; i < hotRegions.size(); i++)
+	{
+		HotSpot &upperHS = upperHotSpots[i];
+		HotSpot &LowerHS = lowerHotSpots[i];
+
+		std::cout << "HotCurveID (upper) = " << ctrl->getPrimitive(upperHS.segmentID)->detectHotCurve(upperHS.hotSamples) << "\t"
+				  << "HotCurveID (lower) = " << ctrl->getPrimitive(LowerHS.segmentID)->detectHotCurve(LowerHS.hotSamples) << "\n";
+	}
+	
 }
