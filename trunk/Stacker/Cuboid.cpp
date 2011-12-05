@@ -7,6 +7,9 @@ using namespace Eigen;
 #define RADIANS(deg)    ((deg)/180.0 * M_PI)
 #define DEGREES(rad)    ((rad)/M_PI * 180.0)
 
+// Rodrigues' rotation
+#define ROTATE_VEC(v, theta, axis) (v = v * cos(theta) + cross(axis, v) * sin(theta) + axis * dot(axis, v) * (1 - cos(theta)))
+
 Cuboid::Cuboid(QSurfaceMesh* mesh)
 	: Primitive(mesh)
 {
@@ -267,11 +270,9 @@ Vec3d Cuboid::selectedPartPos()
 	return partPos / face.size();
 }
 
-PrimitiveParam * Cuboid::reshapePart( Vec3d q )
+void Cuboid::reshapePart( Vec3d q )
 {
-	CuboidParam * params = new CuboidParam;
-
-	if(selectedPartId < 0) return NULL;
+	if(selectedPartId < 0) return;
 
 	debugPoints.clear();
 	debugLines.clear();
@@ -309,13 +310,13 @@ PrimitiveParam * Cuboid::reshapePart( Vec3d q )
 	Vec3d axis = cross(v1,v2).normalized();
 
 	Vec3d delta = faceCenter[k] - q;
-	double omega = acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1));
+	double theta = acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1));
 
 	// Rotate new face
-	for(int i = 0; i < 4; i++)
-	{
+	for(int i = 0; i < 4; i++){
 		Vec3d v = ((faces[j][i] - faceCenter[j]));
-		v = v * cos(omega) + cross(axis, v) * sin(omega) + axis * dot(axis, v) * (1 - cos(omega));
+		//v = v * cos(theta) + cross(axis, v) * sin(theta) + axis * dot(axis, v) * (1 - cos(theta));
+		ROTATE_VEC(v, theta, axis);
 
 		newFaces[j][i] = v + q;
 		newFaces[k][i] = newFaces[j][i] + delta;
@@ -323,143 +324,53 @@ PrimitiveParam * Cuboid::reshapePart( Vec3d q )
 		tempFace[i] = newFaces[k][i] - (delta.normalized() * v1.norm());
 	}
 
-	// Compute parameters when reshaped
+	Vec3d v3 = newFaces[j][1] - newFaces[j][0];
+	Vec3d v4 = newFaces[j][2] - newFaces[j][1];
 
-	int z = ((j / 2) + 1) % 3;
-	int x = (z + 1) % 3;
+	int x = ((j / 2) + 1) % 3;
 	int y = (x + 1) % 3;
+	int z = (y + 1) % 3;
 
-	// Translation:
-	Vec3d t(0,0,0);
-	t = (q - faceCenter[j]) / 2.0;
+	// Modify box
+	this->currBox.Extent[x] = v2.norm() * 0.5;
+	this->currBox.Extent[y] = v3.norm() * 0.5;
+	this->currBox.Extent[z] = v4.norm() * 0.5;
+
+	ROTATE_VEC(currBox.Axis[x], theta, axis);
+	ROTATE_VEC(currBox.Axis[y], theta, axis);
+	ROTATE_VEC(currBox.Axis[z], theta, axis);
 	
-	params->forceParam(0, t.x()); params->forceParam(1, t.y()); params->forceParam(2, t.z());
-	std::cout << "\nTrans:" << t << std::endl;
+	this->currBox.Center = (v2 / 2.0) + faceCenter[k];
 
-	// Scaling:
-	Vec3d s(1,1,1);
-	s[((j / 2) + 1) % 3] = delta.norm() / v1.norm();
+	this->originalBox = currBox;
 
-	debugPoly.push_back(newFaces[j]);
-	debugPoly.push_back(newFaces[k]);
-	debugPoly.push_back(tempFace);
+	// Selected new part Id
+	newFaces = getBoxFaces(originalBox);
+	faceCenter.resize(newFaces.size(), Vec3d(0,0,0));
+	double minDist = DBL_MAX;
 
-	params->forceParam(6, s.x()); params->forceParam(7, s.y());	params->forceParam(8, s.z());
-	std::cout << "\nScale:" << s << std::endl;
+	//printf("Old selected part = %d ", selectedPartId);
 
-	// Rotation:
-	Vec3d v3 = (tempFace[1] - tempFace[0]);
-	v1.normalize();
-	v2.normalize();
-	v3.normalize();
+	for(uint i = 0; i < newFaces.size(); i++){
+		for(uint j = 0; j < newFaces[i].size(); j++)
+			faceCenter[i] += newFaces[i][j];
 
-	/*Matrix3d m1, m2;
+		faceCenter[i] /= faces[i].size();
 
-	Vec3d xA, yA, zA;
-	xA = originalBox.Axis[0];
-	yA = originalBox.Axis[1];
-	zA = originalBox.Axis[2];
-
-	m1 <<	xA.x(), yA.x(), zA.x(),
-			xA.y(), yA.y(), zA.y(),
-			xA.z(), yA.z(), zA.z();
-
-	Vector3d xB, yB, zB;
-	xB = m1 * V2E( v3  );
-	zB = m1 * V2E( v2 );
-	yB = zB.cross(xB);
-
-	m2 <<	xB.x(), yB.x(), zB.x(),
-			xB.y(), yB.y(), zB.y(),
-			xB.z(), yB.z(), zB.z();
-
-	Matrix3d R = m2;*/
-
-	Matrix3d A, B;
-
-	Vec3d xA, yA, zA;
-	xA = originalBox.Axis[x];
-	yA = originalBox.Axis[y];
-	zA = originalBox.Axis[z];
-
-	A << xA.x(), yA.x(), zA.x(),
-		 xA.y(), yA.y(), zA.y(),
-		 xA.z(), yA.z(), zA.z();
-
-	Vec3d xB, yB, zB;
-	xB = v3;
-	zB = v2;
-	yB = cross(zB,xB);
-
-	B << xB.x(), yB.x(), zB.x(),
-		 xB.y(), yB.y(), zB.y(),
-		 xB.z(), yB.z(), zB.z();
-
-
-	Matrix4d tm = umeyama(A, B, false);
-	Affine3d T(tm);
-
-	Matrix3d R = T.rotation();
-
-	double theta = 0, psi = 0, phi = 0;
-
-	if(abs(R(2,0)) != 1)
-	{
-		theta = -asin(R(2,0));
-		psi = atan2( R(2,1) / cos(theta),  R(2,2) / cos(theta));
-		phi = atan2( R(1,0) / cos(theta),  R(0,0) / cos(theta));
-	}
-	else
-	{
-		phi = 0;
-
-		if(R(2,0) == -1)
+		if((faceCenter[i] - q).norm() < minDist)
 		{
-			theta = M_PI / 2.0;
-			psi = phi + atan2(R(0,1), R(0,2));
-		}
-		else
-		{
-			theta = -M_PI / 2.0;
-			psi = -theta + atan2(-R(0,1), -R(0,2));
+			minDist = (faceCenter[i] - q).norm();
+			selectedPartId = i;
 		}
 	}
 
-	Vec3d rAngles(DEGREES(theta), DEGREES(psi), DEGREES(phi));
+	debugLines.push_back(std::make_pair(originalBox.Center, originalBox.Center + this->originalBox.Axis[x] * 0.5));
 
-	params->forceParam(x + 3, rAngles[0]); 
-	params->forceParam(y + 3, rAngles[1]);	
-	params->forceParam(z + 3, rAngles[2]);
-	std::cout << "\nRot:" << rAngles << std::endl << "\n" ;
+	//printf(" New selected part = %d \n", selectedPartId);
 
-	// Rotation:
-	/*Vec3d r(0,0,0);
-	v1.normalize();	v2.normalize();
-	Vec3d pv1 (0, 0, 1);
-	Vec3d pxv2 (0, dot(v2,originalBox.Axis[y]), dot(v2,originalBox.Axis[z]));
-	Vec3d pyv2 (dot(v2,originalBox.Axis[x]), 0, dot(v2,originalBox.Axis[z]));
+	//std::cout << this->currBox.Extent << std::endl;
+	std::cout << "X = " << this->currBox.Axis[0]  << " Y = " << this->currBox.Axis[1] << " Z = " << this->currBox.Axis[2] << std::endl;
 
-	// Normalize
-	pxv2.normalize();
-	pyv2.normalize();
 
-	double sign_x = dot(cross(pv1, pxv2), Vec3d(1, 0, 0)) < 0;
-	double sign_y = dot(cross(pv1, pyv2), Vec3d(0, 1, 0)) < 0;
-	
-	// Range it -1, 1
-	sign_x = 2 * (sign_x - 0.5);
-	sign_y = 2 * (sign_y - 0.5);
-
-	double angle_x = DEGREES(acos(RANGED(-1, dot(pv1, pxv2), 1)));
-	double angle_y = DEGREES(acos(RANGED(-1, dot(pv1, pyv2), 1)));
-	if (angle_x < 0)	angle_x += 180;
-	if (angle_y < 0)	angle_y += 180;
-
-	r[x] = sign_x * angle_x;
-	r[y] = sign_y * angle_y;
-
-	params->forceParam(3, r[0]); params->forceParam(4, r[1]);	params->forceParam(5, r[2]);
-	std::cout << "\nRot:" << r << std::endl << "\n" ;*/
-
-	return params;
+	this->deformMesh();
 }

@@ -46,6 +46,108 @@ Scene::Scene( QWidget *parent)
 	defCtrl = NULL;
 }
 
+void Scene::init()
+{
+	// Options
+	this->viewMode = VIEW;
+	this->selectMode = NONE;
+	this->modifyMode = DEFAULT;
+
+	// Background
+	setBackgroundColor(backColor = QColor(50,50,60));
+
+	// Lights
+	setupLights();
+
+	// Camera
+	setupCamera();
+
+	// Material
+	float mat_ambient[] = {0.1745f, 0.01175f, 0.01175f, 1.0f};
+	float mat_diffuse[] = {0.65f, 0.045f, 0.045f, 1.0f};
+	float mat_specular[] = {0.09f, 0.09f, 0.09f, 1.0f};
+	float high_shininess = 100;
+
+	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialf(GL_FRONT, GL_SHININESS, high_shininess);
+}
+
+void Scene::setupCamera()
+{
+	camera()->setUpVector(Vec(0,0,1));
+	camera()->setPosition(Vec(2,-2,2));
+	camera()->lookAt(Vec());
+}
+
+void Scene::setupLights()
+{
+	GLfloat lightColor[] = {0.9f, 0.9f, 0.9f, 1.0f};
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
+}
+
+void Scene::draw()
+{
+	if(!this->context()->isValid())
+	{
+		printf("");
+
+	}
+
+	glEnable(GL_MULTISAMPLE);
+
+	// Background color
+	this->setBackgroundColor(backColor);
+
+	// Update VBO if needed
+	updateVBOs();
+
+	// Draw objects using VBO
+	QMap<QString, VBO>::iterator i;
+	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
+		i->render();
+
+	// Fall back
+	if(!isEmpty() && vboCollection.isEmpty())
+		activeObject()->simpleDraw();
+
+	// Draw the controllers if exist
+	if (!isEmpty() && activeObject()->controller)
+		activeObject()->controller->draw();
+
+	// Wires
+	foreach(Wire w, activeWires)
+		w.draw();
+
+	// Deformer
+	if(activeDeformer) activeDeformer->draw();
+
+	// Debug
+	if (!isEmpty())
+		activeObject()->drawDebug();
+
+	// DEBUG
+	if(gc) gc->draw();
+	if(skel) skel->draw();
+}
+
+void Scene::drawWithNames()
+{
+	if(activeDeformer) activeDeformer->drawNames();
+
+	// Draw the controllers if exist
+	if (!isEmpty() && activeObject()->controller)
+	{
+		bool isDrawParts = false;
+
+		if(this->selectMode == CONTROLLER_ELEMENT)
+			isDrawParts = true;
+
+		activeObject()->controller->drawNames(isDrawParts);
+	}
+}
+
 void Scene::setActiveObject(QSegMesh* newMesh)
 {
 	if (!this->hasFocus()) return;
@@ -92,105 +194,6 @@ void Scene::updateActiveObject()
 {
 	vboCollection.clear();
 	updateGL();
-}
-
-void Scene::init()
-{
-	// Options
-	this->viewMode = VIEW;
-	this->selectMode = NONE;
-	this->modifyMode = DEFAULT;
-
-	// Background
-	setBackgroundColor(backColor = QColor(50,50,60));
-
-	// Lights
-	setupLights();
-
-	// Camera
-	setupCamera();
-
-	// Material
-	float mat_ambient[] = {0.1745f, 0.01175f, 0.01175f, 1.0f};
-	float mat_diffuse[] = {0.65f, 0.045f, 0.045f, 1.0f};
-	float mat_specular[] = {0.09f, 0.09f, 0.09f, 1.0f};
-	float high_shininess = 100;
-
-	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-	glMaterialf(GL_FRONT, GL_SHININESS, high_shininess);
-}
-
-void Scene::setupCamera()
-{
-	camera()->setUpVector(Vec(0,0,1));
-	camera()->setPosition(Vec(2,-2,2));
-	camera()->lookAt(Vec());
-}
-
-void Scene::setupLights()
-{
-	GLfloat lightColor[] = {0.9f, 0.9f, 0.9f, 1.0f};
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
-}
-
-void Scene::draw()
-{
-	glEnable(GL_MULTISAMPLE);
-
-	// Background color
-	this->setBackgroundColor(backColor);
-
-	// Update VBO if needed
-	updateVBOs();
-
-	// Draw objects using VBO
-	QMap<QString, VBO>::iterator i;
-	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
-		i->render();
-
-	// Fall back
-	if(!isEmpty() && vboCollection.isEmpty())
-		activeObject()->simpleDraw();
-
-	// Draw the controllers if exist
-	if (!isEmpty() && activeObject()->controller)
-		activeObject()->controller->draw();
-
-	// Wires
-	foreach(Wire w, activeWires)
-		w.draw();
-
-	// Deformer
-	if(activeDeformer) activeDeformer->draw();
-
-	// Debug
-	if (!isEmpty())
-		activeObject()->drawDebug();
-
-	// DEBUG
-	if(gc) gc->draw();
-	if(skel) skel->draw();
-
-	//if(defCtrl)
-	//	defCtrl->drawDebug();
-}
-
-void Scene::drawWithNames()
-{
-	if(activeDeformer) activeDeformer->drawNames();
-
-	// Draw the controllers if exist
-	if (!isEmpty() && activeObject()->controller)
-	{
-		bool isDrawParts = false;
-
-		if(this->selectMode == CONTROLLER_ELEMENT)
-			isDrawParts = true;
-
-		activeObject()->controller->drawNames(isDrawParts);
-	}
 }
 
 void Scene::mousePressEvent( QMouseEvent* e )
@@ -279,8 +282,9 @@ void Scene::postSelection( const QPoint& point )
 		{
 			if(activeObject()->controller->selectPrimitivePart(selected))
 			{
-				defCtrl = new QDeformController();
-				//defCtrl->setController(activeObject()->controller);
+				defCtrl = new QDeformController(activeObject()->controller);
+
+				this->connect(defCtrl, SIGNAL(primitiveReshaped()), SLOT(updateActiveObject()));
 
 				setManipulatedFrame( defCtrl->getFrame() );
 

@@ -51,7 +51,6 @@ public slots:
 	void updateController();
 	void resetCtrlDeformerPanel();
 	void userControlledPrimatives();
-	void reshapePrimitive();
 
 signals:
 	void printMessage( QString );

@@ -25,7 +25,7 @@ public:
 	void recoverMesh();
 
 	virtual Vec3d selectedPartPos();
-	virtual PrimitiveParam * reshapePart(Vec3d q);
+	virtual void reshapePart( Vec3d q );
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);

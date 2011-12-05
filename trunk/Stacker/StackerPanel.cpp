@@ -53,9 +53,7 @@ StackerPanel::StackerPanel()
 	connect(ctrlDeformer.scaleY, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.scaleZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.resetButton, SIGNAL(clicked()), SLOT(resetCtrlDeformerPanel()));
-
-	connect(panel.reshapePrimitiveButton, SIGNAL(clicked()), SLOT(reshapePrimitive()));
-
+	
 	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
 }
 
@@ -83,10 +81,7 @@ void StackerPanel::onControllerButtonClicked()
 
 	activeScene->setSelectMode(CONTROLLER);
 
-	// Build deformer
-	defCtrl = new QDeformController();
-
-	showMessage("Controller is build for " + activeObject()->objectName());
+	showMessage("Controller is built for " + activeObject()->objectName());
 }
 
 void StackerPanel::onImproveButtonClicked()
@@ -370,12 +365,4 @@ void StackerPanel::userControlledPrimatives()
 	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
 	
 	activeScene->setSelectMode(CONTROLLER_ELEMENT);
-}
-
-void StackerPanel::reshapePrimitive()
-{
-	activeObject()->controller->reshapePrimitive(defCtrl->pos());
-	
-	emit(objectModified());
-	activeObject()->controller->recoverShape();
 }
