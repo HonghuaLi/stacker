@@ -16,6 +16,7 @@ Cuboid::Cuboid(QSurfaceMesh* mesh)
 	fit();
 
 	selectedPartId = -1;
+
 }
 
 void Cuboid::fit()
@@ -96,17 +97,22 @@ std::vector<Vector3> Cuboid::getBoxConners( MinOBB3::Box3 box )
 
 std::vector< std::vector<Vector3> > Cuboid::getBoxFaces(MinOBB3::Box3 fromBox)
 {
-	std::vector< std::vector<Vector3> > faces;
+	std::vector< std::vector<Vector3> > faces(6);
 	std::vector<Vector3> pnts = getBoxConners(fromBox);
-	std::vector<Vector3> f0 (4), f1 (4), f2 (4), f3 (4), f4 (4), f5 (4);
 
-	f0[0] = pnts[1]; f0[1] = pnts[0]; f0[2] = pnts[3]; f0[3] = pnts[2];faces.push_back(f0);
-	f1[0] = pnts[4]; f1[1] = pnts[5]; f1[2] = pnts[6]; f1[3] = pnts[7];faces.push_back(f1);
-	f2[0] = pnts[0]; f2[1] = pnts[1]; f2[2] = pnts[5]; f2[3] = pnts[4];faces.push_back(f2);
-	f3[0] = pnts[2]; f3[1] = pnts[3]; f3[2] = pnts[7]; f3[3] = pnts[6];faces.push_back(f3);
-	f4[0] = pnts[1]; f4[1] = pnts[2]; f4[2] = pnts[6]; f4[3] = pnts[5];faces.push_back(f4);
-	f5[0] = pnts[0]; f5[1] = pnts[4]; f5[2] = pnts[7]; f5[3] = pnts[3];faces.push_back(f5);
-	 
+	uint ids[6][4] = {1, 2, 6, 5,
+					  0, 4, 7, 3,
+					  4, 5, 6, 7,
+					  0, 3, 2, 1,
+					  0, 1, 5, 4,
+					  2, 3, 7, 6};
+
+	for (int i = 0; i < 6; i++)	{
+		for (int j = 0; j < 4; j++)	{
+			faces[i].push_back( pnts[ ids[i][j] ] );
+		}
+	}
+
 	return faces;
 }
 
@@ -127,8 +133,8 @@ void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
 
 	if(selectedPartId >= 0)
 	{
-		SimpleDraw::DrawSquare(faces[this->selectedPartId], false, 6, Vec4d(1,0,0,1));
-		SimpleDraw::IdentifyPoint(selectedPartPos(), 0,1,0,20);
+		SimpleDraw::DrawSquare(faces[this->selectedPartId], false, 6, Vec4d(0,1,0,1));
+		//SimpleDraw::IdentifyPoint(selectedPartPos(), 0,1,0,20);
 	}
 
 	for(int i = 0; i < faces.size(); i++)
@@ -373,4 +379,44 @@ void Cuboid::reshapePart( Vec3d q )
 
 
 	this->deformMesh();
+}
+
+uint Cuboid::detectHotCurve( std::vector< Vec3d > &hotSamples )
+{
+	if ( dot( originalBox.Axis[2], cross( originalBox.Axis[0],  originalBox.Axis[1] ) ) < 0 )
+		std::cout << "The coordinate frame is not right handed!" << std::endl;
+
+	std::vector< std::vector< double > > projections(3);
+
+	Vec3d &center = originalBox.Center;
+
+	for (int i = 0; i < hotSamples.size(); i++)
+	{
+		Vec3d &vec = hotSamples[i] - center;
+
+		for (int j = 0; j < 3; j++)
+		{
+			Vec3d &axis = originalBox.Axis[j];
+			projections[j].push_back( dot( axis, vec ) );
+		}
+
+	}
+
+	std::vector< double > range, mean;
+	for (int j = 0; j < 3; j++)
+	{
+		double maxProj = MaxElement( projections[j] );
+		double minProj = MinElement( projections[j] );
+
+		range.push_back( maxProj - minProj );
+		mean.push_back( (maxProj + minProj) / 2 );
+	}
+
+
+	uint axis = std::min_element( range.begin(), range.end() ) - range.begin();
+
+	selectedPartId = 2 * axis;
+	if (mean[axis] < 0) selectedPartId += 1;
+
+	return selectedPartId;
 }

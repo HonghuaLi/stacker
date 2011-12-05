@@ -22,6 +22,8 @@ public:
 	virtual double volume();
 	virtual std::vector <Vec3d> points();
 
+	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
+
 	void translate(Vec3d T);
 
 	qglviewer::ManipulatedFrame *mf1, *mf2;

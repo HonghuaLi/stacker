@@ -235,3 +235,8 @@ void GCylinder::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
 {
 
 }
+
+uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
+{
+	return 0;
+}

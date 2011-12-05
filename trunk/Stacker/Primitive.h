@@ -19,6 +19,10 @@ public:
 	virtual void draw() = 0;
 	virtual	void drawNames(bool isDrawParts = false) = 0;
 
+	// Hot curves
+	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples ) = 0;
+
+
 	// Helpful for debugging
 	std::vector<Vec3d> debugPoints;
 	std::vector< std::pair<Vec3d,Vec3d> > debugLines;

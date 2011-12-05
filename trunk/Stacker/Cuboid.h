@@ -4,6 +4,18 @@
 #include <Eigen/Dense>
 #include "CuboidParam.h"
 
+//		  7-------6                     y
+//		 /|      /|                   f2^   /f5
+//		4-+-----5 |                     |  / 
+//		| |     | |                     | /
+//		| |     | |             f1      |/     f0
+//		| 3-----+-2            ---------+-------> x 
+//		|/      |/                     /|
+//		0-------1                     / |
+//								   f4/  |f3
+//	                                z
+
+
 class Cuboid : public Primitive
 {
 public:
@@ -26,6 +38,8 @@ public:
 
 	virtual Vec3d selectedPartPos();
 	virtual void reshapePart( Vec3d q );
+
+	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);
