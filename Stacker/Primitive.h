@@ -33,7 +33,7 @@ public:
 	int selectedPartId;
 
 	virtual Vec3d selectedPartPos() {return Vec3d(0,0,0);}
-	virtual PrimitiveParam * reshapePart(Vec3d q) { return NULL; }
+	virtual void reshapePart( Vec3d q ) {};
 
 	QSurfaceMesh* getMesh(){ return m_mesh; }
 

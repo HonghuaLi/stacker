@@ -73,7 +73,6 @@ void StackerPreview::draw()
 	double O_max = activeObject()->O_max;
 	double S = activeObject()->stackability;
 
-	this->displayMessage(QString("O_max = %1; S = %2").arg(O_max).arg(S));
 	Vec3d delta = O_max * stackDirection;
 
 	glPushMatrix();
@@ -93,6 +92,20 @@ void StackerPreview::draw()
 	}
 
 	glPopMatrix();
+}
+
+void StackerPreview::postDraw()
+{
+	QGLViewer::postDraw();
+
+	qglColor(Qt::white);
+
+	if(activeObject())
+	{
+		QString message = QString("O_max = %1; S = %2").arg(activeObject()->O_max).arg(
+			activeObject()->stackability);
+		renderText(0, this->height()- 10, message);
+	}
 }
 
 void StackerPreview::setActiveScene( Scene * toScene )

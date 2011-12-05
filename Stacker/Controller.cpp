@@ -2,6 +2,7 @@
 #include "QSegMesh.h"
 #include "Cuboid.h"
 #include "GCylinder.h"
+#include "Primitive.h"
 
 Controller::Controller( QSegMesh* mesh )
 {
@@ -54,6 +55,7 @@ void Controller::draw()
 	for (uint i = 0; i < primitives.size(); i++)
 	{
 		primitives[i]->draw();
+		primitives[i]->drawDebug();
 
 		// Draw debug 
 		//for (uint j = i + 1; j < primitives.size(); j++)
@@ -67,7 +69,6 @@ void Controller::draw()
 		//	SimpleDraw::IdentifyLine(p,q,1,1,0);
 		//}
 
-		//primitives[i]->drawDebug();
 	}
 }
 
@@ -128,11 +129,7 @@ void Controller::reshapePrimitive( Vec3d q )
 	for (uint i = 0; i < primitives.size(); i++)
 	{
 		if(primitives[i]->isSelected)
-		{
-			PrimitiveParam * params = primitives[i]->reshapePart(q);
-
-			primitives[i]->deform(params);
-		}
+			primitives[i]->reshapePart(q);
 	}
 }
 

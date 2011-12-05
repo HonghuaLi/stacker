@@ -23,6 +23,7 @@ public:
 
 	void preDraw();
 	void draw();
+	void postDraw();
 
 	// VBO
 	QMap<QString, VBO> vboCollection;
