@@ -23,7 +23,7 @@ public:
 	BoundingBox(const Vec3d& c, double x, double y, double z);
 	BoundingBox& operator= (const BoundingBox& other);
 
-	void computeFromTris(const StdVector<BaseTriangle*>& tris);
+	void computeFromTris(const std::vector<BaseTriangle*>& tris);
 
 	bool intersects(const Ray& ray) const;
 

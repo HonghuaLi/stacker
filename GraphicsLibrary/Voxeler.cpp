@@ -2,7 +2,7 @@
 #include "SimpleDraw.h"
 #include "Stats.h"
 
-Voxeler::Voxeler( Mesh * src_mesh, double voxel_size )
+Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size )
 {
 	this->mesh = src_mesh;
 	this->voxelSize = voxel_size;
@@ -10,14 +10,12 @@ Voxeler::Voxeler( Mesh * src_mesh, double voxel_size )
 	if(src_mesh == NULL)
 		return;
 
-	printf("Computing voxels.."); CreateTimer(timer);
+	printf("Computing voxels..");
 
 	// For each face in mesh
-	for(StdList<Face>::iterator f = mesh->face.begin(); f != mesh->face.end(); f++)
+	foreach(Surface_mesh::Face f, mesh->face_array)
 	{
-		Face * face = &(*f);
-
-		FaceBounds fb = findFaceBounds( face );
+		FaceBounds fb = findFaceBounds( f );
 
 		for(int x = fb.minX; x <= fb.maxX; x++)
 		{
@@ -27,9 +25,9 @@ Voxeler::Voxeler( Mesh * src_mesh, double voxel_size )
 				{
 					Voxel v(x,y,z);
 
-					if(isVoxelIntersects(v, face) && !kd.has(x,y,z))
+					if(isVoxelIntersects(v, f) && !kd.has(x,y,z))
 					{
-						kd.insert3(v.x, v.y, v.z , 1);
+						kd.insert3(v.x, v.y, v.z, 1);
 						voxels.push_back( v );
 					}
 				}
@@ -43,7 +41,7 @@ Voxeler::Voxeler( Mesh * src_mesh, double voxel_size )
 	// Setup visualization
 	setupDraw();
 
-	printf(".voxel count = %d. Done (%d ms).\n", (int)voxels.size(), (int)timer.elapsed());
+	printf(".voxel count = %d.\n", (int)voxels.size());
 
 	// Inner / outer computation
 	printf("Computing inside, outside..");
@@ -67,29 +65,31 @@ void Voxeler::computeBounds()
 	}
 }
 
-FaceBounds Voxeler::findFaceBounds( Face * f )
+FaceBounds Voxeler::findFaceBounds( QSurfaceMesh::Face f )
 {
 	FaceBounds fb;
 
 	double minx = 0, miny = 0, minz = 0;
 	double maxx = 0, maxy = 0, maxz = 0;
 
-	minx = maxx = f->vec(0).x;
-	miny = maxy = f->vec(0).y;
-	minz = maxz = f->vec(0).z;
+	std::vector<Vec3d> f_vec =  mesh->facePoints(f);
+
+	minx = maxx = f_vec[0].x();
+	miny = maxy = f_vec[0].y();
+	minz = maxz = f_vec[0].z();
 
 	for(int v = 0; v < 3; v++)
 	{
-		Vec vec = f->vec(v);
+		Vec3d vec = f_vec[v];
 
-		if (vec.x < minx) minx = vec.x;
-		if (vec.x > maxx) maxx = vec.x;
+		if (vec.x() < minx) minx = vec.x();
+		if (vec.x() > maxx) maxx = vec.x();
 
-		if (vec.y < miny) miny = vec.y;
-		if (vec.y > maxy) maxy = vec.y;
+		if (vec.y() < miny) miny = vec.y();
+		if (vec.y() > maxy) maxy = vec.y();
 
-		if (vec.z < minz) minz = vec.z;
-		if (vec.z > maxz) maxz = vec.z;
+		if (vec.z() < minz) minz = vec.z();
+		if (vec.z() > maxz) maxz = vec.z();
 	}
 
 	fb.minX = floor(minx / voxelSize);
@@ -103,15 +103,17 @@ FaceBounds Voxeler::findFaceBounds( Face * f )
 	return fb;
 }
 
-bool Voxeler::isVoxelIntersects( const Voxel& v, Face * f )
+bool Voxeler::isVoxelIntersects( const Voxel& v, QSurfaceMesh::Face f )
 {
-	Vec center = Vec(v.x * voxelSize, v.y * voxelSize, v.z * voxelSize);
+	Vec3d center = Vec3d(v.x * voxelSize, v.y * voxelSize, v.z * voxelSize);
 
 	double s = voxelSize * 0.5;
 
 	BoundingBox b(center, s,s,s);
 
-	return b.containsTriangle(f->vec(0), f->vec(1), f->vec(2));
+	std::vector<Vec3d> f_vec =  mesh->facePoints(f);
+
+	return b.containsTriangle(f_vec[0], f_vec[1], f_vec[2]);
 }
 
 void Voxeler::draw()
@@ -131,10 +133,10 @@ void Voxeler::draw()
 
 	// DEBUG == DELETE ME:
 
-	Vector<Voxel> temp1, temp2;// = fillOther();
+	std::vector<Voxel> temp1, temp2;// = fillOther();
 
-	Vector<double*> insideVoxels = innerVoxels.getAll();
-	Vector<double*> outsideVoxels = outerVoxels.getAll();
+	std::vector<double*> insideVoxels = innerVoxels.getAll();
+	std::vector<double*> outsideVoxels = outerVoxels.getAll();
 
 	foreach(double * pos, insideVoxels)
 		temp1.push_back(Voxel(pos[0], pos[1], pos[2]));
@@ -143,15 +145,15 @@ void Voxeler::draw()
 		temp2.push_back(Voxel(pos[0], pos[1], pos[2]));
 
 	for(int i = 0; i < (int) temp1.size(); i++){
-		Vec c = temp1[i];
+		Vec3d c = temp1[i];
 		c *= voxelSize;
 		SimpleDraw::DrawSolidBox(c, voxelSize, voxelSize, voxelSize, 0,0,1);
 	}
 
 	/*for(int i = 0; i < (int) temp2.size(); i++){
-		Vec c = temp2[i];
+		Vec3d c = temp2[i];
 		c *= voxelSize;
-		if(temp2[i].x < 0)
+		if(temp2[i].x() < 0)
 			SimpleDraw::DrawSolidBox(c, voxelSize, voxelSize, voxelSize, 1,0,0);
 	}*/
 
@@ -163,17 +165,17 @@ void Voxeler::setupDraw()
 	double s = voxelSize * 0.5;
 	int n = (int)voxels.size();
 
-	Vector<Vec> c1(n), c2(n), c3(n), c4(n);
-	Vector<Vec> bc1(n), bc2(n), bc3(n), bc4(n);
+	std::vector<Vec3d> c1(n), c2(n), c3(n), c4(n);
+	std::vector<Vec3d> bc1(n), bc2(n), bc3(n), bc4(n);
 
 	// Find corners
 	for(int i = 0; i < (int)voxels.size(); i++)
 	{
-		Vec c = voxels[i];	c *= voxelSize;
-		c1[i] = Vec(s, s, s) + c; c2[i] = Vec(-s, s, s) + c;
-		c3[i] = Vec(-s, -s, s) + c; c4[i] = Vec(s, -s, s) + c;
-		bc1[i] = Vec(s, s, -s) + c; bc2[i] = Vec(-s, s, -s) + c;
-		bc3[i] = Vec(-s, -s, -s) + c; bc4[i] = Vec(s, -s, -s) + c;
+		Vec3d c = voxels[i];	c *= voxelSize;
+		c1[i] = Vec3d(s, s, s) + c; c2[i] = Vec3d(-s, s, s) + c;
+		c3[i] = Vec3d(-s, -s, s) + c; c4[i] = Vec3d(s, -s, s) + c;
+		bc1[i] = Vec3d(s, s, -s) + c; bc2[i] = Vec3d(-s, s, -s) + c;
+		bc3[i] = Vec3d(-s, -s, -s) + c; bc4[i] = Vec3d(s, -s, -s) + c;
 	}
 
 	d1 = glGenLists(1);
@@ -214,20 +216,15 @@ void Voxeler::setupDraw()
 	glEndList();
 }
 
-Vector<Voxel> Voxeler::fillOther()
+std::vector<Voxel> Voxeler::fillOther()
 {
-	Vector<Voxel> filled;
+	std::vector<Voxel> filled;
 
-	for(int x = minVox.x - 1; x <= maxVox.x + 1; x++)
-	{
-		for(int y = minVox.y - 1; y <= maxVox.y + 1; y++)
-		{
-			for(int z = minVox.z - 1; z <= maxVox.z + 1; z++)
-			{
+	for(int x = minVox.x - 1; x <= maxVox.x + 1; x++){
+		for(int y = minVox.y - 1; y <= maxVox.y + 1; y++){
+			for(int z = minVox.z - 1; z <= maxVox.z + 1; z++){
 				if(!kd.has(x,y,z))
-				{
 					filled.push_back(Voxel(x,y,z));
-				}
 			}
 		}
 	}
@@ -253,7 +250,7 @@ void Voxeler::fillInsideOut(KDTree & inside, KDTree & outside)
 
 void Voxeler::fillOuter(KDTree & outside)
 {
-	Stack<Voxel> stack;
+	std::stack<Voxel> stack;
 
 	stack.push(maxVox + Voxel(1,1,1));
 

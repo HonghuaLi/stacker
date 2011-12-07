@@ -333,6 +333,7 @@
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\QSegMesh.cpp" />
     <ClCompile Include="GraphicsLibrary\QSurfaceMesh.cpp" />
+    <ClCompile Include="GraphicsLibrary\Voxeler.cpp" />
     <ClCompile Include="GUI\main.cpp" />
     <ClCompile Include="GUI\QMeshDoc.cpp" />
     <ClCompile Include="GUI\Scene.cpp" />
@@ -506,6 +507,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DQT_DLL -DQT_OPENGL_LIB "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\Spline" "-I.\GraphicsLibrary" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Utility" "-I.\MathLibrary" "-I.\Stacker" "-I.\Wires" "-I.\Deformer" "-I.\SkeletonExtract" "-I.\SkeletonExtract\Solver\UmfPack_include\AMD" "-I.\SkeletonExtract\Solver\UmfPack_include\UFconfig" "-I.\SkeletonExtract\Solver\UmfPack_include\UMFPACK" "-I.\SkeletonExtract\Solver\SuperLU" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I."</Command>
     </CustomBuild>
+    <ClInclude Include="GraphicsLibrary\Voxeler.h" />
     <ClInclude Include="MathLibrary\GCDeformation.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SkeletonExtract\ClosedPolygon.h" />
