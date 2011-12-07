@@ -75,6 +75,9 @@ void Workspace::addNewScene()
 	connect(tp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
 	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 
+	// View operations
+	connect(ui.actionCameraProjection, SIGNAL(triggered()), newScene, SLOT(toggleCameraProjection()));
+
 	// Update stacker panel
 	sp->setActiveScene(newScene);
 
@@ -97,7 +100,7 @@ void Workspace::setActiveScene(Scene* scene)
 		s->disconnect(mDoc);
 		s->disconnect(ui.actionExportObject);
 	}
-
+	
 	activeScene->connect(mDoc, SIGNAL(objectImported(QSegMesh*)), SLOT(setActiveObject(QSegMesh*)), Qt::UniqueConnection);
 	activeScene->connect(ui.actionExportObject, SIGNAL(triggered()), SLOT(exportActiveObject()), Qt::UniqueConnection);
 	activeScene->connect(mDoc, SIGNAL(printMessage(QString)), SLOT(print(QString)), Qt::UniqueConnection);

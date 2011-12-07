@@ -49,6 +49,7 @@
     <property name="title">
      <string>View</string>
     </property>
+    <addaction name="actionCameraProjection"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -140,6 +141,11 @@
    </property>
    <property name="text">
     <string>Export object</string>
+   </property>
+  </action>
+  <action name="actionCameraProjection">
+   <property name="text">
+    <string>Change camera projection</string>
    </property>
   </action>
  </widget>

@@ -285,6 +285,7 @@ void Scene::postSelection( const QPoint& point )
 				defCtrl = new QDeformController(activeObject()->controller);
 
 				this->connect(defCtrl, SIGNAL(primitiveReshaped()), SLOT(updateActiveObject()));
+				emit(objectInserted());
 
 				setManipulatedFrame( defCtrl->getFrame() );
 
@@ -396,6 +397,16 @@ void Scene::setRenderMode( RENDER_MODE toMode )
 		else
 			i->render_mode = toMode;
 	}
+
+	updateGL();
+}
+
+void Scene::toggleCameraProjection()
+{
+	if(camera()->type() == Camera::PERSPECTIVE)
+		camera()->setType(Camera::ORTHOGRAPHIC);
+	else
+		camera()->setType(Camera::PERSPECTIVE);
 
 	updateGL();
 }

@@ -2,6 +2,7 @@
 
 #include "ColorMap.h"
 #include "QSegMesh.h"
+#include <QColor>
 
 #include <functional>
 
@@ -43,7 +44,7 @@ public:
 	void detectHotspots(int useFilterSize = 1, double hotRange = 0.99);
 	std::set<uint> getHotSegment();
 	void showHotSpots();
-	bool defineHeight( int direction, std::vector< Vec2ui >& region);
+	bool defineHeight( int direction, std::vector< Vec2i >& region);
 
 	// Improve stackability
 	void applyHeuristics();
@@ -53,19 +54,30 @@ public:
 	double getMinValue( std::vector< std::vector < double > >& image );
 	double getMaxValue( std::vector< std::vector < double > >& image );	
 	std::vector< double > getValuesInRegion( std::vector< std::vector < double > >& image, 
-											 std::vector< Vec2ui >& region, bool xFlipped = false );	
+											 std::vector< Vec2i >& region, bool xFlipped = false );	
 	template< typename PREDICATE >
-	std::vector< Vec2ui > getRegion( std::vector< std::vector < double > >& image, 
+	std::vector< Vec2i > getRegion( std::vector< std::vector < double > >& image, 
 									 std::vector< std::vector < bool > >& mask, 
-									 Vec2ui seed, PREDICATE predicate );
+									 Vec2i seed, PREDICATE predicate );
 	template< typename PREDICATE >
-	std::vector< std::vector< Vec2ui > > getRegions(std::vector< std::vector < double > >& image, 
+	std::vector< std::vector< Vec2i > > getRegions(std::vector< std::vector < double > >& image, 
 																			PREDICATE predicate);
-	
+
+	std::vector< Vec2i > deltaVectorsToKRing(int deltaX, int deltaY, int K);
+	std::vector< Vec2i > shiftRegion(std::vector< Vec2i >& region, Vec2i delta, int w, int h);
+	Vec2i sizeofRegion( std::vector< Vec2i >& region );
+
 	// Utilities 
 	template< typename T >
-	void makeImage( std::vector< std::vector < T > >& image, int w, int h, T intial);
+	std::vector< std::vector < T > > createImage( int w, int h, T intial);
+	Vec3d unprojectedCoordinatesOf( uint x, uint y, int direction);
+
+	// Useful for debugging
 	void saveAsImage( std::vector< std::vector < double > >& image, double maxV, QString fileName );
+	void saveAsImage( std::vector< std::vector < bool > >& image, QString fileName );
+	void setRegionColor( std::vector< std::vector < double > >& image, std::vector< Vec2i >& region, double color );
+	QRgb jetColor( double val, double min, double max );
+	void visualizeHotRegions( QString filename );
 
 public:
 	HiddenViewer * activeViewer;
@@ -82,7 +94,7 @@ public:
 	std::vector< std::vector<double> > offset; 	
 
 	std::map< uint, std::vector<Vec3d> > hotPoints;
-	std::vector< std::vector<Vec2ui> > hotRegions;
+	std::vector< std::vector<Vec2i> > hotRegions;
 	std::vector < HotSpot >  upperHotSpots;
 	std::vector < HotSpot >  lowerHotSpots;
 	

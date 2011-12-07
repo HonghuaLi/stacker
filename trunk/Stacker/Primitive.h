@@ -21,7 +21,10 @@ public:
 
 	// Hot curves
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples ) = 0;
+	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect ) = 0;
 
+	// Reshaping
+	virtual void moveCurveCenter( uint fid, Vec3d T) {}
 
 	// Helpful for debugging
 	std::vector<Vec3d> debugPoints;

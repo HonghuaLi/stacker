@@ -4,16 +4,16 @@
 #include <Eigen/Dense>
 #include "CuboidParam.h"
 
-//		  7-------6                     y
-//		 /|      /|                   f2^   /f5
-//		4-+-----5 |                     |  / 
-//		| |     | |                     | /
-//		| |     | |             f1      |/     f0
-//		| 3-----+-2            ---------+-------> x 
-//		|/      |/                     /|
-//		0-------1                     / |
-//								   f4/  |f3
-//	                                z
+//		  7-----------6                     Y
+//		 /|          /|                   f2^   /f5
+//		4-+---------5 |                     |  / 
+//		| |         | |                     | /
+//		| |         | |             f1      |/     f0
+//		| 3---------+-2            ---------+-------> X 
+//		|/          |/                     /|
+//		0-----------1                     / |
+//								       f4/  |f3
+//	                                    Z
 
 
 class Cuboid : public Primitive
@@ -35,23 +35,25 @@ public:
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
 	void recoverMesh();
+	Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );
 
 	virtual Vec3d selectedPartPos();
-	virtual void reshapePart( Vec3d q );
 
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
+	virtual void translateCurve( uint cid, Vec3d T, uint sid_respected = -1 );
+	virtual void moveCurveCenter( uint fid, Vec3d T);
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);
 	Vector3 getPositionInBox(MinOBB3::Box3 &box, Vector3 &coord);	
-	Eigen::Matrix3d rotationMatrixAroundAxis(int axisId, double theta);
-	std::vector<Vector3> getBoxConners(MinOBB3::Box3 box);
-	std::vector< std::vector<Vector3> > getBoxFaces(MinOBB3::Box3 fromBox);
+	Eigen::Matrix3d rotationMatrixAroundAxis(Vec3d u, double theta);
+	std::vector<Vector3> getBoxConners(MinOBB3::Box3 &box);
+	std::vector< std::vector<Vector3> > getBoxFaces(MinOBB3::Box3 &fromBox);
+	Vec3d faceCenterOfBox( MinOBB3::Box3 &box, uint fid );
 
 	void drawCube(double lineWidth, Vec4d color, bool isOpaque = false);
 	Eigen::Vector3d V2E(Vector3 &vec);
 	Vector3 E2V(Eigen::Vector3d &vec);
-
 public:
 	std::vector< Vector3 > coordinates;
 	MinOBB3::Box3 originalBox, currBox;

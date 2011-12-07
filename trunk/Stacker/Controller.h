@@ -32,6 +32,7 @@ public:
 
 	// SET and GET
 	Primitive * getPrimitive(int id);
+	Primitive * getSelectedPrimitive();
 
 	uint numPrimitives();
 	int numHotPrimitives();
