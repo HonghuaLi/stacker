@@ -58,16 +58,16 @@ void Controller::draw()
 		primitives[i]->drawDebug();
 
 		// Draw debug 
-		//for (uint j = i + 1; j < primitives.size(); j++)
-		//{
-		//	Cuboid * c1 = (Cuboid *) primitives[i];
-		//	Cuboid * c2 = (Cuboid *) primitives[j];
+		for (uint j = i + 1; j < primitives.size(); j++)
+		{
+			Cuboid * c1 = (Cuboid *) primitives[i];
+			Cuboid * c2 = (Cuboid *) primitives[j];
 
-		//	Vec3d p,q;
+			Vec3d p,q;
 
-		//	c1->currBox.ClosestSegment(c2->currBox,p,q);
-		//	SimpleDraw::IdentifyLine(p,q,1,1,0);
-		//}
+			c1->currBox.ClosestSegment(c2->currBox,p,q);
+			SimpleDraw::IdentifyLine(p,q,1,1,0);
+		}
 
 	}
 }
@@ -282,4 +282,15 @@ Controller::Stat& Controller::getStat()
 Controller::Stat& Controller::getOriginalStat()
 {
 	return this->originalStat;
+}
+
+Primitive * Controller::getSelectedPrimitive()
+{
+	for (uint i = 0; i < primitives.size(); i++)
+	{
+		if(primitives[i]->isSelected)
+			return primitives[i];
+	}
+
+	return NULL;
 }

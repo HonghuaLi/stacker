@@ -31,7 +31,7 @@ void Cuboid::fit()
 
 	for (vit = m_mesh->vertices_begin(); vit != vend; ++vit)
 	{
-		Vector3 coord = getCoordinatesInBox(originalBox, points[vit]);
+		Vec3d coord = getCoordinatesInBox(originalBox, points[vit]);
 		coordinates.push_back(coord);
 	}
 }
@@ -48,27 +48,27 @@ void Cuboid::deformMesh()
 	}
 }
 
-Vector3 Cuboid::getCoordinatesInBox( MinOBB3::Box3 &box, Vector3 &p )
+Vec3d Cuboid::getCoordinatesInBox( MinOBB3::Box3 &box, Vec3d &p )
 {
-	Vector3 local_p = p - box.Center;
+	Vec3d local_p = p - box.Center;
 
-	return Vector3( dot(local_p, box.Axis[0]) / box.Extent[0],
+	return Vec3d( dot(local_p, box.Axis[0]) / box.Extent[0],
 		dot(local_p, box.Axis[1]) / box.Extent[1],
 		dot(local_p, box.Axis[2]) / box.Extent[2]);
 }
 
-Vector3 Cuboid::getPositionInBox( MinOBB3::Box3 &box, Vector3 &coord )
+Vec3d Cuboid::getPositionInBox( MinOBB3::Box3 &box, Vec3d &coord )
 {
-	Vector3 local_p = box.Extent[0] * coord[0] * box.Axis[0]
+	Vec3d local_p = box.Extent[0] * coord[0] * box.Axis[0]
 	+ box.Extent[1] * coord[1] * box.Axis[1]
 	+ box.Extent[2] * coord[2] * box.Axis[2];
 
 	return local_p + box.Center;
 }
 
-std::vector<Vector3> Cuboid::getBoxConners( MinOBB3::Box3 box )
+std::vector<Vec3d> Cuboid::getBoxConners( MinOBB3::Box3 &box )
 {
-	std::vector<Vector3> pnts(8);
+	std::vector<Vec3d> pnts(8);
 
 	// Create right-hand system
 	if ( dot(cross(box.Axis[0], box.Axis[1]), box.Axis[2]) < 0 ) 
@@ -76,7 +76,7 @@ std::vector<Vector3> Cuboid::getBoxConners( MinOBB3::Box3 box )
 		box.Axis[2]  = -box.Axis[2];
 	}
 
-	std::vector<Vector3> Axis;
+	std::vector<Vec3d> Axis;
 	for (int i=0;i<3;i++)
 	{
 		Axis.push_back( 2 * box.Extent[i] * box.Axis[i]);
@@ -95,12 +95,12 @@ std::vector<Vector3> Cuboid::getBoxConners( MinOBB3::Box3 box )
 	return pnts;
 }
 
-std::vector< std::vector<Vector3> > Cuboid::getBoxFaces(MinOBB3::Box3 fromBox)
+std::vector< std::vector<Vec3d> > Cuboid::getBoxFaces(MinOBB3::Box3 &fromBox)
 {
-	std::vector< std::vector<Vector3> > faces(6);
-	std::vector<Vector3> pnts = getBoxConners(fromBox);
+	std::vector< std::vector<Vec3d> > faces(6);
+	std::vector<Vec3d> pnts = getBoxConners(fromBox);
 
-	uint ids[6][4] = {1, 2, 6, 5,
+	uint pid[6][4] = {1, 2, 6, 5,
 					  0, 4, 7, 3,
 					  4, 5, 6, 7,
 					  0, 3, 2, 1,
@@ -109,7 +109,7 @@ std::vector< std::vector<Vector3> > Cuboid::getBoxFaces(MinOBB3::Box3 fromBox)
 
 	for (int i = 0; i < 6; i++)	{
 		for (int j = 0; j < 4; j++)	{
-			faces[i].push_back( pnts[ ids[i][j] ] );
+			faces[i].push_back( pnts[ pid[i][j] ] );
 		}
 	}
 
@@ -129,7 +129,7 @@ void Cuboid::draw()
 
 void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
 {
-	std::vector< std::vector<Vector3> > faces = getBoxFaces(currBox);
+	std::vector< std::vector<Vec3d> > faces = getBoxFaces(currBox);
 
 	if(selectedPartId >= 0)
 	{
@@ -147,7 +147,7 @@ void Cuboid::drawNames(bool isDrawParts)
 	{
 		int faceId = 0;
 
-		std::vector< std::vector<Vector3> > faces = getBoxFaces(currBox);
+		std::vector< std::vector<Vec3d> > faces = getBoxFaces(currBox);
 
 		for(int i = 0; i < faces.size(); i++)
 		{
@@ -165,33 +165,33 @@ void Cuboid::drawNames(bool isDrawParts)
 	}
 }
 
-Eigen::Vector3d Cuboid::V2E( Vector3 &vec )
+Eigen::Vector3d Cuboid::V2E( Vec3d &vec )
 {
 	return Eigen::Vector3d(vec[0], vec[1], vec[2]);
 }
 
-Vector3 Cuboid::E2V( Eigen::Vector3d &vec )
+Vec3d Cuboid::E2V( Eigen::Vector3d &vec )
 {
-	return Vector3(vec[0], vec[1], vec[2]);
+	return Vec3d(vec[0], vec[1], vec[2]);
 }
 
-void Cuboid::scaleAlongAxis( Vector3 &scales )
+void Cuboid::scaleAlongAxis( Vec3d &scales )
 {
 	currBox.Extent[0] *= scales[0];
 	currBox.Extent[1] *= scales[1];
 	currBox.Extent[2] *= scales[2];
 }
 
-void Cuboid::translate( Vector3 &T )
+void Cuboid::translate( Vec3d &T )
 {
 	currBox.Center += T;
 }
 
-
-Eigen::Matrix3d Cuboid::rotationMatrixAroundAxis( int axisId, double theta )
+// Theta is measured in degree
+Eigen::Matrix3d Cuboid::rotationMatrixAroundAxis( Vec3d u, double theta )
 {
-	theta = M_PI * theta / 180;
-	Vector3 u = currBox.Axis[axisId];
+	u.normalize();
+
 	double x = u[0], y = u[1], z = u[2];
 
 	Eigen::Matrix3d I, cpm, tp, R;
@@ -206,17 +206,18 @@ Eigen::Matrix3d Cuboid::rotationMatrixAroundAxis( int axisId, double theta )
 			z,  0, -x,
 		   -y,  x,  0;
 
+	theta = RADIANS(theta);
 	R = cos(theta)*I + sin(theta)*cpm + (1-cos(theta))*tp;
 
 	return R;
 }
 
 
-void Cuboid::rotateAroundAxes( Vector3 &angles )
+void Cuboid::rotateAroundAxes( Vec3d &angles )
 {
-	Eigen::Matrix3d Rx = rotationMatrixAroundAxis(0, angles[0]);
-	Eigen::Matrix3d Ry = rotationMatrixAroundAxis(1, angles[1]);
-	Eigen::Matrix3d Rz = rotationMatrixAroundAxis(2, angles[2]);
+	Eigen::Matrix3d Rx = rotationMatrixAroundAxis(currBox.Axis[0], angles[0]);
+	Eigen::Matrix3d Ry = rotationMatrixAroundAxis(currBox.Axis[1], angles[1]);
+	Eigen::Matrix3d Rz = rotationMatrixAroundAxis(currBox.Axis[2], angles[2]);
 	Eigen::Matrix3d R = Rx * Ry * Rz;
 
 	Eigen::Vector3d p0 = R * V2E(currBox.Axis[0]);
@@ -267,8 +268,8 @@ Vec3d Cuboid::selectedPartPos()
 
 	Vec3d partPos(0,0,0);
 
-	std::vector< std::vector<Vector3> > faces = getBoxFaces(currBox);
-	std::vector<Vector3> face = faces[selectedPartId];
+	std::vector< std::vector<Vec3d> > faces = getBoxFaces(currBox);
+	std::vector<Vec3d> face = faces[selectedPartId];
 
 	for(int i = 0; i < face.size(); i++)
 		partPos += face[i];
@@ -276,110 +277,6 @@ Vec3d Cuboid::selectedPartPos()
 	return partPos / face.size();
 }
 
-void Cuboid::reshapePart( Vec3d q )
-{
-	if(selectedPartId < 0) return;
-
-	debugPoints.clear();
-	debugLines.clear();
-	debugPoly.clear();
-
-	std::vector< std::vector<Vector3> > faces = getBoxFaces(originalBox);
-	std::vector< std::vector<Vector3> > newFaces = faces;
-
-	// even / odd
-	int j = selectedPartId;
-	int k = j + 1;
-	if(j % 2 != 0)	k = j - 1;
-
-	// Get old faces vertices
-	std::vector<Vector3> oldCurrFace = faces[j];
-	std::vector<Vector3> oldOppositeFace = faces[k];
-	std::vector<Vector3> tempFace(4);
-	
-	// Compute center of faces
-	std::vector<Vec3d> faceCenter(faces.size());
-
-	for(uint i = 0; i < faces.size(); i++){
-		for(uint j = 0; j < faces[i].size(); j++)
-			faceCenter[i] += faces[i][j];
-
-		faceCenter[i] /= faces[i].size();
-	}
-
-	debugLines.push_back(std::make_pair(faceCenter[j], q));
-	debugLines.push_back(std::make_pair(faceCenter[j], faceCenter[k]));
-
-	// Compute rotation made
-	Vec3d v1 = faceCenter[j] - faceCenter[k];
-	Vec3d v2 = q - faceCenter[k];
-	Vec3d axis = cross(v1,v2).normalized();
-
-	Vec3d delta = faceCenter[k] - q;
-	double theta = acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1));
-
-	// Rotate new face
-	for(int i = 0; i < 4; i++){
-		Vec3d v = ((faces[j][i] - faceCenter[j]));
-		//v = v * cos(theta) + cross(axis, v) * sin(theta) + axis * dot(axis, v) * (1 - cos(theta));
-		ROTATE_VEC(v, theta, axis);
-
-		newFaces[j][i] = v + q;
-		newFaces[k][i] = newFaces[j][i] + delta;
-
-		tempFace[i] = newFaces[k][i] - (delta.normalized() * v1.norm());
-	}
-
-	Vec3d v3 = newFaces[j][1] - newFaces[j][0];
-	Vec3d v4 = newFaces[j][2] - newFaces[j][1];
-
-	int x = ((j / 2) + 1) % 3;
-	int y = (x + 1) % 3;
-	int z = (y + 1) % 3;
-
-	// Modify box
-	this->currBox.Extent[x] = v2.norm() * 0.5;
-	this->currBox.Extent[y] = v3.norm() * 0.5;
-	this->currBox.Extent[z] = v4.norm() * 0.5;
-
-	ROTATE_VEC(currBox.Axis[x], theta, axis);
-	ROTATE_VEC(currBox.Axis[y], theta, axis);
-	ROTATE_VEC(currBox.Axis[z], theta, axis);
-	
-	this->currBox.Center = (v2 / 2.0) + faceCenter[k];
-
-	this->originalBox = currBox;
-
-	// Selected new part Id
-	newFaces = getBoxFaces(originalBox);
-	faceCenter.resize(newFaces.size(), Vec3d(0,0,0));
-	double minDist = DBL_MAX;
-
-	//printf("Old selected part = %d ", selectedPartId);
-
-	for(uint i = 0; i < newFaces.size(); i++){
-		for(uint j = 0; j < newFaces[i].size(); j++)
-			faceCenter[i] += newFaces[i][j];
-
-		faceCenter[i] /= faces[i].size();
-
-		if((faceCenter[i] - q).norm() < minDist)
-		{
-			minDist = (faceCenter[i] - q).norm();
-			selectedPartId = i;
-		}
-	}
-
-	debugLines.push_back(std::make_pair(originalBox.Center, originalBox.Center + this->originalBox.Axis[x] * 0.5));
-
-	//printf(" New selected part = %d \n", selectedPartId);
-
-	//std::cout << this->currBox.Extent << std::endl;
-	std::cout << "X = " << this->currBox.Axis[0]  << " Y = " << this->currBox.Axis[1] << " Z = " << this->currBox.Axis[2] << std::endl;
-
-
-	this->deformMesh();
-}
 
 uint Cuboid::detectHotCurve( std::vector< Vec3d > &hotSamples )
 {
@@ -420,3 +317,84 @@ uint Cuboid::detectHotCurve( std::vector< Vec3d > &hotSamples )
 
 	return selectedPartId;
 }
+
+void Cuboid::translateCurve( uint cid, Vec3d T, uint sid_respect /*= -1*/ )
+{
+	selectedPartId = cid;
+	moveCurveCenter(cid, T);
+}
+
+//      k
+//      |\
+//      |-\ theta
+//      |  \
+//      j   q
+
+
+void Cuboid::moveCurveCenter( uint fid, Vec3d T )
+{
+	if (fid == -1)
+	{
+		fid = selectedPartId;
+	}
+
+	// Conner points
+	std::vector<Vec3d> conners = getBoxConners(originalBox);
+
+	// Control points
+	uint opp_fid = ( fid % 2 == 0 ) ? fid+1 : fid-1;
+
+	Vec3d k = faceCenterOfBox(originalBox, opp_fid);
+	Vec3d j = faceCenterOfBox(originalBox, fid);
+	Vec3d q = j + T;
+
+	// Rotation matrix
+	Vec3d v1 = j - k;
+	Vec3d v2 = q - k;
+	Vec3d rotAxis = cross( v1, v2 );
+	double theta = DEGREES( acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1)) );
+	if ( dot( rotAxis, cross( v1.normalized(),v2.normalized() ) ) < 0 )
+		theta *= -1;
+
+	Eigen::Matrix3d R = rotationMatrixAroundAxis(rotAxis, theta);
+
+	// Rotate 4 conner points
+	Vec3d p0 = rotatePointByMatrix( R, conners[0] - k ) + k;
+	Vec3d p1 = rotatePointByMatrix( R, conners[1] - k ) + k;
+	Vec3d p4 = rotatePointByMatrix( R, conners[4] - k ) + k;
+	Vec3d p3 = rotatePointByMatrix( R, conners[3] - k ) + k;
+
+	// Reconstruct the box
+	currBox.Center = originalBox.Center + T/2;
+
+	currBox.Axis[0] = p1 - p0;
+	currBox.Axis[1] = p4 - p0;
+	currBox.Axis[2] = p0 - p3;
+	currBox.normalizeAxis();
+
+	currBox.Extent = originalBox.Extent;
+	currBox.Extent[fid/2] = v2.norm() / 2;
+
+	// Deform the mesh
+	deformMesh();
+}
+
+Vec3d Cuboid::faceCenterOfBox( MinOBB3::Box3 &box, uint fid )
+{
+	uint id = fid / 2;
+	
+	Vec3d faceCenter = box.Center;
+	if ( fid % 2 == 0)
+		faceCenter += box.Extent[id] * box.Axis[id];
+	else
+		faceCenter -= box.Extent[id] * box.Axis[id];
+
+	return faceCenter;
+}
+
+Vec3d Cuboid::rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p )
+{
+	Eigen::Vector3d rp = R * V2E(p);
+	return E2V(rp);
+}
+

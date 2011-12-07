@@ -240,3 +240,8 @@ uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
 {
 	return 0;
 }
+
+void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
+{
+
+}

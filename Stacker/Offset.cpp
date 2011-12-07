@@ -6,7 +6,7 @@
 #include <numeric>
 #include <stack>
 
-#define ZERO_TOLERANCE 0.01
+#define ZERO_TOLERANCE 0.05
 #define BIG_NUMBER 9999
 
 Offset::Offset( HiddenViewer *viewer )
@@ -34,7 +34,9 @@ void Offset::computeEnvelope( int direction, std::vector< std::vector<double> > 
 	activeViewer->camera()->setPosition(Vec(0,0, direction * activeObject()->radius));
 	activeViewer->camera()->lookAt(Vec());	
 	activeViewer->camera()->setUpVector(Vec(1,0,0));
-	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin), Vec(activeObject()->bbmax));
+	Vec delta(1, 1, 1);
+	delta *= activeObject()->radius * 0.2;
+	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin) - delta, Vec(activeObject()->bbmax) + delta);
 
 	// Save this new camera settings
 	activeViewer->camera()->deletePath(direction + 2);
@@ -67,7 +69,7 @@ void Offset::computeEnvelope( int direction, std::vector< std::vector<double> > 
 			depth[y][x] = zU;
 
 			if (zU == 1.0)
-				envelope[y][x] = BIG_NUMBER;
+				envelope[y][x] = (direction == 1) ? -BIG_NUMBER : BIG_NUMBER;
 			else
 				envelope[y][x] = zCamera - direction * ( zU * zFar + (1-zU) * zNear );
 		}
@@ -98,7 +100,7 @@ void Offset::computeOffset()
 		for (int x = 0; x < w; x++)
 		{
 			// Two envelopes are horizontally flipped
-			if (upperEnvelope[y][x]== BIG_NUMBER | lowerEnvelope[y][(w-1)-x] == BIG_NUMBER)
+			if (upperEnvelope[y][x]== BIG_NUMBER | lowerEnvelope[y][(w-1)-x] == -BIG_NUMBER)
 				offset[y][x] = 0.0; 
 			else
 				offset[y][x] = upperEnvelope[y][x] - lowerEnvelope[y][(w-1)-x];
@@ -143,20 +145,21 @@ void Offset::hotspotsFromDirection( int direction )
 	bool isUpper = (direction == 1);
 	std::vector< std::vector<double> > &depth = isUpper? upperDepth : lowerDepth;
 	std::vector< HotSpot > &hotSpots = isUpper? upperHotSpots : lowerHotSpots;
+	hotSpots.clear();
 
 	// Detect hot spots
-	std::vector< std::vector<Vec2ui> > newHotRegions;
+	std::vector< std::vector<Vec2i> > newHotRegions;
 
 	uint sid, fid, fid_local;
 	uint x, y;
 	for (int i=0;i<hotRegions.size();i++)	{
 
-		std::map< uint,  std::vector< Vec2ui > > subHotRegions;
+		std::map< uint,  std::vector< Vec2i > > subHotRegions;
 		std::map< uint,  std::vector< Vec3d > > subHotSamples;
 
 		for (int j=0;j<hotRegions[i].size();j++){
 
-			Vec2ui &hotPixel = hotRegions[i][j];
+			Vec2i &hotPixel = hotRegions[i][j];
 			x = (direction == 1) ? hotPixel.x() : (w-1) - hotPixel.x();
 			y = hotPixel.y();
 
@@ -191,7 +194,7 @@ void Offset::hotspotsFromDirection( int direction )
 		}
 
 		// Split the hot region if necessary
-		std::map< uint,  std::vector< Vec2ui > >::iterator itr;
+		std::map< uint,  std::vector< Vec2i > >::iterator itr;
 		for ( itr = subHotRegions.begin(); itr != subHotRegions.end(); itr++)
 		{
 			uint sid = itr->first;
@@ -226,6 +229,7 @@ void Offset::detectHotspots( int useFilterSize, double hotRange )
 
 	// Detect hot regions
 	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * hotRange));
+	visualizeHotRegions("hot regions 1.png");
 
 	// Detect hot spots from both directions
 	hotspotsFromDirection(1);
@@ -234,7 +238,9 @@ void Offset::detectHotspots( int useFilterSize, double hotRange )
 	{
 		// Lower hot spots are splitted, so re-detect upper hot spots
 		hotspotsFromDirection(1);
+		std::cout << "Lower hot spots are splitted. \n";
 	}
+	visualizeHotRegions("hot regions 2.png");
 
 	std::cout << "Hot spots: " << std::endl;
 	for (int i=0;i<hotRegions.size();i++)
@@ -283,10 +289,9 @@ std::set<uint> Offset::getHotSegment()
 
 
 template< typename T >
-void Offset::makeImage( std::vector< std::vector < T > >& image, int w, int h, T intial )
+std::vector< std::vector < T > > Offset::createImage( int w, int h, T intial )
 {
-	image.clear();
-	image.resize( h, std::vector<T>(w, intial) );
+	return std::vector< std::vector < T > > ( h, std::vector<T>( w, intial ) );
 }
 
 void Offset::saveAsImage( std::vector< std::vector < double > >& image, double maxV, QString fileName )
@@ -294,17 +299,35 @@ void Offset::saveAsImage( std::vector< std::vector < double > >& image, double m
 	int h = image.size();
 	int w = image[0].size();
 	QImage Output(w, h, QImage::Format_ARGB32);
-
-	uchar rgb[3];		
+	
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
-			ColorMap::jetColorMap(rgb, Max(0., image[y][x] / maxV), 0., 1.);
-			Output.setPixel(x, y, QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba());			
+			Output.setPixel(x, y, jetColor( Max(0., image[y][x] / maxV), 0., 1.));			
 		}
 	}
 
 	Output.save(fileName);
 }
+
+void Offset::saveAsImage( std::vector< std::vector < bool > >& image, QString fileName )
+{
+	int h = image.size();
+	int w = image[0].size();
+	QImage Output(w, h, QImage::Format_ARGB32);
+
+	QRgb red = QColor::fromRgb(255, 0, 0).rgba();
+	QRgb blue = QColor::fromRgb(0, 0, 255).rgba();
+
+	for(int y = 0; y < h; y++){
+		for(int x = 0; x < w; x++)	{
+			QRgb color = image[y][x] ? red : blue;
+			Output.setPixel(x, y, color);			
+		}
+	}
+
+	Output.save(fileName);
+}
+
 
 double Offset::getValue( std::vector< std::vector < double > >& image, uint x, uint y, uint r )
 {
@@ -322,9 +345,6 @@ double Offset::getValue( std::vector< std::vector < double > >& image, uint x, u
 		for (int j=min_x;j<=max_x;j++)
 			vals.push_back(image[i][j]);
 
-	if (vals.empty())
-		return BIG_NUMBER;
-
 	// Check if (x, y) is on an edge by comparing the min and max
 	double result;
 	if (MaxElement(vals) - MinElement(vals) > ZERO_TOLERANCE)
@@ -337,18 +357,13 @@ double Offset::getValue( std::vector< std::vector < double > >& image, uint x, u
 
 double Offset::getMaxValue( std::vector< std::vector < double > >& image )
 {
-	int w = image[0].size();
 	int h = image.size();
 
-	double maxVal = - BIG_NUMBER;
-	for (int y = 0; y < h; y++){
-		for (int x = 0; x < w; x++){
-			if (image[y][x] != BIG_NUMBER && image[y][x] > maxVal)
-				maxVal = image[y][x];
-		}
-	}
+	std::vector< double > row_max;
+	for (int y = 0; y < h; y++)
+		row_max.push_back(MaxElement(image[y]));
 
-	return maxVal;
+	return MaxElement(row_max);
 }
 
 double Offset::getMinValue( std::vector< std::vector < double > >& image )
@@ -363,37 +378,40 @@ double Offset::getMinValue( std::vector< std::vector < double > >& image )
 }
 
 template< typename PREDICATE >
-std::vector< Vec2ui > 
+std::vector< Vec2i > 
 	Offset::getRegion( std::vector< std::vector < double > >& image, 
-			std::vector< std::vector < bool > >& mask, 	Vec2ui seed, PREDICATE predicate )
+			std::vector< std::vector < bool > >& mask, 	Vec2i seed, PREDICATE predicate )
 {
-	std::vector< Vec2ui > region;
+	std::vector< Vec2i > region;
 
 	int w = image[0].size();
 	int h = image.size();		
 	
-	std::stack<Vec2ui> activePnts;
+	std::stack<Vec2i> activePnts;
 	activePnts.push(seed);
+	mask[seed.y()][seed.x()] = true;
 
 	while (!activePnts.empty())
 	{
 		// Add the top point to region
-		Vec2ui currP = activePnts.top();
-		mask[currP.y()][currP.x()] = true;
+		Vec2i currP = activePnts.top();
 		region.push_back(currP);
 		activePnts.pop();
 
 		// Push all the neighbors to the stack
-		uint min_x = RANGED(0, currP.x()-1 ,w-1);
-		uint max_x = RANGED(0, currP.x()+1, w-1);
-		uint min_y = RANGED(0, currP.y()-1 ,h-1);
-		uint max_y = RANGED(0, currP.y()+1, h-1);
+		int min_x = RANGED(0, currP.x()-1 ,w-1);
+		int max_x = RANGED(0, currP.x()+1, w-1);
+		int min_y = RANGED(0, currP.y()-1 ,h-1);
+		int max_y = RANGED(0, currP.y()+1, h-1);
 
-		for (uint y = min_y; y <= max_y; y++)
-			for (uint x = min_x; x <= max_x; x++)
+		for (int y = min_y; y <= max_y; y++)
+			for (int x = min_x; x <= max_x; x++)
 			{
 				if (!mask[y][x] && predicate(image[y][x]))
-					activePnts.push( Vec2ui(x, y) );
+				{
+					activePnts.push( Vec2i(x, y) );
+					mask[y][x] = true;
+				}
 			}
 	}
 
@@ -402,23 +420,26 @@ std::vector< Vec2ui >
 
 
 template< typename PREDICATE >
-std::vector< std::vector< Vec2ui > >
+std::vector< std::vector< Vec2i > >
 	Offset::getRegions( std::vector< std::vector < double > >& image, PREDICATE predicate )
 {
-	std::vector< std::vector< Vec2ui > > regions;
+	std::vector< std::vector< Vec2i > > regions;
 
 	int w = image[0].size();
 	int h = image.size();
 
-	std::vector< std::vector< bool > > mask;
-	makeImage(mask, w, h, false);
+	std::vector< std::vector< bool > > mask = createImage(w, h, false);
 
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
 			if (!mask[y][x] && predicate(image[y][x]))
 			{
-				regions.push_back(getRegion(image, mask, Vec2ui(x, y), predicate));
+				//saveAsImage(mask, "mask1.png");
+				regions.push_back(getRegion(image, mask, Vec2i(x, y), predicate));
+				//saveAsImage(mask, "mask2.png");
 			}
+
+			mask[y][x] = true;
 		}
 	}
 
@@ -440,7 +461,7 @@ void Offset::clear()
 	lowerHotSpots.clear();
 }
 
-bool Offset::defineHeight( int direction, std::vector< Vec2ui >& region )
+bool Offset::defineHeight( int direction, std::vector< Vec2i >& region )
 {
 	std::vector< double > values;
 	bool result;
@@ -460,7 +481,7 @@ bool Offset::defineHeight( int direction, std::vector< Vec2ui >& region )
 }
 
 std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < double > >& image, 
-												 std::vector< Vec2ui >& region, bool xFlipped /*= false*/ )
+												 std::vector< Vec2i >& region, bool xFlipped /*= false*/ )
 {
 	std::vector< double > values;
 
@@ -481,14 +502,209 @@ std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < doub
 void Offset::applyHeuristics()
 {
 	Controller *ctrl = activeObject()->controller;
+
+	int w = offset[0].size();
+	int h = offset.size();
+
 	// Heuristics are applied for each pair of hot spots
 	for (int i = 0; i < hotRegions.size(); i++)
 	{
 		HotSpot &upperHS = upperHotSpots[i];
 		HotSpot &LowerHS = lowerHotSpots[i];
 
-		std::cout << "HotCurveID (upper) = " << ctrl->getPrimitive(upperHS.segmentID)->detectHotCurve(upperHS.hotSamples) << "\t"
-				  << "HotCurveID (lower) = " << ctrl->getPrimitive(LowerHS.segmentID)->detectHotCurve(LowerHS.hotSamples) << "\n";
+		Primitive* upperPrimitive = ctrl->getPrimitive(upperHS.segmentID);
+		Primitive* lowerPrimitive = ctrl->getPrimitive(LowerHS.segmentID);
+
+		uint upper_cid = upperPrimitive->detectHotCurve(upperHS.hotSamples);
+		uint lower_cid = lowerPrimitive->detectHotCurve(LowerHS.hotSamples);
+
+		std::cout << "HotCurveID (upper) = " << upper_cid << "\t"
+				  << "HotCurveID (lower) = " << lower_cid << "\n";
+
+
+		// Deform lowerHS with upperHS fixed
+		if (LowerHS.defineHeight)
+		{// Move the hot curve horizontally 
+			
+			// Estimate the size of the hot region
+			std::vector< Vec2i > &hotRegion = hotRegions[i];
+			Vec2i size = sizeofRegion(hotRegion);
+			uint rw = size.x();
+			uint rh = size.y();
+
+			// Search neighbor regions for best location to shift to
+			std::vector< double > hot_env = getValuesInRegion(upperEnvelope, hotRegion, false);
+			double lower_bound = MinElement( hot_env );
+
+			std::vector< std::vector< double > > debugImg = createImage( offset[0].size(), offset.size(), 0. );
+			setRegionColor(debugImg, hotRegion, 1.0);
+
+			for (uint k = 1; k < 10; k++)
+			{
+				int step = Max(rw, rh);
+				std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
+
+				std::vector< Vec3d > Ts;
+				for (int j = 0; j < deltas.size(); j++ )
+				{
+					std::vector< Vec2i > shiftedRegion = shiftRegion(hotRegion, deltas[j], w, h);
+					if (shiftedRegion.empty())  continue;
+
+					setRegionColor(debugImg, shiftedRegion, 1.0 - k * 0.1 );
+
+
+					std::vector< double > new_env = getValuesInRegion(upperEnvelope, shiftedRegion, false);
+					double new_upper_bound= MaxElement( new_env );
+					if (new_upper_bound < lower_bound )
+					{
+						// a good place to go
+						Vec2i a = hotRegion[0];
+						Vec2i b = shiftedRegion[0];
+						Vec3d proj_a = unprojectedCoordinatesOf(a.x(), a.y(), -1);
+						Vec3d proj_b = unprojectedCoordinatesOf(b.x(), b.y(), -1);
+						Vec3d T = proj_b - proj_a;
+						T[2] = 0;
+
+						Ts.push_back(T);
+					}
+				}
+
+				if (!Ts.empty())
+				{
+					// Find the best/shortest T
+					double dis = DOUBLE_INFINITY;
+					int best_id = -1;
+					for (int i = 0; i < Ts.size(); i++){
+						if (Ts[i].norm() < dis)	
+						{
+							best_id = i;
+							dis = Ts[i].norm();
+						}
+					}
+					
+					// Translate the hot curve
+					lowerPrimitive->translateCurve(lower_cid, Ts[best_id], upperHS.segmentID);
+					break;
+				}
+			}
+			
+			saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
+			
+		}
+		else
+		{// Move hot curve up directly
+			Vec3d T(0, 0, 0.1);
+			lowerPrimitive->translateCurve(lower_cid, T, -1);
+		}
 	}
 	
+}
+
+std::vector< Vec2i > Offset::deltaVectorsToKRing( int deltaX, int deltaY, int K )
+{
+	std::vector< Vec2i > Vecs;
+
+	int leftX = - deltaX * K;
+	int rightX = -leftX;
+	int topY = - deltaY * K;
+	int bottomY = -topY;
+
+	// top and bottom lines
+	for (int x = leftX; x <= rightX; x += deltaX)
+	{
+		Vecs.push_back( Vec2i(x, topY) );
+		Vecs.push_back( Vec2i(x, bottomY) );
+	}
+
+	// left and right lines
+	for (int y = topY + deltaY; y <= bottomY - deltaY; y+= deltaY)
+	{
+		Vecs.push_back( Vec2i(leftX, y) );
+		Vecs.push_back( Vec2i(rightX, y) );
+	}
+
+	return Vecs;
+}
+
+std::vector< Vec2i > Offset::shiftRegion( std::vector< Vec2i >& region, Vec2i delta, int w, int h )
+{
+	std::vector< Vec2i > toRegion;
+
+	for (int i = 0; i < region.size(); i++)
+	{
+		Vec2i p = region[i] + delta;
+		if ( RANGE(p.x(), 0, w-1) && RANGE(p.y(), 0, h-1) )
+			toRegion.push_back( p );
+	}
+
+	return toRegion;
+}
+
+Vec2i Offset::sizeofRegion( std::vector< Vec2i >& region )
+{
+	uint minX, maxX, minY, maxY;
+	minX = maxX = region[0].x();
+	minY = maxY = region[0].y();
+	for (int i=1; i<region.size(); i++)
+	{
+		uint x = region[i].x();
+		uint y = region[i].y();
+
+		if (x < minX) minX = x;
+		if (x > maxX) maxX = x;
+		if (y < minY) minY = y;
+		if (y > maxY) maxY = y;
+	}
+
+	return Vec2i( maxX - minX + 1, maxY - minY + 1 );
+}
+
+Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int direction )
+{
+	// Restore the camera according to the direction
+	activeViewer->camera()->playPath( direction + 2 );
+
+	std::vector< std::vector<double> > &depth = (direction == 1)? upperDepth : lowerDepth;
+	if (direction == -1){
+		x = depth[0].size() - 1 - x;
+	}
+	double depthVal = RANGED(0, getValue(depth, x, y, filterSize), 1);
+
+	Vec P = activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (depth.size()-1)-y, depthVal));
+
+	return Vec3d(P[0], P[1], P[2]);
+}
+
+void Offset::setRegionColor( std::vector< std::vector < double > >& image, std::vector< Vec2i >& region, double color )
+{
+	uint w = image[0].size();
+	uint h = image.size();
+
+	for (int i = 0; i < region.size(); i++)
+	{
+		uint x = RANGED(0, region[i].x(), w-1);
+		uint y = RANGED(0, region[i].y(), h-1);
+
+		image[y][x] = color;
+	}
+}
+
+QRgb Offset::jetColor( double val, double min, double max )
+{
+	uchar rgb[3];	
+
+	ColorMap::jetColorMap(rgb, val, min, max);
+	
+	return QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba();
+}
+
+void Offset::visualizeHotRegions( QString filename )
+{
+	std::vector< std::vector< double > > debugImg = createImage(offset[0].size(), offset.size(), 0.0);
+	double step = 1.0 / hotRegions.size();
+	for (int i=0;i<hotRegions.size();i++)
+	{
+		setRegionColor(debugImg, hotRegions[i], step * (i+1));
+	}
+	saveAsImage(debugImg, 1.0, filename);
 }

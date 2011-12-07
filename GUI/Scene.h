@@ -99,6 +99,7 @@ public slots:
 	void setActiveDeformer( QFFD * );
 	void updateActiveObject();
 	void exportActiveObject();
+	void toggleCameraProjection();
 
 signals:
 	void gotFocus( Scene* );

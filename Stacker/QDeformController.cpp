@@ -22,6 +22,6 @@ Vec3d QDeformController::pos()
 
 void QDeformController::updateController()
 {
-	ctrl->reshapePrimitive( pos() );
+	ctrl->getSelectedPrimitive()->moveCurveCenter( -1, pos() - ctrl->getPrimPartPos() );
 	emit( primitiveReshaped() );
 }
