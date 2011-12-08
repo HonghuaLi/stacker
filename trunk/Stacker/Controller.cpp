@@ -57,19 +57,22 @@ void Controller::draw()
 		primitives[i]->draw();
 		primitives[i]->drawDebug();
 
-		// Draw debug 
-		for (uint j = i + 1; j < primitives.size(); j++)
-		{
+		// Draw proximity debug 
+		/*for (uint j = i + 1; j < primitives.size(); j++){
 			Cuboid * c1 = (Cuboid *) primitives[i];
 			Cuboid * c2 = (Cuboid *) primitives[j];
-
 			Vec3d p,q;
-
 			c1->currBox.ClosestSegment(c2->currBox,p,q);
 			SimpleDraw::IdentifyLine(p,q,1,1,0);
-		}
-
+		}*/
 	}
+
+	// DEBUG:
+	foreach(Point p, debugPoints)
+		SimpleDraw::IdentifyPoint(p);
+
+	foreach(std::vector<Point> line, debugLines) 
+		SimpleDraw::IdentifyConnectedPoints(line, 1.0,0,0);
 }
 
 void Controller::drawNames(bool isDrawParts)
@@ -293,4 +296,45 @@ Primitive * Controller::getSelectedPrimitive()
 	}
 
 	return NULL;
+}
+
+void Controller::findJoints(double threshold)
+{
+	std::vector<Voxeler> voxels;
+
+	for (uint i = 0; i < primitives.size(); i++)
+	{
+		QSurfaceMesh mesh(primitives[i]->getGeometry());
+		voxels.push_back( Voxeler(&mesh, threshold) );
+	}
+
+	for (uint i = 0; i < primitives.size(); i++)
+	{
+		Primitive * a = primitives[i];
+
+		for (uint j = i + 1; j < primitives.size(); j++)
+		{
+			Primitive * b = primitives[j];
+
+			std::vector<Voxel> intersection = voxels[i].Intersects(&voxels[j]);
+
+			if(intersection.size()){
+				int N = intersection.size();
+				Voxel center;
+				foreach(Voxel v, intersection){
+					center.x += v.x;
+					center.y += v.y; 
+					center.z += v.z;
+				}
+				double scale = threshold / N;
+				Point centerPoint(center.x * scale, center.y * scale, center.z * scale);
+
+				Joint newJointA(a, b, a->getCoordinate(centerPoint));
+				primitives[i]->joints.push_back(newJointA);
+
+				Joint newJointB(b, a, b->getCoordinate(centerPoint));
+				primitives[j]->joints.push_back(newJointB);
+			}
+		}
+	}
 }

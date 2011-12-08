@@ -51,9 +51,10 @@ public slots:
 	void updateController();
 	void resetCtrlDeformerPanel();
 	void userControlledPrimatives();
+	
+	void findJoints();
 
 signals:
 	void printMessage( QString );
 	void objectModified();
-
 };

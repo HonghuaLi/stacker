@@ -55,6 +55,9 @@ StackerPanel::StackerPanel()
 	connect(ctrlDeformer.resetButton, SIGNAL(clicked()), SLOT(resetCtrlDeformerPanel()));
 	
 	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
+
+	// Joints between primitives
+	connect(panel.findJointsButton, SIGNAL(clicked()), SLOT(findJoints()));
 }
 
 void StackerPanel::onOffsetButtonClicked()
@@ -366,4 +369,11 @@ void StackerPanel::userControlledPrimatives()
 	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
 	
 	activeScene->setSelectMode(CONTROLLER_ELEMENT);
+}
+
+void StackerPanel::findJoints()
+{
+	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
+	
+	activeObject()->controller->findJoints(panel.jointsThreshold->value());
 }

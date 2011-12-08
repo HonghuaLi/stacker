@@ -2,6 +2,7 @@
 
 #include "QSurfaceMesh.h"
 #include "PrimativeParam.h"
+#include "Joint.h"
 
 class Primitive
 {
@@ -28,6 +29,12 @@ public:
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) {}
 	virtual bool excludePoints( std::vector< Vec3d >& ptns ) = 0;
 
+	std::vector<Joint> joints;
+
+	// Primitive coordinate system
+	virtual std::vector<double> getCoordinate( Point v ) = 0;
+	virtual Point fromCoordinate(std::vector<double> coords) = 0;
+
 	// Helpful for debugging
 	std::vector<Vec3d> debugPoints;
 	std::vector< std::pair<Vec3d,Vec3d> > debugLines;
@@ -35,6 +42,7 @@ public:
 	void drawDebug();
 
 	virtual std::vector <Vec3d> points() = 0;
+	virtual QSurfaceMesh getGeometry() = 0;
 	virtual double volume() = 0;
 
 	int id;

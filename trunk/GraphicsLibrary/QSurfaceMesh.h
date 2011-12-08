@@ -41,6 +41,7 @@ public:
 
 	std::vector<Point> clonePoints();
 	void setFromPoints(const std::vector<Point>& fromPoints);
+	std::vector< std::pair<Point, Point> > cloneEdges();
 
 	std::vector<Normal> cloneFaceNormals();
 

@@ -125,6 +125,10 @@ void Cuboid::draw()
 		drawCube(5, Vec4d(1,1,0,1));
 	else
 		drawCube(2, Vec4d(0,0,1,1));
+
+	// Show joints
+	foreach(Joint j, joints)
+		SimpleDraw::IdentifyPoint( this->fromCoordinate(j.location) );
 }
 
 void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
@@ -368,6 +372,54 @@ Vec3d Cuboid::rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p )
 	return E2V(rp);
 }
 
+QSurfaceMesh Cuboid::getGeometry()
+{
+	std::vector< std::vector<Vec3d> > faces(6);
+	std::vector<Vec3d> pnts = getBoxConners(currBox);
+
+	uint pid[6][4] = {1, 2, 6, 5,
+		0, 4, 7, 3,
+		4, 5, 6, 7,
+		0, 3, 2, 1,
+		0, 1, 5, 4,
+		2, 3, 7, 6};
+
+	QSurfaceMesh mesh;
+
+	for(uint i = 0; i < pnts.size(); i++)
+		mesh.add_vertex(pnts[i]);
+
+	for (int i = 0; i < 6; i++)	{
+
+		Surface_mesh::Vertex v0(pid[i][0]);
+		Surface_mesh::Vertex v1(pid[i][1]);
+		Surface_mesh::Vertex v2(pid[i][2]);
+		Surface_mesh::Vertex v3(pid[i][3]);
+
+		mesh.add_triangle(v0, v1, v2);
+		mesh.add_triangle(v2, v3, v0);
+	}
+
+	return mesh;
+}
+
+std::vector<double> Cuboid::getCoordinate( Point v )
+{
+	std::vector<double> coords(3);
+
+	Vec3d pos = getCoordinatesInBox(currBox, v);
+
+	coords[0] = pos.x();
+	coords[1] = pos.y();
+	coords[2] = pos.z();
+
+	return coords;
+}
+
+Point Cuboid::fromCoordinate( std::vector<double> coords )
+{
+	return getPositionInBox(currBox, Vec3d(coords[0], coords[1], coords[2]));
+}
 bool Cuboid::excludePoints( std::vector< Vec3d >& ptns )
 {
 	bool result;

@@ -208,8 +208,7 @@ void GCylinder::updateCage()
 		{
 			std::vector<Point> points = c.toSegments(sides, gc->frames.U[c.index].s, 1.25);
 
-			for(int i = 0; i < sides; i++)
-			{
+			for(int i = 0; i < sides; i++){
 				uint vi = (1 + c.index * sides) + i;
 				cagePoints[Surface_mesh::Vertex(vi)] = points[i];
 			}
@@ -244,6 +243,24 @@ uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
 void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
 {
 
+}
+
+QSurfaceMesh GCylinder::getGeometry()
+{
+	return *cage;
+}
+
+std::vector<double> GCylinder::getCoordinate( Point v )
+{
+	// ToDo:
+	std::vector<double> coords(3);
+	coords.push_back(0);
+	return coords;
+}
+
+Point GCylinder::fromCoordinate( std::vector<double> coords )
+{
+	return Point(0,0,0);
 }
 
 bool GCylinder::excludePoints( std::vector< Vec3d >& ptns )
