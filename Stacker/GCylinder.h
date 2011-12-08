@@ -24,6 +24,8 @@ public:
 
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect );
+	virtual bool excludePoints( std::vector< Vec3d >& ptns );
+
 
 	void translate(Vec3d T);
 

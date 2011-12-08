@@ -334,12 +334,7 @@ void Cuboid::translateCurve( uint cid, Vec3d T, uint sid_respect /*= -1*/ )
 void Cuboid::moveCurveCenter( uint fid, Vec3d T )
 {
 	if (fid == -1)
-	{
 		fid = selectedPartId;
-	}
-
-	// Conner points
-	std::vector<Vec3d> conners = getBoxConners(originalBox);
 
 	// Control points
 	uint opp_fid = ( fid % 2 == 0 ) ? fid+1 : fid-1;
@@ -348,32 +343,7 @@ void Cuboid::moveCurveCenter( uint fid, Vec3d T )
 	Vec3d j = faceCenterOfBox(originalBox, fid);
 	Vec3d q = j + T;
 
-	// Rotation matrix
-	Vec3d v1 = j - k;
-	Vec3d v2 = q - k;
-	Vec3d rotAxis = cross( v1, v2 );
-	double theta = DEGREES( acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1)) );
-	if ( dot( rotAxis, cross( v1.normalized(),v2.normalized() ) ) < 0 )
-		theta *= -1;
-
-	Eigen::Matrix3d R = rotationMatrixAroundAxis(rotAxis, theta);
-
-	// Rotate 4 conner points
-	Vec3d p0 = rotatePointByMatrix( R, conners[0] - k ) + k;
-	Vec3d p1 = rotatePointByMatrix( R, conners[1] - k ) + k;
-	Vec3d p4 = rotatePointByMatrix( R, conners[4] - k ) + k;
-	Vec3d p3 = rotatePointByMatrix( R, conners[3] - k ) + k;
-
-	// Reconstruct the box
-	currBox.Center = originalBox.Center + T/2;
-
-	currBox.Axis[0] = p1 - p0;
-	currBox.Axis[1] = p4 - p0;
-	currBox.Axis[2] = p0 - p3;
-	currBox.normalizeAxis();
-
-	currBox.Extent = originalBox.Extent;
-	currBox.Extent[fid/2] = v2.norm() / 2;
+	deformRespectToJoint(k, j, T);
 
 	// Deform the mesh
 	deformMesh();
@@ -397,4 +367,75 @@ Vec3d Cuboid::rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p )
 	Eigen::Vector3d rp = R * V2E(p);
 	return E2V(rp);
 }
+
+bool Cuboid::excludePoints( std::vector< Vec3d >& ptns )
+{
+	bool result;
+
+	return result;
+}
+
+//    joint
+//      |\
+//      |-\ theta
+//      |  \
+//      p  p+T
+
+void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
+{
+	Vec3d q = p + T;
+	Vec3d v1 = p - joint;
+	Vec3d v2 = q - joint;
+
+	if (v1.norm() == 0 || v2.norm() == 0)
+		return; // Undefined behavior
+
+	// Rotation matrix
+	Vec3d rotAxis = cross( v1, v2 );
+	double theta = DEGREES( acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1)) );
+	if ( dot( rotAxis, cross( v1.normalized(),v2.normalized() ) ) < 0 )
+		theta *= -1;
+
+	Eigen::Matrix3d R = rotationMatrixAroundAxis(rotAxis, theta);
+
+	// Rotate the box
+	std::vector<Vec3d> conners = getBoxConners(currBox);
+
+	currBox.Center = rotatePointByMatrix( R,  currBox.Center - joint ) + joint;
+
+	Vec3d p0 = rotatePointByMatrix( R, conners[0] - joint ) + joint;
+	Vec3d p1 = rotatePointByMatrix( R, conners[1] - joint ) + joint;
+	Vec3d p4 = rotatePointByMatrix( R, conners[4] - joint ) + joint;
+	Vec3d p3 = rotatePointByMatrix( R, conners[3] - joint ) + joint;
+	currBox.Axis[0] = p1 - p0;
+	currBox.Axis[1] = p4 - p0;
+	currBox.Axis[2] = p0 - p3;
+	currBox.normalizeAxis();
+
+	// Scale the box only along one axis
+	double scale = v2.norm() / v1.norm();
+	v2.normalize();
+	uint selected_axis = -1;
+	double largest_dot = 0;
+	bool positive;
+	for (int i = 0; i < 3; i++)
+	{
+		double dot_prod = dot( currBox.Axis[i], v2 );
+		double abs_dot = abs( dot_prod );
+		if (abs_dot > largest_dot)
+		{
+			selected_axis = i;
+			largest_dot = abs_dot;
+			positive = ( dot_prod > 0 );
+		}
+	}
+
+	double dis = (scale - 1) * currBox.Extent[selected_axis];
+	Vec3d t = currBox.Axis[selected_axis] * dis;
+	if (!positive) t = -t;
+	currBox.Center += t;
+
+	currBox.Extent[selected_axis] *= scale;
+}
+
 

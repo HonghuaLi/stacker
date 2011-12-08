@@ -25,6 +25,8 @@ public:
 
 	// Reshaping
 	virtual void moveCurveCenter( uint fid, Vec3d T) {}
+	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) {}
+	virtual bool excludePoints( std::vector< Vec3d >& ptns ) = 0;
 
 	// Helpful for debugging
 	std::vector<Vec3d> debugPoints;
