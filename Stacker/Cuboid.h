@@ -30,6 +30,7 @@ public:
 
 	virtual double volume();
 	virtual std::vector <Vec3d> points();
+	virtual QSurfaceMesh getGeometry();
 
 	void translate( Vector3 &T );
 	void scaleAlongAxis( Vector3 &scales );
@@ -44,6 +45,10 @@ public:
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
 	virtual void moveCurveCenter( uint fid, Vec3d T);
 	virtual bool excludePoints( std::vector< Vec3d >& ptns );
+
+	// Coordinate system
+	virtual std::vector<double> getCoordinate( Point v );
+	virtual Point fromCoordinate(std::vector<double> coords);
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);

@@ -1,6 +1,7 @@
 #pragma once
 #include "Primitive.h"
 #include "CuboidParam.h"
+#include "Voxeler.h"
 
 class QSegMesh;
 
@@ -16,10 +17,9 @@ public:
 	void fitOBBs();	
 	void convertToGC(int primitiveId, bool isUsingSkeleton = true);
 
-	// OpenGL stuff
-	void draw();
-	void drawNames(bool isDrawParts = false);
-	
+	// Joints
+	void findJoints(double threshold);
+
 	// Interaction
 	void select(int id);
 	bool selectPrimitivePart( int id );
@@ -36,6 +36,14 @@ public:
 
 	uint numPrimitives();
 	int numHotPrimitives();
+
+	// OpenGL stuff
+	void draw();
+	void drawNames(bool isDrawParts = false);
+
+	// Debug items
+	std::vector<Point> debugPoints;
+	std::vector< std::vector<Point> > debugLines;
 
 	// Testing
 	void test1();

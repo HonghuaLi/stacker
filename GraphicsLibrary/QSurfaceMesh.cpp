@@ -21,7 +21,6 @@ QSurfaceMesh::QSurfaceMesh( const QSurfaceMesh& from ) : Surface_mesh(from)
 {
 	averageEdgeLength = from.averageEdgeLength;
 
-	this->isReady = from.isReady;
 	this->bbmin = from.bbmin;
 	this->bbmax = from.bbmax;
 	this->radius = from.radius;
@@ -580,3 +579,15 @@ std::set<uint> QSurfaceMesh::faceIndicesAroundVertex( const Vertex& v )
 	return result;
 }
 
+std::vector< std::pair<Point, Point> > QSurfaceMesh::cloneEdges()
+{
+	std::vector< std::pair<Point, Point> > result;
+
+	Vertex_property<Point>  points = vertex_property<Point>("v:point");
+	Edge_iterator eit, eend = edges_end();
+
+	for(eit = edges_begin(); eit != eend; ++eit)
+		result.push_back(std::make_pair(points[vertex(eit, 0)], points[vertex(eit, 1)]));
+
+	return result;
+}

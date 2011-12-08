@@ -161,6 +161,8 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 	camera()->setSceneRadius(activeMesh->radius);
 	camera()->showEntireScene();
 
+	setGridIsDrawn(false);
+
 	emit(objectInserted());
 }
 

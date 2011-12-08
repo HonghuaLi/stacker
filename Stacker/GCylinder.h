@@ -21,6 +21,7 @@ public:
 
 	virtual double volume();
 	virtual std::vector <Vec3d> points();
+	virtual QSurfaceMesh getGeometry();
 
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect );
@@ -30,6 +31,10 @@ public:
 	void translate(Vec3d T);
 
 	qglviewer::ManipulatedFrame *mf1, *mf2;
+
+	// Coordinate system
+	virtual std::vector<double> getCoordinate(Point v);
+	virtual Point fromCoordinate(std::vector<double> coords);
 
 public slots:
 	void update();

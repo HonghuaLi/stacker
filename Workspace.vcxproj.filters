@@ -341,9 +341,6 @@
     <ClCompile Include="Stacker\CuboidParam.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\QDeformController.cpp">
-      <Filter>Stacker\Header</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_QDeformController.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -364,6 +361,9 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Template\moc_TransformationPanel.cpp">
       <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\QDeformController.cpp">
+      <Filter>Stacker\Source</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\Voxeler.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
@@ -532,6 +532,9 @@
     <ClInclude Include="GeneratedFiles\ui_RotationWidget.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="Stacker\Joint.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
     <ClInclude Include="GraphicsLibrary\Voxeler.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
@@ -597,14 +600,14 @@
     <CustomBuild Include="Stacker\SpaceExplorer.ui">
       <Filter>Stacker\ui</Filter>
     </CustomBuild>
-    <CustomBuild Include="Stacker\QDeformController.h">
-      <Filter>Stacker\Source</Filter>
-    </CustomBuild>
     <CustomBuild Include="GUI\RotationWidget.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="GUI\TransformationPanel.h">
       <Filter>GUI\Tools</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\QDeformController.h">
+      <Filter>Stacker\Header</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

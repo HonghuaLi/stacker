@@ -2,15 +2,17 @@
 #include "SimpleDraw.h"
 #include "Stats.h"
 
-Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size )
+Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size)
 {
 	this->mesh = src_mesh;
 	this->voxelSize = voxel_size;
 
-	if(src_mesh == NULL)
+	if(mesh == NULL)
 		return;
 
 	printf("Computing voxels..");
+
+	mesh->assignFaceArray();
 
 	// For each face in mesh
 	foreach(Surface_mesh::Face f, mesh->face_array)
@@ -25,8 +27,7 @@ Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size )
 				{
 					Voxel v(x,y,z);
 
-					if(isVoxelIntersects(v, f) && !kd.has(x,y,z))
-					{
+					if(isVoxelIntersects(v, f) && !kd.has(x,y,z)){
 						kd.insert3(v.x, v.y, v.z, 1);
 						voxels.push_back( v );
 					}
@@ -44,8 +45,6 @@ Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size )
 	printf(".voxel count = %d.\n", (int)voxels.size());
 
 	// Inner / outer computation
-	printf("Computing inside, outside..");
-	
 	//fillInsideOut(innerVoxels, outerVoxels);
 
 	printf("done.");
@@ -216,6 +215,42 @@ void Voxeler::setupDraw()
 	glEndList();
 }
 
+void Voxeler::drawVoxels( const std::vector< Voxel > & voxels, double voxel_size )
+{
+	double s = voxel_size * 0.5;
+	int n = (int)voxels.size();
+
+	std::vector<Vec3d> c1(n), c2(n), c3(n), c4(n);
+	std::vector<Vec3d> bc1(n), bc2(n), bc3(n), bc4(n);
+
+	// Find corners
+	for(int i = 0; i < (int)voxels.size(); i++){
+		Vec3d c = voxels[i];	c *= voxel_size;
+		c1[i] = Vec3d(s, s, s) + c; c2[i] = Vec3d(-s, s, s) + c;
+		c3[i] = Vec3d(-s, -s, s) + c; c4[i] = Vec3d(s, -s, s) + c;
+		bc1[i] = Vec3d(s, s, -s) + c; bc2[i] = Vec3d(-s, s, -s) + c;
+		bc3[i] = Vec3d(-s, -s, -s) + c; bc4[i] = Vec3d(s, -s, -s) + c;
+	}
+
+	glColor3d(1,0,0);
+	glLineWidth(3.0f);
+	glDisable(GL_LIGHTING);
+
+	// Lines
+	glBegin(GL_LINES);
+	for(int i = 0; i < (int)voxels.size(); i++){
+		glv(c1[i]);glv(bc1[i]);glv(c2[i]);glv(bc2[i]);
+		glv(c3[i]);glv(bc3[i]);glv(c4[i]);glv(bc4[i]);
+		glv(c1[i]);glv(c2[i]);glv(c3[i]);glv(c4[i]);
+		glv(c1[i]);glv(c4[i]);glv(c2[i]);glv(c3[i]);
+		glv(bc1[i]);glv(bc2[i]);glv(bc3[i]);glv(bc4[i]);
+		glv(bc1[i]);glv(bc4[i]);glv(bc2[i]);glv(bc3[i]);
+	}
+	glEnd();
+
+	glEnable(GL_LIGHTING);
+}
+
 std::vector<Voxel> Voxeler::fillOther()
 {
 	std::vector<Voxel> filled;
@@ -234,6 +269,8 @@ std::vector<Voxel> Voxeler::fillOther()
 
 void Voxeler::fillInsideOut(KDTree & inside, KDTree & outside)
 {
+	printf("Computing inside, outside..");
+
 	fillOuter(outside);
 
 	// Compute inner as complement of outside
@@ -276,4 +313,27 @@ void Voxeler::fillOuter(KDTree & outside)
 			if(c.z > minVox.z - 1) stack.push( c + Voxel( 0, 0,-1) );
 		}
 	}
+}
+
+std::vector<Voxel> Voxeler::Intersects(Voxeler * other)
+{
+	std::vector<Voxel> intersection;
+
+	Voxeler *minVoxeler = this, *maxVoxeler = other;
+
+	// Swap with minimum
+	if(other->voxels.size() < this->voxels.size()){
+		minVoxeler = other;
+		maxVoxeler = this;
+	}
+
+	for(int i = 0; i < minVoxeler->voxels.size(); i++)
+	{
+		Voxel v = minVoxeler->voxels[i];
+
+		if(maxVoxeler->kd.has(v.x, v.y, v.z))
+			intersection.push_back(v);
+	}
+
+	return intersection;
 }
