@@ -245,3 +245,9 @@ void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
 {
 
 }
+
+bool GCylinder::excludePoints( std::vector< Vec3d >& ptns )
+{
+	// Shrink GC along its skeleton
+	return true;
+}

@@ -563,7 +563,7 @@ void Offset::applyHeuristics()
 						Vec3d proj_a = unprojectedCoordinatesOf(a.x(), a.y(), -1);
 						Vec3d proj_b = unprojectedCoordinatesOf(b.x(), b.y(), -1);
 						Vec3d T = proj_b - proj_a;
-						T[2] = 0;
+						T[2] = 0.1;
 
 						Ts.push_back(T);
 					}
@@ -583,7 +583,7 @@ void Offset::applyHeuristics()
 					}
 					
 					// Translate the hot curve
-					lowerPrimitive->translateCurve(lower_cid, Ts[best_id], upperHS.segmentID);
+					lowerPrimitive->translateCurve(lower_cid, Ts[best_id] * 2, upperHS.segmentID);
 					break;
 				}
 			}
