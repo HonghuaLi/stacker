@@ -1,8 +1,6 @@
 #ifndef PLANE_H
 #define PLANE_H
 
-#include "Face.h"
-
 #include "Line.h"
 
 #define NO_INTERSECT 0
@@ -17,10 +15,10 @@ private:
 public:
 
 	// should be private
-	Vec n;
+	Vec3d n;
 	double d;
 
-	Vec center; // for drawing
+	Vec3d center; // for drawing
 
 	Plane(){d = 0;}
 
@@ -36,7 +34,7 @@ public:
 	{  
 		if (this != &from) 
 		{
-                        n = from.n.unit();
+			n = from.n.normalized();
 			d = from.d;
 
 			center = from.center;
@@ -44,32 +42,25 @@ public:
 
 		return *this;
 	}
-
-	Plane(Face * fromFace)
+	
+	Plane(const Vec3d& fromNormal, const Vec3d& point = Vec3d())
 	{
-		CalcPlane(*fromFace->v[0], *fromFace->v[1], *fromFace->v[2]);
-
-                center = projectionOf(Vec(0.01f,0.01f,0.01f)); // recheck
-	}
-
-	Plane(const Vec& fromNormal, const Vec& point = Vec())
-	{
-		n = fromNormal;
-		d = -(n * point);
+		n = fromNormal.normalized();
+		d = -dot(n, point);
 
 		center = projectionOf(point);
 	}
 
-	Plane(const Vec &pta, const Vec &ptb, const Vec &ptc)
+	Plane(const Vec3d &pta, const Vec3d &ptb, const Vec3d &ptc)
 	{
 		CalcPlane(pta, ptb, ptc);
 		center = (pta + ptb + ptc) / 3.0;
 	}
 
-	inline void CalcPlane(const Vec &pta, const Vec &ptb, const Vec &ptc)
+	inline void CalcPlane(const Vec3d &pta, const Vec3d &ptb, const Vec3d &ptc)
 	{
-		n = ((ptb - pta) ^ (ptc - pta)).unit();
-		d = -(n * pta);
+		n = cross((ptb - pta), (ptc - pta)).normalized();
+		d = -dot(n, pta);
 	}
 
 	Plane inverseDir()
@@ -77,54 +68,63 @@ public:
 		return Plane(-n, center);
 	}
 
-	inline bool IsFront(const Vec &pt) const 
+	inline bool IsFront(const Vec3d &pt) const 
 	{
 		return (GetPointDistance(pt) > 0.0) ? 1 : 0;
 	}
 
-	inline bool IsBack(const Vec& pt) const          
+	inline bool IsBack(const Vec3d& pt) const          
 	{
 		return !(IsFront(pt));
 	}
 
-	inline bool IsOn(const Vec& pt) const
+	inline bool IsOn(const Vec3d& pt, double Epsilon = 1e-10) const
 	{
 		double dist = GetPointDistance(pt);
 		return (dist > -Epsilon && dist < Epsilon) ? 1 : 0;
 	}
 
-	double GetPointDistance(const Vec& pt ) const;
+	double GetPointDistance(const Vec3d& pt ) const;
 
-	inline bool IsFront(const Vec &v1, const Vec &v2, const Vec &v3) const
+	inline bool IsFront(const Vec3d &v1, const Vec3d &v2, const Vec3d &v3) const
 	{
 		return IsFront(v1) && IsFront(v2) && IsFront(v3);
 	}
 
-	inline bool IsBack(const Vec &v1, const Vec &v2, const Vec &v3) const
+	inline bool IsBack(const Vec3d &v1, const Vec3d &v2, const Vec3d &v3) const
 	{
 		return !(IsFront(v1,v2,v3));
 	}
+	
+	bool IsInTri(const Vec3d& p, const Vec3d &a, const Vec3d &b, const Vec3d &c) const;
 
-	inline bool IsFront(Face * face) const
-	{
-		return IsFront(face->vec(0), face->vec(1), face->vec(2));
-	}
-
-	bool IsInTri(const Vec& p, const Vec &a, const Vec &b, const Vec &c) const;
-
-	Vec projectionOf(const Vec &point);
+	Vec3d projectionOf(const Vec3d &point);
 
 	void projectLine(Line & line);
 
-        int LineIntersect(const Line& l, Vec & result);
-	int LineIntersect(const Vec& start, const Vec& end, const Vec& pointOnPlane, Vec & result);
-
-        int ContourFacet(BaseTriangle * f, Vec & p1, Vec & p2);
+	int LineIntersect(const Line& l, Vec3d & result);
+	int LineIntersect(const Vec3d& start, const Vec3d& end, const Vec3d& pointOnPlane, Vec3d & result, double Epsilon = 1e-10 );
+	int ContourFacet(Vec3d a, Vec3d b, Vec3d c, Vec3d & p1, Vec3d & p2);
 
 	void draw(double extent = 0.25);
 
-	void getTangents(Vec& X, Vec& Y) const;
+	void getTangents(Vec3d& X, Vec3d& Y) const;
 
+	static bool isSameSide(const Vec3d& p1, const Vec3d& p2, const Vec3d& a, const Vec3d& b)
+	{
+		Vec3d cp1 = cross((b-a) , (p1-a));
+		Vec3d cp2 = cross((b-a) , (p2-a));
+
+		return dot(cp1, cp2) >= 0;
+	}
+
+	static Vec3d orthogonalVector(const Vec3d& n) {
+		if ((abs(n.y()) >= 0.9f * abs(n.x())) && 
+			abs(n.z()) >= 0.9f * abs(n.x())) return Vec3d(0.0f, -n.z(), n.y());
+		else if ( abs(n.x()) >= 0.9f * abs(n.y()) && 
+			abs(n.z()) >= 0.9f * abs(n.y()) ) return Vec3d(-n.z(), 0.0f, n.x());
+		else return Vec3d(-n.y(), n.x(), 0.0f);
+	}
 };
 
 #endif // PLANE_H

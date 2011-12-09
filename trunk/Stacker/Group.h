@@ -2,6 +2,7 @@
 #include <vector>
 #include <QSet>
 #include "QSurfaceMesh.h"
+#include "Primitive.h"
 
 class Controller;
 
@@ -22,6 +23,9 @@ public:
 
 	// Compute symmetry, cocentric, coplanar, ..., etc.
 	virtual void process(std::vector<int> segments) = 0;
+
+	// Primitives
+	Primitive * getPrimitive(int node);
 
 	// Variables
 	GroupType type;
@@ -46,7 +50,6 @@ public:
 
 	// Visualization
 	virtual void draw() = 0;
-
 	std::vector<Point> debugPoints;
 };
 

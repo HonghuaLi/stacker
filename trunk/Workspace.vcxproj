@@ -343,6 +343,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Line.cpp" />
+    <ClCompile Include="GraphicsLibrary\Plane.cpp" />
     <ClCompile Include="GraphicsLibrary\QSegMesh.cpp" />
     <ClCompile Include="GraphicsLibrary\QSurfaceMesh.cpp" />
     <ClCompile Include="GraphicsLibrary\Voxeler.cpp" />

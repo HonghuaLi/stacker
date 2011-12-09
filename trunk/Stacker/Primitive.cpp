@@ -19,3 +19,12 @@ void Primitive::drawDebug()
 	foreach(std::vector<Vec3d> poly, debugPoly)
 		SimpleDraw::DrawPoly(poly);
 }
+
+Vec3d Primitive::centerPoint()
+{
+	Point centerPoint(0,0,0);
+
+	std::vector<Point> pnts = points();
+	foreach(Point p, pnts) centerPoint += p;
+	return centerPoint /= pnts.size();
+}

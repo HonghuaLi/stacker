@@ -1,4 +1,5 @@
 #include "Line.h"
+#include "SimpleDraw.h"
 
 Line::Line()
 {
@@ -15,7 +16,7 @@ Line::Line(const Line& from)
 	this->color = from.color;
 }
 
-Line::Line( const Vec& from, const Vec& to, int i, const Color4& newColor)
+Line::Line( const Vec3d& from, const Vec3d& to, int i, const Color& newColor)
 {
 	a = from;
 	b = to;
@@ -27,10 +28,10 @@ Line::Line( const Vec& from, const Vec& to, int i, const Color4& newColor)
 	color = newColor;
 }
 
-Line::Line( const Vec& start, const Vec& direction, double length, int i, const Color4& newColor)
+Line::Line( const Vec3d& start, const Vec3d& direction, double length, int i, const Color& newColor)
 {
 	a = start;
-	b = start + (direction.unit() * length);
+	b = start + (direction.normalized() * length);
 
 	length = (a-b).norm();
 
@@ -39,16 +40,16 @@ Line::Line( const Vec& start, const Vec& direction, double length, int i, const 
 	color = newColor;
 }
 
-void Line::set( const Vec& from, const Vec& to )
+void Line::set( const Vec3d& from, const Vec3d& to )
 {
 	a = from;
 	b = to;
 	length = (a-b).norm();
 	index = -1;
-	color = Color4(255, 164, 0);
+	color = Color(1, 0.5, 0, 1);
 }
 
-Line Line::colored( const Color4& newColor )
+Line Line::colored( const Color& newColor )
 {
 	Line l (*this);
 	l.setColor(newColor);
@@ -57,17 +58,17 @@ Line Line::colored( const Color4& newColor )
 
 void Line::reverse()
 {
-	Vec temp = a;
+	Vec3d temp = a;
 	a = b;
 	b = temp;
 }
 
-Vec Line::direction() const
+Vec3d Line::direction() const
 {
 	return b - a;
 }
 
-bool Line::hasPoint( const Vec& point, double eps)
+bool Line::hasPoint( const Vec3d& point, double eps)
 {
 	double dist = (point - a).norm() + (point - b).norm();
 
@@ -77,37 +78,37 @@ bool Line::hasPoint( const Vec& point, double eps)
 		return false;
 }
 
-double Line::distanceToUnbounded( const Vec& point )
+double Line::distanceToUnbounded( const Vec3d& point )
 {
-	Vec O = a, P = point, D = direction().unit();
+	Vec3d O = a, P = point, D = direction().normalized();
 
-	Vec closest = O + ((P-O)*D)/(D*D) * D;
+	Vec3d closest = O + (dot((P-O),D))/dot(D,D) * D;
 
 	return (closest - point).norm();
 }
 
-Vec Line::midPoint()
+Vec3d Line::midPoint()
 {
-	return (a + b) * 0.5f;
+	return (a + b) * 0.5;
 }
 
-Vec Line::project( const Vec& point )
+Vec3d Line::project( const Vec3d& point )
 {
-	return pointAt((point - a) * direction());
+	return pointAt(dot((point - a) , direction()));
 }
 
-Vec Line::pointAt( double time ) const
+Vec3d Line::pointAt( double time ) const
 {
 	double dist = time * length;
-	return a + (direction().unit() * dist);
+	return a + (direction().normalized() * dist);
 }
 
-double Line::timeAt( const Vec& point )
+double Line::timeAt( const Vec3d& point )
 {
 	return (point - a).norm() / length;
 }
 
-Pairdouble Line::lengthsAt( const Vec& point )
+Pairdouble Line::lengthsAt( const Vec3d& point )
 {
 	double dist1 = (point - a).norm();
 	double dist2 = length - dist1;
@@ -121,83 +122,28 @@ Pairdouble Line::lengthsAt( double time )
 	return Pairdouble(length * time, length * (1.0 - time));
 }
 
-void Line::translateBy( const Vec& delta )
+void Line::translateBy( const Vec3d& delta )
 {
 	a += delta;
 	b += delta;
 }
 
-void Line::rotateAroundStart( const qglviewer::Quaternion& q )
-{
-	b = Point3D::RotateAround(b, a, q);
-}
-
-/*bool Line::intersectLine( Line * other, Vec * pa, Vec * pb )
-{
-Vec p13, p43, p21;
-
-double d1343,d4321,d1321,d4343,d2121;
-double numer,denom;
-
-p13 = this->a - other->a;
-p43 = other->b - other->a;
-
-double EPS = 1.0e-12f;
-
-if (abs(p43.x)  < EPS && abs(p43.y)  < EPS && abs(p43.z)  < EPS)
-return(FALSE);
-
-p21 = this->b - this->a;
-
-if (abs(p21.x)  < EPS && abs(p21.y)  < EPS && abs(p21.z)  < EPS)
-return(FALSE);
-
-d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
-d4321 = p43.x * p21.x + p43.y * p21.y + p43.z * p21.z;
-d1321 = p13.x * p21.x + p13.y * p21.y + p13.z * p21.z;
-d4343 = p43.x * p43.x + p43.y * p43.y + p43.z * p43.z;
-d2121 = p21.x * p21.x + p21.y * p21.y + p21.z * p21.z;
-
-denom = d2121 * d4343 - d4321 * d4321;
-
-if (abs(denom) < EPS)
-return(FALSE);
-
-numer = d1343 * d4321 - d1321 * d4343;
-
-double mua = numer / denom;
-double mub = (d1343 + d4321 * (mua)) / d4343;
-
-if(mua < 0 || mua > 1 || mub < 0 || mub > 1)
-return false;
-
-pa->x = a.x + mua * p21.x;
-pa->y = a.y + mua * p21.y;
-pa->z = a.z + mua * p21.z;
-
-pb->x = other->a.x + mub * p43.x;
-pb->y = other->a.y + mub * p43.y;
-pb->z = other->a.z + mub * p43.z;
-
-return(TRUE);
-}*/
-
-void Line::intersectLine( const Line& S2, Vec & pa, Vec & pb )
+void Line::intersectLine( const Line& S2, Vec3d & pa, Vec3d & pb, double Epsilon )
 {
 	double EPS = Epsilon; // experimental
 
-	Vec   u = this->b - this->a;
-	Vec   v = S2.b - S2.a;
-	Vec   w = this->a - S2.a;
+	Vec3d   u = this->b - this->a;
+	Vec3d   v = S2.b - S2.a;
+	Vec3d   w = this->a - S2.a;
 
-	float    k = (u*u);			// (a) always >= 0
-	float    j = (u*v);			// (b)
-	float    c = (v*v);			// always >= 0
-	float    d = (u*w);
-	float    e = (v*w);
-	float    D = k*c - j*j;       // always >= 0
-	float    sc, sN, sD = D;      // sc = sN / sD, default sD = D >= 0
-	float    tc, tN, tD = D;      // tc = tN / tD, default tD = D >= 0
+	double    k = dot(u,u);			// (a) always >= 0
+	double    j = dot(u,v);			// (b)
+	double    c = dot(v,v);			// always >= 0
+	double    d = dot(u,w);
+	double    e = dot(v,w);
+	double    D = k*c - j*j;       // always >= 0
+	double    sc, sN, sD = D;      // sc = sN / sD, default sD = D >= 0
+	double    tc, tN, tD = D;      // tc = tN / tD, default tD = D >= 0
 
 	// compute the line parameters of the two closest points
 	if (D < EPS) { // the lines are almost parallel
@@ -263,34 +209,20 @@ void Line::draw()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint (GL_LINE_SMOOTH_HINT, GL_NICEST);
 
-	glColor3f(color.r(), color.g(), color.b());
+	glColor3f(color[0], color[1], color[2]);
 
 	glLineWidth(2.0f);
 
 	glBegin(GL_LINES);
-	glVertex3fv(a);
-	glVertex3fv(b);
+	glVertex3dv(a);
+	glVertex3dv(b);
 	glEnd();
-
-	/*glPointSize(12.0f);
-	glBegin(GL_POINTS);
-	glVertex3fv(b);
-	glColor3f(color.r() *0.5f, color.g() *0.5f, color.b() *0.5f); // darker
-	glVertex3fv(a);
-	glEnd();*/
-
-	/*glColor3f(1,1,1);
-	glPointSize(14.0f);
-	glBegin(GL_POINTS);
-	glVertex3fv(a);
-	glVertex3fv(b);
-	glEnd();*/
 
 	glDisable(GL_BLEND);
 	glEnable(GL_LIGHTING);
 }
 
-void Line::setColor( const Color4& newColor )
+void Line::setColor( const Color& newColor )
 {
 	color = newColor;
 }

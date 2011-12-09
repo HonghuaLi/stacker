@@ -320,8 +320,8 @@ void Scene::postSelection( const QPoint& point )
 		selection.clear();
 	else
 	{
-		if(selection.contains( selected ))
-			selection.remove(selection.indexOf(selected));
+		if(selection.contains( selected - 1 ))
+			selection.remove(selection.indexOf(selected - 1));
 		else
 			selection.push_back(selected - 1); // to start from 0
 	}
