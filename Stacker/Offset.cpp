@@ -197,6 +197,9 @@ void Offset::hotspotsFromDirection( int direction )
 		std::map< uint,  std::vector< Vec2i > >::iterator itr;
 		for ( itr = subHotRegions.begin(); itr != subHotRegions.end(); itr++)
 		{
+			if (itr->second.size() < 10)
+				continue; // a bad way to get rid of noise
+
 			uint sid = itr->first;
 			newHotRegions.push_back(itr->second);
 
@@ -501,101 +504,11 @@ std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < doub
 
 void Offset::applyHeuristics()
 {
-	Controller *ctrl = activeObject()->controller;
-
-	int w = offset[0].size();
-	int h = offset.size();
-
 	// Heuristics are applied for each pair of hot spots
 	for (int i = 0; i < hotRegions.size(); i++)
 	{
-		HotSpot &upperHS = upperHotSpots[i];
-		HotSpot &LowerHS = lowerHotSpots[i];
-
-		Primitive* upperPrimitive = ctrl->getPrimitive(upperHS.segmentID);
-		Primitive* lowerPrimitive = ctrl->getPrimitive(LowerHS.segmentID);
-
-		uint upper_cid = upperPrimitive->detectHotCurve(upperHS.hotSamples);
-		uint lower_cid = lowerPrimitive->detectHotCurve(LowerHS.hotSamples);
-
-		std::cout << "HotCurveID (upper) = " << upper_cid << "\t"
-				  << "HotCurveID (lower) = " << lower_cid << "\n";
-
-
-		// Deform lowerHS with upperHS fixed
-		if (LowerHS.defineHeight)
-		{// Move the hot curve horizontally 
-			
-			// Estimate the size of the hot region
-			std::vector< Vec2i > &hotRegion = hotRegions[i];
-			Vec2i size = sizeofRegion(hotRegion);
-			uint rw = size.x();
-			uint rh = size.y();
-
-			// Search neighbor regions for best location to shift to
-			std::vector< double > hot_env = getValuesInRegion(upperEnvelope, hotRegion, false);
-			double lower_bound = MinElement( hot_env );
-
-			std::vector< std::vector< double > > debugImg = createImage( offset[0].size(), offset.size(), 0. );
-			setRegionColor(debugImg, hotRegion, 1.0);
-
-			for (uint k = 1; k < 10; k++)
-			{
-				int step = Max(rw, rh);
-				std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
-
-				std::vector< Vec3d > Ts;
-				for (int j = 0; j < deltas.size(); j++ )
-				{
-					std::vector< Vec2i > shiftedRegion = shiftRegion(hotRegion, deltas[j], w, h);
-					if (shiftedRegion.empty())  continue;
-
-					setRegionColor(debugImg, shiftedRegion, 1.0 - k * 0.1 );
-
-
-					std::vector< double > new_env = getValuesInRegion(upperEnvelope, shiftedRegion, false);
-					double new_upper_bound= MaxElement( new_env );
-					if (new_upper_bound < lower_bound )
-					{
-						// a good place to go
-						Vec2i a = hotRegion[0];
-						Vec2i b = shiftedRegion[0];
-						Vec3d proj_a = unprojectedCoordinatesOf(a.x(), a.y(), -1);
-						Vec3d proj_b = unprojectedCoordinatesOf(b.x(), b.y(), -1);
-						Vec3d T = proj_b - proj_a;
-						T[2] = 0.1;
-
-						Ts.push_back(T);
-					}
-				}
-
-				if (!Ts.empty())
-				{
-					// Find the best/shortest T
-					double dis = DOUBLE_INFINITY;
-					int best_id = -1;
-					for (int i = 0; i < Ts.size(); i++){
-						if (Ts[i].norm() < dis)	
-						{
-							best_id = i;
-							dis = Ts[i].norm();
-						}
-					}
-					
-					// Translate the hot curve
-					lowerPrimitive->translateCurve(lower_cid, Ts[best_id] * 2, upperHS.segmentID);
-					break;
-				}
-			}
-			
-			saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
-			
-		}
-		else
-		{// Move hot curve up directly
-			Vec3d T(0, 0, 0.1);
-			lowerPrimitive->translateCurve(lower_cid, T, -1);
-		}
+//		applyHeuristicsOnHotspot(i, 1);		
+		applyHeuristicsOnHotspot(i, -1);
 	}
 	
 }
@@ -626,15 +539,21 @@ std::vector< Vec2i > Offset::deltaVectorsToKRing( int deltaX, int deltaY, int K 
 	return Vecs;
 }
 
-std::vector< Vec2i > Offset::shiftRegion( std::vector< Vec2i >& region, Vec2i delta, int w, int h )
+
+std::vector< Vec2i > Offset::shiftRegionInBB( std::vector< Vec2i >& region, Vec2i delta, Vec2i bbmin, Vec2i bbmax )
 {
 	std::vector< Vec2i > toRegion;
 
 	for (int i = 0; i < region.size(); i++)
 	{
 		Vec2i p = region[i] + delta;
-		if ( RANGE(p.x(), 0, w-1) && RANGE(p.y(), 0, h-1) )
+		if ( RANGE( p.x(), bbmin.x(), bbmax.x() ) && RANGE( p.y(), bbmin.y(), bbmax.y() ) )
 			toRegion.push_back( p );
+		else
+		{// Out of BB
+			toRegion.clear();
+			break;
+		}			
 	}
 
 	return toRegion;
@@ -675,6 +594,16 @@ Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int direction )
 	return Vec3d(P[0], P[1], P[2]);
 }
 
+Vec2i Offset::projectedCoordinatesOf( Vec3d point, int direction )
+{
+	// Restore the camera according to the direction
+	activeViewer->camera()->playPath( direction + 2 );
+
+	Vec p = activeViewer->camera()->projectedCoordinatesOf( Vec (point[0], point[1], point[2]) );
+
+	return Vec2i(p[0], (offset.size()-1) - p[1]);
+}
+
 void Offset::setRegionColor( std::vector< std::vector < double > >& image, std::vector< Vec2i >& region, double color )
 {
 	uint w = image[0].size();
@@ -687,6 +616,17 @@ void Offset::setRegionColor( std::vector< std::vector < double > >& image, std::
 
 		image[y][x] = color;
 	}
+}
+
+void Offset::setPixelColor( std::vector< std::vector < double > >& image, Vec2i pos, double color )
+{
+	uint w = image[0].size();
+	uint h = image.size();
+
+	uint x = RANGED(0, pos.x(), w-1);
+	uint y = RANGED(0, pos.y(), h-1);
+
+	image[y][x] = color;
 }
 
 QRgb Offset::jetColor( double val, double min, double max )
@@ -708,3 +648,131 @@ void Offset::visualizeHotRegions( QString filename )
 	}
 	saveAsImage(debugImg, 1.0, filename);
 }
+
+void Offset::applyHeuristicsOnHotspot( uint hid, int side )
+{
+	Controller *ctrl = activeObject()->controller;
+
+	HotSpot &HS = (side == 1)? upperHotSpots[hid] : lowerHotSpots[hid];
+	Primitive* prim = ctrl->getPrimitive(HS.segmentID);
+	uint cid = prim->detectHotCurve(HS.hotSamples);
+
+	// Remove the hot spot
+	if (prim->excludePoints(HS.hotSamples))
+		return;
+
+	// Move hot spot side away or up/down
+	if (HS.defineHeight)
+	{
+		//
+		Vec3d T = getHorizontalMove(hid, side);
+		if (T[0] != BIG_NUMBER)
+		{
+			prim->moveCurveCenter(cid, T * 1.5);
+		}
+	}
+	else
+	{
+		Vec3d T(0, 0, 0.1);
+		prim->translateCurve(cid, T, -1);
+	}
+}
+
+
+Vec3d Offset::getHorizontalMove( uint hid, int side )
+{
+	// The hot region	
+	std::vector< Vec2i > &hotRegion = hotRegions[hid];
+	
+	// The size of buffer
+	int w = offset[0].size();
+	int h = offset.size();
+
+	// Switchers
+	bool isUpper = (side == 1);
+	bool x_flipped = isUpper;
+	std::vector< std::vector<double> > &opp_envelope = isUpper ? lowerEnvelope : upperEnvelope;
+
+	// Project BB to 2D buffer
+	std::vector< std::vector< double > > BBImg = createImage( offset[0].size(), offset.size(), 0. );
+	Vec2i bbmin = projectedCoordinatesOf(activeObject()->bbmin, 1);
+	Vec2i bbmax = projectedCoordinatesOf(activeObject()->bbmax, 1);
+	setPixelColor(BBImg, bbmin, 1.0);
+	setPixelColor(BBImg, bbmax, 0.5);
+	saveAsImage(BBImg, 1.0, "BB projection.png");
+
+	// Current position measures
+	std::vector< double > curr_env = getValuesInRegion(opp_envelope, hotRegion, x_flipped);
+	double threshold = isUpper? MaxElement(curr_env) : MinElement( curr_env );
+
+	//============ debug code
+	std::vector< std::vector< double > > debugImg = createImage( offset[0].size(), offset.size(), 0. );
+	setRegionColor(debugImg, hotRegion, 1.0);
+	//============ end of debug code
+
+	// The size of the hot region
+	Vec2i size = sizeofRegion(hotRegion);
+	uint rw = size.x();
+	uint rh = size.y();
+	int step = Max(rw, rh);
+
+	// Search for optional locations in 1-K rings
+	std::vector< Vec3d > Ts;
+	int K = 10;
+	for (uint k = 1; k < K; k++)
+	{
+		std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
+		for (int j = 0; j < deltas.size(); j++ )
+		{
+			std::vector< Vec2i > shiftedRegion = shiftRegionInBB(hotRegion, deltas[j], bbmin, bbmax);
+			if (shiftedRegion.empty())  continue; // Out of BB
+
+			//============ debug code
+			setRegionColor(debugImg, shiftedRegion, 1.0 - k * 0.1 );
+			//============ end of debug code
+
+			std::vector< double > new_env = getValuesInRegion(opp_envelope, shiftedRegion, x_flipped);
+			double newValue = isUpper? MinElement( new_env ) : MaxElement( new_env );
+			bool isBetter = isUpper? (newValue > threshold) : (newValue < threshold);
+
+			if (isBetter)
+			{
+				// Get the 3D translation
+				Vec2i a = hotRegion[0];
+				Vec2i b = shiftedRegion[0];
+				Vec3d proj_a = unprojectedCoordinatesOf(a.x(), a.y(), -1);
+				Vec3d proj_b = unprojectedCoordinatesOf(b.x(), b.y(), -1);
+				Vec3d T = proj_b - proj_a;
+				// Force the translation to be horizontal
+				T[2] = 0;
+
+				Ts.push_back(T);
+			}
+		}
+	}
+
+	saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
+
+	// Find the best/shortest T
+	Vec3d result(BIG_NUMBER, BIG_NUMBER, BIG_NUMBER);
+
+	if (!Ts.empty())
+	{
+		int best_id = -1;
+		double shortest_dis = DOUBLE_INFINITY;
+		for (int i = 0; i < Ts.size(); i++)
+		{
+			double dis = Ts[i].norm();
+			if ( dis < shortest_dis )	
+			{
+				best_id = i;
+				shortest_dis = dis;
+			}
+		}
+
+		result = Ts[best_id];
+	}
+	
+	return result;
+}
+

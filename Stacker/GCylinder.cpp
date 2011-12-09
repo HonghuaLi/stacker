@@ -263,7 +263,7 @@ Point GCylinder::fromCoordinate( std::vector<double> coords )
 	return Point(0,0,0);
 }
 
-bool GCylinder::excludePoints( std::vector< Vec3d >& ptns )
+bool GCylinder::excludePoints( std::vector< Vec3d >& pnts )
 {
 	// Shrink GC along its skeleton
 	return true;

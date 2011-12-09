@@ -296,11 +296,13 @@ void Scene::postSelection( const QPoint& point )
 
 				manipulatedFrame()->setPosition(p);
 			}
-			else
+
+			if(selected == -1)
 			{
 				setSelectMode(CONTROLLER);
 				setManipulatedFrame( activeFrame );
 			}
+
 		}
 		break;
 	}

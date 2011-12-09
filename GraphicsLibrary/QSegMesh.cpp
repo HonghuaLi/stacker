@@ -361,6 +361,8 @@ void QSegMesh::drawDebug()
 {
 	for (int i=0;i<segment.size();i++)
 		segment[i]->drawDebug();
+
+	drawAABB();
 }
 
 void QSegMesh::setObjectName( const QString &name )
@@ -490,5 +492,50 @@ uint QSegMesh::segmentIdOfVertex( uint vid )
 	global2local_vid(vid, sid, vid_local);
 
 	return sid;
+}
+
+
+//		  4-----------7                     Z
+//		 /|          /|                     ^   /
+//		5-+---------6 |                     |  / 
+//		| |         | |                     | /
+//		| |         | |                     |/     
+//		| 0---------+-3            ---------+-------> Y 
+//		|/          |/                     /|
+//		1-----------2                     / |
+//								         /  |
+//	                                    X
+void QSegMesh::drawAABB()
+{
+	Vec3d X(0, 0, 0), Y(0, 0, 0), Z(0, 0, 0);
+	X[0] = bbmax[0]-bbmin[0];
+	Y[1] = bbmax[1]-bbmin[1];
+	Z[2] = bbmax[2]-bbmin[2];
+
+	std::vector< Vec3d > P(8);
+	P[0] = bbmin;
+	P[1] = P[0] + X;
+	P[2] = P[1] + Y;
+	P[3] = P[0] + Y;
+
+	P[4] = P[0] + Z;
+	P[5] = P[1] + Z;
+	P[6] = P[2] + Z;
+	P[7] = P[3] + Z;
+
+	SimpleDraw::IdentifyLine(P[0], P[1]);
+	SimpleDraw::IdentifyLine(P[1], P[2]);
+	SimpleDraw::IdentifyLine(P[2], P[3]);
+	SimpleDraw::IdentifyLine(P[3], P[0]);
+
+	SimpleDraw::IdentifyLine(P[4], P[5]);
+	SimpleDraw::IdentifyLine(P[5], P[6]);
+	SimpleDraw::IdentifyLine(P[6], P[7]);
+	SimpleDraw::IdentifyLine(P[7], P[4]);
+
+	SimpleDraw::IdentifyLine(P[0], P[4]);
+	SimpleDraw::IdentifyLine(P[1], P[5]);
+	SimpleDraw::IdentifyLine(P[2], P[6]);
+	SimpleDraw::IdentifyLine(P[3], P[7]);
 }
 
