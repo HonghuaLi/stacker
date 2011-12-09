@@ -32,7 +32,7 @@ public:
 	virtual std::vector <Vec3d> points();
 	virtual QSurfaceMesh getGeometry();
 
-	void translate( Vector3 &T );
+	virtual void translate( Vector3 &T );
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
 	void recoverMesh();
@@ -44,7 +44,7 @@ public:
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respected = -1 );
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
 	virtual void moveCurveCenter( uint fid, Vec3d T);
-	virtual bool excludePoints( std::vector< Vec3d >& ptns );
+	virtual bool excludePoints( std::vector< Vec3d >& pnts );
 
 	// Coordinate system
 	virtual std::vector<double> getCoordinate( Point v );

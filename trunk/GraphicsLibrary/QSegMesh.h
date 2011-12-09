@@ -36,6 +36,7 @@ public:
 	void simpleDraw();
 	void drawFacesUnique();
 	void drawDebug();
+	void drawAABB();
 
 	// Load the mesh from file
 	void read(QString fileName);

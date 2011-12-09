@@ -4,7 +4,7 @@
 HiddenViewer::HiddenViewer( QWidget * parent ) : QGLViewer (parent)
 {
 	// Restrict the size of the window
-	setFixedSize(200,200);
+	setFixedSize(400,400);
 
 	// No active scene when initializing
 	this->activeScene = NULL;

@@ -343,8 +343,8 @@ void Cuboid::moveCurveCenter( uint fid, Vec3d T )
 	// Control points
 	uint opp_fid = ( fid % 2 == 0 ) ? fid+1 : fid-1;
 
-	Vec3d k = faceCenterOfBox(originalBox, opp_fid);
-	Vec3d j = faceCenterOfBox(originalBox, fid);
+	Vec3d k = faceCenterOfBox(currBox, opp_fid);
+	Vec3d j = faceCenterOfBox(currBox, fid);
 	Vec3d q = j + T;
 
 	deformRespectToJoint(k, j, T);
@@ -420,10 +420,66 @@ Point Cuboid::fromCoordinate( std::vector<double> coords )
 {
 	return getPositionInBox(currBox, Vec3d(coords[0], coords[1], coords[2]));
 }
-bool Cuboid::excludePoints( std::vector< Vec3d >& ptns )
-{
-	bool result;
 
+bool Cuboid::excludePoints( std::vector< Vec3d >& pnts )
+{
+	// Project pnts to axes
+	std::vector< std::vector< double > > coords(3);
+	for (int i = 0; i < pnts.size(); i++)
+	{		
+		Vec3d pos = getCoordinatesInBox(currBox, pnts[i]);
+
+		for (int j = 0; j < 3; j++){
+			coords[j].push_back( pos[j] );
+		}
+	}
+
+	// Select the best axis to scale
+	Vec3d z(0, 0, 1);
+	int selectedID = -1;
+	double bestScale = .0;
+	double newPos = 0;
+	for (int j = 0; j < 3; j++)
+	{
+		double epsilon = 0.1 * currBox.Extent[j];
+		double left = MinElement(coords[j]) - epsilon;
+		double right = MaxElement(coords[j]) + epsilon;
+
+		// The pnts are not on the margin
+		if (left * right < 0) continue;
+
+		// Only scale along axis that is far away from z
+		Vec3d &axis = currBox.Axis[j];
+		if (abs( dot( axis, z ) ) > 0.5) continue;
+
+		// if the scale is smaller
+		double scale;
+		if ( left > 0 )
+			scale = (1+left) / 2;
+		else
+			scale = (1-right) / 2;
+
+		if (scale > bestScale)
+		{
+			bestScale = scale;
+			selectedID = j;
+			newPos = (left>0)? left : right;
+		}
+
+	}
+
+	// Scale along the best axis
+	bool result = false;
+	if (bestScale >.0)
+	{
+		double delta = (newPos > 0)? (-1 + newPos) / 2 : (newPos + 1) / 2;
+		delta *= currBox.Extent[selectedID];
+		currBox.Center += delta;
+		currBox.Extent[selectedID] *= bestScale;
+		result = true;
+	}
+
+	deformMesh();
 	return result;
 }
 
@@ -441,6 +497,8 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 
 	if (v1.norm() == 0 || v2.norm() == 0)
 		return; // Undefined behavior
+
+	double scale = v2.norm() / v1.norm();
 
 	// Rotation matrix
 	Vec3d rotAxis = cross( v1, v2 );
@@ -465,7 +523,6 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	currBox.normalizeAxis();
 
 	// Scale the box only along one axis
-	double scale = v2.norm() / v1.norm();
 	v2.normalize();
 	uint selected_axis = -1;
 	double largest_dot = 0;
