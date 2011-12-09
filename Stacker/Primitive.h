@@ -45,6 +45,7 @@ public:
 	virtual std::vector <Vec3d> points() = 0;
 	virtual QSurfaceMesh getGeometry() = 0;
 	virtual double volume() = 0;
+	Vec3d centerPoint();
 
 	int id;
 	bool isSelected;

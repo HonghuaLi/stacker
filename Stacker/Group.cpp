@@ -40,18 +40,15 @@ void Group::removeEdge( int nodeA, int nodeB )
 	edges.remove(Edge(nodeA, nodeB));
 }
 
+Primitive * Group::getPrimitive(int node)
+{
+	return ctrl->getPrimitive(node);
+}
+
 void Group::draw()
 {
 	foreach(int node, nodes)
 	{
-		std::vector<Point> pnts = ctrl->getPrimitive(node)->points();
-
-		Point centerPoint(0,0,0);
-
-		foreach(Point p, pnts) centerPoint += p;
-
-		centerPoint /= pnts.size();
-
-		SimpleDraw::IdentifyPoint(centerPoint, 0,0,1);
+		SimpleDraw::IdentifyPoint(getPrimitive(node)->centerPoint(), 0,0,1);
 	}
 }

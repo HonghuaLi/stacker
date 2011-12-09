@@ -1,8 +1,8 @@
 #ifndef LINE_H
 #define LINE_H
 
-#include "Point.h"
-#include "Color4.h"
+#include "Surface_mesh.h"
+#include "Macros.h"
 
 typedef std::pair<double, double> Pairdouble;
 
@@ -10,44 +10,40 @@ class Line
 {
 public:
 
-	Vec a, b;
+	Vec3d a, b;
 	double length;
 	int index;
 
-	Color4 color;
+	Color color;
 
 	Line();
 	Line(const Line&);
-	Line(const Vec& from, const Vec& to, int i = -1, 
-		const Color4& newColor = Color4(255, 164, 0));
-	Line(const Vec& start, const Vec& direction, double length, int i = -1, 
-		const Color4& newColor = Color4(255, 164, 0));
+	Line(const Vec3d& from, const Vec3d& to, int i = -1, const Color& newColor = Color(1, 0.5, 0, 1));
+	Line(const Vec3d& start, const Vec3d& direction, double length, int i = -1, const Color& newColor = Color(1, 0.5, 0, 1));
 
-	Line colored(const Color4& newColor);
+	Line colored(const Color& newColor);
 
-	void set(const Vec& from, const Vec& to);
+	void set(const Vec3d& from, const Vec3d& to);
 
-	Vec direction() const;
+	Vec3d direction() const;
 
 	void reverse();
 
-	bool hasPoint(const Vec& point, double eps = Epsilon);
+	bool hasPoint(const Vec3d& point, double eps = 1e-10);
 
-	Vec pointAt(double time) const;
-	Vec project(const Vec& point);
-	double timeAt(const Vec& point);
-	Pairdouble lengthsAt(const Vec& point);
+	Vec3d pointAt(double time) const;
+	Vec3d project(const Vec3d& point);
+	double timeAt(const Vec3d& point);
+	Pairdouble lengthsAt(const Vec3d& point);
 	Pairdouble lengthsAt(double time);
-	Vec midPoint();
+	Vec3d midPoint();
 
-	void translateBy(const Vec& delta);
-        void rotateAroundStart(const qglviewer::Quaternion& q);
+	void translateBy(const Vec3d& delta);
 
-	double distanceToUnbounded(const Vec& point);
+	double distanceToUnbounded(const Vec3d& point);
 
-	void intersectLine( const Line& S2, Vec & pa, Vec & pb );
-
-	void setColor(const Color4& newColor);
+	void intersectLine( const Line& S2, Vec3d & pa, Vec3d & pb, double Epsilon = 1e-10 );
+	void setColor(const Color& newColor);
 
 	void draw();
 };

@@ -404,6 +404,12 @@
     <ClCompile Include="GeneratedFiles\Template\moc_GroupPanel.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Plane.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Line.cpp">
+      <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
