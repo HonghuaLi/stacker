@@ -17,15 +17,24 @@ StackerPanel::StackerPanel()
 	// Add controller deformer widget
 	ctrlDeformer.setupUi(panel.controllerDeformerPanel);
 
+	QGridLayout * layout = (QGridLayout *) panel.groupBox->layout();
+	int row = layout->rowCount() + 1;
+
 	// Add a stacking preview widget
 	stacker_preview = new StackerPreview(this);
-	QDockWidget * previewDock = new QDockWidget();
+	QDockWidget * previewDock = new QDockWidget("Preview");
 	previewDock->setWidget (stacker_preview);
-	panel.previewBox->layout()->addWidget(previewDock);
+	layout->addWidget(previewDock, row++, 0,1,3);
+	stacker_preview->setMinimumHeight(150);
 
 	// Offset function calculator
 	hidden_viewer = new HiddenViewer();
-	panel.groupBox->layout()->addWidget(hidden_viewer);
+	QDockWidget * hiddenDock = new QDockWidget("Hidden");
+	hiddenDock->setWidget (hidden_viewer);
+	layout->addWidget(hiddenDock, row++, 0,1,3);
+	hiddenDock->setFloating(true);
+	hiddenDock->setWindowOpacity(0.0);
+
 	activeOffset = new Offset(hidden_viewer);
 
 	// Connections

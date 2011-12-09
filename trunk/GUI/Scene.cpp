@@ -13,8 +13,11 @@ Skeleton * skel;
 GeneralizedCylinder * gc;
 
 #include "QDeformController.h"
-#include "SymmetryGroup.h"
 QDeformController * defCtrl;
+
+#include "SymmetryGroup.h"
+#include "ConcentricGroup.h"
+#include "CoplanarGroup.h"
 
 Scene::Scene( QWidget *parent)
 {
@@ -215,7 +218,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 	// Regular behavior
 	QGLViewer::mousePressEvent(e);
 
-	if ((e->button() == Qt::RightButton) && (e->modifiers() == Qt::NoButton))
+	if ((e->button() == Qt::RightButton) && (e->modifiers() != Qt::NoButton))
 	{
 		switch (selectMode){
 			case CONTROLLER:
@@ -228,25 +231,21 @@ void Scene::mousePressEvent( QMouseEvent* e )
 
 				QMenu menu( this );
 
-				QAction* addSymmGroup = menu.addAction("Create Symmetry group..");
-				QAction* addCoplanGroup = menu.addAction("Create Coplanar group..");
+				QAction* symmGrp = menu.addAction("Create Symmetry group..");
+				QAction* concentricGrp = menu.addAction("Create Concentric group..");
+				QAction* coplanGrp = menu.addAction("Create Coplanar group..");
 
 				QAction* action = menu.exec(e->globalPos()); // show menu
 
 				Group* newGroup = NULL;
 
-				if(action == addSymmGroup)
+				if(action == symmGrp)		newGroup = new SymmetryGroup(ctrl, SYMMETRY);
+				if(action == concentricGrp) newGroup = new ConcentricGroup(ctrl, CONCENTRIC);
+				if(action == coplanGrp)		newGroup = new CoplanarGroup(ctrl, COPLANNAR);
+				
+				if(newGroup)
 				{
-					newGroup = new SymmetryGroup(ctrl, SYMMETRY);
 					newGroup->process( selection.toStdVector() );
-				}
-				else if(action == addCoplanGroup)
-				{
-
-				}
-
-				if(action)
-				{
 					ctrl->groups[newGroup->id] = newGroup;
 					emit(groupsChanged());
 
@@ -392,9 +391,9 @@ void Scene::setModifyMode(ModifyMode toMode)
 
 void Scene::postDraw()
 {
-	bool currGLcontext = isValid();
-
 	QGLViewer::postDraw();
+
+	bool currGLcontext = isValid();
 
 	SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 
