@@ -13,6 +13,7 @@ Skeleton * skel;
 GeneralizedCylinder * gc;
 
 #include "QDeformController.h"
+#include "SymmetryGroup.h"
 QDeformController * defCtrl;
 
 Scene::Scene( QWidget *parent)
@@ -130,6 +131,17 @@ void Scene::draw()
 	// DEBUG
 	if(gc) gc->draw();
 	if(skel) skel->draw();
+	
+	if (!isEmpty() && activeObject()->controller)
+	{
+		Controller * ctrl = activeObject()->controller;
+
+		for(std::map<int, Group*>::iterator it = ctrl->groups.begin(); it != ctrl->groups.end(); it++)
+		{
+			Group * group = it->second;
+			group->draw();
+		}
+	}
 }
 
 void Scene::drawWithNames()
@@ -202,6 +214,48 @@ void Scene::mousePressEvent( QMouseEvent* e )
 {
 	// Regular behavior
 	QGLViewer::mousePressEvent(e);
+
+	if ((e->button() == Qt::RightButton) && (e->modifiers() == Qt::NoButton))
+	{
+		switch (selectMode){
+			case CONTROLLER:
+				if(selection.isEmpty()){
+					print("Please select some controllers.");
+					break;
+				}
+
+				Controller * ctrl = activeObject()->controller;
+
+				QMenu menu( this );
+
+				QAction* addSymmGroup = menu.addAction("Create Symmetry group..");
+				QAction* addCoplanGroup = menu.addAction("Create Coplanar group..");
+
+				QAction* action = menu.exec(e->globalPos()); // show menu
+
+				Group* newGroup = NULL;
+
+				if(action == addSymmGroup)
+				{
+					newGroup = new SymmetryGroup(ctrl, SYMMETRY);
+					newGroup->process( selection.toStdVector() );
+				}
+				else if(action == addCoplanGroup)
+				{
+
+				}
+
+				if(action)
+				{
+					ctrl->groups[newGroup->id] = newGroup;
+					emit(groupsChanged());
+
+					print("New group added.");
+				}
+
+				break;
+		}
+	}
 }
 
 void Scene::mouseReleaseEvent( QMouseEvent* e )
@@ -262,6 +316,18 @@ void Scene::postSelection( const QPoint& point )
 
 	print(QString("Selected %1").arg(selected));
 
+	// General selection
+	if(selected == -1)
+		selection.clear();
+	else
+	{
+		if(selection.contains( selected ))
+			selection.remove(selection.indexOf(selected));
+		else
+			selection.push_back(selected - 1); // to start from 0
+	}
+
+	// FFD and such deformer
 	if(activeDeformer) 
 	{
 		activeDeformer->postSelection(selected);
@@ -272,6 +338,7 @@ void Scene::postSelection( const QPoint& point )
 			setManipulatedFrame( activeFrame );
 	}
 
+	// Selection mode cases
 	switch (selectMode)
 	{
 	case CONTROLLER:
@@ -325,6 +392,8 @@ void Scene::setModifyMode(ModifyMode toMode)
 
 void Scene::postDraw()
 {
+	bool currGLcontext = isValid();
+
 	QGLViewer::postDraw();
 
 	SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());

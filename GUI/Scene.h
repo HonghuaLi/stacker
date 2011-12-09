@@ -61,6 +61,7 @@ public:
 
 	// SELECTION
 	virtual void postSelection(const QPoint& point);
+	QVector<int> selection;
 
 	// STATE
 	ViewMode viewMode;
@@ -107,4 +108,6 @@ signals:
 	void exportActiveObject( QSegMesh* newMesh );
 	void sceneClosed( Scene* );
 	void objectDiscarded( QString );
+	void selectionVector( QVector<int> );
+	void groupsChanged();
 };

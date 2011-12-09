@@ -21,6 +21,9 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	tp = new TransformationPanel();
 	ui.rightDockWidget->layout()->addWidget(tp);
 
+	gp = new GroupPanel();
+	ui.rightDockWidget->layout()->addWidget(gp);
+
 	// Create MeshDoc, where stores all the meshes
 	mDoc = new QMeshDoc();
 	connect(ui.actionImportObject, SIGNAL(triggered()), mDoc, SLOT(importObject()));
@@ -75,11 +78,16 @@ void Workspace::addNewScene()
 	connect(tp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
 	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 
+	// Groups
+	connect(newScene, SIGNAL(gotFocus(Scene*)), gp, SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(groupsChanged()), gp, SLOT(updateWidget()));
+
 	// View operations
 	connect(ui.actionCameraProjection, SIGNAL(triggered()), newScene, SLOT(toggleCameraProjection()));
 
-	// Update stacker panel
+	// Explicit updates
 	sp->setActiveScene(newScene);
+	gp->setActiveScene(newScene);
 
 	this->setActiveScene(newScene);
 }
