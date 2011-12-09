@@ -93,6 +93,18 @@
     <Filter Include="GUI\Tools">
       <UniqueIdentifier>{ff2038dc-98bb-46d7-8220-ab44da6f66f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Groups">
+      <UniqueIdentifier>{18cf3649-4b34-4c3c-bdc7-0d925da0da84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Groups\Header">
+      <UniqueIdentifier>{decc9e5c-24ba-483b-bd56-6e42bf7bac01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Groups\Source">
+      <UniqueIdentifier>{0c28b988-0f8a-4b1b-82f8-eb5bd30acfdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stacker\Tools">
+      <UniqueIdentifier>{48b8cea6-c4fc-402c-96df-4323e34d4324}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneratedFiles\qrc_Workspace.cpp">
@@ -362,11 +374,35 @@
     <ClCompile Include="GeneratedFiles\Template\moc_TransformationPanel.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\QDeformController.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsLibrary\Voxeler.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Group.cpp">
+      <Filter>Groups\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\SymmetryGroup.cpp">
+      <Filter>Groups\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\ConcentricGroup.cpp">
+      <Filter>Groups\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\CoplanarGroup.cpp">
+      <Filter>Groups\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\QDeformController.cpp">
+      <Filter>Stacker\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\GroupPanel.cpp">
+      <Filter>Stacker\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_GroupPanel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GroupPanel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_GroupPanel.cpp">
+      <Filter>Generated Files\Template</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -532,11 +568,23 @@
     <ClInclude Include="GeneratedFiles\ui_RotationWidget.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\Joint.h">
-      <Filter>Stacker\Header</Filter>
-    </ClInclude>
     <ClInclude Include="GraphicsLibrary\Voxeler.h">
       <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Group.h">
+      <Filter>Groups\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\SymmetryGroup.h">
+      <Filter>Groups\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\ConcentricGroup.h">
+      <Filter>Groups\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\CoplanarGroup.h">
+      <Filter>Groups\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_GroupWidget.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -606,8 +654,14 @@
     <CustomBuild Include="GUI\TransformationPanel.h">
       <Filter>GUI\Tools</Filter>
     </CustomBuild>
+    <CustomBuild Include="Stacker\GroupWidget.ui">
+      <Filter>Stacker\ui</Filter>
+    </CustomBuild>
     <CustomBuild Include="Stacker\QDeformController.h">
-      <Filter>Stacker\Header</Filter>
+      <Filter>Stacker\Tools</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\GroupPanel.h">
+      <Filter>Stacker\Tools</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

@@ -147,13 +147,13 @@ private:
 	std::map<vertex_t, weight_t> min_distance;
 	std::map<vertex_t, vertex_t> previous;
 
-	int lastStart;
+	vertex_t lastStart;
 
 public:
 
 	Graph()
 	{
-		lastStart = std::numeric_limits<int>::min();
+		lastStart = std::numeric_limits<vertex_t>::min();
 	}
 
 	Graph(const Graph& from)
@@ -171,7 +171,7 @@ public:
 		adjacency_map[AddVertex(p2)].push_back(Edge(AddVertex(p1), weight, index));
 	}
 
-	int AddVertex(vertex_t p)
+	vertex_t AddVertex(vertex_t p)
 	{
 		vertices.insert(p);
 
@@ -366,7 +366,7 @@ public:
 			std::list<Edge> * adj = &adjacency_map[i];
 			for(typename std::list<Edge>::const_iterator it = adj->begin(); it != adj->end(); it++)
 			{
-				int j = it->target;
+				vertex_t j = it->target;
 
 				// Check: not visited
 				if(explored.find(j) == explored.end()) 

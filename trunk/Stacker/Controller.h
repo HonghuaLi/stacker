@@ -1,7 +1,9 @@
 #pragma once
+#include <map>
 #include "Primitive.h"
 #include "CuboidParam.h"
 #include "Voxeler.h"
+#include "Group.h"
 
 class QSegMesh;
 
@@ -25,6 +27,9 @@ public:
 	bool selectPrimitivePart( int id );
 	Vec3d getPrimPartPos();
 	void reshapePrimitive(Vec3d q);
+
+	// Grouping
+	std::map<int, Group*> groups;
 
 	// Deformation
 	void deformShape( PrimitiveParamMap& primParams, bool isPermanent = false );

@@ -11,6 +11,7 @@
 #include "WiresPanel.h"
 #include "DeformerPanel.h"
 #include "TransformationPanel.h"
+#include "GroupPanel.h"
 
 class Workspace : public QMainWindow
 {
@@ -30,6 +31,7 @@ private:
 	WiresPanel * wp;
 	DeformerPanel * dp;
 	TransformationPanel * tp;
+	GroupPanel * gp;
 
 	Scene * activeScene;
 
