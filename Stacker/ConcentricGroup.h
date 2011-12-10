@@ -11,4 +11,6 @@ public:
 
 	void draw();
 
+	Vec3d axis;
+	Vec3d center;
 };
