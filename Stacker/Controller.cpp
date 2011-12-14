@@ -12,15 +12,24 @@ Controller::Controller( QSegMesh* mesh )
 	// fitPrimitives()
 	fitOBBs();
 
+	// Assign numerical IDs
+	assignIds();
+
 	// Save original stats
 	originalStat = getStat();
 }
 
 Controller::~Controller()
 {
-	for (int i=0;i<m_mesh->nbSegments();i++)
+	foreach(Primitive * prim, primitives)
+		delete prim;
+}
+
+void Controller::assignIds()
+{
+	foreach(Primitive * prim, primitives)
 	{
-		delete primitives[i];
+		primitiveIdNum[primitiveIdNum.size()] = prim->id;
 	}
 }
 
@@ -28,11 +37,7 @@ void Controller::fitPrimitives()
 {
 	for (int i=0;i<m_mesh->nbSegments();i++)
 	{
-		GCylinder* cub = new GCylinder(m_mesh->getSegment(i));
-		primitives.push_back(cub);
-
-		// Assign an ID
-		primitives.back()->id = primitives.size();
+		// ToDo: automatic fitting
 	}
 }
 
@@ -40,22 +45,22 @@ void Controller::fitOBBs()
 {
 	foreach (QSurfaceMesh* segment, m_mesh->getSegments())
 	{
-		Cuboid* cub = new Cuboid(segment);
-		primitives.push_back(cub);
+		QString segId = segment->objectName();
 
-		// Assign an ID
-		primitives.back()->id = primitives.size();
+		Cuboid* cub = new Cuboid(segment, segId);
 
-		currStat.params.push_back( (PrimitiveParam*) new CuboidParam);
+		primitives[segId] = cub;
+
+		currStat.params[segId] = (PrimitiveParam*) new CuboidParam(segId);
 	}
 }
 
 void Controller::draw()
 {
-	for (uint i = 0; i < primitives.size(); i++)
+	foreach(Primitive * prim, primitives)
 	{
-		primitives[i]->draw();
-		primitives[i]->drawDebug();
+		prim->draw();
+		prim->drawDebug();
 
 		// Draw proximity debug 
 		/*for (uint j = i + 1; j < primitives.size(); j++){
@@ -77,38 +82,42 @@ void Controller::draw()
 
 void Controller::drawNames(bool isDrawParts)
 {
-	for (uint i = 0; i < primitives.size(); i++)
+	foreach(Primitive * prim, primitives)
 	{
-		primitives[i]->drawNames(isDrawParts);
+		prim->drawNames(getPrimitiveIdNum(prim->id), isDrawParts);
 	}
 }
 
 void Controller::select(int id)
 {
+	if(id != -1)
+		select(primitiveIdNum[id]);
+	else
+		select("deselectAll");
+}
+
+void Controller::select(QString id)
+{
 	// Deselect all if given '-1'
-	if(id < 0){
-		for (uint i = 0; i < primitives.size(); i++)
-			primitives[i]->isSelected = false;
+	if(id == "deselectAll")
+	{
+		foreach(Primitive * prim, primitives)
+			prim->isSelected = false;
 		return;
 	}
 
-	// Select primitives by setting flag
-	for (uint i = 0; i < primitives.size(); i++)
-	{
-		if(primitives[i]->id == id)
-			primitives[i]->isSelected = true;
-	}
+	// Toggle selection of primitive
+	primitives[id]->isSelected = !primitives[id]->isSelected;
 }
 
 bool Controller::selectPrimitivePart( int id )
 {
 	bool beenSelected = false;
 
-	for (uint i = 0; i < primitives.size(); i++)
+	foreach(Primitive * prim, primitives)
 	{
-		if(primitives[i]->isSelected)
-		{
-			primitives[i]->selectedPartId = id;
+		if(prim->isSelected){
+			prim->selectedPartId = id;
 			beenSelected = true;
 		}
 	}
@@ -118,10 +127,10 @@ bool Controller::selectPrimitivePart( int id )
 
 Vec3d Controller::getPrimPartPos()
 {
-	for (uint i = 0; i < primitives.size(); i++)
+	foreach(Primitive * prim, primitives)
 	{
-		if(primitives[i]->isSelected)
-			return primitives[i]->selectedPartPos();
+		if(prim->isSelected)
+			return prim->selectedPartPos();
 	}
 
 	return Vec3d();
@@ -129,31 +138,21 @@ Vec3d Controller::getPrimPartPos()
 
 void Controller::reshapePrimitive( Vec3d q )
 {
-	for (uint i = 0; i < primitives.size(); i++)
+	foreach(Primitive * prim, primitives)
 	{
-		if(primitives[i]->isSelected)
-			primitives[i]->reshapePart(q);
+		if(prim->isSelected)
+			return prim->reshapePart(q);
 	}
 }
 
-void Controller::convertToGC( int primitiveId, bool isUsingSkeleton )
+void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton )
 {
-	int p_index = 0;
-
-	// Locate index of primitive (ID could be non-integer ?)
-	for (uint i = 0; i < primitives.size(); i++){
-		if(primitiveId == primitives[i]->id){
-			p_index = i;
-			break;
-		}
-	}
-
 	// Convert to generalized cylinder
 	if(isUsingSkeleton)
 	{
-		Primitive * oldPrimitive = primitives[p_index];
+		Primitive * oldPrimitive = primitives[primitiveId];
 
-		primitives[p_index] = new GCylinder(primitives[p_index]->getMesh());
+		primitives[primitiveId] = new GCylinder(primitives[primitiveId]->getMesh(), primitiveId);
 
 		delete oldPrimitive;
 	}
@@ -174,22 +173,27 @@ void Controller::test1()
 
 void Controller::deformShape( PrimitiveParamMap& primParams, bool isPermanent )
 {
-	std::map< unsigned int, PrimitiveParam* >::iterator it;
-	for( it= primParams.begin(); it != primParams.end(); it++)
+	foreach(PrimitiveParam* param, primParams.params)
 	{
-		Primitive * pri = primitives[it->first];
-		pri->deform(it->second);
+		QString p_id = param->id;
+		Primitive * pri = primitives[p_id];
+		pri->deform(param);
 
 		// Update param for each primitive
-		PrimitiveParam* tmp = currStat.params[it->first];
-		currStat.params[it->first] = it->second->clone();
+		PrimitiveParam* tmp = currStat.params[p_id];
+		currStat.params[p_id] = param->clone();
 		delete tmp;
 	}
 
 	m_mesh->computeBoundingBox();
 }
 
-Primitive * Controller::getPrimitive( int id )
+Primitive * Controller::getPrimitive( uint id )
+{
+	return primitives[primitiveIdNum[id]];
+}
+
+Primitive * Controller::getPrimitive( QString id )
 {
 	return primitives[id];
 }
@@ -201,11 +205,9 @@ uint Controller::numPrimitives()
 
 void Controller::recoverShape()
 {
-	for (int i=0;i<m_mesh->nbSegments();i++)
-	{
-		(( Cuboid* )primitives[i])->recoverMesh();
-	}
-
+	foreach(Primitive * prim, primitives)
+		(( Cuboid* )prim)->recoverMesh();
+		
 	// recovery the stat
 	currStat.params = originalStat.params;
 
@@ -215,11 +217,11 @@ void Controller::recoverShape()
 int Controller::numHotPrimitives()
 {
 	int num = 0;
-	for (int i=0;i<numPrimitives();i++)
-	{
-		if (primitives[i]->isHot)
+
+	foreach(Primitive * prim, primitives)
+		if (prim->isHot)
 			num++;
-	}
+
 	return num;
 }
 
@@ -251,13 +253,15 @@ Controller::Stat& Controller::getStat()
 						(bbmax.y() - center.y()) *
 						(bbmax.z() - center.z())) * 8;
 
+	QVector<QString> keys = primitives.keys().toVector();
+
 	// Compute proximity measure
 	for(uint i = 0; i < primitives.size(); i++)
 	{
 		for (uint j = i + 1; j < primitives.size(); j++)
 		{
-			Cuboid * pi = (Cuboid *)primitives[i];
-			Cuboid * pj = (Cuboid *)primitives[j];
+			Cuboid * pi = (Cuboid *)primitives[keys[i]];
+			Cuboid * pj = (Cuboid *)primitives[keys[j]];
 			
 			Vec3d p, q;
 
@@ -272,8 +276,8 @@ Controller::Stat& Controller::getStat()
 	{
 		for (uint j = i + 1; j < primitives.size(); j++)
 		{
-			Primitive * pi = primitives[i];
-			Primitive * pj = primitives[j];
+			Primitive * pi = primitives[keys[i]];
+			Primitive * pj = primitives[keys[j]];
 
 			currStat.coplanarity[std::make_pair(i, j)] = 0;
 		}
@@ -289,11 +293,9 @@ Controller::Stat& Controller::getOriginalStat()
 
 Primitive * Controller::getSelectedPrimitive()
 {
-	for (uint i = 0; i < primitives.size(); i++)
-	{
-		if(primitives[i]->isSelected)
-			return primitives[i];
-	}
+	foreach(Primitive * prim, primitives)
+		if (prim->isSelected)
+			return prim;
 
 	return NULL;
 }
@@ -302,19 +304,21 @@ void Controller::findJoints(double threshold)
 {
 	std::vector<Voxeler> voxels;
 
-	for (uint i = 0; i < primitives.size(); i++)
+	foreach(Primitive * prim, primitives)
 	{
-		QSurfaceMesh mesh(primitives[i]->getGeometry());
+		QSurfaceMesh mesh(prim->getGeometry());
 		voxels.push_back( Voxeler(&mesh, threshold) );
 	}
 
-	for (uint i = 0; i < primitives.size(); i++)
+	QVector<QString> keys = primitives.keys().toVector();
+
+	for(uint i = 0; i < primitives.size(); i++)
 	{
-		Primitive * a = primitives[i];
+		Primitive * a = primitives[keys[i]];
 
 		for (uint j = i + 1; j < primitives.size(); j++)
 		{
-			Primitive * b = primitives[j];
+			Primitive * b = primitives[keys[i]];
 
 			std::vector<Voxel> intersection = voxels[i].Intersects(&voxels[j]);
 
@@ -330,11 +334,41 @@ void Controller::findJoints(double threshold)
 				Point centerPoint(center.x * scale, center.y * scale, center.z * scale);
 
 				Joint newJointA(a, b, a->getCoordinate(centerPoint));
-				primitives[i]->joints.push_back(newJointA);
+				a->joints.push_back(newJointA);
 
 				Joint newJointB(b, a, b->getCoordinate(centerPoint));
-				primitives[j]->joints.push_back(newJointB);
+				b->joints.push_back(newJointB);
 			}
 		}
 	}
+}
+
+QVector<QString> Controller::stringIds( QVector<int> numericalIds )
+{
+	QVector<QString> result;
+
+	foreach(int numId, numericalIds)
+		result.push_back(primitiveIdNum[numId]);
+
+	return result;
+}
+
+int Controller::getPrimitiveIdNum( QString stringId )
+{
+	QMapIterator<int, QString> i(primitiveIdNum);
+	while (i.hasNext()) {
+		i.next();
+		if(i.value() == stringId) return i.key();
+	}
+	return -1;
+}
+
+std::vector<Primitive*> Controller::getPrimitives()
+{
+	std::vector<Primitive*> result;
+
+	foreach(Primitive * prim, primitives)
+		result.push_back(prim);
+
+	return result;
 }

@@ -10,13 +10,11 @@ using namespace Eigen;
 // Rodrigues' rotation
 #define ROTATE_VEC(v, theta, axis) (v = v * cos(theta) + cross(axis, v) * sin(theta) + axis * dot(axis, v) * (1 - cos(theta)))
 
-Cuboid::Cuboid(QSurfaceMesh* mesh)
-	: Primitive(mesh)
+Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
 {
 	fit();
 
 	selectedPartId = -1;
-
 }
 
 void Cuboid::fit()
@@ -145,7 +143,7 @@ void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
 		SimpleDraw::DrawSquare(faces[i], isOpaque, lineWidth, color);
 }
 
-void Cuboid::drawNames(bool isDrawParts)
+void Cuboid::drawNames(int name, bool isDrawParts)
 {
 	if(isDrawParts)
 	{
@@ -163,7 +161,7 @@ void Cuboid::drawNames(bool isDrawParts)
 	}
 	else
 	{
-		glPushName(this->id);
+		glPushName(name);
 		drawCube(1,Vec4d(1,1,1,1), true);
 		glPopName();
 	}

@@ -7,7 +7,7 @@ class CuboidParam : public PrimitiveParam
 {
 public:
 	// Constructor
-	CuboidParam();
+	CuboidParam(QString ID);
 	virtual PrimitiveParam* clone();
 
 	// Ranges for each parameter

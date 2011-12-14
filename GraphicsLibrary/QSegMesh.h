@@ -1,6 +1,7 @@
 #pragma once
 #include <QObject>
 #include <QString>
+#include <QVector>
 #include "QSurfaceMesh.h"
 #include <vector>
 
@@ -27,6 +28,7 @@ public:
 	// Get segment
 	QSurfaceMesh* operator [] (uint i);
 	QSurfaceMesh* getSegment(uint i);
+	QSurfaceMesh* getSegment( QString sid );
 	std::vector<QSurfaceMesh*> getSegments();
 	uint nbSegments();
 	uint segmentIdOfVertex( uint vid );
@@ -60,6 +62,7 @@ public:
 
 	// Set global unique name for this and all its segments
 	void setObjectName(const QString &name);
+	QVector<QString> segmentName;
 
 	// Controller
 	Controller* controller;
@@ -70,8 +73,7 @@ public:
 
 private:
 	std::vector<QSurfaceMesh*> segment;
-
-
+	
 	// This is useful for segmented OBJs
 	void checkObjSegmentation ( QString fileName, QString segFilename);
 

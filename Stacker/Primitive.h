@@ -7,7 +7,7 @@
 class Primitive
 {
 public:
-	Primitive(QSurfaceMesh* m_mesh);
+	Primitive(QSurfaceMesh* m_mesh, QString newId);
 
 	// Fit primitive to the underlying QSurfaceMesh
 	virtual void fit() = 0;
@@ -18,7 +18,7 @@ public:
 
 	// Visualize the primitive and potential actions
 	virtual void draw() = 0;
-	virtual	void drawNames(bool isDrawParts = false) = 0;
+	virtual	void drawNames(int name, bool isDrawParts = false) = 0;
 
 	// Hot curves
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples ) = 0;
@@ -47,7 +47,7 @@ public:
 	virtual double volume() = 0;
 	Vec3d centerPoint();
 
-	int id;
+	QString id;
 	bool isSelected;
 	int selectedPartId;
 

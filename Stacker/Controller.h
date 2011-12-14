@@ -1,5 +1,5 @@
 #pragma once
-#include <map>
+#include <QMap>
 #include "Primitive.h"
 #include "CuboidParam.h"
 #include "Voxeler.h"
@@ -17,27 +17,30 @@ public:
 	// Fitting
 	void fitPrimitives();
 	void fitOBBs();	
-	void convertToGC(int primitiveId, bool isUsingSkeleton = true);
+	void convertToGC(QString primitiveId, bool isUsingSkeleton = true);
 
 	// Joints
 	void findJoints(double threshold);
 
 	// Interaction
 	void select(int id);
+	void select(QString id);
 	bool selectPrimitivePart( int id );
 	Vec3d getPrimPartPos();
 	void reshapePrimitive(Vec3d q);
 
 	// Grouping
-	std::map<int, Group*> groups;
+	std::map<QString, Group*> groups;
 
 	// Deformation
 	void deformShape( PrimitiveParamMap& primParams, bool isPermanent = false );
 	void recoverShape();
 
 	// SET and GET
-	Primitive * getPrimitive(int id);
+	Primitive * getPrimitive( QString id );
+	Primitive * getPrimitive( uint id );
 	Primitive * getSelectedPrimitive();
+	std::vector<Primitive*> getPrimitives();
 
 	uint numPrimitives();
 	int numHotPrimitives();
@@ -62,16 +65,22 @@ public:
 		std::map< std::pair<int, int>, bool > coplanarity;
 
 		// stats that are stored and keep updating by other member functions
-		PrimitiveParamVector params;
+		PrimitiveParamMap params;
 	};
 
 	Stat& getStat();
 	Stat& getOriginalStat();
 
+	QVector<QString> stringIds(QVector<int> numericalIds);
+	int getPrimitiveIdNum(QString stringId);
+	QMap<int, QString> primitiveIdNum;
+
 private:
-	std::vector<Primitive*> primitives;
+	QMap<QString, Primitive*> primitives;
 	QSegMesh* m_mesh;
 	Stat originalStat;
 	Stat currStat;
+
+	void assignIds();
 };
 

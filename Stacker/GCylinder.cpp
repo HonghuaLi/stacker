@@ -2,7 +2,7 @@
 #include "SkeletonExtract.h"
 #include "SimpleDraw.h"
 
-GCylinder::GCylinder( QSurfaceMesh* mesh ) : Primitive(mesh)
+GCylinder::GCylinder( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
 {
 	fit();
 
@@ -94,7 +94,7 @@ void GCylinder::draw()
 	//skel->draw(true);
 }
 
-void GCylinder::drawNames( bool isDrawParts)
+void GCylinder::drawNames( int name, bool isDrawParts /*= false*/ )
 {
 
 }

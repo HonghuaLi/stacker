@@ -85,6 +85,8 @@ public:
 	std::vector<unsigned int> cloneTriangleIndices();
 	std::vector<unsigned int> triangles, edges;
 
+	QString id;
+
 private:
 	bool isDirty;
 };
