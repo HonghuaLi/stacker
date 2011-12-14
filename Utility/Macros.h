@@ -8,6 +8,7 @@
 #include "float.h"
 #include <time.h>
 #include <string>
+#include <numeric>
 
 // GL extensions
 #ifdef _WIN32

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "QSurfaceMesh.h"
+#include "QSegMesh.h"
 
 // Helper structures
 struct SamplePoint{
@@ -49,6 +50,8 @@ public:
 	// Get samples
 	SamplePoint getSample(double weight = 0.0);
 	StdVector<SamplePoint> getSamples(int numberSamples, double weight = 0.0);
+
+	static StdVector<SamplePoint> getSamplesFromQSegMesh(QSegMesh* srcMesh, int numberSamples);
 	// Bias samples
 	void resampleWithBias();
 	void clearBias();
