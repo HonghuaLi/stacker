@@ -1,20 +1,20 @@
 #include "ConcentricGroup.h"
 #include "SimpleDraw.h"
 
-void ConcentricGroup::process( std::vector<int> segments )
+void ConcentricGroup::process( QVector< QString > segments )
 {
 	addNodes(segments);
 
-	foreach(int i, nodes)
+	foreach(int i, nodes.keys())
 	{
-		Primitive * a = getPrimitive(i);
+		Primitive * a = getPrimitive(nodes[i]);
 		Point cA = a->centerPoint();
 
-		foreach(int j, nodes)
+		foreach(int j, nodes.keys())
 		{
 			if(i == j) continue;
 
-			Primitive * b = getPrimitive(j);
+			Primitive * b = getPrimitive(nodes[j]);
 			Point cB = b->centerPoint();
 
 			axis = (cA - cB).normalized();

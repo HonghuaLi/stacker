@@ -139,10 +139,11 @@ void Scene::draw()
 	{
 		Controller * ctrl = activeObject()->controller;
 
-		for(std::map<int, Group*>::iterator it = ctrl->groups.begin(); it != ctrl->groups.end(); it++)
+		for(std::map<QString, Group*>::iterator it = ctrl->groups.begin(); it != ctrl->groups.end(); it++)
 		{
 			Group * group = it->second;
 			group->draw();
+
 		}
 	}
 }
@@ -245,7 +246,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				
 				if(newGroup)
 				{
-					newGroup->process( selection.toStdVector() );
+					newGroup->process( ctrl->stringIds(selection) );
 					ctrl->groups[newGroup->id] = newGroup;
 					emit(groupsChanged());
 
@@ -320,10 +321,10 @@ void Scene::postSelection( const QPoint& point )
 		selection.clear();
 	else
 	{
-		if(selection.contains( selected - 1 ))
-			selection.remove(selection.indexOf(selected - 1));
+		if(selection.contains( selected ))
+			selection.remove(selection.indexOf(selected));
 		else
-			selection.push_back(selected - 1); // to start from 0
+			selection.push_back(selected); // to start from 0
 	}
 
 	// FFD and such deformer

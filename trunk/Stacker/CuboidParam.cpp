@@ -4,8 +4,7 @@
 #include <iostream>
 #include <math.h>
 
-
-CuboidParam::CuboidParam()
+CuboidParam::CuboidParam( QString ID ) : PrimitiveParam(ID)
 {
 	double p[9] = {0, 0, 0, 0, 0, 0, 1, 1, 1};
 	params.clear();

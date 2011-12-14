@@ -19,14 +19,14 @@
 class Cuboid : public Primitive
 {
 public:
-	Cuboid(QSurfaceMesh* segment);
+	Cuboid( QSurfaceMesh* segment, QString newId );
 
 public:
 	virtual void fit();
 	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
 	virtual void deformMesh();
 	virtual void draw();
-	virtual	void drawNames(bool isDrawParts = false);
+	virtual	void drawNames(int name, bool isDrawParts = false);
 
 	virtual double volume();
 	virtual std::vector <Vec3d> points();

@@ -11,43 +11,53 @@ Group::Group( Controller * controller, GroupType newType )
 	this->id = GroupUniqueID++;
 }
 
-void Group::addNode( int nodeId )
+void Group::addNode( QString nodeId )
 {
-	nodes.insert(nodeId);
+	nodes[nodes.size()] = nodeId;
 }
 
-void Group::addNodes( std::vector<int> newNodes )
+void Group::addNodes( QVector<QString> newNodes )
 {
-	foreach(int node, newNodes)
+	foreach(QString node, newNodes)
 		addNode(node);
 }
 
-void Group::addEdge( int nodeA, int nodeB )
+void Group::addEdge( QString nodeA, QString nodeB )
 {
 	addNode(nodeA);
 	addNode(nodeB);
 
-	edges.insert(Group::Edge(nodeA, nodeB, edges.size()));
+	edges.insert(Group::Edge(nodeIdNum(nodeA), nodeIdNum(nodeB), edges.size()));
 }
 
-void Group::removeNode( int nodeId )
+void Group::removeNode( QString nodeId )
 {
-	nodes.remove(nodeId);
+	nodes.remove(nodeIdNum(nodeId));
 }
 
-void Group::removeEdge( int nodeA, int nodeB )
+void Group::removeEdge( QString nodeA, QString nodeB )
 {
-	edges.remove(Edge(nodeA, nodeB));
+	edges.remove(Edge(nodeIdNum(nodeA), nodeIdNum(nodeB)));
 }
 
-Primitive * Group::getPrimitive(int node)
+int Group::nodeIdNum(QString stringId)
 {
-	return ctrl->getPrimitive(node);
+	QMapIterator<int, QString> i(nodes);
+	while (i.hasNext()) {
+		i.next();
+		if(i.value() == stringId) return i.key();
+	}
+	return -1;
+}
+
+Primitive * Group::getPrimitive(QString nodeId)
+{
+	return ctrl->getPrimitive(nodeId);
 }
 
 void Group::draw()
 {
-	foreach(int node, nodes)
+	foreach(QString node, nodes)
 	{
 		SimpleDraw::IdentifyPoint(getPrimitive(node)->centerPoint(), 0,0,1);
 	}

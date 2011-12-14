@@ -15,7 +15,7 @@ public:
 	QVector<QString> groupTypes;
 
 	// Utility function
-	int getItemId(QTreeWidgetItem* item);
+	QString getItemId(QTreeWidgetItem* item);
 
 public slots:
 	void setActiveScene( Scene * newScene );

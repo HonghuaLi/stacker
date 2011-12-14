@@ -163,9 +163,8 @@ void StackerPanel::convertGC()
 
 	Controller* ctrl = activeObject()->controller;
 
-	for(int i = 0; i < ctrl->numPrimitives(); i++){
-		Primitive * prim = ctrl->getPrimitive(i);
-
+	foreach(Primitive * prim, ctrl->getPrimitives())
+	{
 		if(prim->isSelected)
 			ctrl->convertToGC(prim->id, !panel.basicFitGC->isChecked());
 	}
@@ -182,8 +181,11 @@ void StackerPanel::gradientDescentOptimize()
 
 	// Initialization
 	PrimitiveParamMap optimalParams;
-	foreach (uint i, hotSegs) 
-		optimalParams[i] = (PrimitiveParam*) new CuboidParam;
+	foreach (uint id, hotSegs) 
+	{
+		QString sid = ctrl->primitiveIdNum[id];
+		optimalParams[sid] = (PrimitiveParam*) new CuboidParam(sid);
+	}
 
 	// Optimize
 	double currE = sumEnergy();
@@ -203,12 +205,14 @@ void StackerPanel::gradientDescentOptimize()
 		// Check all the neighbors in the deformation space
 		for (std::set< uint >::iterator i=hotSegs.begin(); i!=hotSegs.end(); i++)
 		{
-			for (int j=0; j < currParams[*i]->numParams(); j++)
+			QString sid = ctrl->primitiveIdNum[*i];
+
+			for (int j=0; j < currParams[sid]->numParams(); j++)
 			{
 				double E = 0;
 
 				// Forward
-				currParams[*i]->stepForward(j, step);
+				currParams[sid]->stepForward(j, step);
 				ctrl->deformShape(currParams);
 				emit(objectModified());
 				E = sumEnergy();
@@ -217,13 +221,13 @@ void StackerPanel::gradientDescentOptimize()
 					minE = E;
 					bestNeighborParams = currParams;
 				}
-				currParams[*i]->stepForward(j, -step);
+				currParams[sid]->stepForward(j, -step);
 				ctrl->recoverShape();
 				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
 
 
 				// Backward
-				currParams[*i]->stepForward(j, -step);
+				currParams[sid]->stepForward(j, -step);
 				ctrl->deformShape(currParams);
 				emit(objectModified());
 				E = sumEnergy();
@@ -232,7 +236,7 @@ void StackerPanel::gradientDescentOptimize()
 					minE = E;
 					bestNeighborParams = currParams;
 				}
-				currParams[*i]->stepForward(j, step);
+				currParams[sid]->stepForward(j, step);
 				ctrl->recoverShape();
 				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
 			}
@@ -251,7 +255,6 @@ void StackerPanel::gradientDescentOptimize()
 
 			// Print current state
 			printf("==============================\nThe current deformation parameters:\n\n");
-			optimalParams.print();
 			printf("Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), currE);
 		}
 
@@ -263,7 +266,7 @@ void StackerPanel::gradientDescentOptimize()
 	printf("\n===\nOptimization is done ;)\n");
 
 	// Print optimal solution
-	optimalParams.print();
+	//optimalParams.print();
 	printf("\nStackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), currE);
 }
 
@@ -306,7 +309,7 @@ double StackerPanel::sumEnergy( )
 	// ROTATION
 	double sumR = 0;
 	for(int i = 0; i < numPrimitive; i++)	{	
-		CuboidParam* params = (CuboidParam*) (s1.params[i]);
+		CuboidParam* params = (CuboidParam*) (s1.params[ctrl->primitiveIdNum[i]]);
 		Vec3d R = params->getR();
 		double diffR = ( abs(R[0]) + abs(R[1]) + abs(R[2]) ) / ( 3*360 );
 		double w = s1.volumePrim[i];///s1.volumeBB;
@@ -340,11 +343,11 @@ void StackerPanel::updateController()
 	vals[7] = scaling * ctrlDeformer.scaleY->value();
 	vals[8] = scaling * ctrlDeformer.scaleZ->value();
 
-	PrimitiveParam* param = ( CuboidParam* ) new CuboidParam;
+	PrimitiveParam* param = ( CuboidParam* ) new CuboidParam("");
 	param->setParams(vals);
 
 	for(uint i = 0; i < ctrl->numPrimitives(); i++){
-		Cuboid * prim = (Cuboid *) ctrl->getPrimitive(i);
+		Cuboid * prim = (Cuboid *) ctrl->getPrimitive(ctrl->primitiveIdNum[i]);
 
 		if(prim->isSelected)
 			prim->deform(param);
@@ -357,7 +360,7 @@ void StackerPanel::updateController()
 
 void StackerPanel::resetCtrlDeformerPanel()
 {
-	CuboidParam param;
+	CuboidParam param("");
 	std::vector< double > defaultParams = param.getDefaulParam();
 
 	ctrlDeformer.transX->setValue( defaultParams[0] * 100 );

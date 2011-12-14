@@ -1,9 +1,11 @@
 #include "Primitive.h"
 #include "SimpleDraw.h"
 
-Primitive::Primitive( QSurfaceMesh* mesh )
+Primitive::Primitive( QSurfaceMesh* mesh, QString newId )
 {
 	m_mesh = mesh;
+
+	id = newId;
 
 	isSelected = false;
 }

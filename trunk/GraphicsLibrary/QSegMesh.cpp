@@ -64,6 +64,13 @@ void QSegMesh::checkObjSegmentation ( QString fileName, QString segFilename)
 		if(line.startsWith("g ")){
 			collectingFaces = true;
 			faceGroups.push_back(0);
+
+			// Get name for this segment
+			segmentName.push_back(line.replace("g ", "").trimmed());
+
+			// If no name on file, give it one
+			if(segmentName.back() == "")
+				segmentName.back() = QString("Segment %1").arg(segmentName.size());
 		}
 		
 		// Count faces
@@ -332,6 +339,13 @@ QSurfaceMesh* QSegMesh::getSegment( uint i )
 	return segment[i];
 }
 
+QSurfaceMesh* QSegMesh::getSegment( QString sid )
+{
+	for(int i = 0; i < segmentName.size(); i++)
+		if(segmentName[i] == sid)
+			return segment[i];
+	return NULL;
+}
 
 std::vector<QSurfaceMesh*> QSegMesh::getSegments()
 {
@@ -369,10 +383,15 @@ void QSegMesh::setObjectName( const QString &name )
 {
 	QObject::setObjectName(name);
 
-	for (int i=0;i<segment.size();i++)
-		segment[i]->setObjectName(name + QString("-seg%1").arg(i));
-}
+	// For single objects
+	if(!segmentName.size())
+		segmentName.push_back(name);
 
+	for (int i=0;i<segment.size();i++)
+	{
+		segment[i]->setObjectName(segmentName[i]);
+	}
+}
 
 uint QSegMesh::nbVertices()
 {

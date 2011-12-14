@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <QSet>
+#include <QVector>
+#include <QString>
 #include "QSurfaceMesh.h"
 #include "Primitive.h"
 
@@ -13,24 +15,24 @@ public:
 	Group(Controller * controller, GroupType newType);
 
 	// Add
-	void addNodes(std::vector<int> newNodes);
-	void addNode(int nodeId);
-	void addEdge(int nodeA, int nodeB);
-
+	void addNodes( QVector<QString> newNodes );
+	void addNode( QString nodeId );
+	void addEdge( QString nodeA, QString nodeB );
 	// Remove
-	void removeNode(int nodeId);
-	void removeEdge(int nodeA, int nodeB);
+	void removeNode( QString nodeId );
+	void removeEdge( QString nodeA, QString nodeB );
 
 	// Compute symmetry, cocentric, coplanar, ..., etc.
-	virtual void process(std::vector<int> segments) = 0;
+	virtual void process(QVector< QString > segments) = 0;
 
 	// Primitives
-	Primitive * getPrimitive(int node);
+	Primitive * getPrimitive(QString nodeId);
 
 	// Variables
 	GroupType type;
 	Controller * ctrl;
-	QSet<int> nodes;
+	QMap<int, QString> nodes;
+	int nodeIdNum(QString stringId);
 
 	// Edge structure
 	struct Edge{
@@ -46,7 +48,7 @@ public:
 		
 	QSet<Edge> edges;
 
-	int id;
+	QString id;
 
 	// Visualization
 	virtual void draw() = 0;

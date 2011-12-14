@@ -7,7 +7,7 @@ class CoplanarGroup : public Group{
 public:
 	CoplanarGroup(Controller * controller, GroupType newType) : Group(controller, newType){}
 
-	void process(std::vector<int> segments);
+	void process(QVector< QString > segments);
 
 	void draw();
 
