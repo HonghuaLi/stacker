@@ -425,18 +425,26 @@ Vec3d QSurfaceMesh::getBaryFace( Face f, double U, double V )
 {
 	std::vector<Vec3d> v = facePoints(f);
 
-	if(U == 1.0) return v[1];
-	if(V == 1.0) return v[2];
+	//if(U == 1.0) return v[1];
+	//if(V == 1.0) return v[2];
 
-	double b1 = U;
-	double b2 = V;
-	double b3 = 1.0 - (U + V);
+	//double b1 = U;
+	//double b2 = V;
+	//double b3 = 1.0 - (U + V);
 
-	Vec3d p;
+	//Vec3d p;
 
-	p.x() = (b1 * v[0].x()) + (b2 * v[1].x()) + (b3 * v[2].x());
-	p.y() = (b1 * v[0].y()) + (b2 * v[1].y()) + (b3 * v[2].y());
-	p.z() = (b1 * v[0].z()) + (b2 * v[1].z()) + (b3 * v[2].z());
+	//p.x() = (b1 * v[0].x()) + (b2 * v[1].x()) + (b3 * v[2].x());
+	//p.y() = (b1 * v[0].y()) + (b2 * v[1].y()) + (b3 * v[2].y());
+	//p.z() = (b1 * v[0].z()) + (b2 * v[1].z()) + (b3 * v[2].z());
+
+	// Generate uniform sample in a triangle
+	double sqrtV = sqrt(V);
+	double w0 = (1 - U) * sqrtV;
+	double w1 = U * sqrtV;
+	double w2 = 1 - sqrtV;
+
+	Vec3d p = w0 * v[0] + w1 * v[1] + w2 * v[2];
 
 	return p;
 }

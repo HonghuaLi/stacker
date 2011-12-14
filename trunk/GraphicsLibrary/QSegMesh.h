@@ -3,7 +3,6 @@
 #include <QString>
 #include "QSurfaceMesh.h"
 #include <vector>
-#include "Sampler.h"
 
 class Controller;
 

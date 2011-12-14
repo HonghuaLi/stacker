@@ -4,6 +4,7 @@
 #include "Stats.h"
 #include "ColorMap.h"
 
+
 Sampler::Sampler(QSurfaceMesh * srcMesh, SamplingMethod samplingMethod)
 {
 	isReady = false;
@@ -173,4 +174,28 @@ void Sampler::draw(const StdVector<SamplePoint> & samples)
 		glVertex3dv(p->pos);
 	}
 	glEnd();
+}
+
+StdVector<SamplePoint> Sampler::getSamplesFromQSegMesh( QSegMesh* srcMesh, int numberSamples )
+{
+	StdVector<SamplePoint> samples;
+
+	std::vector< Sampler > sampler;
+	std::vector< double > area;
+	for (int i = 0; i < srcMesh->nbSegments(); i++)
+	{
+		Sampler s( srcMesh->getSegment(i) );
+		sampler.push_back( s );
+		area.push_back( s.totalMeshArea );
+	}
+
+	double totalArea = Sum(area);
+	for (int i = 0; i < srcMesh->nbSegments(); i++)
+	{
+		int n = (area[i] / totalArea) * numberSamples;
+		std::vector< SamplePoint > samps = sampler[i].getSamples(n);
+		samples.insert(samples.end(), samps.begin(), samps.end());
+	}
+
+	return samples;
 }
