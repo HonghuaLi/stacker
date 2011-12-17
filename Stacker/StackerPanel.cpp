@@ -42,6 +42,7 @@ StackerPanel::StackerPanel()
 	connect(panel.controllerButton, SIGNAL(clicked()), SLOT(onControllerButtonClicked()));
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
+	connect(panel.iterateButton, SIGNAL(clicked()), SLOT(onIterateButtonClicked()));
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(panel.userControl, SIGNAL(clicked()), SLOT(userControlledPrimatives()));
 
@@ -118,7 +119,6 @@ void StackerPanel::onHotspotsButtonClicked()
 
 	activeOffset->detectHotspots(panel.hotspotFilter->value(), panel.hotRange->value());
 	activeOffset->showHotSpots();
-	activeOffset->applyHeuristics();
 	emit(objectModified());
 	showMessage("Hot spots are detected.");
 }
@@ -388,4 +388,9 @@ void StackerPanel::findJoints()
 	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
 	
 	activeObject()->controller->findJoints(panel.jointsThreshold->value());
+}
+
+void StackerPanel::onIterateButtonClicked()
+{
+	activeOffset->applyHeuristics();
 }

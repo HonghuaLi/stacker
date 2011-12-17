@@ -8,7 +8,7 @@ Group::Group( Controller * controller, GroupType newType )
 {
 	this->ctrl = controller;
 	this->type = newType;
-	this->id = GroupUniqueID++;
+	this->id = QString("%1").arg(GroupUniqueID++);
 }
 
 void Group::addNode( QString nodeId )
@@ -61,4 +61,26 @@ void Group::draw()
 	{
 		SimpleDraw::IdentifyPoint(getPrimitive(node)->centerPoint(), 0,0,1);
 	}
+}
+
+void Group::save( std::ofstream &outF )
+{
+	outF << nodes.size() << "\t";
+	foreach(QString node, nodes)
+		outF << qPrintable(node) << "\t";
+}
+
+void Group::load( std::ifstream &inF )
+{
+	int n;
+	inF >> n;
+	std::string str;
+	QVector<QString> segments;
+	for (int i=0;i<n;i++)
+	{
+		inF >> str;
+		segments.push_back(str.c_str());
+	}
+
+	process(segments);
 }

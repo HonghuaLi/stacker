@@ -21,6 +21,7 @@ void Cuboid::fit()
 {	
 	MinOBB3 obb(m_mesh);
 	originalBox = currBox = obb.mMinBox;
+	id = m_mesh->objectName();
 
 	// Compute the OBB coordinates for all vertices
 	coordinates.clear();
@@ -543,6 +544,43 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	currBox.Center += t;
 
 	currBox.Extent[selected_axis] *= scale;
+}
+
+void* Cuboid::getState()
+{
+	MinOBB3::Box3 *box = new MinOBB3::Box3(currBox);
+
+	return (void*)box;
+}
+
+void Cuboid::setState( void *state)
+{
+	currBox = *( (MinOBB3::Box3*) state );
+}
+
+
+// opt: 1->1 fold symmetry  2->2 fold symmetry
+std::vector<Plane> Cuboid::getSymmetryPlanes( int opt )
+{
+	std::vector<Plane> result;
+
+	Point center = currBox.Center;
+	if (opt == 1)
+	{
+		Vec3d normal = currBox.Axis[selectedPartId/2];
+		result.push_back(Plane(normal, center));
+	} 
+	else
+	{
+		int id = selectedPartId/2;
+		Vec3d normal1 = currBox.Axis[(id+1)%3];
+		Vec3d normal2 = currBox.Axis[(id+2)%3];
+
+		result.push_back(Plane(normal1, center));
+		result.push_back(Plane(normal2, center));
+	}
+
+	return result;
 }
 
 

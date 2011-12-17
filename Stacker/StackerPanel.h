@@ -39,6 +39,7 @@ public slots:
 	void onControllerButtonClicked();
 	void onImproveButtonClicked();
 	void onHotspotsButtonClicked();
+	void onIterateButtonClicked();
 
 	// Others
 	void setActiveScene( Scene * );

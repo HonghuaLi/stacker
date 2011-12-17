@@ -3,6 +3,7 @@
 #include "QSurfaceMesh.h"
 #include "PrimativeParam.h"
 #include "Joint.h"
+#include "Plane.h"
 
 class Primitive
 {
@@ -29,6 +30,7 @@ public:
 	virtual void moveCurveCenter( uint fid, Vec3d T) {}
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) {}
 	virtual bool excludePoints( std::vector< Vec3d >& pnts ) = 0;
+	virtual void reshapePart( Vec3d q ) {};
 
 	std::vector<Joint> joints;
 
@@ -36,27 +38,35 @@ public:
 	virtual std::vector<double> getCoordinate( Point v ) = 0;
 	virtual Point fromCoordinate(std::vector<double> coords) = 0;
 
+	// Primitive state
+	virtual void* getState() = 0;
+	virtual void setState( void* ) = 0;
+
+	// Primitive geometry
+	virtual std::vector <Vec3d> points() = 0;
+	virtual QSurfaceMesh getGeometry() = 0;
+	virtual double volume() = 0;
+	Vec3d centerPoint();
+
+	// The underlying geometry
+	QSurfaceMesh*		m_mesh;			
+	QSurfaceMesh* getMesh(){ return m_mesh; }
+
+	// Symmetry
+	virtual std::vector<Plane> getSymmetryPlanes(int opt) {return std::vector<Plane>();};
+
 	// Helpful for debugging
 	std::vector<Vec3d> debugPoints;
 	std::vector< std::pair<Vec3d,Vec3d> > debugLines;
 	std::vector< std::vector<Vec3d> > debugPoly;
 	void drawDebug();
 
-	virtual std::vector <Vec3d> points() = 0;
-	virtual QSurfaceMesh getGeometry() = 0;
-	virtual double volume() = 0;
-	Vec3d centerPoint();
-
-	QString id;
+	// Selecting
 	bool isSelected;
 	int selectedPartId;
-
 	virtual Vec3d selectedPartPos() {return Vec3d(0,0,0);}
-	virtual void reshapePart( Vec3d q ) {};
 
-	QSurfaceMesh* getMesh(){ return m_mesh; }
-
-	QSurfaceMesh*		m_mesh;			// The underlying geometry
+	QString id;
 	bool				isHot;			// Is this hot component?
 	bool				isDirty;		// Has the underlying geometry been updated?
 };

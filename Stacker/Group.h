@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <fstream>
 #include <QSet>
 #include <QVector>
 #include <QString>
@@ -8,7 +9,7 @@
 
 class Controller;
 
-enum GroupType{ SYMMETRY, CONCENTRIC, COPLANNAR };
+enum GroupType{ SELFSYMMETRY1, SELFSYMMETRY2, SYMMETRY, CONCENTRIC, COPLANNAR };
 
 class Group{
 public:
@@ -53,6 +54,10 @@ public:
 	// Visualization
 	virtual void draw() = 0;
 	std::vector<Point> debugPoints;
+
+	// Save and load
+	virtual void save(std::ofstream &outF);
+	virtual void load(std::ifstream &inF);
 };
 
 inline uint qHash(Group::Edge key) {     

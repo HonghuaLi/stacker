@@ -2,11 +2,14 @@
 
 #include "ColorMap.h"
 #include "QSegMesh.h"
+#include "Controller.h"
 #include <QColor>
 
+#include <queue>
 #include <functional>
 
 class HiddenViewer;
+
 
 class Offset
 {
@@ -15,14 +18,14 @@ public:
 	{
 	public:
 		uint hotRegionID;
-		uint segmentID;
+		QString segmentID;
 		bool defineHeight;
 		std::vector< Vec3d > hotSamples;
 
 		void print(){
-			std::cout << " hotRegionID="   << hotRegionID 
-					  << " segmentID="	  << segmentID 
-					  << " defineHeight=" << defineHeight << std::endl; 
+			std::cout << "hotRegionID="   << hotRegionID 
+					  << "\tsegmentID="	  << qPrintable(segmentID) 
+					  << "\tdefineHeight=" << defineHeight << std::endl; 
 		}
 	};
 
@@ -49,7 +52,7 @@ public:
 	// Improve stackability
 	void applyHeuristics();
 	void applyHeuristicsOnHotspot( uint hid, int side );
-	Vec3d getHorizontalMove( uint hid, int side );
+	std::vector< Vec3d > getHorizontalMoves( uint hid, int side );
 
 	// Numeric
 	double getValue( std::vector< std::vector < double > >& image, uint x, uint y, uint r );
@@ -101,5 +104,5 @@ public:
 	std::vector < HotSpot >  upperHotSpots;
 	std::vector < HotSpot >  lowerHotSpots;
 	
-
+	std::queue< Controller::ShapeState > candidateShapes;
 };

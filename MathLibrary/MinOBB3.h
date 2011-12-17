@@ -22,17 +22,21 @@ public:
 	class Box3
 	{
 	public:
-		Box3(){Axis.resize(3);}	
-		void normalizeAxis(){ for (int i=0;i<3;i++)	Axis[i].normalize();}
-		void makeRightHanded(){
-			if ( dot( Axis[2], cross(Axis[0], Axis[1]) ) < 0 )
-				Axis[2] *= -1;
-		}
+		// Constructor
+		Box3();
+		Box3( Box3 &box );
+
+		// Regularize
+		void normalizeAxis();
+		void makeRightHanded();
+
+		// Operator
 		bool operator == (Box3& box);
 	
+		// Proximity
 		Vec3d ClosestPoint(const Vec3d& p);
-
 		void ClosestSegment( Box3 other, Vec3d & p, Vec3d & q);
+
 	public:
 		Vector3 Center;
 		std::vector<Vector3> Axis;
