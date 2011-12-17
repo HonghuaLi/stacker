@@ -109,7 +109,8 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-	gradientDescentOptimize();
+	activeOffset->improveStackabilityTo(panel.targetS->value());
+//	gradientDescentOptimize();
 }
 
 void StackerPanel::onHotspotsButtonClicked()

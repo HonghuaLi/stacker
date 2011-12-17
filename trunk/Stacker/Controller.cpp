@@ -391,10 +391,9 @@ void Controller::setShapeState( ShapeState &shapeState )
 	foreach(Primitive * prim, primitives)
 	{
 		prim->setState(shapeState.primitiveState[prim->id]);
+		prim->deformMesh();
 		prim->isHot = shapeState.isFrozen[prim->id];
-	}
-
-	
+	}	
 }
 
 std::set< QString > Controller::getRidOfRedundancy( std::set< QString > Ids )

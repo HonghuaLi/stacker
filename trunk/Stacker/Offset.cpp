@@ -653,12 +653,11 @@ void Offset::applyHeuristics()
 	}
 	Ids = ctrl->getRidOfRedundancy(Ids);
 
-	// Heuristics are applied for each pair of hot spots
-	for (int i = 0; i < hotRegions.size(); i++)
-	{
-//		applyHeuristicsOnHotspot(i, 1);		
-		applyHeuristicsOnHotspot(i, -1);
-	}
+
+	// Heuristics are applied for each pair of hot spots	
+	applyHeuristicsOnHotspot(0, 1);		
+	applyHeuristicsOnHotspot(0, -1);
+
 	
 }
 
@@ -767,5 +766,44 @@ std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
 	saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
 
 	return Ts;
+}
+
+void Offset::improveStackabilityTo( double targetS )
+{
+	Controller *ctrl = activeObject()->controller;
+
+	// Push the current shape as the initial candidate solution
+	candidateSolutions.push(ctrl->getShapeState());
+
+	while(!candidateSolutions.empty())
+	{
+		// Get the first candidate solution
+		Controller::ShapeState currShape = candidateSolutions.front();
+		candidateSolutions.pop();
+		ctrl->setShapeState(currShape);
+
+		// Check if this candidate is a solution
+		computeOffset();
+		if (getStackability() >= targetS)
+		{
+			// Yes. Got one solution.
+			solutions.push_back(currShape);
+			continue;
+		}
+		else
+		{
+			// No. Try to improve the current shape
+			// This iteration might generate several candidate solutions
+			improveStackability();
+		}
+	}
+}
+
+void Offset::improveStackability()
+{
+	// improve the stackability of current shape in three steps
+
+	// Step 1: detect hot spots
+
 }
 

@@ -14,4 +14,5 @@ public:
 	virtual void load(std::ifstream &inF);
 
 	int selectedPartId;
+	Plane symmetryPlane;
 };

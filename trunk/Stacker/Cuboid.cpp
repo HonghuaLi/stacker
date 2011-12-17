@@ -577,6 +577,7 @@ std::vector<Plane> Cuboid::getSymmetryPlanes( int opt )
 	std::vector<Plane> result;
 
 	Point center = currBox.Center;
+
 	if (opt == 1)
 	{
 		Vec3d normal = currBox.Axis[selectedPartId/2];
@@ -593,6 +594,28 @@ std::vector<Plane> Cuboid::getSymmetryPlanes( int opt )
 	}
 
 	return result;
+}
+
+void Cuboid::setSelectedPartId( Vec3d normal )
+{
+	double bestDot = 0;
+	int id = -1;
+	for (int i=0;i<3;i++)
+	{
+		double newDot = dot(normal, currBox.Axis[i]);
+
+		if ( abs(newDot) > abs(bestDot))
+		{
+			id = i;
+			bestDot = newDot;
+		}
+	}
+
+	if (bestDot > 0)
+		selectedPartId = id*2;
+	else
+		selectedPartId = id*2 + 1;
+
 }
 
 

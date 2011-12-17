@@ -7,23 +7,28 @@ void SelfSymmetryTwo::process( QVector< QString > segments )
 
 	Primitive * prim = getPrimitive(nodes[0]); 
 	selectedPartId = prim->selectedPartId;
+
+	symmetryPlanes = prim->getSymmetryPlanes(2);
 }
 
 void SelfSymmetryTwo::draw()
 {
-	Primitive * prim = getPrimitive(nodes[0]); 
-	prim->selectedPartId = selectedPartId;
-
-	std::vector<Plane> planes = prim->getSymmetryPlanes(2);
-	planes[0].draw();
-	planes[1].draw();
+	symmetryPlanes[0].draw();
+	symmetryPlanes[1].draw();
 }
 
 void SelfSymmetryTwo::save( std::ofstream &outF )
 {
 	Group::save(outF);
 
-	outF << selectedPartId << "\t";
+	// output the axis
+	Primitive * prim = getPrimitive(nodes[0]); 
+	prim->selectedPartId = selectedPartId;
+	Vec3d fCenter = prim->selectedPartPos();
+	Vec3d ceter = prim->centerPoint();
+	Vec3d normal = fCenter - ceter;
+	normal.normalize();
+	outF << normal << "\t";
 }
 
 void SelfSymmetryTwo::load( std::ifstream &inF )
@@ -35,11 +40,10 @@ void SelfSymmetryTwo::load( std::ifstream &inF )
 	inF >> str;
 	segments.push_back(str.c_str());
 
-	int id;
-	inF >> id;
-	id = RANGED(0, id, 5);
+	Vec3d normal;
+	inF >> normal;
 	Primitive * prim = getPrimitive(segments[0]); 
-	prim->selectedPartId = id;
+	prim->setSelectedPartId(normal);
 
 	process(segments);
 }
