@@ -55,6 +55,8 @@ public:
 	virtual double volume();
 	virtual std::vector <Vec3d> points();
 	virtual QSurfaceMesh getGeometry();
+	virtual std::vector <Vec3d> majorAxis();
+	virtual std::vector < std::vector <Vec3d> > getCurves();
 
 	// Symmetry
 	virtual std::vector<Plane> getSymmetryPlanes(int opt);

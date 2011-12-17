@@ -22,6 +22,8 @@ public:
 	virtual double volume();
 	virtual std::vector <Vec3d> points();
 	virtual QSurfaceMesh getGeometry();
+	virtual std::vector <Vec3d> majorAxis();
+	virtual std::vector < std::vector <Vec3d> > getCurves();
 
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect );

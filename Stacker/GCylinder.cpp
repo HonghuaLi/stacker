@@ -269,6 +269,18 @@ bool GCylinder::excludePoints( std::vector< Vec3d >& pnts )
 	return true;
 }
 
+std::vector <Vec3d> GCylinder::majorAxis()
+{
+	// ToDo:
+	return std::vector <Vec3d>();
+}
+
+std::vector < std::vector <Vec3d> > GCylinder::getCurves()
+{
+	// ToDo:
+	return std::vector < std::vector <Vec3d> >();
+}
+
 void* GCylinder::getState()
 {
 	return NULL;

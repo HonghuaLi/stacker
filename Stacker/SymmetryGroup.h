@@ -13,4 +13,10 @@ public:
 	void draw();
 
 	std::vector<Plane> symmetryPlanes;
+	std::vector<Point> allCenters;
+
+	// Symmetry axis for grater than 4?
+	Vec3d symmetryAxis;
+	Vec3d symmetryAxisPos;
+	bool hasSymmetryAxis;
 };

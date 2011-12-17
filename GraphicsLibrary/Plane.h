@@ -17,7 +17,6 @@ public:
 	// should be private
 	Vec3d n;
 	double d;
-
 	Vec3d center; // for drawing
 
 	Plane(){d = 0;}
@@ -34,7 +33,7 @@ public:
 	{  
 		if (this != &from) 
 		{
-			n = from.n.normalized();
+			n = from.n;
 			d = from.d;
 
 			center = from.center;
@@ -43,12 +42,17 @@ public:
 		return *this;
 	}
 	
-	Plane(const Vec3d& fromNormal, const Vec3d& point = Vec3d())
+	Plane(const Vec3d& fromNormal, const Vec3d& point = Vec3d(0,0,0))
 	{
 		n = fromNormal.normalized();
 		d = -dot(n, point);
+		center = point;
 
-		center = projectionOf(point);
+		if(point.x() == 0 && point.x() == point.y() && point.y() == point.z())
+		{
+			d = 0;
+			center = Vec3d(0,0,0);
+		}
 	}
 
 	Plane(const Vec3d &pta, const Vec3d &ptb, const Vec3d &ptc)

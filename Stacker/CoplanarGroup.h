@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Group.h"
+#include "Plane.h"
 
 class CoplanarGroup : public Group{
 
@@ -11,4 +12,5 @@ public:
 
 	void draw();
 
+	Plane groupAxis[3];
 };

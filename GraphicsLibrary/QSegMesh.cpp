@@ -411,9 +411,10 @@ void QSegMesh::setObjectName( const QString &name )
 {
 	QObject::setObjectName(name);
 
-	// For single objects
-	if(!segmentName.size())
-		segmentName.push_back(name);
+	// For single objects, broken 'seg' files
+	int i = 0;
+	while(segmentName.size() < segment.size())
+		segmentName.push_back(name + QString("-%1").arg(i++));
 
 	for (int i=0;i<segment.size();i++)
 	{

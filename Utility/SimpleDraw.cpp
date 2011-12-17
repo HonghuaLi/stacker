@@ -686,6 +686,19 @@ void SimpleDraw::IdentifyPoints( StdVector<Vec3d > & points, float r /*= 1.0*/, 
 	glEnable(GL_LIGHTING);
 }
 
+void SimpleDraw::IdentifyCurve( StdVector<Vec3d> & points, float r, float g, float b, float a, float lineWidth )
+{
+	glDisable(GL_LIGHTING);
+	glColor4f(r, g, b, a);
+
+	glLineWidth(lineWidth);
+
+	glBegin(GL_LINE_STRIP);
+	foreach(Vec3d p, points)
+		glVertex3dv(p);
+	glEnd();
+}
+
 void SimpleDraw::IdentifyConnectedPoints( StdVector<Vec3d> & points, float r /*= 0.4f*/, float g /*= 1.0*/, float b /*= 0.2f*/ )
 {
 	glDisable(GL_LIGHTING);
