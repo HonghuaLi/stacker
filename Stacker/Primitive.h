@@ -67,6 +67,7 @@ public:
 	bool isSelected;
 	int selectedPartId;
 	virtual Vec3d selectedPartPos() {return Vec3d(0,0,0);}
+	virtual void setSelectedPartId( Vec3d normal ){}
 
 	QString id;
 	bool				isHot;			// Is this hot component?

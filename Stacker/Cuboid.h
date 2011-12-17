@@ -60,6 +60,7 @@ public:
 
 	// Symmetry
 	virtual std::vector<Plane> getSymmetryPlanes(int opt);
+	virtual void setSelectedPartId( Vec3d normal );
 
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );

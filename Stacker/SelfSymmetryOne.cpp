@@ -6,22 +6,26 @@ void SelfSymmetryOne::process( QVector< QString > segments )
 	addNodes(segments);
 	Primitive * prim = getPrimitive(nodes[0]); 
 	selectedPartId = prim->selectedPartId;
+
+	std::vector<Plane> planes = prim->getSymmetryPlanes(1);
+	symmetryPlane = planes[0];
 }
 
 void SelfSymmetryOne::draw()
 {
-	Primitive * prim = getPrimitive(nodes[0]); 
-	prim->selectedPartId = selectedPartId;
-
-	std::vector<Plane> planes = prim->getSymmetryPlanes(1);
-	planes[0].draw();
+	symmetryPlane.draw();
 }
 
 void SelfSymmetryOne::save( std::ofstream &outF )
 {
 	Group::save(outF);
 
-	outF << selectedPartId << "\t";
+	// output the axis
+	Primitive * prim = getPrimitive(nodes[0]); 
+	prim->selectedPartId = selectedPartId;
+	Vec3d normal = prim->selectedPartPos() - prim->centerPoint();
+	normal.normalize();
+	outF << normal << "\t";
 }
 
 void SelfSymmetryOne::load( std::ifstream &inF )
@@ -33,10 +37,10 @@ void SelfSymmetryOne::load( std::ifstream &inF )
 	inF >> str;
 	segments.push_back(str.c_str());
 
-	int id;
-	inF >> id;
+	Vec3d normal;
+	inF >> normal;
 	Primitive * prim = getPrimitive(segments[0]); 
-	prim->selectedPartId = id;
+	prim->setSelectedPartId(normal);
 
 	process(segments);
 }

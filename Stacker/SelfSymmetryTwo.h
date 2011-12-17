@@ -12,5 +12,7 @@ public:
 	virtual void draw();
 	virtual void save(std::ofstream &outF);
 	virtual void load(std::ifstream &inF);
+
 	int selectedPartId;
+	std::vector<Plane> symmetryPlanes;
 };

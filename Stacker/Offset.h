@@ -50,6 +50,8 @@ public:
 	bool defineHeight( int direction, std::vector< Vec2i >& region);
 
 	// Improve stackability
+	void improveStackabilityTo(double targetS);
+	void improveStackability();
 	void applyHeuristics();
 	void applyHeuristicsOnHotspot( uint hid, int side );
 	std::vector< Vec3d > getHorizontalMoves( uint hid, int side );
@@ -103,6 +105,7 @@ public:
 	std::vector< std::vector<Vec2i> > hotRegions;
 	std::vector < HotSpot >  upperHotSpots;
 	std::vector < HotSpot >  lowerHotSpots;
-	
-	std::queue< Controller::ShapeState > candidateShapes;
+
+	std::queue< Controller::ShapeState > candidateSolutions;
+	std::vector< Controller::ShapeState > solutions;
 };

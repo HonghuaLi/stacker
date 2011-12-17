@@ -104,10 +104,22 @@ void GroupPanel::removeSelectedItem()
 
 void GroupPanel::saveGroups()
 {
+	Controller * ctrl = activeScene->activeObject()->controller;
+	if (ctrl == NULL) 
+	{
+		std::cout << "There is no controller.\n";
+		return;
+	}
+
+	if (ctrl->groups.empty())
+	{
+		std::cout << "There are no groups.\n";
+		return;
+	}
+
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", "", "Group File (*.grp)"); 
 	std::ofstream outF(qPrintable(fileName), std::ios::out);
 
-	Controller * ctrl = activeScene->activeObject()->controller;
 	foreach(Group* group, ctrl->groups)
 	{
 		outF << qPrintable(groupTypes[group->type]) << '\t'; 
@@ -116,11 +128,17 @@ void GroupPanel::saveGroups()
 	}
 
 	outF.close();
+	std::cout << "Groups have been saved.\n";
 }
 
 void GroupPanel::loadGroups()
 {
 	Controller * ctrl = activeScene->activeObject()->controller;
+	if (ctrl == NULL) 
+	{
+		std::cout << "There is no controller.\n";
+		return;
+	}
 
 	QString fileName = QFileDialog::getOpenFileName(0, "Import Groups", "", "Group File (*.grp)"); 
 	std::ifstream inF(qPrintable(fileName), std::ios::in);
@@ -163,7 +181,7 @@ void GroupPanel::loadGroups()
 		}
 	}
 
-
+	std::cout << "Groups have been loaded.\n";
 	updateWidget();
 }
 
