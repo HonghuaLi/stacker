@@ -32,6 +32,10 @@ public:
 
 	qglviewer::ManipulatedFrame *mf1, *mf2;
 
+	// Primitive state
+	virtual void* getState();
+	virtual void setState( void* );
+
 	// Coordinate system
 	virtual std::vector<double> getCoordinate(Point v);
 	virtual Point fromCoordinate(std::vector<double> coords);

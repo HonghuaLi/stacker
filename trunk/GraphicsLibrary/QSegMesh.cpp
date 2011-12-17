@@ -50,6 +50,11 @@ QSegMesh& QSegMesh::operator=( const QSegMesh& rhs )
 
 void QSegMesh::checkObjSegmentation ( QString fileName, QString segFilename)
 {
+	// Check if there is .seg file already
+	std::fstream inF(qPrintable(segFilename), std::ios::in);
+	if (inF) return;
+
+
 	QFile file(fileName);
 	file.open(QIODevice::ReadOnly | QIODevice::Text);
 	QTextStream in(&file);
@@ -88,6 +93,13 @@ void QSegMesh::checkObjSegmentation ( QString fileName, QString segFilename)
 	QTextStream out(&segFile);
 
 	out << (int)faceGroups.size() << "\n";
+	out << "labels ";
+	for (int i=0;i<segmentName.size(); i++)
+	{
+		out<<segmentName[i]<<" ";
+	}
+	out << "\n";
+
 
 	int offset = 0;
 
@@ -124,6 +136,22 @@ void QSegMesh::read( QString fileName )
 	{
 		int nbSeg;
 		inF >> nbSeg;
+
+		segmentName.clear();
+		std::string str;
+		inF >> str;
+		if (str == "labels")
+		{
+			for (int i=0;i<nbSeg;i++)
+			{
+				inF >> str;
+				segmentName.push_back(str.c_str());
+			}
+		}
+		else
+		{// Fall back
+			inF.seekg(-(int)str.size(), std::ios::cur);
+		}
 
 		std::vector<int> faceSeg(mesh.n_faces());
 		int fid, sid;

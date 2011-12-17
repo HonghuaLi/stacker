@@ -12,15 +12,19 @@ public:
 	Ui::GroupManagmentWidget groupWidget;
 	Scene * activeScene;
 
+	// Types
 	QVector<QString> groupTypes;
 
 	// Utility function
 	QString getItemId(QTreeWidgetItem* item);
 
+
 public slots:
 	void setActiveScene( Scene * newScene );
 	void updateWidget();
 	void removeSelectedItem();
+	void saveGroups();
+	void loadGroups();
 
 signals:
 

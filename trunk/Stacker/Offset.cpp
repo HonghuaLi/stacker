@@ -154,8 +154,8 @@ void Offset::hotspotsFromDirection( int direction )
 	uint x, y;
 	for (int i=0;i<hotRegions.size();i++)	{
 
-		std::map< uint,  std::vector< Vec2i > > subHotRegions;
-		std::map< uint,  std::vector< Vec3d > > subHotSamples;
+		std::map< QString,  std::vector< Vec2i > > subHotRegions;
+		std::map< QString,  std::vector< Vec3d > > subHotSamples;
 
 		for (int j=0;j<hotRegions[i].size();j++){
 
@@ -187,27 +187,28 @@ void Offset::hotspotsFromDirection( int direction )
 			activeObject()->global2local_fid(fid, sid, fid_local);
 			
 			// Store informations
+			QString segmentID = activeObject()->getSegment(sid)->objectName();
 			Vec3d hotPoint(hotP.x, hotP.y, hotP.z);
 			hotPoints[sid].push_back(hotPoint);
-			subHotRegions[sid].push_back(hotPixel);
-			subHotSamples[sid].push_back(hotPoint);
+			subHotRegions[segmentID].push_back(hotPixel);
+			subHotSamples[segmentID].push_back(hotPoint);
 		}
 
 		// Split the hot region if necessary
-		std::map< uint,  std::vector< Vec2i > >::iterator itr;
+		std::map< QString,  std::vector< Vec2i > >::iterator itr;
 		for ( itr = subHotRegions.begin(); itr != subHotRegions.end(); itr++)
 		{
 			if (itr->second.size() < 10)
 				continue; // a bad way to get rid of noise
 
-			uint sid = itr->first;
+			QString segmentID = itr->first;
 			newHotRegions.push_back(itr->second);
 
 			HotSpot HS;
 			HS.hotRegionID = hotSpots.size();
-			HS.segmentID = sid;
+			HS.segmentID = segmentID;
 			HS.defineHeight = defineHeight( direction, itr->second );
-			HS.hotSamples = subHotSamples[sid];
+			HS.hotSamples = subHotSamples[segmentID];
 			hotSpots.push_back(HS);	
 		}
 
@@ -502,16 +503,7 @@ std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < doub
 	return values;
 }
 
-void Offset::applyHeuristics()
-{
-	// Heuristics are applied for each pair of hot spots
-	for (int i = 0; i < hotRegions.size(); i++)
-	{
-//		applyHeuristicsOnHotspot(i, 1);		
-		applyHeuristicsOnHotspot(i, -1);
-	}
-	
-}
+
 
 std::vector< Vec2i > Offset::deltaVectorsToKRing( int deltaX, int deltaY, int K )
 {
@@ -649,6 +641,27 @@ void Offset::visualizeHotRegions( QString filename )
 	saveAsImage(debugImg, 1.0, filename);
 }
 
+void Offset::applyHeuristics()
+{
+	// Get rid of redundancies
+	Controller *ctrl = activeObject()->controller;
+	std::set<QString> Ids;
+	for (int i = 0; i < hotRegions.size(); i++)
+	{
+		Ids.insert(upperHotSpots[i].segmentID);
+		Ids.insert(lowerHotSpots[i].segmentID);
+	}
+	Ids = ctrl->getRidOfRedundancy(Ids);
+
+	// Heuristics are applied for each pair of hot spots
+	for (int i = 0; i < hotRegions.size(); i++)
+	{
+//		applyHeuristicsOnHotspot(i, 1);		
+		applyHeuristicsOnHotspot(i, -1);
+	}
+	
+}
+
 void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 {
 	Controller *ctrl = activeObject()->controller;
@@ -665,11 +678,11 @@ void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 	if (HS.defineHeight)
 	{
 		//
-		Vec3d T = getHorizontalMove(hid, side);
-		if (T[0] != BIG_NUMBER)
-		{
-			prim->moveCurveCenter(cid, T * 1.5);
-		}
+		std::vector< Vec3d > Ts = getHorizontalMoves(hid, side);
+		//if (T[0] != BIG_NUMBER)
+		//{
+		//	prim->moveCurveCenter(cid, T * 1.5);
+		//}
 	}
 	else
 	{
@@ -679,7 +692,7 @@ void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 }
 
 
-Vec3d Offset::getHorizontalMove( uint hid, int side )
+std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
 {
 	// The hot region	
 	std::vector< Vec2i > &hotRegion = hotRegions[hid];
@@ -753,26 +766,6 @@ Vec3d Offset::getHorizontalMove( uint hid, int side )
 
 	saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
 
-	// Find the best/shortest T
-	Vec3d result(BIG_NUMBER, BIG_NUMBER, BIG_NUMBER);
-
-	if (!Ts.empty())
-	{
-		int best_id = -1;
-		double shortest_dis = DOUBLE_INFINITY;
-		for (int i = 0; i < Ts.size(); i++)
-		{
-			double dis = Ts[i].norm();
-			if ( dis < shortest_dis )	
-			{
-				best_id = i;
-				shortest_dis = dis;
-			}
-		}
-
-		result = Ts[best_id];
-	}
-	
-	return result;
+	return Ts;
 }
 

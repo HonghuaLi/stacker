@@ -1,12 +1,25 @@
 #include "GroupPanel.h"
+#include <fstream>
+#include <QFileDialog>
+
+#include "SelfSymmetryOne.h"
+#include "SelfSymmetryTwo.h"
+#include "SymmetryGroup.h"
+#include "ConcentricGroup.h"
+#include "CoplanarGroup.h"
+
 
 GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 {
 	groupWidget.setupUi(this);
 
 	connect(groupWidget.removeButton, SIGNAL(clicked()), SLOT(removeSelectedItem()));
+	connect(groupWidget.saveGroupsButton, SIGNAL(clicked()), SLOT(saveGroups()));
+	connect(groupWidget.loadGroupsButton, SIGNAL(clicked()), SLOT(loadGroups()));
 
 	// Strings to show in tree, ordered as in group type enum
+	groupTypes.push_back("SELFSYMMETRY1");
+	groupTypes.push_back("SELFSYMMETRY2");
 	groupTypes.push_back("SYMMETRY");
 	groupTypes.push_back("CONCENTRIC");
 	groupTypes.push_back("COPLANNAR");
@@ -27,10 +40,8 @@ void GroupPanel::updateWidget()
 
 	Controller * ctrl = activeScene->activeObject()->controller;
 
-	for(std::map<QString, Group*>::iterator it = ctrl->groups.begin(); it != ctrl->groups.end(); it++)
+	foreach(Group* group, ctrl->groups)
 	{
-		Group * group = it->second;
-
 		QTreeWidgetItem *groupItem = new QTreeWidgetItem(groupWidget.groupTree);
 
 		groupItem->setText(0, QString("g%1:%2").arg(groupTypes[group->type]).arg(group->id));
@@ -65,7 +76,7 @@ void GroupPanel::removeSelectedItem()
 		// For groups
 		if(itemType.startsWith("g"))
 		{
-			ctrl->groups.erase( itemId );
+			ctrl->groups.erase( ctrl->groups.find(itemId) );
 		}
 		
 		// For segments
@@ -79,14 +90,80 @@ void GroupPanel::removeSelectedItem()
 	// Clean-up (shouldn't be this class's responsibility?)
 	std::vector<QString> emptyGroups;
 	
-	for(std::map<QString, Group*>::iterator it = ctrl->groups.begin(); it != ctrl->groups.end(); it++){
-		Group * group = it->second;
+	foreach(Group* group, ctrl->groups)
+	{
 		if(!group->nodes.size())
-			emptyGroups.push_back(it->first);
+			emptyGroups.push_back(group->id);
 	}
 
 	foreach(QString group, emptyGroups)
-		ctrl->groups.erase(group);
+		ctrl->groups.erase(ctrl->groups.find(group));
 
 	updateWidget();
 }
+
+void GroupPanel::saveGroups()
+{
+	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", "", "Group File (*.grp)"); 
+	std::ofstream outF(qPrintable(fileName), std::ios::out);
+
+	Controller * ctrl = activeScene->activeObject()->controller;
+	foreach(Group* group, ctrl->groups)
+	{
+		outF << qPrintable(groupTypes[group->type]) << '\t'; 
+		group->save(outF);
+		outF << '\n';
+	}
+
+	outF.close();
+}
+
+void GroupPanel::loadGroups()
+{
+	Controller * ctrl = activeScene->activeObject()->controller;
+
+	QString fileName = QFileDialog::getOpenFileName(0, "Import Groups", "", "Group File (*.grp)"); 
+	std::ifstream inF(qPrintable(fileName), std::ios::in);
+
+	if (!inF) return;
+	
+	while (inF)
+	{
+		std::string str;
+		inF >> str;
+		int type = groupTypes.indexOf(str.c_str());
+		if (type == -1) break;
+
+		Group* newGroup = NULL;
+
+		switch (type)
+		{
+		case SELFSYMMETRY1:
+			newGroup = new SelfSymmetryOne(ctrl, SELFSYMMETRY1);
+			break;
+		case SELFSYMMETRY2:
+			newGroup = new SelfSymmetryTwo(ctrl, SELFSYMMETRY2);
+			break;
+		case SYMMETRY:
+			newGroup = new SymmetryGroup(ctrl, SYMMETRY);
+			break;
+		case CONCENTRIC:
+			newGroup = new ConcentricGroup(ctrl, CONCENTRIC);
+			break;
+		case COPLANNAR:
+			newGroup = new CoplanarGroup(ctrl, COPLANNAR);
+			break;
+		}
+
+
+		if(newGroup)
+		{
+			newGroup->load(inF);
+			ctrl->groups[newGroup->id] = newGroup;
+		}
+	}
+
+
+	updateWidget();
+}
+

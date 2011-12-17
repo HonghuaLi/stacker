@@ -268,3 +268,13 @@ bool GCylinder::excludePoints( std::vector< Vec3d >& pnts )
 	// Shrink GC along its skeleton
 	return true;
 }
+
+void* GCylinder::getState()
+{
+	return NULL;
+}
+
+void GCylinder::setState( void* toState)
+{
+
+}

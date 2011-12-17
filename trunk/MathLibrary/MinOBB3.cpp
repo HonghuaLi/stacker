@@ -331,6 +331,29 @@ void MinOBB3::Box3::ClosestSegment( Box3 other, Vec3d & p, Vec3d & q)
 	p = ClosestPoint(q);
 }
 
+MinOBB3::Box3::Box3( Box3 &box )
+{
+	*this = box;
+}
+
+MinOBB3::Box3::Box3()
+{
+	Axis.resize(3);
+}
+
+void MinOBB3::Box3::normalizeAxis()
+{
+	for (int i=0;i<3;i++)	
+		Axis[i].normalize();
+}
+
+void MinOBB3::Box3::makeRightHanded()
+{
+	if ( dot( Axis[2], cross(Axis[0], Axis[1]) ) < 0 )
+		Axis[2] *= -1;
+}
+
+
 
 MinOBB3::EdgeKey::EdgeKey (int v0, int v1)
 {

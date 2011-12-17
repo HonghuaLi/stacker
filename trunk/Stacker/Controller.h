@@ -14,6 +14,12 @@ public:
 	~Controller();
 
 public:
+	// SET and GET
+	Primitive * getPrimitive( QString id );
+	Primitive * getPrimitive( uint id );
+	Primitive * getSelectedPrimitive();
+	std::vector<Primitive*> getPrimitives();
+
 	// Fitting
 	void fitPrimitives();
 	void fitOBBs();	
@@ -30,17 +36,13 @@ public:
 	void reshapePrimitive(Vec3d q);
 
 	// Grouping
-	std::map<QString, Group*> groups;
+	QMap<QString, Group*> groups;
+	std::set< QString > getRidOfRedundancy( std::set< QString > Ids );
 
 	// Deformation
 	void deformShape( PrimitiveParamMap& primParams, bool isPermanent = false );
 	void recoverShape();
 
-	// SET and GET
-	Primitive * getPrimitive( QString id );
-	Primitive * getPrimitive( uint id );
-	Primitive * getSelectedPrimitive();
-	std::vector<Primitive*> getPrimitives();
 
 	uint numPrimitives();
 	int numHotPrimitives();
@@ -48,6 +50,15 @@ public:
 	// OpenGL stuff
 	void draw();
 	void drawNames(bool isDrawParts = false);
+
+	// Shape state
+	struct ShapeState{
+		QMap< QString, void* > primitiveState;
+		QMap< QString, bool > isFrozen;
+	};
+	ShapeState getShapeState();
+	void setShapeState( ShapeState &shapeState );
+
 
 	// Debug items
 	std::vector<Point> debugPoints;

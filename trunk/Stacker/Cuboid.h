@@ -22,17 +22,43 @@ public:
 	Cuboid( QSurfaceMesh* segment, QString newId );
 
 public:
+	// Fit primitive to the underlying QSurfaceMesh
 	virtual void fit();
+
+	// Deform the underlying geometry according to the \pre_state and current state
 	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
 	virtual void deformMesh();
+
+	// Visualize the primitive and potential actions
 	virtual void draw();
 	virtual	void drawNames(int name, bool isDrawParts = false);
 
+	// Hot curves
+	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
+	virtual void translateCurve( uint cid, Vec3d T, uint sid_respected = -1 );
+
+	// Reshaping
+	virtual void translate( Vector3 &T );
+	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
+	virtual void moveCurveCenter( uint fid, Vec3d T);
+	virtual bool excludePoints( std::vector< Vec3d >& pnts );
+
+	// Primitive coordinate system
+	virtual std::vector<double> getCoordinate( Point v );
+	virtual Point fromCoordinate(std::vector<double> coords);
+
+	// Primitive state
+	virtual void* getState();
+	virtual void setState( void* state );
+
+	// Primitive geometry
 	virtual double volume();
 	virtual std::vector <Vec3d> points();
 	virtual QSurfaceMesh getGeometry();
 
-	virtual void translate( Vector3 &T );
+	// Symmetry
+	virtual std::vector<Plane> getSymmetryPlanes(int opt);
+
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
 	void recoverMesh();
@@ -40,15 +66,7 @@ public:
 
 	virtual Vec3d selectedPartPos();
 
-	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
-	virtual void translateCurve( uint cid, Vec3d T, uint sid_respected = -1 );
-	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
-	virtual void moveCurveCenter( uint fid, Vec3d T);
-	virtual bool excludePoints( std::vector< Vec3d >& pnts );
 
-	// Coordinate system
-	virtual std::vector<double> getCoordinate( Point v );
-	virtual Point fromCoordinate(std::vector<double> coords);
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>190</width>
-    <height>181</height>
+    <width>222</width>
+    <height>192</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,6 +34,20 @@
      <property name="icon">
       <iconset resource="../Workspace.qrc">
        <normaloff>:/Workspace/Resources/icons/remove.png</normaloff>:/Workspace/Resources/icons/remove.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QPushButton" name="saveGroupsButton">
+     <property name="text">
+      <string>Save</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QPushButton" name="loadGroupsButton">
+     <property name="text">
+      <string>Load</string>
      </property>
     </widget>
    </item>

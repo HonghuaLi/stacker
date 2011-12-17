@@ -4,6 +4,7 @@ void SymmetryGroup::process(QVector<QString> segments)
 {
 	addNodes(segments);
 
+
 	foreach(int i, nodes.keys())
 	{
 		Primitive * a = getPrimitive(nodes[i]);

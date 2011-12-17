@@ -15,6 +15,8 @@ GeneralizedCylinder * gc;
 #include "QDeformController.h"
 QDeformController * defCtrl;
 
+#include "SelfSymmetryOne.h"
+#include "SelfSymmetryTwo.h"
 #include "SymmetryGroup.h"
 #include "ConcentricGroup.h"
 #include "CoplanarGroup.h"
@@ -139,11 +141,9 @@ void Scene::draw()
 	{
 		Controller * ctrl = activeObject()->controller;
 
-		for(std::map<QString, Group*>::iterator it = ctrl->groups.begin(); it != ctrl->groups.end(); it++)
+		foreach(Group* g, ctrl->groups)
 		{
-			Group * group = it->second;
-			group->draw();
-
+			g->draw();
 		}
 	}
 }
@@ -223,6 +223,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 	{
 		switch (selectMode){
 			case CONTROLLER:
+			case CONTROLLER_ELEMENT:
 				if(selection.isEmpty()){
 					print("Please select some controllers.");
 					break;
@@ -235,15 +236,20 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				QAction* symmGrp = menu.addAction("Create Symmetry group..");
 				QAction* concentricGrp = menu.addAction("Create Concentric group..");
 				QAction* coplanGrp = menu.addAction("Create Coplanar group..");
+				QAction* selfSymm1 = menu.addAction("Create 1-fold Self Symmetry..");
+				QAction* selfSymm2 = menu.addAction("Create 2-fold Self Symmetry..");
 
 				QAction* action = menu.exec(e->globalPos()); // show menu
 
 				Group* newGroup = NULL;
 
+				int opt = 0;
 				if(action == symmGrp)		newGroup = new SymmetryGroup(ctrl, SYMMETRY);
 				if(action == concentricGrp) newGroup = new ConcentricGroup(ctrl, CONCENTRIC);
 				if(action == coplanGrp)		newGroup = new CoplanarGroup(ctrl, COPLANNAR);
-				
+				if(action == selfSymm1)		newGroup = new SelfSymmetryOne(ctrl, SELFSYMMETRY1);
+				if(action == selfSymm2)		newGroup = new SelfSymmetryTwo(ctrl, SELFSYMMETRY2);
+
 				if(newGroup)
 				{
 					newGroup->process( ctrl->stringIds(selection) );

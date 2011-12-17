@@ -372,3 +372,65 @@ std::vector<Primitive*> Controller::getPrimitives()
 
 	return result;
 }
+
+Controller::ShapeState Controller::getShapeState()
+{
+	ShapeState state;
+
+	foreach(Primitive * prim, primitives)
+	{
+		state.primitiveState[prim->id] = prim->getState();
+		state.isFrozen[prim->id] = prim->isHot;
+	}
+
+	return state;
+}
+
+void Controller::setShapeState( ShapeState &shapeState )
+{
+	foreach(Primitive * prim, primitives)
+	{
+		prim->setState(shapeState.primitiveState[prim->id]);
+		prim->isHot = shapeState.isFrozen[prim->id];
+	}
+
+	
+}
+
+std::set< QString > Controller::getRidOfRedundancy( std::set< QString > Ids )
+{
+	std::set<QString> result;
+
+	// One representative per group
+	foreach(Group * group, groups)
+	{
+		// Check if *group* has nodes in *Ids*
+		bool has = false;
+		QString rep;
+		foreach(QString node, group->nodes)
+		{
+			if (std::find(Ids.begin(), Ids.end(), node) != Ids.end())
+			{
+				has = true;
+				rep = node;
+				break;
+			}
+		}
+
+		// The representative
+		result.insert(rep);
+
+		// Remove redundant nodes in Ids
+		std::set<QString>::iterator itr;
+		foreach(QString node, group->nodes)
+		{
+			itr = Ids.find(node);
+			if (itr != Ids.end())
+				Ids.erase(itr);
+		}
+	}
+
+	result.insert(Ids.begin(), Ids.end());
+
+	return result;
+}
