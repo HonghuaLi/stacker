@@ -21,6 +21,8 @@ public:
 	static void IdentifyLine(const Vec3d& p1, const Vec3d& p2, float r, float g, float b, bool showPoints = true, float lineWidth = 3.0f);
 	//static void IdentifyLines(StdVector<Line> & lines, float lineWidth = 1.0, float r = 1.0, float g = 0.6f, float b = 0);
 
+	static void IdentifyCurve( StdVector<Vec3d> & points, float r, float g, float b, float a, float lineWidth);
+
 	// Primitives
 	static void DrawCube(const Vec3d& center, float length = 1.0);
 	static void DrawSphere(const Vec3d& center, float radius = 1.0);
@@ -53,5 +55,4 @@ public:
 	static void drawCornerAxis(const double * cameraOrientation);
 
 	static std::vector<Vec4d> RandomColors(int count);
-
 };

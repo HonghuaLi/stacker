@@ -377,6 +377,8 @@
     <ClCompile Include="Stacker\Offset.cpp" />
     <ClCompile Include="Stacker\Primitive.cpp" />
     <ClCompile Include="Stacker\QDeformController.cpp" />
+    <ClCompile Include="Stacker\SelfSymmetryOne.cpp" />
+    <ClCompile Include="Stacker\SelfSymmetryTwo.cpp" />
     <ClCompile Include="Stacker\StackerPreview.cpp" />
     <ClCompile Include="Stacker\SymmetryGroup.cpp" />
     <ClCompile Include="Utility\ColorMap.cpp" />
@@ -627,6 +629,8 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_OPENGL_LIB  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\Spline" "-I.\GraphicsLibrary" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Utility" "-I.\MathLibrary" "-I.\Stacker" "-I.\Wires" "-I.\Deformer" "-I.\SkeletonExtract" "-I.\SkeletonExtract\Solver\UmfPack_include\AMD" "-I.\SkeletonExtract\Solver\UmfPack_include\UFconfig" "-I.\SkeletonExtract\Solver\UmfPack_include\UMFPACK" "-I.\SkeletonExtract\Solver\SuperLU" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I." "Stacker\QDeformController.h" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
+    <ClInclude Include="Stacker\SelfSymmetryOne.h" />
+    <ClInclude Include="Stacker\SelfSymmetryTwo.h" />
     <ClInclude Include="Stacker\SymmetryGroup.h" />
     <ClInclude Include="Utility\ColorMap.h" />
     <ClInclude Include="Utility\Graph.h" />

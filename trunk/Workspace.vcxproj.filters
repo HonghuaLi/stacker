@@ -598,9 +598,6 @@
     <ClInclude Include="GeneratedFiles\ui_GroupWidget.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="MathLibrary\ShapeDistribution.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\SelfSymmetryOne.h">
       <Filter>Groups\Header</Filter>
     </ClInclude>

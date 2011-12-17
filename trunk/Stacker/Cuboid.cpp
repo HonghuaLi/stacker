@@ -546,11 +546,23 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	currBox.Extent[selected_axis] *= scale;
 }
 
+std::vector <Vec3d> Cuboid::majorAxis()
+{
+	std::vector<Vec3d> result;
+	result.push_back(originalBox.Axis[0]);
+	result.push_back(originalBox.Axis[1]);
+	result.push_back(originalBox.Axis[2]);
+	return result;
+}
 void* Cuboid::getState()
 {
 	MinOBB3::Box3 *box = new MinOBB3::Box3(currBox);
-
 	return (void*)box;
+}
+
+std::vector < std::vector <Vec3d> > Cuboid::getCurves()
+{
+	return getBoxFaces(currBox);
 }
 
 void Cuboid::setState( void *state)

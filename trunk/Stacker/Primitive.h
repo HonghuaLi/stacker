@@ -47,6 +47,8 @@ public:
 	virtual QSurfaceMesh getGeometry() = 0;
 	virtual double volume() = 0;
 	Vec3d centerPoint();
+	virtual std::vector<Vec3d> majorAxis() = 0;
+	virtual std::vector < std::vector <Vec3d> > getCurves() = 0;
 
 	// The underlying geometry
 	QSurfaceMesh*		m_mesh;			

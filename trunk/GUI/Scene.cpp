@@ -219,7 +219,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 	// Regular behavior
 	QGLViewer::mousePressEvent(e);
 
-	if ((e->button() == Qt::RightButton) && (e->modifiers() != Qt::NoButton))
+	if ((e->button() == Qt::RightButton) && (e->modifiers() == Qt::ShiftModifier))
 	{
 		switch (selectMode){
 			case CONTROLLER:
