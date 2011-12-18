@@ -6,6 +6,7 @@
 #include "Group.h"
 
 class QSegMesh;
+class Offset;
 
 class Controller
 {
@@ -55,9 +56,13 @@ public:
 	struct ShapeState{
 		QMap< QString, void* > primitiveState;
 		QMap< QString, bool > isFrozen;
+		QMap< QString, bool > isAvailable;
 	};
 	ShapeState getShapeState();
 	void setShapeState( ShapeState &shapeState );
+
+	// Propagation
+	bool propagate(Offset* activeOffset);
 
 
 	// Debug items

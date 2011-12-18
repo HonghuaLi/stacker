@@ -1,4 +1,4 @@
-#include "QSegMesh.h"
+﻿#include "QSegMesh.h"
 #include <QFile>
 #include <QTextStream>
 #include <QVector>
@@ -385,7 +385,10 @@ void QSegMesh::simpleDraw()
 {
 	// Render mesh regularly (inefficient)
 	for (int i = 0;i < segment.size(); i++)
-		segment[i]->simpleDraw();
+	{
+		if (segment[i]->isVisible)
+			segment[i]->simpleDraw();
+	}
 }
 
 void QSegMesh::drawFacesUnique()
@@ -393,9 +396,11 @@ void QSegMesh::drawFacesUnique()
 	uint offset = 0;
 	for (int i=0;i<segment.size();i++)
 	{
-		segment[i]->drawFacesUnique(offset);
-
-		offset += segment[i]->n_faces();
+		if (segment[i]->isVisible)
+		{
+			segment[i]->drawFacesUnique(offset);
+			offset += segment[i]->n_faces();
+		}
 	}
 }
 
@@ -466,6 +471,8 @@ void QSegMesh::global2local_fid( uint fid, uint& sid, uint& fid_local )
 	int i=0;
 	for (;i<segment.size();i++)
 	{
+
+
 		offset += segment[i]->n_faces();
 
 		if (fid < offset)
@@ -494,6 +501,9 @@ void QSegMesh::global2local_vid( uint vid, uint& sid, uint& vid_local )
 	int i=0;
 	for (;i<segment.size();i++)
 	{
+		if (!segment[i]->isVisible)
+			continue;
+
 		offset += segment[i]->n_vertices();
 
 		if (vid < offset)
@@ -551,7 +561,7 @@ uint QSegMesh::segmentIdOfVertex( uint vid )
 //		| 0---------+-3            ---------+-------> Y 
 //		|/          |/                     /|
 //		1-----------2                     / |
-//								         /  |
+//								        ↙  |
 //	                                    X
 void QSegMesh::drawAABB()
 {

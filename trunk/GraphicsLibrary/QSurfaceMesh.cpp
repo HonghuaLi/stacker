@@ -13,6 +13,7 @@ QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 
 	// Render options
 	isDrawBB = false;
+	isVisible = true;
 
 	averageEdgeLength = -1;
 }

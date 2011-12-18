@@ -108,4 +108,5 @@ public:
 
 	std::queue< Controller::ShapeState > candidateSolutions;
 	std::vector< Controller::ShapeState > solutions;
+	std::vector< Controller::ShapeState > hotSolutions;
 };

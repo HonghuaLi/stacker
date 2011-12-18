@@ -3,6 +3,7 @@
 #include "Cuboid.h"
 #include "GCylinder.h"
 #include "Primitive.h"
+#include "Offset.h"
 
 Controller::Controller( QSegMesh* mesh )
 {
@@ -430,6 +431,20 @@ std::set< QString > Controller::getRidOfRedundancy( std::set< QString > Ids )
 	}
 
 	result.insert(Ids.begin(), Ids.end());
+
+	return result;
+}
+
+// Propagations happen only to *available* segments
+// From *frozen* segments to *unfrozen* ones
+bool Controller::propagate( Offset* activeOffset )
+{
+	bool result = false;
+
+	// The stackability of hotSolutions should be preserved
+	double S = activeOffset->getStackability();
+
+	// Propagation
 
 	return result;
 }

@@ -79,6 +79,7 @@ void StackerPanel::onOffsetButtonClicked()
 	}
 
 	// compute offset
+	activeObject()->getSegment(0)->isVisible = false;
 	activeOffset->computeOffset();
 }
 

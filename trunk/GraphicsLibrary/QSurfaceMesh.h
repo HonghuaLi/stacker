@@ -86,6 +86,7 @@ public:
 	std::vector<unsigned int> triangles, edges;
 
 	QString id;
+	bool isVisible;
 
 private:
 	bool isDirty;
