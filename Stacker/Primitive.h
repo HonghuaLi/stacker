@@ -72,4 +72,7 @@ public:
 	QString id;
 	bool				isHot;			// Is this hot component?
 	bool				isDirty;		// Has the underlying geometry been updated?
+	bool				isAvailable;	// if propagation affect this primitive
+	bool				isFrozen;		// The seed of propagation
+
 };

@@ -801,9 +801,28 @@ void Offset::improveStackabilityTo( double targetS )
 
 void Offset::improveStackability()
 {
+	Controller *ctrl = activeObject()->controller;
+
 	// improve the stackability of current shape in three steps
 
-	// Step 1: detect hot spots
+	// Step 1: Detect hot spots
+	detectHotspots();
 
+	// Step 2: Apply heuristics on hot spots
+	// Several hot solutions might be generated, which are stored in *hotSolutions*
+	hotSolutions.clear();
+	applyHeuristics();
+
+	// Step 3: Propagate hot solutions to remaining cold parts to generate *candidateSolutions*
+	for (int i=0;i<hotSolutions.size();i++)
+	{
+		Controller::ShapeState &currShape = hotSolutions[i];
+		ctrl->setShapeState(currShape);
+		
+		if (ctrl->propagate(this))
+		{// The propagation succeeds, we obtain one candidate solution
+			candidateSolutions.push(ctrl->getShapeState());
+		}
+	}
 }
 
