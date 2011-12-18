@@ -71,7 +71,7 @@ void SymmetryGroup::process(QVector<QString> segments)
 	{
 		hasSymmetryAxis = true;
 
-		// Position on axis
+		// Position on axis line
 		Vec3d avg(0,0,0); foreach(Point p, allCenters) avg += p;
 		avg /= segments.size();
 
