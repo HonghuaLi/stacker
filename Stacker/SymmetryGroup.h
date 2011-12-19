@@ -9,10 +9,10 @@ public:
 	SymmetryGroup(Controller * controller, GroupType newType) : Group(controller, newType){}
 
 	void process(QVector< QString > segments);
-
+	QVector<Primitive *> regroup();
 	void draw();
 
-	std::vector<Plane> symmetryPlanes;
+	Plane symmetryPlane;
 	std::vector<Point> allCenters;
 
 	// Symmetry axis for grater than 4?

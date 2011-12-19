@@ -1,0 +1,6 @@
+SYMMETRY	2	Cylinder001	Cylinder004	
+SYMMETRY	2	Cylinder004	Cylinder006	
+SYMMETRY	2	Cylinder006	Cylinder005	
+SYMMETRY	2	Cylinder005	Cylinder003	
+SYMMETRY	2	Cylinder003	Cylinder002	
+SYMMETRY	2	Cylinder002	Cylinder001	

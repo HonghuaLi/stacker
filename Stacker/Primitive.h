@@ -12,6 +12,7 @@ public:
 
 	// Fit primitive to the underlying QSurfaceMesh
 	virtual void fit() = 0;
+	virtual void computeMeshCoordiantes() = 0;
 
 	// Deform the underlying geometry according to the \pre_state and current state
 	virtual void deformMesh() = 0;

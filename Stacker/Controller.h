@@ -36,11 +36,11 @@ public:
 	void select(QString id);
 	bool selectPrimitivePart( int id );
 	Vec3d getPrimPartPos();
-	void reshapePrimitive(Vec3d q);
 
 	// Grouping
 	QMap<QString, Group*> groups;
 	std::set< QString > getRidOfRedundancy( std::set< QString > Ids );
+	QVector< Group * > groupsOf( QString id );
 
 	// Deformation
 	void deformShape( PrimitiveParamMap& primParams, bool isPermanent = false );

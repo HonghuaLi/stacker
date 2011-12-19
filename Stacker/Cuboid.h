@@ -24,6 +24,7 @@ public:
 public:
 	// Fit primitive to the underlying QSurfaceMesh
 	virtual void fit();
+	virtual void computeMeshCoordiantes();
 
 	// Deform the underlying geometry according to the \pre_state and current state
 	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
@@ -83,6 +84,10 @@ private:
 	void drawCube(double lineWidth, Vec4d color, bool isOpaque = false);
 	Eigen::Vector3d V2E(Vector3 &vec);
 	Vector3 E2V(Eigen::Vector3d &vec);
+	
+	// Debug
+	bool isDrawAxis;
+
 public:
 	std::vector< Vector3 > coordinates;
 	MinOBB3::Box3 originalBox, currBox;

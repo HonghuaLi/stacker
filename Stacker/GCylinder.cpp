@@ -5,10 +5,7 @@
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
 {
 	fit();
-
-	cage = NULL;
 	buildCage();
-	gcd = new GCDeformation(m_mesh, cage);
 }
 
 void GCylinder::fit()
@@ -40,6 +37,11 @@ void GCylinder::fit()
 	mf2->setPosition(qglviewer::Vec(q.x(), q.y(), q.z()));
 	connect(mf1, SIGNAL(manipulated()), this, SLOT(update()));
 	connect(mf2, SIGNAL(manipulated()), this, SLOT(update()));
+}
+
+void GCylinder::computeMeshCoordiantes()
+{
+	gcd = new GCDeformation(m_mesh, cage);
 }
 
 void GCylinder::deformMesh()

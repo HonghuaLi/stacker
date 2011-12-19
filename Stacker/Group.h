@@ -23,8 +23,11 @@ public:
 	void removeNode( QString nodeId );
 	void removeEdge( QString nodeA, QString nodeB );
 
+	bool has(QString node);
+
 	// Compute symmetry, cocentric, coplanar, ..., etc.
 	virtual void process(QVector< QString > segments) = 0;
+	virtual QVector<Primitive *> regroup();
 
 	// Primitives
 	Primitive * getPrimitive(QString nodeId);
@@ -34,6 +37,7 @@ public:
 	Controller * ctrl;
 	QMap<int, QString> nodes;
 	int nodeIdNum(QString stringId);
+	QMap< QString, QVector<int> > correspondence;
 
 	// Edge structure
 	struct Edge{
@@ -52,8 +56,10 @@ public:
 	QString id;
 
 	// Visualization
-	virtual void draw() = 0;
+	virtual void draw();
+	virtual void drawDebug();
 	std::vector<Point> debugPoints;
+	std::vector< std::pair<Point,Point> > debugLines;
 
 	// Save and load
 	virtual void save(std::ofstream &outF);

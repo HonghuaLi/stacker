@@ -8,87 +8,92 @@ void SymmetryGroup::process(QVector<QString> segments)
 {
 	addNodes(segments);
 
-	std::vector<Plane> potentialSP, redundant;
+	Primitive * a = getPrimitive(segments.first());
+	Primitive * b = getPrimitive(segments.last());
 
-	// Find potential symmetry planes
-	foreach(int i, nodes.keys())
+	Point cA = a->centerPoint();
+	Point cB = b->centerPoint();
+
+	Point point = (cA + cB) * 0.5;
+	Normal normal = (cA - cB).normalized();
+
+	symmetryPlane = Plane(normal, point);
+
+	std::vector<Vec3d> pointsA = a->points();
+	std::vector<Vec3d> pointsB = b->points();
+
+	correspondence[a->id].resize(pointsA.size());
+	correspondence[b->id].resize(pointsB.size());
+
+	// Reflect along symmetry plane
+	for(int i = 0; i < pointsA.size(); i++)
 	{
-		Primitive * a = getPrimitive(nodes[i]);
-		Point cA = a->centerPoint();
+		pointsA[i] = symmetryPlane.reflection(pointsA[i]);
 
-		foreach(int j, nodes.keys())
+		double dist = DBL_MAX;
+		int id_closest = -1;
+
+		for(int j = 0; j < pointsB.size(); j++)
 		{
-			if(i == j) continue;
+			double currDist = (pointsA[i] - pointsB[j]).norm();
 
-			Primitive * b = getPrimitive(nodes[j]);
-			Point cB = b->centerPoint();
-
-			Point point = (cA + cB) * 0.5;
-			Normal normal = (cA - cB).normalized();
-
-			potentialSP.push_back(Plane(normal, point));
+			if(currDist < dist)
+			{
+				id_closest = j;
+				dist = currDist;
+			}
 		}
 
-		allCenters.push_back(cA);
-	}
-
-	int expectedNum = segments.size() - 1;
-	QVector<bool> visited (potentialSP.size(), false);
-
-	// Filter out redundancy
-	for(uint i = 0; i < potentialSP.size(); i++)
-	{
-		Plane a = potentialSP[i];
-
-		QSet <uint> symmetrySet;
-
-		for(uint j = 0; j < potentialSP.size(); j++)
-		{
-			if(i == j) continue;
-
-			Plane b = potentialSP[j];
-
-			if(dot(a.n, b.n) < 0) a.n *= -1;
-
-			double theta = DEGREES(acos(RANGED(-1, dot(a.n, b.n), 1)));
-
-			if(theta < 1) symmetrySet.insert(j);
-		}
-
-		if(symmetrySet.size() == expectedNum)
-		{
-			if(!visited[i])	symmetryPlanes.push_back(a);
-			
-			visited[i] = true;
-
-			foreach(uint p, symmetrySet) visited[p] = true;
-		}
-	}
-
-	hasSymmetryAxis = false;
-	
-	if(segments.size() > 4)
-	{
-		hasSymmetryAxis = true;
-
-		// Position on axis line
-		Vec3d avg(0,0,0); foreach(Point p, allCenters) avg += p;
-		avg /= segments.size();
-
-		symmetryAxisPos = avg;
-
-		symmetryAxis = cross( allCenters[0] - avg, allCenters[1] - avg );
+		correspondence[a->id][i] = id_closest;
+		correspondence[b->id][id_closest] = i;
 	}
 }
 
 void SymmetryGroup::draw()
 {
-	// Center point of each node
+	// Draw debug and stuff
 	Group::draw();
 
-	foreach(Plane p, symmetryPlanes)
-		p.draw();
+	symmetryPlane.draw();
 
 	if(hasSymmetryAxis)
 		SimpleDraw::DrawArrowDirected(symmetryAxisPos, symmetryAxis, 2);
+}
+
+QVector<Primitive *> SymmetryGroup::regroup()
+{
+	QVector<Primitive *> result;
+
+	Primitive * frozen = getPrimitive(nodes.values().first());
+	Primitive * non_frozen = getPrimitive(nodes.values().last());
+
+	if(frozen->isFrozen == non_frozen->isFrozen)
+		return result;
+
+	// Swap if needed
+	if(!frozen->isFrozen) 
+	{
+		Primitive * temp = frozen;
+		frozen = non_frozen;
+		non_frozen = temp;
+	}
+
+	QVector<int> corr = correspondence[frozen->id];
+
+	// reflect frozen
+	std::vector<Vec3d> pointsA = frozen->points();
+	std::vector<Vec3d> pointsB = non_frozen->points();
+
+	for(int i = 0; i < pointsA.size(); i++)
+	{
+		Point reflected = symmetryPlane.reflection(pointsA[i]);
+
+		pointsB[corr[i]] = reflected;
+	}
+	
+	non_frozen->reshapeFromCorners(pointsB);
+
+	result.push_back(non_frozen);
+
+	return result;
 }

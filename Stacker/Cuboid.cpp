@@ -15,6 +15,7 @@ Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newI
 	fit();
 
 	selectedPartId = -1;
+	isDrawAxis = true;
 }
 
 void Cuboid::fit()
@@ -23,6 +24,11 @@ void Cuboid::fit()
 	originalBox = currBox = obb.mMinBox;
 	id = m_mesh->objectName();
 
+	computeMeshCoordiantes();
+}
+
+void Cuboid::computeMeshCoordiantes()
+{
 	// Compute the OBB coordinates for all vertices
 	coordinates.clear();
 	Surface_mesh::Vertex_property<Point> points = m_mesh->vertex_property<Point>("v:point");
@@ -128,6 +134,13 @@ void Cuboid::draw()
 	// Show joints
 	foreach(Joint j, joints)
 		SimpleDraw::IdentifyPoint( this->fromCoordinate(j.location) );
+
+	// Draw axis
+	if(isDrawAxis){
+		glColor4f(1,0,0,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[0], 0.1f);
+		glColor4f(0,1,0,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[1], 0.1f);
+		glColor4f(0,0,1,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[2], 0.1f);
+	}
 }
 
 void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
@@ -622,7 +635,8 @@ void Cuboid::reshapeFromCorners( std::vector<Vec3d>& corners )
 {
 	if (corners.size() != 8) return;
 
-	Vec3d center;
+	Vec3d center(0,0,0);
+
 	for (int i=0;i<8;i++)
 		center += corners[i];
 
@@ -636,6 +650,8 @@ void Cuboid::reshapeFromCorners( std::vector<Vec3d>& corners )
 		currBox.Extent[i] = currBox.Axis[i].norm()/2;
 
 	currBox.normalizeAxis();
+
+	deformMesh();
 }
 
 

@@ -90,6 +90,8 @@ void Workspace::addNewScene()
 	gp->setActiveScene(newScene);
 
 	this->setActiveScene(newScene);
+
+	newScene->sp = sp;
 }
 
 void Workspace::setActiveScene(Scene* scene)
