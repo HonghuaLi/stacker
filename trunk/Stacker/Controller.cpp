@@ -4,6 +4,7 @@
 #include "GCylinder.h"
 #include "Primitive.h"
 #include "Offset.h"
+#include <QQueue>
 
 Controller::Controller( QSegMesh* mesh )
 {
@@ -135,15 +136,6 @@ Vec3d Controller::getPrimPartPos()
 	}
 
 	return Vec3d();
-}
-
-void Controller::reshapePrimitive( Vec3d q )
-{
-	foreach(Primitive * prim, primitives)
-	{
-		if(prim->isSelected)
-			return prim->reshapePart(q);
-	}
 }
 
 void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton )
@@ -295,8 +287,10 @@ Controller::Stat& Controller::getOriginalStat()
 Primitive * Controller::getSelectedPrimitive()
 {
 	foreach(Primitive * prim, primitives)
+	{
 		if (prim->isSelected)
 			return prim;
+	}
 
 	return NULL;
 }
@@ -438,9 +432,42 @@ bool Controller::propagate( Offset* activeOffset )
 	bool result = false;
 
 	// The stackability of hotSolutions should be preserved
-	double S = activeOffset->getStackability();
+	//double S = activeOffset->getStackability();
 
 	// Propagation
+
+	// Stack frozen primitives
+	QQueue<Primitive *> frozen;
+	foreach(Primitive * p, primitives)
+		if(p->isFrozen) frozen.enqueue(p);
+	
+	while(!frozen.isEmpty())
+	{
+		Primitive * prim = frozen.dequeue();
+
+		QVector< Group * > grps = groupsOf(prim->id);
+
+		foreach(Group * g, grps)
+		{
+			QVector<Primitive *> regrouped = g->regroup();
+
+			foreach(Primitive * next, regrouped)
+			{
+				next->isFrozen = true;
+				frozen.enqueue(next);
+			}
+		}
+	}
+
+	return result;
+}
+
+QVector< Group * > Controller::groupsOf( QString id )
+{
+	QVector< Group * > result;
+
+	foreach(Group * group, groups)
+		if(group->has(id))	result.push_back(group);
 
 	return result;
 }

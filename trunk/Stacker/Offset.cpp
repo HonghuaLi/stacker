@@ -623,6 +623,7 @@ void Offset::setPixelColor( std::vector< std::vector < double > >& image, Vec2i 
 	uint h = image.size();
 
 	uint x = RANGED(0, pos.x(), w-1);
+	uint y = RANGED(0, pos.y(), h-1);
 
 	image[y][x] = color;
 }

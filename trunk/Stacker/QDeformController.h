@@ -10,12 +10,13 @@ public:
 
 	qglviewer::ManipulatedFrame * getFrame();
 	Vec3d pos();
+	void draw();
 
 public slots:
 	void updateController();
 
 signals:
-	void primitiveReshaped();
+	void objectModified();
 
 private:
 	qglviewer::ManipulatedFrame * frame;

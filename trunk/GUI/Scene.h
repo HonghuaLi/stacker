@@ -15,6 +15,7 @@ using namespace qglviewer;
 #include "QFFD.h"
 
 class Offset;
+class StackerPanel;
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum ModifyMode { DEFAULT, CP_REF_VECTOR, MOVE_VERTEX };
@@ -73,6 +74,9 @@ public:
 	void setViewMode(ViewMode toMode);
 	void setSelectMode(SelectMode toMode);
 	void setModifyMode(ModifyMode toMode);
+
+	// hack
+	StackerPanel * sp;
 
 // TEXT ON SCREEN
 public slots:

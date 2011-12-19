@@ -22,6 +22,21 @@ Vec3d QDeformController::pos()
 
 void QDeformController::updateController()
 {
-	ctrl->getSelectedPrimitive()->moveCurveCenter( -1, pos() - ctrl->getPrimPartPos() );
-	emit( primitiveReshaped() );
+	// unfreeze all
+	ctrl->setPrimitivesFrozen(false);
+
+	Primitive * prim = ctrl->getSelectedPrimitive();
+	prim->isFrozen = true;
+
+	prim->moveCurveCenter( -1, pos() - prim->selectedPartPos() );
+	ctrl->propagate( NULL );
+
+	prim->isFrozen = false;
+
+	emit( objectModified() );
+}
+
+void QDeformController::draw()
+{
+	SimpleDraw::IdentifyPoint(pos(), 1,1,0,20);
 }

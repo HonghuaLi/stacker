@@ -224,3 +224,8 @@ void Plane::projectLine( Line & line )
 
 	line.length = (line.a-line.b).norm();
 }
+
+Vec3d Plane::reflection( const Vec3d& v )
+{
+	return n * GetPointDistance(v) * -2.0 + v;
+}

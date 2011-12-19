@@ -101,6 +101,7 @@ void Scene::draw()
 
 	}
 
+	glEnable(GL_MULTISAMPLE);
 	glEnable (GL_LINE_SMOOTH);
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -139,6 +140,7 @@ void Scene::draw()
 	// DEBUG
 	if(gc) gc->draw();
 	if(skel) skel->draw();
+	if(defCtrl) defCtrl->draw();
 	
 	if (!isEmpty() && activeObject()->controller)
 	{
@@ -362,7 +364,9 @@ void Scene::postSelection( const QPoint& point )
 			{
 				defCtrl = new QDeformController(activeObject()->controller);
 
-				this->connect(defCtrl, SIGNAL(primitiveReshaped()), SLOT(updateActiveObject()));
+				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
+				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
+
 				emit(objectInserted());
 
 				setManipulatedFrame( defCtrl->getFrame() );

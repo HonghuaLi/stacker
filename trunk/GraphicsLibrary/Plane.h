@@ -106,7 +106,7 @@ public:
 
 	void projectLine(Line & line);
 
-	int LineIntersect(const Line& l, Vec3d & result);
+	int LineIntersect(const Line& l, Vec3d & result = Vec3d());
 	int LineIntersect(const Vec3d& start, const Vec3d& end, const Vec3d& pointOnPlane, Vec3d & result, double Epsilon = 1e-10 );
 	int ContourFacet(Vec3d a, Vec3d b, Vec3d c, Vec3d & p1, Vec3d & p2);
 
@@ -129,6 +129,8 @@ public:
 			abs(n.z()) >= 0.9f * abs(n.y()) ) return Vec3d(-n.z(), 0.0f, n.x());
 		else return Vec3d(-n.y(), n.x(), 0.0f);
 	}
+
+	Vec3d reflection(const Vec3d& v);
 };
 
 #endif // PLANE_H

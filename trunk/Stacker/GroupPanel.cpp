@@ -144,6 +144,8 @@ void GroupPanel::loadGroups()
 	std::ifstream inF(qPrintable(fileName), std::ios::in);
 
 	if (!inF) return;
+
+	ctrl->groups.clear();
 	
 	while (inF)
 	{

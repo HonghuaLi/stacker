@@ -144,12 +144,9 @@ void StackerPreview::updateActiveObject()
 {
 	if(activeScene && !activeScene->isEmpty())
 	{
-		camera()->setSceneRadius(activeScene->activeObject()->radius);
+		camera()->setSceneRadius(activeScene->activeObject()->radius * 2);
 		camera()->showEntireScene();
-		camera()->addKeyFrameToPath(0);
 		camera()->setSceneRadius(activeScene->activeObject()->radius * 4);
-		camera()->showEntireScene();
-		camera()->resetPath(0);
 	}
 	
 	vboCollection.clear();

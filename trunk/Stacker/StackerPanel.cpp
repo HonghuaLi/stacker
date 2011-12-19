@@ -139,6 +139,13 @@ void StackerPanel::updateActiveObject()
 {
 	activeOffset->computeOffset();	
 	stacker_preview->updateActiveObject();
+
+	if (activeObject()->controller == NULL)
+	{
+		activeObject()->controller = new Controller(activeObject());
+		activeScene->setSelectMode(CONTROLLER);
+		showMessage("Controller is built for " + activeObject()->objectName());
+	}
 }
 
 QSegMesh* StackerPanel::activeObject()

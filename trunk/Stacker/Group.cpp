@@ -61,6 +61,18 @@ void Group::draw()
 	{
 		SimpleDraw::IdentifyPoint(getPrimitive(node)->centerPoint(), 0,0,1);
 	}
+
+	drawDebug();
+}
+
+void Group::drawDebug()
+{
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	foreach(Point p, debugPoints) SimpleDraw::IdentifyPoint(p, 1,1,1, 20);
+
+	for(int i = 0; i < debugLines.size(); i++)
+		SimpleDraw::IdentifyLine(debugLines[i].first, debugLines[i].second, 1,1,1,false, 6);
 }
 
 void Group::save( std::ofstream &outF )
@@ -83,4 +95,16 @@ void Group::load( std::ifstream &inF )
 	}
 
 	process(segments);
+}
+
+bool Group::has( QString node )
+{
+	foreach(QString nodeId, nodes.values())
+		if(nodeId == node) return true;
+	return false;
+}
+
+QVector<Primitive *> Group::regroup()
+{
+	return QVector<Primitive *>();
 }
