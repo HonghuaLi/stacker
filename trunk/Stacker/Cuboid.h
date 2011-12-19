@@ -42,6 +42,7 @@ public:
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
 	virtual void moveCurveCenter( uint fid, Vec3d T);
 	virtual bool excludePoints( std::vector< Vec3d >& pnts );
+	virtual void reshapeFromCorners( std::vector<Vec3d>& corners);
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v );
