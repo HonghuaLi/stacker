@@ -30,7 +30,8 @@ public:
 	virtual void moveCurveCenter( uint fid, Vec3d T) {}
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) {}
 	virtual bool excludePoints( std::vector< Vec3d >& pnts ) = 0;
-	virtual void reshapePart( Vec3d q ) {};
+	virtual void reshapePart( Vec3d q ) {}
+	virtual void reshapeFromCorners( std::vector<Vec3d>& corners) {}
 
 	std::vector<Joint> joints;
 

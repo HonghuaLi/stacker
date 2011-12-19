@@ -618,4 +618,24 @@ void Cuboid::setSelectedPartId( Vec3d normal )
 
 }
 
+void Cuboid::reshapeFromCorners( std::vector<Vec3d>& corners )
+{
+	if (corners.size() != 8) return;
+
+	Vec3d center;
+	for (int i=0;i<8;i++)
+		center += corners[i];
+
+	currBox.Center = center / 8;
+
+	currBox.Axis[0] = corners[1] - corners[0];
+	currBox.Axis[1] = corners[4] - corners[0];
+	currBox.Axis[2] = corners[0] - corners[3];
+
+	for (int i=0;i<3;i++)
+		currBox.Extent[i] = currBox.Axis[i].norm()/2;
+
+	currBox.normalizeAxis();
+}
+
 
