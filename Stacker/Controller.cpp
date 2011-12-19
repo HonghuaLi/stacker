@@ -374,15 +374,12 @@ std::vector<Primitive*> Controller::getPrimitives()
 	return result;
 }
 
-Controller::ShapeState Controller::getShapeState()
+ShapeState Controller::getShapeState()
 {
 	ShapeState state;
 
 	foreach(Primitive * prim, primitives)
-	{
-		state.primitiveState[prim->id] = prim->getState();
-		state.isFrozen[prim->id] = prim->isHot;
-	}
+		state[prim->id] = prim->getState();
 
 	return state;
 }
@@ -391,9 +388,8 @@ void Controller::setShapeState( ShapeState &shapeState )
 {
 	foreach(Primitive * prim, primitives)
 	{
-		prim->setState(shapeState.primitiveState[prim->id]);
+		prim->setState(shapeState[prim->id]);
 		prim->deformMesh();
-		prim->isHot = shapeState.isFrozen[prim->id];
 	}	
 }
 
@@ -447,4 +443,22 @@ bool Controller::propagate( Offset* activeOffset )
 	// Propagation
 
 	return result;
+}
+
+void Controller::setSegmentsVisible( bool isVisible /*= true*/ )
+{
+	foreach(Primitive* prim, primitives)
+		prim->m_mesh->isVisible = isVisible;
+}
+
+void Controller::setPrimitivesFrozen( bool isFrozen /*= false*/ )
+{
+	foreach(Primitive* prim, primitives)
+		prim->isFrozen = isFrozen;
+}
+
+void Controller::setPrimitivesAvailable( bool isAvailable /*= true*/ )
+{
+	foreach(Primitive* prim, primitives)
+		prim->isAvailable = isAvailable;
 }
