@@ -8,6 +8,8 @@
 class QSegMesh;
 class Offset;
 
+typedef QMap< QString, void* > ShapeState;
+
 class Controller
 {
 public:
@@ -53,11 +55,6 @@ public:
 	void drawNames(bool isDrawParts = false);
 
 	// Shape state
-	struct ShapeState{
-		QMap< QString, void* > primitiveState;
-		QMap< QString, bool > isFrozen;
-		QMap< QString, bool > isAvailable;
-	};
 	ShapeState getShapeState();
 	void setShapeState( ShapeState &shapeState );
 
@@ -71,6 +68,11 @@ public:
 
 	// Testing
 	void test1();
+
+	// Flags
+	void setSegmentsVisible(bool isVisible = true);
+	void setPrimitivesFrozen(bool isFrozen = false);
+	void setPrimitivesAvailable(bool isAvailable = true);
 
 	// Computations
 	struct Stat{

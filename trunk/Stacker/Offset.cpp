@@ -245,7 +245,6 @@ void Offset::detectHotspots( int useFilterSize, double hotRange )
 		std::cout << "Lower hot spots are splitted. \n";
 	}
 	visualizeHotRegions("hot regions 2.png");
-
 	std::cout << "Hot spots: " << std::endl;
 	for (int i=0;i<hotRegions.size();i++)
 	{
@@ -253,6 +252,13 @@ void Offset::detectHotspots( int useFilterSize, double hotRange )
 		lowerHotSpots[i].print();
 	}
 	std::cout << std::endl;
+
+	// Hot segments
+	for (int i=0;i<hotRegions.size();i++)
+	{
+		hotSegments.insert(upperHotSpots[i].segmentID);
+		hotSegments.insert(lowerHotSpots[i].segmentID);
+	}
 }
 
 void Offset::showHotSpots()
@@ -463,6 +469,7 @@ void Offset::clear()
 	hotPoints.clear();
 	upperHotSpots.clear();
 	lowerHotSpots.clear();
+	hotSegments.clear();
 }
 
 bool Offset::defineHeight( int direction, std::vector< Vec2i >& region )
@@ -616,7 +623,6 @@ void Offset::setPixelColor( std::vector< std::vector < double > >& image, Vec2i 
 	uint h = image.size();
 
 	uint x = RANGED(0, pos.x(), w-1);
-	uint y = RANGED(0, pos.y(), h-1);
 
 	image[y][x] = color;
 }
@@ -778,7 +784,7 @@ void Offset::improveStackabilityTo( double targetS )
 	while(!candidateSolutions.empty())
 	{
 		// Get the first candidate solution
-		Controller::ShapeState currShape = candidateSolutions.front();
+		ShapeState currShape = candidateSolutions.front();
 		candidateSolutions.pop();
 		ctrl->setShapeState(currShape);
 
@@ -804,19 +810,32 @@ void Offset::improveStackability()
 	Controller *ctrl = activeObject()->controller;
 
 	// improve the stackability of current shape in three steps
-
+	//=========================================================================================
 	// Step 1: Detect hot spots
 	detectHotspots();
 
+
+	//=========================================================================================
 	// Step 2: Apply heuristics on hot spots
 	// Several hot solutions might be generated, which are stored in *hotSolutions*
+	// Only hot segments are visible and available
+	ctrl->setSegmentsVisible(false);
+	ctrl->setPrimitivesAvailable(false);
+	foreach(QString sid, hotSegments)
+	{
+		activeObject()->getSegment(sid)->isVisible = true;
+		ctrl->getPrimitive(sid)->isAvailable = true;
+	}
+
 	hotSolutions.clear();
 	applyHeuristics();
 
+
+	//=========================================================================================
 	// Step 3: Propagate hot solutions to remaining cold parts to generate *candidateSolutions*
 	for (int i=0;i<hotSolutions.size();i++)
 	{
-		Controller::ShapeState &currShape = hotSolutions[i];
+		QMap< QString, void* > &currShape = hotSolutions[i];
 		ctrl->setShapeState(currShape);
 		
 		if (ctrl->propagate(this))

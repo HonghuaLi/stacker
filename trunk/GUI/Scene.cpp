@@ -101,7 +101,10 @@ void Scene::draw()
 
 	}
 
-	glEnable(GL_MULTISAMPLE);
+	glEnable (GL_LINE_SMOOTH);
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
 	// Background color
 	this->setBackgroundColor(backColor);

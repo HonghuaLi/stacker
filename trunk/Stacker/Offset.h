@@ -103,10 +103,11 @@ public:
 
 	std::map< uint, std::vector<Vec3d> > hotPoints;
 	std::vector< std::vector<Vec2i> > hotRegions;
-	std::vector < HotSpot >  upperHotSpots;
-	std::vector < HotSpot >  lowerHotSpots;
+	std::vector< HotSpot >  upperHotSpots;
+	std::vector< HotSpot >  lowerHotSpots;
+	std::set< QString> hotSegments;
 
-	std::queue< Controller::ShapeState > candidateSolutions;
-	std::vector< Controller::ShapeState > solutions;
-	std::vector< Controller::ShapeState > hotSolutions;
+	std::queue< ShapeState > candidateSolutions;
+	std::vector< ShapeState > solutions;
+	std::vector< ShapeState > hotSolutions;
 };
