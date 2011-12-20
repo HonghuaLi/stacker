@@ -2,9 +2,8 @@
 #include <fstream>
 #include <QFileDialog>
 
-#include "SelfSymmetryOne.h"
-#include "SelfSymmetryTwo.h"
 #include "SymmetryGroup.h"
+#include "JointGroup.h"
 #include "ConcentricGroup.h"
 #include "CoplanarGroup.h"
 
@@ -18,9 +17,8 @@ GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 	connect(groupWidget.loadGroupsButton, SIGNAL(clicked()), SLOT(loadGroups()));
 
 	// Strings to show in tree, ordered as in group type enum
-	groupTypes.push_back("SELFSYMMETRY1");
-	groupTypes.push_back("SELFSYMMETRY2");
 	groupTypes.push_back("SYMMETRY");
+	groupTypes.push_back("JOINT");
 	groupTypes.push_back("CONCENTRIC");
 	groupTypes.push_back("COPLANNAR");
 }
@@ -158,12 +156,6 @@ void GroupPanel::loadGroups()
 
 		switch (type)
 		{
-		case SELFSYMMETRY1:
-			newGroup = new SelfSymmetryOne(ctrl, SELFSYMMETRY1);
-			break;
-		case SELFSYMMETRY2:
-			newGroup = new SelfSymmetryTwo(ctrl, SELFSYMMETRY2);
-			break;
 		case SYMMETRY:
 			newGroup = new SymmetryGroup(ctrl, SYMMETRY);
 			break;

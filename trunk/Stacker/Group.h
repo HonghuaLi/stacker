@@ -9,7 +9,7 @@
 
 class Controller;
 
-enum GroupType{ SELFSYMMETRY1, SELFSYMMETRY2, SYMMETRY, CONCENTRIC, COPLANNAR };
+enum GroupType{ SYMMETRY, JOINT, CONCENTRIC, COPLANNAR };
 
 class Group{
 public:

@@ -5,6 +5,7 @@
 #include "Primitive.h"
 #include "Offset.h"
 #include <QQueue>
+#include "JointGroup.h"
 
 Controller::Controller( QSegMesh* mesh )
 {
@@ -328,11 +329,13 @@ void Controller::findJoints(double threshold)
 				double scale = threshold / N;
 				Point centerPoint(center.x * scale, center.y * scale, center.z * scale);
 
-				Joint newJointA(a, b, a->getCoordinate(centerPoint));
-				a->joints.push_back(newJointA);
+				JointGroup *newGroup = new JointGroup(this, JOINT);
+				QVector<QString> segments;
+				segments.push_back(keys[i]);
+				segments.push_back(keys[j]);
+				newGroup->process(segments, centerPoint);
 
-				Joint newJointB(b, a, b->getCoordinate(centerPoint));
-				b->joints.push_back(newJointB);
+				this->groups[newGroup->id] = newGroup;
 			}
 		}
 	}

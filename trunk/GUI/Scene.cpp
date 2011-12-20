@@ -15,8 +15,6 @@ GeneralizedCylinder * gc;
 #include "QDeformController.h"
 QDeformController * defCtrl;
 
-#include "SelfSymmetryOne.h"
-#include "SelfSymmetryTwo.h"
 #include "SymmetryGroup.h"
 #include "ConcentricGroup.h"
 #include "CoplanarGroup.h"
@@ -241,8 +239,6 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				QAction* symmGrp = menu.addAction("Create Symmetry group..");
 				QAction* concentricGrp = menu.addAction("Create Concentric group..");
 				QAction* coplanGrp = menu.addAction("Create Coplanar group..");
-				QAction* selfSymm1 = menu.addAction("Create 1-fold Self Symmetry..");
-				QAction* selfSymm2 = menu.addAction("Create 2-fold Self Symmetry..");
 
 				QAction* action = menu.exec(e->globalPos()); // show menu
 
@@ -252,8 +248,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				if(action == symmGrp)		newGroup = new SymmetryGroup(ctrl, SYMMETRY);
 				if(action == concentricGrp) newGroup = new ConcentricGroup(ctrl, CONCENTRIC);
 				if(action == coplanGrp)		newGroup = new CoplanarGroup(ctrl, COPLANNAR);
-				if(action == selfSymm1)		newGroup = new SelfSymmetryOne(ctrl, SELFSYMMETRY1);
-				if(action == selfSymm2)		newGroup = new SelfSymmetryTwo(ctrl, SELFSYMMETRY2);
+
 
 				if(newGroup)
 				{
