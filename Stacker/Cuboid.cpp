@@ -131,10 +131,6 @@ void Cuboid::draw()
 	else
 		drawCube(2, Vec4d(0,0,1,1));
 
-	// Show joints
-	foreach(Joint j, joints)
-		SimpleDraw::IdentifyPoint( this->fromCoordinate(j.location) );
-
 	// Draw axis
 	if(isDrawAxis){
 		glColor4f(1,0,0,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[0], 0.1f);
@@ -460,7 +456,7 @@ bool Cuboid::excludePoints( std::vector< Vec3d >& pnts )
 		// The pnts are not on the margin
 		if (left * right < 0) continue;
 
-		// Only scale along axis that is far away from z
+		// Only scale along axis that is far away from z (the stacking direction)
 		Vec3d &axis = currBox.Axis[j];
 		if (abs( dot( axis, z ) ) > 0.5) continue;
 

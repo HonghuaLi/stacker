@@ -650,22 +650,33 @@ void Offset::visualizeHotRegions( QString filename )
 
 void Offset::applyHeuristics()
 {
-	// Get rid of redundancies
 	Controller *ctrl = activeObject()->controller;
-	std::set<QString> Ids;
-	for (int i = 0; i < hotRegions.size(); i++)
-	{
-		Ids.insert(upperHotSpots[i].segmentID);
-		Ids.insert(lowerHotSpots[i].segmentID);
-	}
-	Ids = ctrl->getRidOfRedundancy(Ids);
 
+	//// Get rid of redundancies
+	//std::set<QString> Ids;
+	//for (int i = 0; i < hotRegions.size(); i++)
+	//{
+	//	Ids.insert(upperHotSpots[i].segmentID);
+	//	Ids.insert(lowerHotSpots[i].segmentID);
+	//}
+	//Ids = ctrl->getRidOfRedundancy(Ids);
+
+	// Only hot segments are visible and available
+	ctrl->setSegmentsVisible(false);
+	ctrl->setPrimitivesAvailable(false);
+	foreach(QString sid, hotSegments)
+	{
+		activeObject()->getSegment(sid)->isVisible = true;
+		ctrl->getPrimitive(sid)->isAvailable = true;
+	}
+
+	// Recompute the offset and envelops using only visible segments
+	computeOffset();
 
 	// Heuristics are applied for each pair of hot spots	
+	hotSolutions.clear();
 	applyHeuristicsOnHotspot(0, 1);		
-	applyHeuristicsOnHotspot(0, -1);
-
-	
+	applyHeuristicsOnHotspot(0, -1);	
 }
 
 void Offset::applyHeuristicsOnHotspot( uint hid, int side )
@@ -819,16 +830,6 @@ void Offset::improveStackability()
 	//=========================================================================================
 	// Step 2: Apply heuristics on hot spots
 	// Several hot solutions might be generated, which are stored in *hotSolutions*
-	// Only hot segments are visible and available
-	ctrl->setSegmentsVisible(false);
-	ctrl->setPrimitivesAvailable(false);
-	foreach(QString sid, hotSegments)
-	{
-		activeObject()->getSegment(sid)->isVisible = true;
-		ctrl->getPrimitive(sid)->isAvailable = true;
-	}
-
-	hotSolutions.clear();
 	applyHeuristics();
 
 

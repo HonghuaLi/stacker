@@ -2,7 +2,6 @@
 
 #include "QSurfaceMesh.h"
 #include "PrimativeParam.h"
-#include "Joint.h"
 #include "Plane.h"
 
 class Primitive
@@ -33,8 +32,6 @@ public:
 	virtual bool excludePoints( std::vector< Vec3d >& pnts ) = 0;
 	virtual void reshapePart( Vec3d q ) {}
 	virtual void reshapeFromCorners( std::vector<Vec3d>& corners) {}
-
-	std::vector<Joint> joints;
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v ) = 0;

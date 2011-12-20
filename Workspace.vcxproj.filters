@@ -410,10 +410,7 @@
     <ClCompile Include="GraphicsLibrary\Line.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\SelfSymmetryOne.cpp">
-      <Filter>Groups\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\SelfSymmetryTwo.cpp">
+    <ClCompile Include="Stacker\JointGroup.cpp">
       <Filter>Groups\Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -598,10 +595,10 @@
     <ClInclude Include="GeneratedFiles\ui_GroupWidget.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\SelfSymmetryOne.h">
-      <Filter>Groups\Header</Filter>
+    <ClInclude Include="MathLibrary\ShapeDistribution.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\SelfSymmetryTwo.h">
+    <ClInclude Include="Stacker\JointGroup.h">
       <Filter>Groups\Header</Filter>
     </ClInclude>
   </ItemGroup>
