@@ -67,7 +67,7 @@ QVector<Primitive *> SymmetryGroup::regroup()
 	Primitive * frozen = getPrimitive(nodes.values().first());
 	Primitive * non_frozen = getPrimitive(nodes.values().last());
 
-	if(frozen->isFrozen == non_frozen->isFrozen)
+	if(frozen->isFrozen == non_frozen->isFrozen || !non_frozen->isAvailable)
 		return result;
 
 	// Swap if needed

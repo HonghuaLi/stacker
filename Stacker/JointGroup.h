@@ -16,6 +16,8 @@ public:
 
 	void draw();	
 
+	QVector<Primitive *> regroup();
+
 	Vec3d jointPos;
-	QVector<std::vector<double>> coordinates;
+	QMap<QString, std::vector<double>> coordinates;
 };
