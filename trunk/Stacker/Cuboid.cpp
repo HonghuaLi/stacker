@@ -650,4 +650,47 @@ void Cuboid::reshapeFromCorners( std::vector<Vec3d>& corners )
 	deformMesh();
 }
 
+bool Cuboid::containsPoint( Point p )
+{
+	bool result = false;
+
+	Vec3d coor = getCoordinatesInBox(currBox, p);
+
+	if ( RANGE(coor[0], -1, 1) && RANGE(coor[1], -1, 1) && RANGE(coor[2], -1, 1)) 
+		result = true;
+
+	return result;
+}
+
+Point Cuboid::closestPoint( Point p )
+{
+	return currBox.ClosestPoint(p);
+}
+
+void Cuboid::movePoint( Point p, Vec3d T )
+{
+	// Move the control point p according to some properties, such as symmetry, joint
+
+	// If *p* is close to one end of the box
+	Vec3d coord = getCoordinatesInBox(currBox, p);
+
+	double smallestDelta = 2;
+	int id = -1;
+	for (int i=0;i<3;i++)
+	{
+		double delta = abs(coord[i])-1;
+		if ( delta < smallestDelta )
+		{
+			smallestDelta = delta;
+			id = i;
+		}
+	}
+
+	int fid = (coord[id]<0)? 2*id : 2*id+1;
+	Vec3d k = faceCenterOfBox(currBox, fid);
+
+	deformRespectToJoint(k, p, T);
+	deformMesh();
+}
+
 

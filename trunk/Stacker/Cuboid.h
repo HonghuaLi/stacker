@@ -44,10 +44,13 @@ public:
 	virtual void moveCurveCenter( uint fid, Vec3d T);
 	virtual bool excludePoints( std::vector< Vec3d >& pnts );
 	virtual void reshapeFromCorners( std::vector<Vec3d>& corners);
+	virtual void movePoint(Point p, Vec3d T);
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v );
 	virtual Point fromCoordinate(std::vector<double> coords);
+	virtual bool containsPoint(Point p);
+	virtual Point closestPoint(Point p);
 
 	// Primitive state
 	virtual void* getState();

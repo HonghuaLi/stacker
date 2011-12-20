@@ -32,10 +32,13 @@ public:
 	virtual bool excludePoints( std::vector< Vec3d >& pnts ) = 0;
 	virtual void reshapePart( Vec3d q ) {}
 	virtual void reshapeFromCorners( std::vector<Vec3d>& corners) {}
+	virtual void movePoint(Point p, Vec3d T){}
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v ) = 0;
 	virtual Point fromCoordinate(std::vector<double> coords) = 0;
+	virtual bool containsPoint(Point p){return true;}
+	virtual Vec3d closestPoint(Point p){return Point();}
 
 	// Primitive state
 	virtual void* getState() = 0;

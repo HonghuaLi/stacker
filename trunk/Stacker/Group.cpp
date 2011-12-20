@@ -106,5 +106,6 @@ bool Group::has( QString node )
 
 QVector<Primitive *> Group::regroup()
 {
+	// Return the propagated primitives
 	return QVector<Primitive *>();
 }
