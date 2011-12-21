@@ -652,15 +652,6 @@ void Offset::applyHeuristics()
 {
 	Controller *ctrl = activeObject()->controller;
 
-	//// Get rid of redundancies
-	//std::set<QString> Ids;
-	//for (int i = 0; i < hotRegions.size(); i++)
-	//{
-	//	Ids.insert(upperHotSpots[i].segmentID);
-	//	Ids.insert(lowerHotSpots[i].segmentID);
-	//}
-	//Ids = ctrl->getRidOfRedundancy(Ids);
-
 	// Only hot segments are visible and available
 	ctrl->setSegmentsVisible(false);
 	ctrl->setPrimitivesAvailable(false);
@@ -670,41 +661,59 @@ void Offset::applyHeuristics()
 		ctrl->getPrimitive(sid)->isAvailable = true;
 	}
 
-	// Recompute the offset and envelops using only visible segments
-	computeOffset();
-
 	// Heuristics are applied for each pair of hot spots	
 	hotSolutions.clear();
 	applyHeuristicsOnHotspot(0, 1);		
-	applyHeuristicsOnHotspot(0, -1);	
+//	applyHeuristicsOnHotspot(0, -1);	
 }
 
 void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 {
+	// Hot spot
 	Controller *ctrl = activeObject()->controller;
-
 	HotSpot &HS = (side == 1)? upperHotSpots[hid] : lowerHotSpots[hid];
 	Primitive* prim = ctrl->getPrimitive(HS.segmentID);
-	uint cid = prim->detectHotCurve(HS.hotSamples);
 
-	// Remove the hot spot
-	if (prim->excludePoints(HS.hotSamples))
-		return;
+	// find the centroid of hot samples as the representative
+	Vec3d hotPoint(0, 0, 0);
+	for (int i=0; i<HS.hotSamples.size();i++)
+		hotPoint += HS.hotSamples[i];
+	hotPoint /= HS.hotSamples.size();
 
-	// Move hot spot side away or up/down
+	// Save the initial hot shape state
+	ShapeState initialHotShapeState = ctrl->getShapeState();
+
+	// Recompute the offset and envelops using only hot segments
+	computeOffset();
+	double preStackability = getStackability();
+
+	// Move hot spot side away or closer to each other
+	std::vector< Vec3d > Ts;
 	if (HS.defineHeight)
-	{
-		//
-		std::vector< Vec3d > Ts = getHorizontalMoves(hid, side);
-		//if (T[0] != BIG_NUMBER)
-		//{
-		//	prim->moveCurveCenter(cid, T * 1.5);
-		//}
-	}
+		Ts = getHorizontalMoves(hid, side);
 	else
+		Ts.push_back( Vec3d(0, 0, 0.1) );
+
+	// Actually modify the shape to generate hot solutions
+//	for (int i=0;i<Ts.size();i++)
+	int i = 0;
 	{
-		Vec3d T(0, 0, 0.1);
-		prim->translateCurve(cid, T, -1);
+		// Move the current hot segments
+		prim->movePoint(hotPoint, Ts[i]);
+		return;
+			
+		// Propagation among hot segments
+		ctrl->setPrimitivesFrozen(false);
+		prim->isFrozen = true;
+		ctrl->propagate();
+
+		// Check if this is a hotSolution
+		computeOffset();
+		if (getStackability() > preStackability)
+			hotSolutions.push_back(ctrl->getShapeState());
+
+		// Restore the initial hot shape state
+		ctrl->setShapeState(initialHotShapeState);
 	}
 }
 
@@ -793,7 +802,7 @@ void Offset::improveStackabilityTo( double targetS )
 	// Push the current shape as the initial candidate solution
 	candidateSolutions.push(ctrl->getShapeState());
 
-	while(!candidateSolutions.empty())
+//	while(!candidateSolutions.empty())
 	{
 		// Get the first candidate solution
 		ShapeState currShape = candidateSolutions.front();
@@ -806,7 +815,7 @@ void Offset::improveStackabilityTo( double targetS )
 		{
 			// Yes. Got one solution.
 			solutions.push_back(currShape);
-			continue;
+			//continue;
 		}
 		else
 		{
@@ -832,6 +841,7 @@ void Offset::improveStackability()
 	// Several hot solutions might be generated, which are stored in *hotSolutions*
 	applyHeuristics();
 
+	return;
 
 	//=========================================================================================
 	// Step 3: Propagate hot solutions to remaining cold parts to generate *candidateSolutions*
@@ -840,7 +850,7 @@ void Offset::improveStackability()
 		QMap< QString, void* > &currShape = hotSolutions[i];
 		ctrl->setShapeState(currShape);
 		
-		if (ctrl->propagate(this))
+//		if (ctrl->propagate())
 		{// The propagation succeeds, we obtain one candidate solution
 			candidateSolutions.push(ctrl->getShapeState());
 		}

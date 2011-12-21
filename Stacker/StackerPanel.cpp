@@ -401,5 +401,6 @@ void StackerPanel::findJoints()
 
 void StackerPanel::onIterateButtonClicked()
 {
-	activeOffset->applyHeuristics();
+	activeOffset->improveStackabilityTo(panel.targetS->value());
+	emit(objectModified());
 }

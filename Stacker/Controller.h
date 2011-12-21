@@ -6,7 +6,6 @@
 #include "Group.h"
 
 class QSegMesh;
-class Offset;
 
 typedef QMap< QString, void* > ShapeState;
 
@@ -59,15 +58,12 @@ public:
 	void setShapeState( ShapeState &shapeState );
 
 	// Propagation
-	bool propagate(Offset* activeOffset);
+	void propagate();
 
 
 	// Debug items
 	std::vector<Point> debugPoints;
 	std::vector< std::vector<Point> > debugLines;
-
-	// Testing
-	void test1();
 
 	// Flags
 	void setSegmentsVisible(bool isVisible = true);

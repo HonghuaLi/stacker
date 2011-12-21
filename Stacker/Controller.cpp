@@ -156,14 +156,6 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton )
 	}
 }
 
-void Controller::test1()
-{
-	// Deform the primitive
-	Cuboid* cp = ( Cuboid* )primitives[0];
-	cp->scaleAlongAxis( Vector3(0.9, 0.9, 0) );
-	cp->deformMesh();
-	m_mesh->computeBoundingBox();
-}
 
 void Controller::deformShape( PrimitiveParamMap& primParams, bool isPermanent )
 {
@@ -335,6 +327,12 @@ void Controller::findJoints(double threshold)
 				segments.push_back(keys[j]);
 				newGroup->process(segments, centerPoint);
 
+				Primitive::Joint joint;
+				joint.pos = centerPoint;
+				joint.frozen = false;
+				a->joints.push_back(joint);
+				b->joints.push_back(joint);
+
 				this->groups[newGroup->id] = newGroup;
 			}
 		}
@@ -430,15 +428,8 @@ std::set< QString > Controller::getRidOfRedundancy( std::set< QString > Ids )
 
 // Propagations happen only to *available* segments
 // From *frozen* segments to *unfrozen* ones
-bool Controller::propagate( Offset* activeOffset )
+void Controller::propagate()
 {
-	bool result = false;
-
-	// The stackability of hotSolutions should be preserved
-	//double S = activeOffset->getStackability();
-
-	// Propagation
-
 	// Stack frozen primitives
 	QQueue<Primitive *> frozen;
 	foreach(Primitive * p, primitives)
@@ -461,8 +452,6 @@ bool Controller::propagate( Offset* activeOffset )
 			}
 		}
 	}
-
-	return result;
 }
 
 QVector< Group * > Controller::groupsOf( QString id )
@@ -484,7 +473,14 @@ void Controller::setSegmentsVisible( bool isVisible /*= true*/ )
 void Controller::setPrimitivesFrozen( bool isFrozen /*= false*/ )
 {
 	foreach(Primitive* prim, primitives)
+	{
 		prim->isFrozen = isFrozen;
+		
+		// all the joints
+		for (int i=0;i<prim->joints.size();i++)
+			prim->joints[i].frozen = isFrozen;
+
+	}
 }
 
 void Controller::setPrimitivesAvailable( bool isAvailable /*= true*/ )

@@ -239,6 +239,8 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				QAction* symmGrp = menu.addAction("Create Symmetry group..");
 				QAction* concentricGrp = menu.addAction("Create Concentric group..");
 				QAction* coplanGrp = menu.addAction("Create Coplanar group..");
+				QAction* self1foldSymm = menu.addAction("Create 1-fold Self-Symmetry..");
+				QAction* self2foldSymm = menu.addAction("Create 2-fold Self-Symmetry..");
 
 				QAction* action = menu.exec(e->globalPos()); // show menu
 
@@ -248,7 +250,8 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				if(action == symmGrp)		newGroup = new SymmetryGroup(ctrl, SYMMETRY);
 				if(action == concentricGrp) newGroup = new ConcentricGroup(ctrl, CONCENTRIC);
 				if(action == coplanGrp)		newGroup = new CoplanarGroup(ctrl, COPLANNAR);
-
+				if(action == self1foldSymm) ctrl->getPrimitive(selection[0])->setSymmetryPlanes(1);
+				if(action == self2foldSymm) ctrl->getPrimitive(selection[0])->setSymmetryPlanes(2);
 
 				if(newGroup)
 				{

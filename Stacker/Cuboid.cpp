@@ -137,6 +137,11 @@ void Cuboid::draw()
 		glColor4f(0,1,0,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[1], 0.1f);
 		glColor4f(0,0,1,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[2], 0.1f);
 	}
+
+	for (int i=0;i<symmPlanes.size();i++)
+	{
+		symmPlanes[i].draw();
+	}
 }
 
 void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
@@ -580,17 +585,17 @@ void Cuboid::setState( void *state)
 }
 
 
-// opt: 1->1 fold symmetry  2->2 fold symmetry
-std::vector<Plane> Cuboid::getSymmetryPlanes( int opt )
+// creat *nb_fold* symmetry according to the *selectedPartId*
+void Cuboid::setSymmetryPlanes( int nb_fold )
 {
 	std::vector<Plane> result;
 
 	Point center = currBox.Center;
 
-	if (opt == 1)
+	if (nb_fold == 1)
 	{
 		Vec3d normal = currBox.Axis[selectedPartId/2];
-		result.push_back(Plane(normal, center));
+		symmPlanes.push_back(Plane(normal, center));
 	} 
 	else
 	{
@@ -598,11 +603,9 @@ std::vector<Plane> Cuboid::getSymmetryPlanes( int opt )
 		Vec3d normal1 = currBox.Axis[(id+1)%3];
 		Vec3d normal2 = currBox.Axis[(id+2)%3];
 
-		result.push_back(Plane(normal1, center));
-		result.push_back(Plane(normal2, center));
+		symmPlanes.push_back(Plane(normal1, center));
+		symmPlanes.push_back(Plane(normal2, center));
 	}
-
-	return result;
 }
 
 void Cuboid::setSelectedPartId( Vec3d normal )
@@ -671,25 +674,40 @@ void Cuboid::movePoint( Point p, Vec3d T )
 {
 	// Move the control point p according to some properties, such as symmetry, joint
 
-	// If *p* is close to one end of the box
-	Vec3d coord = getCoordinatesInBox(currBox, p);
-
-	double smallestDelta = 2;
-	int id = -1;
-	for (int i=0;i<3;i++)
+	// There are two symmetry planes
+	if (!symmPlanes.empty())
 	{
-		double delta = abs(coord[i])-1;
-		if ( delta < smallestDelta )
+		Point newP = p + T;
+		Vec3d coordP = getCoordinatesInBox(currBox, p);
+		Vec3d coordNewP = getCoordinatesInBox(currBox, newP);
+
+		// Scaling along axis that define the normal of the symmetry plane
+		Vec3d scales(coordNewP[0]/coordP[0], coordNewP[1]/coordP[1], coordNewP[2]/coordP[2]);
+		
+		for (int i=0;i<3;i++ )
 		{
-			smallestDelta = delta;
-			id = i;
+			Vec3d axis = currBox.Axis[i];
+			for (int j=0;j<symmPlanes.size();j++){
+				if ( abs( dot(axis, symmPlanes[j].n) > 0.99 ) )
+				{
+					currBox.Extent[i] *= scales[i];
+					break;
+				}
+			}
 		}
+		
+	}
+	// If there are no fixed points
+	else if (fixedPoints.empty())
+	{
+		// Translation
+		currBox.Center += T;
+	}
+	else
+	{
+		deformRespectToJoint(fixedPoints[0], p, T);
 	}
 
-	int fid = (coord[id]<0)? 2*id : 2*id+1;
-	Vec3d k = faceCenterOfBox(currBox, fid);
-
-	deformRespectToJoint(k, p, T);
 	deformMesh();
 }
 
