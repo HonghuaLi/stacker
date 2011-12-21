@@ -64,7 +64,9 @@ public:
 	virtual std::vector < std::vector <Vec3d> > getCurves();
 
 	// Symmetry
-	virtual std::vector<Plane> getSymmetryPlanes(int opt);
+	virtual void setSymmetryPlanes(int nb_fold);
+
+
 	virtual void setSelectedPartId( Vec3d normal );
 
 	void scaleAlongAxis( Vector3 &scales );

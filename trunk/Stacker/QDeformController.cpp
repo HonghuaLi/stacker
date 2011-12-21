@@ -29,7 +29,7 @@ void QDeformController::updateController()
 	prim->isFrozen = true;
 
 	prim->moveCurveCenter( -1, pos() - prim->selectedPartPos() );
-	ctrl->propagate( NULL );
+	ctrl->propagate();
 
 	prim->isFrozen = false;
 

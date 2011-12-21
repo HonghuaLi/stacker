@@ -410,6 +410,9 @@
     <ClCompile Include="GraphicsLibrary\Plane.cpp">
       <Filter>GraphicsLibrary\Source</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Line.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -594,6 +597,9 @@
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Voxeler.h">
       <Filter>GraphicsLibrary\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\ShapeDistribution.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Plane.h">
       <Filter>GraphicsLibrary\Header</Filter>

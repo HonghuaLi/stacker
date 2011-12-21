@@ -8,8 +8,6 @@ void JointGroup::process( QVector< QString > segments, Vec3d joint )
 	addNodes(segments);
 
 	// Set the joint position and coordinates in two primitives
-	jointPos = joint;
-
 	Primitive * a = getPrimitive(segments.first());
 	Primitive * b = getPrimitive(segments.last());
 	coordinates[segments.first()] = a->getCoordinate(joint);
@@ -19,7 +17,11 @@ void JointGroup::process( QVector< QString > segments, Vec3d joint )
 void JointGroup::draw()
 {
 	// Show joints
-	SimpleDraw::IdentifyPoint( jointPos );
+	Primitive * a = getPrimitive(nodes.values().first());
+	Primitive * b = getPrimitive(nodes.values().last());
+
+	SimpleDraw::IdentifyPoint( a->fromCoordinate(coordinates[a->id]) );
+	SimpleDraw::IdentifyPoint( b->fromCoordinate(coordinates[b->id]) );
 }
 
 QVector<Primitive *> JointGroup::regroup()
@@ -43,12 +45,10 @@ QVector<Primitive *> JointGroup::regroup()
 
 	// The joint has been apart, try to join them again
 	Vec3d newPos = frozen->fromCoordinate(coordinates[frozen->id]);
-	non_frozen->movePoint(jointPos, newPos - jointPos);
+	Vec3d oldPos = non_frozen->fromCoordinate(coordinates[non_frozen->id]);
+	non_frozen->movePoint(oldPos, newPos - oldPos);
 
-	jointPos = newPos;
-	coordinates[frozen->id] = frozen->getCoordinate(jointPos);
-	coordinates[non_frozen->id] = non_frozen->getCoordinate(jointPos);
-
+	coordinates[non_frozen->id] = non_frozen->getCoordinate(newPos);
 
 	result.push_back(non_frozen);
 

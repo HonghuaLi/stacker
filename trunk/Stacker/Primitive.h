@@ -3,6 +3,8 @@
 #include "QSurfaceMesh.h"
 #include "PrimativeParam.h"
 #include "Plane.h"
+#include <QVector>
+
 
 class Primitive
 {
@@ -56,8 +58,18 @@ public:
 	QSurfaceMesh*		m_mesh;			
 	QSurfaceMesh* getMesh(){ return m_mesh; }
 
-	// Symmetry
-	virtual std::vector<Plane> getSymmetryPlanes(int opt) {return std::vector<Plane>();};
+	// Symmetry, joints, fixed points
+	struct Joint{
+		Point pos;
+		bool frozen;
+	};
+	QVector<Joint> joints;
+	QVector<Point> fixedPoints;
+	QVector<Plane> symmPlanes;
+	virtual void setSymmetryPlanes(int nb_fold){}
+
+
+
 
 	// Helpful for debugging
 	std::vector<Vec3d> debugPoints;
