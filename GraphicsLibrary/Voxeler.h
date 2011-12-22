@@ -24,7 +24,7 @@ private:
 	KDTree outerVoxels, innerVoxels;
 
 public:
-	Voxeler( QSurfaceMesh * src_mesh, double voxel_size);
+	Voxeler( QSurfaceMesh * src_mesh, double voxel_size, bool verbose = false);
 
 	FaceBounds findFaceBounds( Surface_mesh::Face f );
 	bool isVoxelIntersects( const Voxel & v, Surface_mesh::Face f );
@@ -44,4 +44,5 @@ public:
 	static void drawVoxels( const std::vector< Voxel > & voxels, double voxel_size = 1.0);
 
 	uint d1, d2;
+	bool isVerbose;
 };

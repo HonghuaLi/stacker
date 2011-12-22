@@ -20,6 +20,7 @@ void JointGroup::draw()
 	Primitive * a = getPrimitive(nodes.values().first());
 	Primitive * b = getPrimitive(nodes.values().last());
 
+	glClear(GL_DEPTH_BUFFER_BIT);
 	SimpleDraw::IdentifyPoint( a->fromCoordinate(coordinates[a->id]) );
 	SimpleDraw::IdentifyPoint( b->fromCoordinate(coordinates[b->id]) );
 }
@@ -47,10 +48,12 @@ QVector<Primitive *> JointGroup::regroup()
 	Vec3d newPos = frozen->fromCoordinate(coordinates[frozen->id]);
 	Vec3d oldPos = non_frozen->fromCoordinate(coordinates[non_frozen->id]);
 	non_frozen->movePoint(oldPos, newPos - oldPos);
-
 	coordinates[non_frozen->id] = non_frozen->getCoordinate(newPos);
 
-	result.push_back(non_frozen);
+	// Fixed the joint
+	non_frozen->addFixedPoint(newPos);
+	if (non_frozen->isFrozen)
+		result.push_back(non_frozen);
 
 	return result;
 }

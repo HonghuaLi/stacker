@@ -67,7 +67,7 @@ public:
 	QVector<Point> fixedPoints;
 	QVector<Plane> symmPlanes;
 	virtual void setSymmetryPlanes(int nb_fold){}
-
+	virtual void addFixedPoint(Point fp){}
 
 
 

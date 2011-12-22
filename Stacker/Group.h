@@ -57,6 +57,7 @@ public:
 
 	// Visualization
 	virtual void draw();
+	bool isDraw;
 	virtual void drawDebug();
 	std::vector<Point> debugPoints;
 	std::vector< std::pair<Point,Point> > debugLines;

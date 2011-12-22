@@ -664,53 +664,71 @@ void Offset::applyHeuristics()
 	// Heuristics are applied for each pair of hot spots	
 	hotSolutions.clear();
 	applyHeuristicsOnHotspot(0, 1);		
-//	applyHeuristicsOnHotspot(0, -1);	
+	applyHeuristicsOnHotspot(0, -1);	
 }
 
 void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 {
 	// Hot spot
 	Controller *ctrl = activeObject()->controller;
-	HotSpot &HS = (side == 1)? upperHotSpots[hid] : lowerHotSpots[hid];
+
+	HotSpot &HS = upperHotSpots[hid];
+	HotSpot &opHS =  lowerHotSpots[hid];
+	if (-1 == side)
+	{
+		HS = lowerHotSpots[hid];
+		opHS = upperHotSpots[hid];
+	}
 	Primitive* prim = ctrl->getPrimitive(HS.segmentID);
+	Primitive* op_prim = ctrl->getPrimitive(opHS.segmentID);
 
 	// find the centroid of hot samples as the representative
-	Vec3d hotPoint(0, 0, 0);
-	for (int i=0; i<HS.hotSamples.size();i++)
-		hotPoint += HS.hotSamples[i];
-	hotPoint /= HS.hotSamples.size();
+	Point hotPoint = HS.hotPoint();
+	Point op_hotPoint = opHS.hotPoint();
 
 	// Save the initial hot shape state
 	ShapeState initialHotShapeState = ctrl->getShapeState();
 
-	// Recompute the offset and envelops using only hot segments
-	computeOffset();
-	double preStackability = getStackability();
 
 	// Move hot spot side away or closer to each other
-	std::vector< Vec3d > Ts;
+	std::vector< Vec3d > Ts; // translations of hot spots
 	if (HS.defineHeight)
+	{
+		// Recompute the offset and envelops using only hot segments
+		computeOffset();
+
 		Ts = getHorizontalMoves(hid, side);
+	}
 	else
-		Ts.push_back( Vec3d(0, 0, 0.1) );
+	{
+		// Move up/down directly
+		Vec3d T(0, 0, 0.1);
+		if (1 == side) T *= -1;
+
+		Ts.push_back( T );
+	}
 
 	// Actually modify the shape to generate hot solutions
-//	for (int i=0;i<Ts.size();i++)
-	int i = 0;
+	for (int i=0;i<Ts.size();i++)
 	{
 		// Move the current hot segments
 		prim->movePoint(hotPoint, Ts[i]);
-		return;
 			
-		// Propagation among hot segments
+		// fix the hot segments pair
 		ctrl->setPrimitivesFrozen(false);
 		prim->isFrozen = true;
+		op_prim->addFixedPoint(op_hotPoint);
+		ctrl->regroupPair(prim->id, op_prim->id);
+		op_prim->isFrozen = true;
+
+		// Propagation among hot segments
 		ctrl->propagate();
 
 		// Check if this is a hotSolution
 		computeOffset();
 		if (getStackability() > preStackability)
 			hotSolutions.push_back(ctrl->getShapeState());
+
 
 		// Restore the initial hot shape state
 		ctrl->setShapeState(initialHotShapeState);
@@ -799,6 +817,10 @@ void Offset::improveStackabilityTo( double targetS )
 {
 	Controller *ctrl = activeObject()->controller;
 
+	// The bounding box constraint is hard
+	pre_bbmin = activeObject()->bbmin * 1.1;
+	pre_bbmax = activeObject()->bbmax * 1.1;
+
 	// Push the current shape as the initial candidate solution
 	candidateSolutions.push(ctrl->getShapeState());
 
@@ -834,14 +856,25 @@ void Offset::improveStackability()
 	//=========================================================================================
 	// Step 1: Detect hot spots
 	detectHotspots();
-
+	preStackability = getStackability();
 
 	//=========================================================================================
 	// Step 2: Apply heuristics on hot spots
 	// Several hot solutions might be generated, which are stored in *hotSolutions*
 	applyHeuristics();
 
-	return;
+	// erase non-BB satifiying solutions
+	std::vector<ShapeState>::iterator itr;
+	for (itr = hotSolutions.begin(); itr != hotSolutions.end(); )
+	{
+		ctrl->setShapeState(*itr);
+		if (satisfyBBConstraint())
+			itr++;
+		else
+			itr = hotSolutions.erase(itr);
+	}
+
+	return; // debug
 
 	//=========================================================================================
 	// Step 3: Propagate hot solutions to remaining cold parts to generate *candidateSolutions*
@@ -855,5 +888,39 @@ void Offset::improveStackability()
 			candidateSolutions.push(ctrl->getShapeState());
 		}
 	}
+}
+
+void Offset::showHotSolution( int i )
+{
+	if (hotSolutions.empty())
+	{
+		std::cout << "There is no hot solution.\n";
+		return;
+	}
+
+	int id = i % hotSolutions.size();
+	Controller *ctrl = activeObject()->controller;
+	ctrl->setShapeState(hotSolutions[id]);
+
+	std::cout << "Showing the " << id << "th out of " << hotSolutions.size() <<" hot solution.\n";
+}
+
+bool Offset::satisfyBBConstraint()
+{
+	bool result = true;
+
+	activeObject()->computeBoundingBox();
+	Vec3d bbmin = activeObject()->bbmin;
+	Vec3d bbmax = activeObject()->bbmax;
+	for (int j=0;j<3;j++)
+	{
+		if ( (bbmax[j] - bbmin[j]) > (pre_bbmax[j] - pre_bbmin[j]) )
+		{
+			result = false;
+			break;
+		}
+	}
+
+	return result;
 }
 

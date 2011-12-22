@@ -9,6 +9,7 @@ Group::Group( Controller * controller, GroupType newType )
 	this->ctrl = controller;
 	this->type = newType;
 	this->id = QString("%1").arg(GroupUniqueID++);
+	this->isDraw = false;
 }
 
 void Group::addNode( QString nodeId )
@@ -57,6 +58,8 @@ Primitive * Group::getPrimitive(QString nodeId)
 
 void Group::draw()
 {
+	if(!isDraw) return;
+
 	foreach(QString node, nodes)
 	{
 		SimpleDraw::IdentifyPoint(getPrimitive(node)->centerPoint(), 0,0,1);

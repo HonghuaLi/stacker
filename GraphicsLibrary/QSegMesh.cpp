@@ -307,6 +307,8 @@ void QSegMesh::computeBoundingBox()
 	
 	for (int i = 0; i < nbSegments();i++)
 	{
+		if (!segment[i]->isVisible) continue;
+
 		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
 		Surface_mesh::Vertex_iterator vit, vend = segment[i]->vertices_end();
 

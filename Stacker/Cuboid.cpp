@@ -15,7 +15,7 @@ Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newI
 	fit();
 
 	selectedPartId = -1;
-	isDrawAxis = true;
+	isDrawAxis = false;
 }
 
 void Cuboid::fit()
@@ -709,6 +709,14 @@ void Cuboid::movePoint( Point p, Vec3d T )
 	}
 
 	deformMesh();
+}
+
+void Cuboid::addFixedPoint( Point fp )
+{
+	if (!symmPlanes.empty() || !fixedPoints.empty())
+		isFrozen = true;
+
+	fixedPoints.push_back(fp);
 }
 
 

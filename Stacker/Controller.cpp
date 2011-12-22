@@ -476,10 +476,8 @@ void Controller::setPrimitivesFrozen( bool isFrozen /*= false*/ )
 	{
 		prim->isFrozen = isFrozen;
 		
-		// all the joints
-		for (int i=0;i<prim->joints.size();i++)
-			prim->joints[i].frozen = isFrozen;
-
+		// Clean up the fixed points
+		prim->fixedPoints.clear();
 	}
 }
 
@@ -488,3 +486,20 @@ void Controller::setPrimitivesAvailable( bool isAvailable /*= true*/ )
 	foreach(Primitive* prim, primitives)
 		prim->isAvailable = isAvailable;
 }
+
+void Controller::regroupPair( QString id1, QString id2 )
+{
+	Group *pairGrp = NULL;
+	QVector<Group*> groups = groupsOf(id1);
+	for (int i=0;i<groups.size();i++){
+		if (groups[i]->has(id2))
+		{
+			pairGrp = groups[i];
+			break;
+		}
+	}
+
+	if (pairGrp)
+		pairGrp->regroup();
+}
+

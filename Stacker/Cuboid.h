@@ -65,6 +65,7 @@ public:
 
 	// Symmetry
 	virtual void setSymmetryPlanes(int nb_fold);
+	virtual void addFixedPoint(Point fp);
 
 
 	virtual void setSelectedPartId( Vec3d normal );
