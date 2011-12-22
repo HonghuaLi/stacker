@@ -27,6 +27,13 @@ public:
 					  << "\tsegmentID="	  << qPrintable(segmentID) 
 					  << "\tdefineHeight=" << defineHeight << std::endl; 
 		}
+
+		Point hotPoint(){
+			Vec3d hp(0, 0, 0);
+			for (int i=0; i<hotSamples.size();i++)
+				hp += hotSamples[i];
+			return (hp / hotSamples.size());
+		}
 	};
 
 public:
@@ -55,6 +62,9 @@ public:
 	void applyHeuristics();
 	void applyHeuristicsOnHotspot( uint hid, int side );
 	std::vector< Vec3d > getHorizontalMoves( uint hid, int side );
+	double preStackability;
+	Vec3d pre_bbmin, pre_bbmax;
+	bool satisfyBBConstraint();
 
 	// Numeric
 	double getValue( std::vector< std::vector < double > >& image, uint x, uint y, uint r );
@@ -87,6 +97,7 @@ public:
 	void setPixelColor( std::vector< std::vector < double > >& image, Vec2i pos, double color );
 	QRgb jetColor( double val, double min, double max );
 	void visualizeHotRegions( QString filename );
+	void showHotSolution(int i);
 public:
 	HiddenViewer * activeViewer;
 	int filterSize;

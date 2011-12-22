@@ -51,6 +51,8 @@ void SymmetryGroup::process(QVector<QString> segments)
 
 void SymmetryGroup::draw()
 {
+	if(!isDraw) return;
+
 	// Draw debug and stuff
 	Group::draw();
 

@@ -59,6 +59,7 @@ public:
 
 	// Propagation
 	void propagate();
+	void regroupPair(QString id1, QString id2);
 
 
 	// Debug items

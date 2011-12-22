@@ -2,15 +2,16 @@
 #include "SimpleDraw.h"
 #include "Stats.h"
 
-Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size)
+Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size, bool verbose /*= false*/ )
 {
 	this->mesh = src_mesh;
 	this->voxelSize = voxel_size;
+	this->isVerbose = verbose;
 
 	if(mesh == NULL)
 		return;
 
-	printf("Computing voxels..");
+	if(isVerbose) printf("Computing voxels..");
 
 	mesh->assignFaceArray();
 
@@ -42,13 +43,14 @@ Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size)
 	// Setup visualization
 	setupDraw();
 
-	printf(".voxel count = %d.\n", (int)voxels.size());
+	if(isVerbose) printf(".voxel count = %d.\n", (int)voxels.size());
 
 	// Inner / outer computation
 	//fillInsideOut(innerVoxels, outerVoxels);
 
-	printf("done.");
+	if(isVerbose) printf("done.");
 }
+
 
 void Voxeler::computeBounds()
 {

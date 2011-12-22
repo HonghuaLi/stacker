@@ -43,6 +43,7 @@ StackerPanel::StackerPanel()
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
 	connect(panel.iterateButton, SIGNAL(clicked()), SLOT(onIterateButtonClicked()));
+	connect(panel.hotSolutionButton, SIGNAL(clicked()), SLOT(onHotSolutionButtonClicked()));
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(panel.userControl, SIGNAL(clicked()), SLOT(userControlledPrimatives()));
 
@@ -402,5 +403,11 @@ void StackerPanel::findJoints()
 void StackerPanel::onIterateButtonClicked()
 {
 	activeOffset->improveStackabilityTo(panel.targetS->value());
+	emit(objectModified());
+}
+
+void StackerPanel::onHotSolutionButtonClicked()
+{
+	activeOffset->showHotSolution(panel.hsID->value());
 	emit(objectModified());
 }

@@ -239,6 +239,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				QAction* symmGrp = menu.addAction("Create Symmetry group..");
 				QAction* concentricGrp = menu.addAction("Create Concentric group..");
 				QAction* coplanGrp = menu.addAction("Create Coplanar group..");
+				menu.addSeparator();
 				QAction* self1foldSymm = menu.addAction("Create 1-fold Self-Symmetry..");
 				QAction* self2foldSymm = menu.addAction("Create 2-fold Self-Symmetry..");
 
