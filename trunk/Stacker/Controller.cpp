@@ -492,10 +492,8 @@ void Controller::setPrimitivesFrozen( bool isFrozen /*= false*/ )
 
 void Controller::setPrimitivesAvailable( bool isAvailable /*= true*/ )
 {
-	QMap<QString, Primitive*>::iterator itr, end = primitives.end();
-	for (itr = primitives.begin(); itr != end; itr++)
+	foreach(Primitive* prim, primitives)
 	{
-		Primitive *prim = *itr;
 		prim->isAvailable = isAvailable;
 	}
 }

@@ -9,8 +9,8 @@
 #define ZERO_TOLERANCE 0.05
 #define BIG_NUMBER 9999
 
-int FILTER_SIZE = 0;
-double HOT_RANGE = 0.95;
+int FILTER_SIZE = 1;
+double HOT_RANGE = 0.9;
 
 Offset::Offset( HiddenViewer *viewer )
 {
@@ -199,8 +199,8 @@ void Offset::hotspotsFromDirection( int direction )
 		std::map< QString,  std::vector< Vec2i > >::iterator itr;
 		for ( itr = subHotRegions.begin(); itr != subHotRegions.end(); itr++)
 		{
-			//if (itr->second.size() < 10)
-			//	continue; // a bad way to get rid of noise
+			if (itr->second.size() < 5)
+				continue; // a bad way to get rid of noise
 
 			QString segmentID = itr->first;
 			newHotRegions.push_back(itr->second);
@@ -670,8 +670,8 @@ void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 	// Hot spot
 	Controller *ctrl = activeObject()->controller;
 
-	HotSpot &HS = upperHotSpots[hid];
-	HotSpot &opHS =  lowerHotSpots[hid];
+	HotSpot HS = upperHotSpots[hid];
+	HotSpot opHS =  lowerHotSpots[hid];
 	if (-1 == side)
 	{
 		HS = lowerHotSpots[hid];
@@ -724,7 +724,7 @@ void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 
 		// Propagation among hot segments
 		ctrl->propagate();
-		return;
+
 		// Check if this is a hotSolution
 		if ( satisfyBBConstraint() )
 		{
@@ -779,7 +779,7 @@ std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
 
 	// Search for optional locations in 1-K rings
 	std::vector< Vec3d > Ts;
-	int K = 5;
+	int K = 8;
 	for (uint k = 1; k < K; k++)
 	{
 		std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
@@ -820,12 +820,6 @@ std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
 void Offset::improveStackabilityTo( double targetS )
 {
 	Controller *ctrl = activeObject()->controller;
-
-	ctrl->setPrimitivesAvailable(false);
-	ctrl->setPrimitivesAvailable(true);
-	ctrl->setPrimitivesFrozen(false);
-	ctrl->setPrimitivesFrozen(true);
-
 
 	// The bounding box constraint is hard
 	pre_bbmin = activeObject()->bbmin * 1.05;
@@ -880,20 +874,31 @@ void Offset::improveStackability()
 	applyHeuristics();
 
 	activeObject()->computeBoundingBox();
-	return; // debug
-
-
+	return;
 	//=========================================================================================
 	// Step 3: Propagate hot solutions to remaining cold parts to generate *candidateSolutions*
 	for (int i=0;i<hotSolutions.size();i++)
 	{
 		QMap< QString, void* > &currShape = hotSolutions[i];
 		ctrl->setShapeState(currShape);
-		
-//		if (ctrl->propagate())
-		{// The propagation succeeds, we obtain one candidate solution
-			candidateSolutions.push(ctrl->getShapeState());
+		ctrl->setPrimitivesFrozen(false);
+		foreach(QString id, hotSegments)
+		{
+			Primitive *prim = ctrl->getPrimitive(id);
+			prim->isFrozen = true;
 		}
+		ctrl->setPrimitivesAvailable(true);
+		ctrl->propagate();
+
+		if ( satisfyBBConstraint() )
+		{
+			computeOffset();
+			// The propagation succeeds, we obtain one candidate solution
+			if (getStackability() > preStackability + 0.1)
+				//candidateSolutions.push(ctrl->getShapeState());
+				solutions.push_back(ctrl->getShapeState());
+		}
+
 	}
 }
 
@@ -901,7 +906,7 @@ void Offset::showHotSolution( int i )
 {
 	if (hotSolutions.empty())
 	{
-		std::cout << "There is no hot solution.\n";
+		std::cout << "There is no solution.\n";
 		return;
 	}
 
