@@ -4,27 +4,22 @@
 #include "ClosedPolygon.h"
 #include "SimpleDraw.h"
 
-GeneralizedCylinder::GeneralizedCylinder( Skeleton * skeleton, QSurfaceMesh * mesh )
+GeneralizedCylinder::GeneralizedCylinder( std::vector<Point> spinePoints, QSurfaceMesh * mesh )
 {
-	int numSteps = Max(skeleton->sortedSelectedNodes.size(), 10);
-	std::vector<ResampledPoint> reSampledSpine = skeleton->resampleSmoothSelectedPath(numSteps, 2);
-
-	std::vector<Point> reSampledSpinePoints;
-	foreach(ResampledPoint sample, reSampledSpine) reSampledSpinePoints.push_back(sample.pos);
+	// push ends by tiny bit
+	spinePoints.front() -= 0.001 * (spinePoints[1] - spinePoints[0]).normalized();
+	spinePoints.back() += 0.001 * (spinePoints[spinePoints.size() - 1] - 
+		spinePoints[spinePoints.size() - 2]).normalized();
 
 	// Build minimum rotation frames on this spine
-	frames = RMF (reSampledSpinePoints);
-
-	// Get faces structure
-	skeleton->getSelectedFaces(true);
-	std::map< uint, std::vector<Point> > face;
-	foreach(uint fi, skeleton->lastSelectedFaces)
-		face[fi] = mesh->facePoints(mesh->face_array[fi]);
+	frames = RMF (spinePoints);
 
 	double sumRadius = 0; // for average radius
+	int numNonZero = 0;
+	double nonZeroRadius = 0.0;
 
 	// Build cross-section
-	for(uint i = 0; i < reSampledSpine.size(); i++)
+	for(uint i = 0; i < spinePoints.size(); i++)
 	{
 		// Find radius from the cross-section
 		double radius = 0;
@@ -32,11 +27,11 @@ GeneralizedCylinder::GeneralizedCylinder( Skeleton * skeleton, QSurfaceMesh * me
 		
 		ClosedPolygon polygon(frames.point[i]);
 
-		foreach(uint fi, skeleton->lastSelectedFaces)
+		for(uint fi = 0; fi < mesh->face_array.size(); fi++)
 		{
 			Vec3d p1, p2;
 
-			if(ContourFacet(frames.U[i].t, frames.point[i], face[fi], p1, p2) > 0)
+			if(ContourFacet(frames.U[i].t, frames.point[i], mesh->facePoints(mesh->face_array[fi]), p1, p2) > 0)
 				polygon.insertLine(p1,p2);
 		}
 
@@ -44,26 +39,46 @@ GeneralizedCylinder::GeneralizedCylinder( Skeleton * skeleton, QSurfaceMesh * me
 
 		// Sort based on distance and filter based on segment distance
 		foreach(Point p, polygon.closedPoints)
+		{
 			radius = Max(radius, (p - frames.point[i]).norm());
-				
+		}
+
+		// Some filters to be fail-safe
+		if(nonZeroRadius == 0 && radius != 0)	nonZeroRadius = radius;
+		if(radius > 10 * nonZeroRadius)	radius = 0;
+
 		crossSection.push_back(Circle(frames.point[i], radius, frames.U[i].t, i));
 
 		sumRadius += radius;
+		if(radius != 0) numNonZero++;
 	}
 
-	double avgRadius = sumRadius / crossSection.size();
+	// Start and end
+	if(crossSection.front().radius == 0) 
+		crossSection.front().radius = crossSection[1].radius;
 
-	// Silly filter for end points
-	if(crossSection.front().radius > avgRadius)	crossSection.front().radius = avgRadius;
-	if(crossSection.back().radius > avgRadius) crossSection.back().radius = avgRadius;
+	if(crossSection.back().radius == 0) 
+		crossSection.back().radius = crossSection[crossSection.size() - 2].radius;
 
-	// Silly filter for inner cross-sections radius
-	for(int j = 0; j < 2; j++){
-		for(uint i = 1; i < crossSection.size() - 1; i++){
-			if(crossSection[i].radius > crossSection[i+1].radius * 2)
-				crossSection[i].radius = (crossSection[i-1].radius + crossSection[i+1].radius) / 2.0;
-		}
-	}
+	// Some filters to be fail-safe
+	double avgRadius = sumRadius / numNonZero;
+	for (uint i = 0; i < crossSection.size(); i++)
+		if(crossSection[i].radius == 0) crossSection[i].radius = avgRadius;
+
+	// Smoothing for some robustness
+	std::vector<double> filterRadius(crossSection.size());
+	/*for(int k = 0; k < 4; k++)
+	{
+		for (uint i = 0; i < crossSection.size(); i++)
+			filterRadius[i] = crossSection[i].radius;
+
+		for (uint i = 1; i < crossSection.size() - 1; i++)
+			filterRadius[i] = (filterRadius[i-1] + filterRadius[i+1]) / 2.0;
+		filterRadius.front() = filterRadius[0]; filterRadius.back() = filterRadius[filterRadius.size() - 2];
+
+		for (uint i = 0; i < crossSection.size(); i++)
+			crossSection[i].radius = filterRadius[i];
+	}*/
 
 	src_mesh = mesh;
 	isDrawFrames = false;

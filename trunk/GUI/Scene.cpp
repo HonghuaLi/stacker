@@ -282,27 +282,6 @@ void Scene::mouseMoveEvent( QMouseEvent* e )
 
 void Scene::keyPressEvent( QKeyEvent *e )
 {
-	if(e->key() == Qt::Key_K)
-	{
-		skel = new Skeleton();
-		skelExt = new SkeletonExtract(activeObject()->getSegment(0));
-		skelExt->SaveToSkeleton(skel);
-
-		std::list<int> path = skel->getGraph().GetLargestConnectedPath();
-
-		if(path.size())
-		{	
-			skel->selectNode(path.front());	
-			skel->selectNode(path.back());
-			skel->selectEdges(path.front(), path.back());
-
-			gc = new GeneralizedCylinder(skel, activeObject()->getSegment(0));
-		}
-
-		activeObject()->setColorVertices(1,1,1,0.5);
-		updateActiveObject();
-	}
-
 	if(e->key() == Qt::Key_W)
 	{
 		this->setRenderMode(RENDER_WIREFRAME);

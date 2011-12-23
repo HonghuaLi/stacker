@@ -25,8 +25,7 @@ public:
 	// Fitting
 	void fitPrimitives();
 	void fitOBBs();	
-	void convertToGC(QString primitiveId, bool isUsingSkeleton = true);
-
+	void convertToGC( QString primitiveId, bool isUsingSkeleton = true, int cuboidAxis = 0 );
 	// Joints
 	void findJoints(double threshold);
 

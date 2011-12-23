@@ -38,6 +38,8 @@ public:
 	Pairdouble lengthsAt(double time);
 	Vec3d midPoint();
 
+	std::vector<Vec3d> uniformSample(int numSamples);
+
 	void translateBy(const Vec3d& delta);
 
 	double distanceToUnbounded(const Vec3d& point);

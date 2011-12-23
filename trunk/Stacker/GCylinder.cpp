@@ -2,20 +2,25 @@
 #include "SkeletonExtract.h"
 #include "SimpleDraw.h"
 
-GCylinder::GCylinder( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
+GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {
-	fit();
-	buildCage();
-}
+	cage = NULL;
 
-void GCylinder::fit()
-{
-	if(!m_mesh->vertex_array.size())
-	{
+	// useful for fitting process
+	if(!m_mesh->vertex_array.size()){
 		m_mesh->assignFaceArray();
 		m_mesh->assignVertexArray();
 	}
 
+	if(doFit)
+	{
+		fit();
+		buildCage();
+	}
+}
+
+void GCylinder::fit()
+{
 	// Extract and save skeleton
 	SkeletonExtract skelExt( m_mesh );
 	skel = new Skeleton();
@@ -24,8 +29,13 @@ void GCylinder::fit()
 	// Select part of skeleton
 	skel->selectLongestPath();
 
-	// Compute generalized cylinder
-	gc = new GeneralizedCylinder( skel, m_mesh );
+	// Compute generalized cylinder given spine points
+	int numSteps = Max(skel->sortedSelectedNodes.size(), 10);
+	std::vector<Point> reSampledSpinePoints;
+	foreach(ResampledPoint sample, skel->resampleSmoothSelectedPath(numSteps, 3)) 
+		reSampledSpinePoints.push_back(sample.pos);
+
+	createGC(reSampledSpinePoints);
 
 	Vec3d p = gc->frames.point.front();
 	Vec3d q = gc->frames.point.back();
@@ -37,6 +47,14 @@ void GCylinder::fit()
 	mf2->setPosition(qglviewer::Vec(q.x(), q.y(), q.z()));
 	connect(mf1, SIGNAL(manipulated()), this, SLOT(update()));
 	connect(mf2, SIGNAL(manipulated()), this, SLOT(update()));
+}
+
+void GCylinder::createGC( std::vector<Point> spinePoints )
+{
+	gc = new GeneralizedCylinder( spinePoints, m_mesh );
+
+	foreach(Point p, spinePoints)
+		debugPoints.push_back(p);
 }
 
 void GCylinder::computeMeshCoordiantes()
@@ -55,6 +73,7 @@ void GCylinder::draw()
 	glDisable(GL_LIGHTING);
 	glLineWidth(2.0);
 	glColor3d(0, 0.5, 1);
+	if(isSelected) glColor3d(1, 1, 0);
 
 	double delta = 1.1;
 
@@ -85,20 +104,32 @@ void GCylinder::draw()
 	glEnable(GL_LIGHTING);
 
 	// Debug
-	Vec3d p(mf1->position().x, mf1->position().y, mf1->position().z);
+	/*Vec3d p(mf1->position().x, mf1->position().y, mf1->position().z);
 	Vec3d q(mf2->position().x, mf2->position().y, mf2->position().z);
 
 	SimpleDraw::IdentifyPoint(p);
-	SimpleDraw::IdentifyPoint2(q);
+	SimpleDraw::IdentifyPoint2(q);*/
 
 	//gc->draw();
-	cage->simpleDraw();
+	if(cage) cage->simpleDraw();
 	//skel->draw(true);
 }
 
-void GCylinder::drawNames( int name, bool isDrawParts /*= false*/ )
+void GCylinder::drawNames( int name, bool isDrawParts)
 {
+	if(isDrawParts)
+	{
+		foreach(GeneralizedCylinder::Circle c, gc->crossSection)
+		{
 
+		}
+	}
+	else
+	{
+		glPushName(name);
+		if(cage) cage->simpleDraw();
+		glPopName();
+	}
 }
 
 void GCylinder::update()
@@ -133,7 +164,9 @@ void GCylinder::buildCage()
 {
 	cage = new QSurfaceMesh;
 		
-	int sides = 6;
+	int sides = 8;
+	double deltaScale = 1.5;
+
 	uint vindex = 0;
 	std::map<uint, Surface_mesh::Vertex> v;
 	std::vector<Surface_mesh::Vertex> verts(3), verts2(3);
@@ -143,7 +176,7 @@ void GCylinder::buildCage()
 		
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
-		std::vector<Point> points = c.toSegments(sides, gc->frames.U[c.index].s, 1.25);
+		std::vector<Point> points = c.toSegments(sides, gc->frames.U[c.index].s, deltaScale);
 		for(int i = 0; i < sides; i++)
 			v[vindex++] = cage->add_vertex(points[i]);
 	}

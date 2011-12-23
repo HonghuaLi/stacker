@@ -39,6 +39,8 @@ public:
 	double normalize();
 	double scalingFactor;
 
+	double closestDistancePointVertices(const Point & p);
+
 	std::vector<Point> clonePoints();
 	void setFromPoints(const std::vector<Point>& fromPoints);
 	std::vector< std::pair<Point, Point> > cloneEdges();

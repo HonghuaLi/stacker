@@ -139,23 +139,32 @@ Vec3d Controller::getPrimPartPos()
 	return Vec3d();
 }
 
-void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton )
+void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cuboidAxis )
 {
+	Primitive * oldPrimitive = primitives[primitiveId];
+
 	// Convert to generalized cylinder
-	if(isUsingSkeleton)
+	primitives[primitiveId] = new GCylinder(primitives[primitiveId]->getMesh(), primitiveId, isUsingSkeleton);
+	
+	if(!isUsingSkeleton)
 	{
-		Primitive * oldPrimitive = primitives[primitiveId];
+		GCylinder * gc = (GCylinder *)primitives[primitiveId];
 
-		primitives[primitiveId] = new GCylinder(primitives[primitiveId]->getMesh(), primitiveId);
+		Cuboid * cuboid = (Cuboid*)oldPrimitive;
 
-		delete oldPrimitive;
+		double extent = cuboid->originalBox.Extent[cuboidAxis];
+		Vec3d axis = cuboid->originalBox.Axis[cuboidAxis];
+		Vec3d center = cuboid->centerPoint();
+
+		Line line(center + (axis * extent), center + (-axis * extent));
+		std::vector<Point> spinePoints = line.uniformSample(10);
+
+		gc->createGC(spinePoints);
+		gc->buildCage();
 	}
-	else
-	{
 
-	}
+	delete oldPrimitive;
 }
-
 
 void Controller::deformShape( PrimitiveParamMap& primParams, bool isPermanent )
 {

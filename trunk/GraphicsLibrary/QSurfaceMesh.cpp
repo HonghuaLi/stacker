@@ -600,3 +600,16 @@ std::vector< std::pair<Point, Point> > QSurfaceMesh::cloneEdges()
 
 	return result;
 }
+
+double QSurfaceMesh::closestDistancePointVertices( const Point & p )
+{
+	double minDist = DBL_MAX;
+
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	for(vit = vertices_begin(); vit != vend; ++vit)
+		minDist = Min(minDist, (points[vit] - p).norm());
+
+	return minDist;
+}
