@@ -173,7 +173,7 @@
       <item row="11" column="1">
        <widget class="QSpinBox" name="hsID">
         <property name="maximum">
-         <number>2</number>
+         <number>10000</number>
         </property>
        </widget>
       </item>
