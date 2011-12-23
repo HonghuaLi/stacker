@@ -10,6 +10,8 @@
 
 class HiddenViewer;
 
+extern int FILTER_SIZE;
+extern double HOT_RANGE;
 
 class Offset
 {
@@ -51,7 +53,7 @@ public:
 
 	// Detect hot spots
 	void hotspotsFromDirection( int direction );
-	void detectHotspots(int useFilterSize = 1, double hotRange = 0.99);
+	void detectHotspots();
 	std::set<uint> getHotSegment();
 	void showHotSpots();
 	bool defineHeight( int direction, std::vector< Vec2i >& region);

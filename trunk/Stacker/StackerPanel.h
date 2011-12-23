@@ -47,6 +47,8 @@ public slots:
 	void updateActiveObject();
 
 	void setConvexHullPrecision(int p);
+	void setHotspotFilterSize(int size);
+	void setHotRange(double range);
 
 	// Primitives modification
 	void convertGC();

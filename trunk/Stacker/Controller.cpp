@@ -483,8 +483,12 @@ void Controller::setPrimitivesFrozen( bool isFrozen /*= false*/ )
 
 void Controller::setPrimitivesAvailable( bool isAvailable /*= true*/ )
 {
-	foreach(Primitive* prim, primitives)
+	QMap<QString, Primitive*>::iterator itr, end = primitives.end();
+	for (itr = primitives.begin(); itr != end; itr++)
+	{
+		Primitive *prim = *itr;
 		prim->isAvailable = isAvailable;
+	}
 }
 
 void Controller::regroupPair( QString id1, QString id2 )
