@@ -15,7 +15,7 @@ StackerPanel::StackerPanel()
 	panel.setupUi(this);
 
 	// Add controller deformer widget
-	ctrlDeformer.setupUi(panel.controllerDeformerPanel);
+	//ctrlDeformer.setupUi(panel.controllerDeformerPanel);
 
 	QGridLayout * layout = (QGridLayout *) panel.groupBox->layout();
 	int row = layout->rowCount() + 1;
@@ -58,7 +58,7 @@ StackerPanel::StackerPanel()
 	connect(panel.hotRange, SIGNAL(valueChanged (double)), this, SLOT(setHotRange(double)));
 
 	// Connect controller deformer
-	connect(ctrlDeformer.transX, SIGNAL(valueChanged(int)), SLOT(updateController()));
+	/*connect(ctrlDeformer.transX, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.transY, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.transZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.rotX, SIGNAL(valueChanged(int)), SLOT(updateController()));
@@ -67,7 +67,7 @@ StackerPanel::StackerPanel()
 	connect(ctrlDeformer.scaleX, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.scaleY, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.scaleZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.resetButton, SIGNAL(clicked()), SLOT(resetCtrlDeformerPanel()));
+	connect(ctrlDeformer.resetButton, SIGNAL(clicked()), SLOT(resetCtrlDeformerPanel()));*/
 	
 	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
 
@@ -180,7 +180,7 @@ void StackerPanel::convertGC()
 	foreach(Primitive * prim, ctrl->getPrimitives())
 	{
 		if(prim->isSelected)
-			ctrl->convertToGC(prim->id, !panel.basicFitGC->isChecked());
+			ctrl->convertToGC(prim->id, !panel.basicFitGC->isChecked(), panel.convertGcAxis->value());
 	}
 }
 

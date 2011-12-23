@@ -2,6 +2,7 @@
 
 #include "Primitive.h"
 #include "GeneralizedCylinder.h"
+#include "Skeleton.h"
 #include "GCDeformation.h"
 #include "QGLViewer/manipulatedFrame.h"
 
@@ -10,10 +11,11 @@ class GCylinder : public QObject, public Primitive
 	Q_OBJECT
 
 public:
-	GCylinder(QSurfaceMesh* segment, QString newId);
+	GCylinder( QSurfaceMesh* segment, QString newId, bool doFit = true);
 
 public:
 	virtual void fit();
+	virtual void createGC( std::vector<Point> spinePoints );
 	virtual void computeMeshCoordiantes();
 	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
 	virtual void deformMesh();
@@ -30,8 +32,9 @@ public:
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect );
 	virtual bool excludePoints( std::vector< Vec3d >& pnts );
 
-
 	void translate(Vec3d T);
+
+	void buildCage();
 
 	qglviewer::ManipulatedFrame *mf1, *mf2;
 
@@ -51,7 +54,7 @@ private:
 	Skeleton * skel;
 
 	QSurfaceMesh * cage;
-	void buildCage();
 	void updateCage();
+
 	GCDeformation * gcd;
 };

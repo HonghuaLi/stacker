@@ -226,3 +226,18 @@ void Line::setColor( const Color& newColor )
 {
 	color = newColor;
 }
+
+std::vector<Vec3d> Line::uniformSample( int numSamples )
+{
+	std::vector<Vec3d> result;
+
+	double deltaLength = length / (numSamples - 1);
+	Vec3d delta = deltaLength * direction().normalized();
+
+	result.push_back(a);
+
+	for(uint i = 1; i < numSamples; i++)
+		result.push_back(result.back() + delta);
+
+	return result;
+}

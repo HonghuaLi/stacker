@@ -609,14 +609,14 @@ void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, float r, floa
 	if(showVec3ds)
 	{
 		// Draw colored end points
-		glPointSize(lineWidth * 4);
+		glPointSize(lineWidth * 5);
 		glBegin(GL_POINTS);
 		glVertex3dv(p1);
 		glVertex3dv(p2);
 		glEnd();
 
 		// White border end points
-		glPointSize((lineWidth * 4) + 2);
+		glPointSize((lineWidth * 5) + 2);
 		glColor3f(1, 1, 1);
 
 		glBegin(GL_POINTS);

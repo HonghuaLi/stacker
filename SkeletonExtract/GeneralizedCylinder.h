@@ -1,8 +1,6 @@
 #pragma once
 
 #include "QSurfaceMesh.h"
-#include "Skeleton.h"
-
 #include "RMF.h"
 
 class GeneralizedCylinder{
@@ -10,8 +8,7 @@ private:
 	QSurfaceMesh * src_mesh;
 
 public:
-	GeneralizedCylinder( Skeleton * skeleton, QSurfaceMesh * mesh );
-
+	GeneralizedCylinder( std::vector<Point> spinePoints, QSurfaceMesh * mesh );
 	QSurfaceMesh geometry;
 	RMF frames;
 
