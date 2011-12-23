@@ -16,6 +16,8 @@ Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newI
 
 	selectedPartId = -1;
 	isDrawAxis = false;
+	isAvailable = true;
+	isFrozen = false;
 }
 
 void Cuboid::fit()

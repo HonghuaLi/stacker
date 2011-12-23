@@ -8,6 +8,8 @@ Primitive::Primitive( QSurfaceMesh* mesh, QString newId )
 	id = newId;
 
 	isSelected = false;
+	isAvailable = true;
+	isFrozen = false;
 }
 
 void Primitive::drawDebug()

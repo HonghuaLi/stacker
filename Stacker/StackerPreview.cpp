@@ -97,7 +97,7 @@ void StackerPreview::postDraw()
 {
 	QGLViewer::postDraw();
 
-	qglColor(Qt::white);
+	qglColor(Qt::black);
 
 	if(activeObject())
 	{

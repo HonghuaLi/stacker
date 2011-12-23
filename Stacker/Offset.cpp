@@ -9,11 +9,12 @@
 #define ZERO_TOLERANCE 0.05
 #define BIG_NUMBER 9999
 
+int FILTER_SIZE = 0;
+double HOT_RANGE = 0.95;
+
 Offset::Offset( HiddenViewer *viewer )
 {
 	activeViewer = viewer;
-
-	filterSize = 1;
 }
 
 QSegMesh* Offset::activeObject()
@@ -164,7 +165,7 @@ void Offset::hotspotsFromDirection( int direction )
 			y = hotPixel.y();
 
 			// 3d position of this hot sample
-			double depthVal = getValue(depth, x, y, filterSize);
+			double depthVal = getValue(depth, x, y, FILTER_SIZE);
 
 			if (depthVal == BIG_NUMBER) 
 				continue;
@@ -198,8 +199,8 @@ void Offset::hotspotsFromDirection( int direction )
 		std::map< QString,  std::vector< Vec2i > >::iterator itr;
 		for ( itr = subHotRegions.begin(); itr != subHotRegions.end(); itr++)
 		{
-			if (itr->second.size() < 10)
-				continue; // a bad way to get rid of noise
+			//if (itr->second.size() < 10)
+			//	continue; // a bad way to get rid of noise
 
 			QString segmentID = itr->first;
 			newHotRegions.push_back(itr->second);
@@ -220,11 +221,8 @@ void Offset::hotspotsFromDirection( int direction )
 	delete colormap;	
 }
 
-void Offset::detectHotspots( int useFilterSize, double hotRange )
+void Offset::detectHotspots( )
 {
-	filterSize = useFilterSize;
-	hotRangeThreshold = hotRange;
-
 	// Initialization
 	clear();
 
@@ -232,7 +230,7 @@ void Offset::detectHotspots( int useFilterSize, double hotRange )
 	computeOffset();
 
 	// Detect hot regions
-	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * hotRange));
+	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
 	visualizeHotRegions("hot regions 1.png");
 
 	// Detect hot spots from both directions
@@ -586,7 +584,7 @@ Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int direction )
 	if (direction == -1){
 		x = depth[0].size() - 1 - x;
 	}
-	double depthVal = RANGED(0, getValue(depth, x, y, filterSize), 1);
+	double depthVal = RANGED(0, getValue(depth, x, y, FILTER_SIZE), 1);
 
 	Vec P = activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (depth.size()-1)-y, depthVal));
 
@@ -702,7 +700,7 @@ void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 	else
 	{
 		// Move up/down directly
-		Vec3d T(0, 0, 0.1);
+		Vec3d T(0, 0, 1);
 		if (1 == side) T *= -1;
 
 		Ts.push_back( T );
@@ -710,24 +708,30 @@ void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 
 	// Actually modify the shape to generate hot solutions
 	for (int i=0;i<Ts.size();i++)
+	//int i=23;
 	{
 		// Move the current hot segments
 		prim->movePoint(hotPoint, Ts[i]);
 			
 		// fix the hot segments pair
 		ctrl->setPrimitivesFrozen(false);
-		prim->isFrozen = true;
-		op_prim->addFixedPoint(op_hotPoint);
+		prim->addFixedPoint(hotPoint + Ts[i]);
+		op_prim->addFixedPoint(op_hotPoint); 
+		// There is one case that neither *prim* nor *op_prim* is *frozen*.
 		ctrl->regroupPair(prim->id, op_prim->id);
+		prim->isFrozen = true;
 		op_prim->isFrozen = true;
 
 		// Propagation among hot segments
 		ctrl->propagate();
-
+		return;
 		// Check if this is a hotSolution
-		computeOffset();
-		if (getStackability() > preStackability)
-			hotSolutions.push_back(ctrl->getShapeState());
+		if ( satisfyBBConstraint() )
+		{
+			computeOffset();
+			if (getStackability() > preStackability + 0.1)
+				hotSolutions.push_back(ctrl->getShapeState());
+		}
 
 
 		// Restore the initial hot shape state
@@ -752,8 +756,8 @@ std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
 
 	// Project BB to 2D buffer
 	std::vector< std::vector< double > > BBImg = createImage( offset[0].size(), offset.size(), 0. );
-	Vec2i bbmin = projectedCoordinatesOf(activeObject()->bbmin, 1);
-	Vec2i bbmax = projectedCoordinatesOf(activeObject()->bbmax, 1);
+	Vec2i bbmin = projectedCoordinatesOf(pre_bbmin, 1);
+	Vec2i bbmax = projectedCoordinatesOf(pre_bbmax, 1);
 	setPixelColor(BBImg, bbmin, 1.0);
 	setPixelColor(BBImg, bbmax, 0.5);
 	saveAsImage(BBImg, 1.0, "BB projection.png");
@@ -775,7 +779,7 @@ std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
 
 	// Search for optional locations in 1-K rings
 	std::vector< Vec3d > Ts;
-	int K = 10;
+	int K = 5;
 	for (uint k = 1; k < K; k++)
 	{
 		std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
@@ -817,9 +821,15 @@ void Offset::improveStackabilityTo( double targetS )
 {
 	Controller *ctrl = activeObject()->controller;
 
+	ctrl->setPrimitivesAvailable(false);
+	ctrl->setPrimitivesAvailable(true);
+	ctrl->setPrimitivesFrozen(false);
+	ctrl->setPrimitivesFrozen(true);
+
+
 	// The bounding box constraint is hard
-	pre_bbmin = activeObject()->bbmin * 1.1;
-	pre_bbmax = activeObject()->bbmax * 1.1;
+	pre_bbmin = activeObject()->bbmin * 1.05;
+	pre_bbmax = activeObject()->bbmax * 1.05;
 
 	// Push the current shape as the initial candidate solution
 	candidateSolutions.push(ctrl->getShapeState());
@@ -855,7 +865,13 @@ void Offset::improveStackability()
 	// improve the stackability of current shape in three steps
 	//=========================================================================================
 	// Step 1: Detect hot spots
+	std::cout << "FilterSize = " << FILTER_SIZE << std::endl;
 	detectHotspots();
+	if (hotRegions.empty())
+	{
+		std::cout << "Hot spots detection failed.\n";
+		return;
+	}
 	preStackability = getStackability();
 
 	//=========================================================================================
@@ -863,18 +879,9 @@ void Offset::improveStackability()
 	// Several hot solutions might be generated, which are stored in *hotSolutions*
 	applyHeuristics();
 
-	// erase non-BB satifiying solutions
-	std::vector<ShapeState>::iterator itr;
-	for (itr = hotSolutions.begin(); itr != hotSolutions.end(); )
-	{
-		ctrl->setShapeState(*itr);
-		if (satisfyBBConstraint())
-			itr++;
-		else
-			itr = hotSolutions.erase(itr);
-	}
-
+	activeObject()->computeBoundingBox();
 	return; // debug
+
 
 	//=========================================================================================
 	// Step 3: Propagate hot solutions to remaining cold parts to generate *candidateSolutions*
@@ -902,24 +909,26 @@ void Offset::showHotSolution( int i )
 	Controller *ctrl = activeObject()->controller;
 	ctrl->setShapeState(hotSolutions[id]);
 
-	std::cout << "Showing the " << id << "th out of " << hotSolutions.size() <<" hot solution.\n";
+	std::cout << "Showing the " << id << "th hot solution out of " << hotSolutions.size() <<".\n";
 }
 
 bool Offset::satisfyBBConstraint()
 {
 	bool result = true;
-
+	Vec3d preBB = pre_bbmax - pre_bbmin;
 	activeObject()->computeBoundingBox();
-	Vec3d bbmin = activeObject()->bbmin;
-	Vec3d bbmax = activeObject()->bbmax;
-	for (int j=0;j<3;j++)
-	{
-		if ( (bbmax[j] - bbmin[j]) > (pre_bbmax[j] - pre_bbmin[j]) )
-		{
-			result = false;
-			break;
-		}
-	}
+	Vec3d currBB = activeObject()->bbmax - activeObject()->bbmin;
+
+	Vec3d diff = preBB - currBB;
+	if ( diff[0] < 0 || diff[1] < 0 || diff[2] < 0 )
+		result = false;
+
+	// debug
+	std::cout << "-----------------------------------\n"
+		<<"The preBB size: (" << preBB <<")\n";	
+	std::cout << "The currBB size:(" << currBB <<")\n";
+	std::cout << "BB-satisfying: " << result <<std::endl;
+
 
 	return result;
 }

@@ -53,6 +53,10 @@ StackerPanel::StackerPanel()
 	connect(panel.chPrecision, SIGNAL(valueChanged (int)), this, SLOT(setConvexHullPrecision(int)));
 	CH_PRECISION = panel.chPrecision->value();
 
+	// Offset 
+	connect(panel.hotspotFilter, SIGNAL(valueChanged (int)), this, SLOT(setHotspotFilterSize(int)));
+	connect(panel.hotRange, SIGNAL(valueChanged (double)), this, SLOT(setHotRange(double)));
+
 	// Connect controller deformer
 	connect(ctrlDeformer.transX, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.transY, SIGNAL(valueChanged(int)), SLOT(updateController()));
@@ -120,7 +124,7 @@ void StackerPanel::onHotspotsButtonClicked()
 	if(!activeScene || !activeObject())
 		return;
 
-	activeOffset->detectHotspots(panel.hotspotFilter->value(), panel.hotRange->value());
+	activeOffset->detectHotspots();
 	activeOffset->showHotSpots();
 	emit(objectModified());
 	showMessage("Hot spots are detected.");
@@ -411,3 +415,15 @@ void StackerPanel::onHotSolutionButtonClicked()
 	activeOffset->showHotSolution(panel.hsID->value());
 	emit(objectModified());
 }
+
+void StackerPanel::setHotspotFilterSize( int size )
+{
+	FILTER_SIZE = size;
+}
+
+void StackerPanel::setHotRange( double range)
+{
+	HOT_RANGE = range;
+}
+
+
