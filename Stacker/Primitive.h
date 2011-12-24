@@ -29,12 +29,13 @@ public:
 
 	// Reshaping
 	virtual void translate( Vec3d &T ) {}
-	virtual void moveCurveCenter( uint fid, Vec3d T) {}
+	virtual void moveCurveCenter( int cid, Vec3d T) = 0;
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) {}
 	virtual bool excludePoints( std::vector< Vec3d >& pnts ) = 0;
 	virtual void reshapePart( Vec3d q ) {}
 	virtual void reshapeFromCorners( std::vector<Vec3d>& corners) {}
 	virtual void movePoint(Point p, Vec3d T){}
+	virtual void scaleCurve(int cid, double s){}
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v ) = 0;

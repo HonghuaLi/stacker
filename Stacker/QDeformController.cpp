@@ -5,6 +5,8 @@ QDeformController::QDeformController(Controller * usingController)
 {
 	this->frame = new qglviewer::ManipulatedFrame;
 	this->ctrl = usingController;
+	
+	this->lastScale = 1.0;
 
 	this->connect(frame, SIGNAL(manipulated()), SLOT(updateController()));
 }
@@ -32,6 +34,15 @@ void QDeformController::updateController()
 	ctrl->propagate();
 
 	prim->isFrozen = false;
+
+	emit( objectModified() );
+}
+
+void QDeformController::scaleUp( double s )
+{
+	Primitive * prim = ctrl->getSelectedPrimitive();
+
+	prim->scaleCurve(-1, s);
 
 	emit( objectModified() );
 }

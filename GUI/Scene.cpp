@@ -268,6 +268,24 @@ void Scene::mousePressEvent( QMouseEvent* e )
 	}
 }
 
+void Scene::wheelEvent( QWheelEvent* e )
+{
+	if(selectMode != CONTROLLER_ELEMENT)
+		QGLViewer::wheelEvent(e);
+
+	switch (selectMode)
+	{
+	case CONTROLLER_ELEMENT:
+		{
+			if(!defCtrl) break;
+
+			double s = 0.1 * (e->delta() / 120.0);
+			defCtrl->scaleUp(s);
+		}
+		break;
+	}
+}
+
 void Scene::mouseReleaseEvent( QMouseEvent* e )
 {
 	// Regular behavior

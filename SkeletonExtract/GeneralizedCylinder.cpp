@@ -6,11 +6,6 @@
 
 GeneralizedCylinder::GeneralizedCylinder( std::vector<Point> spinePoints, QSurfaceMesh * mesh )
 {
-	// push ends by tiny bit
-	spinePoints.front() -= 0.001 * (spinePoints[1] - spinePoints[0]).normalized();
-	spinePoints.back() += 0.001 * (spinePoints[spinePoints.size() - 1] - 
-		spinePoints[spinePoints.size() - 2]).normalized();
-
 	// Build minimum rotation frames on this spine
 	frames = RMF (spinePoints);
 
@@ -67,7 +62,7 @@ GeneralizedCylinder::GeneralizedCylinder( std::vector<Point> spinePoints, QSurfa
 
 	// Smoothing for some robustness
 	std::vector<double> filterRadius(crossSection.size());
-	/*for(int k = 0; k < 4; k++)
+	for(int k = 0; k < 2; k++)
 	{
 		for (uint i = 0; i < crossSection.size(); i++)
 			filterRadius[i] = crossSection[i].radius;
@@ -78,7 +73,11 @@ GeneralizedCylinder::GeneralizedCylinder( std::vector<Point> spinePoints, QSurfa
 
 		for (uint i = 0; i < crossSection.size(); i++)
 			crossSection[i].radius = filterRadius[i];
-	}*/
+	}
+
+	// push ends a tiny bit
+	crossSection.front().center -= 0.01 * (crossSection[1].center - crossSection[0].center).normalized();
+	crossSection.back().center += 0.01 * (crossSection.back().center - crossSection[crossSection.size() - 2].center).normalized();
 
 	src_mesh = mesh;
 	isDrawFrames = false;
