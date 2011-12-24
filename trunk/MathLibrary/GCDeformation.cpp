@@ -22,8 +22,6 @@ GCDeformation::GCDeformation( QSurfaceMesh * forShape, QSurfaceMesh * usingCage 
 	for (int i = 0; i < (int)shapePoints.size(); i++)
 	{
 		computeCoordinates( shapePoints[i], i );
-
-		if(i % 5000) printf(".");
 	}
 }
 
@@ -131,7 +129,7 @@ void GCDeformation::computeCoordinates(const Vec3d& point, uint vIndex)
 
 		Vector4d x = A.fullPivLu().solve(pnt);
 		
-		// Set coordinates
+		// Set special coordinates
 		for (int i = 0; i < 3; i++)
 			coord_v[vIndex][ faceVrts[i] ] += x[i];
 		coord_n[vIndex][ fi ] += x[3];

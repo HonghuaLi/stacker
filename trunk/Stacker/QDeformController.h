@@ -12,8 +12,11 @@ public:
 	Vec3d pos();
 	void draw();
 
+	double lastScale;
+
 public slots:
 	void updateController();
+	void scaleUp(double s);
 
 signals:
 	void objectModified();

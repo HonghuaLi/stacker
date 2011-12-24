@@ -41,7 +41,7 @@ public:
 	// Reshaping
 	virtual void translate( Vector3 &T );
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
-	virtual void moveCurveCenter( uint fid, Vec3d T);
+	virtual void moveCurveCenter( int fid, Vec3d T);
 	virtual bool excludePoints( std::vector< Vec3d >& pnts );
 	virtual void reshapeFromCorners( std::vector<Vec3d>& corners);
 	virtual void movePoint(Point p, Vec3d T);

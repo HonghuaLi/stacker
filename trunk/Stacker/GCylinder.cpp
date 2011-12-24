@@ -6,6 +6,11 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 {
 	cage = NULL;
 
+	deltaScale = 1.5;
+
+	cageScale = 1.5;
+	cageSides = 8;
+
 	// useful for fitting process
 	if(!m_mesh->vertex_array.size()){
 		m_mesh->assignFaceArray();
@@ -52,9 +57,6 @@ void GCylinder::fit()
 void GCylinder::createGC( std::vector<Point> spinePoints )
 {
 	gc = new GeneralizedCylinder( spinePoints, m_mesh );
-
-	foreach(Point p, spinePoints)
-		debugPoints.push_back(p);
 }
 
 void GCylinder::computeMeshCoordiantes()
@@ -71,16 +73,20 @@ void GCylinder::deformMesh()
 void GCylinder::draw()
 {
 	glDisable(GL_LIGHTING);
-	glLineWidth(2.0);
 	glColor3d(0, 0.5, 1);
-	if(isSelected) glColor3d(1, 1, 0);
-
-	double delta = 1.1;
 
 	// Cross-sections
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
-		std::vector<Point> pnts = c.toSegments(30, gc->frames.U[c.index].s, delta);
+		glLineWidth(2.0);
+		if(isSelected) glColor3d(1, 1, 0);
+
+		if(c.index == this->selectedPartId){
+			glLineWidth(6.0);
+			glColor3d(0, 1, 0);
+		}
+
+		std::vector<Point> pnts = c.toSegments(30, gc->frames.U[c.index].s, deltaScale);
 		pnts.push_back(pnts.front());
 		glBegin(GL_LINE_STRIP);
 		foreach(Vec3d p, pnts) glVertex3dv(p);
@@ -91,13 +97,16 @@ void GCylinder::draw()
 	glLineStipple(1, 0xAAAA);
 	glEnable(GL_LINE_STIPPLE);
 
+	glLineWidth(2.0);
+	glColor3d(0, 0.5, 1);
+
 	glBegin(GL_LINE_STRIP);
 	for(uint i = 0; i < gc->frames.count(); i++)
-		glVertex3dv(gc->frames.point[i] + (gc->frames.U[i].r * gc->crossSection[i].radius * delta));
+		glVertex3dv(gc->frames.point[i] + (gc->frames.U[i].r * gc->crossSection[i].radius * deltaScale));
 	glEnd();
 	glBegin(GL_LINE_STRIP);
 	for(uint i = 0; i < gc->frames.count(); i++)
-		glVertex3dv(gc->frames.point[i] + (gc->frames.U[i].r * -gc->crossSection[i].radius * delta));
+		glVertex3dv(gc->frames.point[i] + (gc->frames.U[i].r * -gc->crossSection[i].radius * deltaScale));
 	glEnd();
 
 	glDisable(GL_LINE_STIPPLE);
@@ -111,7 +120,7 @@ void GCylinder::draw()
 	SimpleDraw::IdentifyPoint2(q);*/
 
 	//gc->draw();
-	if(cage) cage->simpleDraw();
+	//if(cage) cage->simpleDraw();
 	//skel->draw(true);
 }
 
@@ -119,9 +128,16 @@ void GCylinder::drawNames( int name, bool isDrawParts)
 {
 	if(isDrawParts)
 	{
+		int curveId = 0;
+
 		foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 		{
-
+			glPushName(curveId++);
+			glBegin(GL_POLYGON);
+			std::vector<Point> points = c.toSegments(20, gc->frames.U[c.index].s, deltaScale);
+			foreach(Point p, points) glVertex3dv(p);
+			glEnd();
+			glPopName();
 		}
 	}
 	else
@@ -164,9 +180,6 @@ void GCylinder::buildCage()
 {
 	cage = new QSurfaceMesh;
 		
-	int sides = 8;
-	double deltaScale = 1.5;
-
 	uint vindex = 0;
 	std::map<uint, Surface_mesh::Vertex> v;
 	std::vector<Surface_mesh::Vertex> verts(3), verts2(3);
@@ -176,34 +189,31 @@ void GCylinder::buildCage()
 		
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
-		std::vector<Point> points = c.toSegments(sides, gc->frames.U[c.index].s, deltaScale);
-		for(int i = 0; i < sides; i++)
+		std::vector<Point> points = c.toSegments(cageSides, gc->frames.U[c.index].s, cageScale);
+		for(int i = 0; i < cageSides; i++)
 			v[vindex++] = cage->add_vertex(points[i]);
 	}
 
 	// End vertex
 	v[vindex++] = cage->add_vertex(gc->crossSection.back().center);
 
-	// Add faces
+	// Add faces:
 	int findex = 0;
 
 	// Start cap
-	for(int i = 1; i <= sides; i++)
-	{
-		verts[0] = v[i]; verts[1] = v[0]; verts[2] = v[(i % sides) + 1];
-		cage->add_face( verts );
-	}
+	for(int i = 1; i <= cageSides; i++)
+		cage->add_triangle( v[i], v[0], v[(i % cageSides) + 1] );
 
 	// Sides
 	for(uint c = 0; c < gc->crossSection.size() - 1; c++)
 	{
-		int offset = (c * sides) + 1;
+		int offset = (c * cageSides) + 1;
 
-		for(int i = 0; i < sides; i++){
-			int v1 = NEXT(i, sides) + offset;
-			int v2 = NEXT(i + 1, sides) + offset;
-			int v3 = v2 + sides;
-			int v4 = v1 + sides;
+		for(int i = 0; i < cageSides; i++){
+			int v1 = NEXT(i, cageSides) + offset;
+			int v2 = NEXT(i + 1, cageSides) + offset;
+			int v3 = v2 + cageSides;
+			int v4 = v1 + cageSides;
 
 			verts[0] = v[v1]; verts[1] = v[v2]; verts[2] = v[v3];
 			verts2[0] = v[v1]; verts2[1] = v[v3]; verts2[2] = v[v4];
@@ -216,42 +226,41 @@ void GCylinder::buildCage()
 
 	// End cap
 	int end = cage->n_vertices() - 1;
-	for(int i = 0; i < sides; i++){
-		verts[0] = v[end];
-		verts[1] = v[(end-1) - NEXT(i + 2, sides)]; 
-		verts[2] = v[(end-1) - NEXT(i + 1, sides)];
-		cage->add_face(verts);
+	for(int i = 0; i < cageSides; i++)
+	{
+		cage->add_triangle(v[end], v[(end-1) - NEXT(i + 2, cageSides)], 
+			v[(end-1) - NEXT(i + 1, cageSides)]);
 	}
 	
 	cage->setColorVertices(1,1,1,0.5);
 	cage->update_face_normals();
 	cage->update_vertex_normals();
+
+	computeMeshCoordiantes();
 }
 
 void GCylinder::updateCage()
 {
-	int sides = 5;
-
 	Surface_mesh::Vertex_property<Point> cagePoints = cage->vertex_property<Point>("v:point");
-	
+	std::vector<Point> points;
+
 	// First point
 	cagePoints[Surface_mesh::Vertex(0)] = gc->crossSection.front().center;
 
+	// Middle points
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
-		if(c.index < gc->crossSection.size() - 1) // cage constraints
-		{
-			std::vector<Point> points = c.toSegments(sides, gc->frames.U[c.index].s, 1.25);
+		points = c.toSegments(cageSides, gc->frames.U[c.index].s, 1.25);
 
-			for(int i = 0; i < sides; i++){
-				uint vi = (1 + c.index * sides) + i;
-				cagePoints[Surface_mesh::Vertex(vi)] = points[i];
-			}
+		for(int i = 0; i < cageSides; i++)
+		{
+			uint vi = (1 + c.index * cageSides) + i;
+			cagePoints[Surface_mesh::Vertex(vi)] = points[i];
 		}
 	}
 
 	// Last point
-	//cagePoints[Surface_mesh::Vertex(cage->n_vertices() - 1)] = gc->crossSection.back().center;
+	cagePoints[Surface_mesh::Vertex(cage->n_vertices() - 1)] = gc->crossSection.back().center;
 }
 
 std::vector <Vec3d> GCylinder::points()
@@ -324,4 +333,63 @@ void* GCylinder::getState()
 void GCylinder::setState( void* toState)
 {
 
+}
+
+Vec3d GCylinder::selectedPartPos()
+{
+	Vec3d result(0,0,0);
+
+	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
+	{
+		if(c.index == selectedPartId){
+			result = c.center;
+			break;
+		}
+	}
+
+	return result;
+}
+
+void GCylinder::translate( Vec3d T )
+{
+
+}
+
+void GCylinder::moveCurveCenter( int cid, Vec3d delta )
+{
+	if(cid < 0)	cid = selectedPartId;
+
+	int N = gc->frames.count();
+
+	for(int i = 0; i < N; i++)
+	{
+		double dist = abs(double(cid - i)) / (N * 0.9);
+		double weight = gaussianFunction(dist, 0, 1.0 / sqrt(2 * M_PI));
+
+		gc->frames.point[i] += delta * weight;
+	}
+
+	// Re-compute frames and align the cross-sections
+	gc->frames.compute();
+	gc->realignCrossSections();
+	deformMesh();
+}
+
+void GCylinder::scaleCurve( int cid, double s )
+{
+	if(cid < 0)	cid = selectedPartId;
+
+	int N = gc->frames.count();
+
+	for(int i = 0; i < N; i++)
+	{
+		double dist = abs(double(cid - i)) / (N * 0.6);
+
+		double weight = 1 + (s * gaussianFunction(dist, 0, 1.0 / sqrt(2 * M_PI)));
+
+		gc->crossSection[i].radius *= weight;
+	}
+
+	// Re-compute frames and align the cross-sections
+	deformMesh();
 }

@@ -27,12 +27,15 @@ public:
 	virtual QSurfaceMesh getGeometry();
 	virtual std::vector <Vec3d> majorAxis();
 	virtual std::vector < std::vector <Vec3d> > getCurves();
+	virtual Vec3d selectedPartPos();
 
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect );
 	virtual bool excludePoints( std::vector< Vec3d >& pnts );
 
-	void translate(Vec3d T);
+	virtual void translate(Vec3d T);
+	virtual void moveCurveCenter( int cid, Vec3d t);
+	virtual void scaleCurve(int cid, double s);
 
 	void buildCage();
 
@@ -57,4 +60,8 @@ private:
 	void updateCage();
 
 	GCDeformation * gcd;
+
+	double 	deltaScale;
+	double cageScale;
+	int cageSides;
 };

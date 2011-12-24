@@ -350,7 +350,7 @@ void Cuboid::translateCurve( uint cid, Vec3d T, uint sid_respect /*= -1*/ )
 //      j   q
 
 
-void Cuboid::moveCurveCenter( uint fid, Vec3d T )
+void Cuboid::moveCurveCenter( int fid, Vec3d T )
 {
 	if (fid == -1)
 		fid = selectedPartId;
