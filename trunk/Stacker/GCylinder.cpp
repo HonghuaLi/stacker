@@ -390,7 +390,7 @@ void GCylinder::reshapeFromPoints( std::vector<Vec3d>& pnts )
 		gc->frames.point[i] = c;
 
 		// Compute radius
-		gc->crossSection[i].radius = (curvePoints.front() - c).norm();
+		gc->crossSection[i].radius = (curvePoints.front() - c).norm() / cageScale;
 	}
 
 	// Re-compute frames and align the cross-sections
