@@ -12,8 +12,7 @@ GCDeformation::GCDeformation( QSurfaceMesh * forShape, QSurfaceMesh * usingCage 
 	orginalCagePos = cage->clonePoints();
 	orginalCageNormal = cage->cloneFaceNormals();
 
-	coord_v.resize(shape->n_vertices());
-	coord_n.resize(shape->n_vertices());
+	coords.resize(shape->n_vertices());
 
 	// For all points in shape, compute coordinates
 	std::vector<Point> shapePoints = shape->clonePoints();
@@ -21,16 +20,21 @@ GCDeformation::GCDeformation( QSurfaceMesh * forShape, QSurfaceMesh * usingCage 
 	#pragma omp parallel for
 	for (int i = 0; i < (int)shapePoints.size(); i++)
 	{
-		computeCoordinates( shapePoints[i], i );
+		GreenCoordiante gc = computeCoordinates( shapePoints[i]);
+		
+		coords[i].coord_v = gc.coord_v;
+		coords[i].coord_n = gc.coord_n;
 	}
 }
 
-void GCDeformation::computeCoordinates(const Vec3d& point, uint vIndex)
+GCDeformation::GreenCoordiante GCDeformation::computeCoordinates(const Vec3d& point)
 {
+	GreenCoordiante gc;
+
 	Surface_mesh::Face_iterator fit, fend = cage->faces_end();
 
-	coord_v[vIndex].resize(cage->n_vertices(), 0);
-	coord_n[vIndex].resize(cage->n_faces(), 0);
+	gc.coord_v.resize(cage->n_vertices(), 0);
+	gc.coord_n.resize(cage->n_faces(), 0);
 
 	// For each face in cage
 	for(fit = cage->faces_begin(); fit != fend; ++fit)
@@ -64,7 +68,7 @@ void GCDeformation::computeCoordinates(const Vec3d& point, uint vIndex)
 		}
 
 		// 4) Psi
-		double& psi = coord_n[vIndex][ fi ];
+		double& psi = gc.coord_n[ fi ];
 		for (int k = 0; k < 3; k++)
 			psi += s[k] * I[k];
 
@@ -80,7 +84,7 @@ void GCDeformation::computeCoordinates(const Vec3d& point, uint vIndex)
 		{
 			int l1 = (l + 1) % 3;
 
-			double& phi = coord_v[vIndex][ faceVrts[l] ];
+			double& phi = gc.coord_v[ faceVrts[l] ];
 			phi += dot(N[l1], w) / dot(N[l1], v[l]);
 		}
 	}
@@ -89,7 +93,7 @@ void GCDeformation::computeCoordinates(const Vec3d& point, uint vIndex)
 	double coord_v_sum = 0;
 
 	for (int i = 0; i < cage->n_vertices(); ++i)
-		coord_v_sum += coord_v[vIndex][i];
+		coord_v_sum += gc.coord_v[i];
 
 	if (coord_v_sum < 0.5f) 
 	{
@@ -131,9 +135,11 @@ void GCDeformation::computeCoordinates(const Vec3d& point, uint vIndex)
 		
 		// Set special coordinates
 		for (int i = 0; i < 3; i++)
-			coord_v[vIndex][ faceVrts[i] ] += x[i];
-		coord_n[vIndex][ fi ] += x[3];
+			gc.coord_v[ faceVrts[i] ] += x[i];
+		gc.coord_n[ fi ] += x[3];
 	}
+
+	return gc;
 }
 
 double GCDeformation::GCTriInt(const Vec3d& p, const Vec3d& v1, const Vec3d& v2, const Vec3d& e)
@@ -173,9 +179,9 @@ double GCDeformation::GCTriInt(const Vec3d& p, const Vec3d& v1, const Vec3d& v2,
 void GCDeformation::initDeform()
 {
 	// Save deformed cage position and face normals
-	deformedCagePos = cage->clonePoints();
 	cage->update_face_normals();
 	deformedCageNormal = cage->cloneFaceNormals();
+	deformedCagePos = cage->clonePoints();
 
 	// Compute scale factor per face
 	Surface_mesh::Face_iterator fit, fend = cage->faces_end();
@@ -196,18 +202,18 @@ void GCDeformation::initDeform()
 	}
 }
 
-void GCDeformation::deformPoint(Point & p, uint vIndex)
+Point GCDeformation::deformedPoint(GreenCoordiante gc)
 {
 	// Apply deformation
 	Vec3d newPoint (0,0,0);
 
 	for (uint i = 0; i < cage->n_vertices(); i++) 
-		newPoint += coord_v[vIndex][i] * deformedCagePos[i];
+		newPoint += gc.coord_v[i] * deformedCagePos[i];
 
 	for (uint j = 0; j < cage->n_faces(); j++) 
-		newPoint += coord_n[vIndex][j] * S[j] * deformedCageNormal[j];
+		newPoint += gc.coord_n[j] * S[j] * deformedCageNormal[j];
 
-	p = newPoint;
+	return newPoint;
 }
 
 void GCDeformation::deform()
@@ -216,8 +222,8 @@ void GCDeformation::deform()
 
 	std::vector<Point> shapePoints = shape->clonePoints();
 	
-	for (uint i = 0; i < shapePoints.size(); i++) 
-		deformPoint( shapePoints[i], i );
+	for (uint i = 0; i < shapePoints.size(); i++)
+		shapePoints[i] = deformedPoint( coords[i] );
 
 	shape->setFromPoints(shapePoints);
 }

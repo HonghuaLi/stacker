@@ -93,7 +93,7 @@ QVector<Primitive *> SymmetryGroup::regroup()
 		pointsB[corr[i]] = reflected;
 	}
 	
-	non_frozen->reshapeFromCorners(pointsB);
+	non_frozen->reshapeFromPoints(pointsB);
 
 	result.push_back(non_frozen);
 

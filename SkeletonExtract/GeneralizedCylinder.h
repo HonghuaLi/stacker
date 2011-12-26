@@ -29,6 +29,7 @@ public:
 		{ center = newCenter; radius = newRadius; n = newNormal; index = newIndex; };
 
 		std::vector<Point> toSegments( int numSegments, const Vec3d& startVec, double delta = 1.0);
+		Normal normal();
 	};
 
 	std::vector<Circle> crossSection;

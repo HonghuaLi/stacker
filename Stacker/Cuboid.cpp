@@ -570,15 +570,11 @@ std::vector <Vec3d> Cuboid::majorAxis()
 	result.push_back(originalBox.Axis[2]);
 	return result;
 }
+
 void* Cuboid::getState()
 {
 	MinOBB3::Box3 *box = new MinOBB3::Box3(currBox);
 	return (void*)box;
-}
-
-std::vector < std::vector <Vec3d> > Cuboid::getCurves()
-{
-	return getBoxFaces(currBox);
 }
 
 void Cuboid::setState( void *state)
@@ -586,6 +582,10 @@ void Cuboid::setState( void *state)
 	currBox = *( (MinOBB3::Box3*) state );
 }
 
+std::vector < std::vector <Vec3d> > Cuboid::getCurves()
+{
+	return getBoxFaces(currBox);
+}
 
 // creat *nb_fold* symmetry according to the *selectedPartId*
 void Cuboid::setSymmetryPlanes( int nb_fold )
@@ -632,7 +632,7 @@ void Cuboid::setSelectedPartId( Vec3d normal )
 
 }
 
-void Cuboid::reshapeFromCorners( std::vector<Vec3d>& corners )
+void Cuboid::reshapeFromPoints( std::vector<Vec3d>& corners )
 {
 	if (corners.size() != 8) return;
 

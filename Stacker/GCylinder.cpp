@@ -120,7 +120,7 @@ void GCylinder::draw()
 	SimpleDraw::IdentifyPoint2(q);*/
 
 	//gc->draw();
-	//if(cage) cage->simpleDraw();
+	if(cage) cage->simpleDraw();
 	//skel->draw(true);
 }
 
@@ -150,30 +150,7 @@ void GCylinder::drawNames( int name, bool isDrawParts)
 
 void GCylinder::update()
 {
-	int N = gc->frames.count();
-	std::vector<Point> oldPos = gc->frames.point;
-	double segLength = (oldPos.front() - oldPos[1]).norm();
-	double totalLength = segLength * N;
-
-	Vec3d p(mf1->position().x, mf1->position().y, mf1->position().z);
-
-	bool forward = true;
-	Vec3d delta = p - oldPos.front();
-
-	printf("p %f %f %f \n", delta.x(), delta.y(), delta.z());
-
-	for(uint i = 0; i < N; i++)
-	{
-		double weight = 1 - ((i * segLength) / totalLength);
-
-		gc->frames.point[i] += delta * weight;
-	}
-
-	// Re-compute frames and align the cross-sections
-	gc->frames.compute();
-	gc->realignCrossSections();
-
-	deformMesh();
+	// old code
 }
 
 void GCylinder::buildCage()
@@ -250,7 +227,7 @@ void GCylinder::updateCage()
 	// Middle points
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
-		points = c.toSegments(cageSides, gc->frames.U[c.index].s, 1.25);
+		points = c.toSegments(cageSides, gc->frames.U[c.index].s, cageScale);
 
 		for(int i = 0; i < cageSides; i++)
 		{
@@ -273,68 +250,6 @@ double GCylinder::volume()
 	return cage->volume();
 }
 
-
-void GCylinder::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
-{
-
-}
-
-uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
-{
-	return 0;
-}
-
-void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
-{
-
-}
-
-QSurfaceMesh GCylinder::getGeometry()
-{
-	return *cage;
-}
-
-std::vector<double> GCylinder::getCoordinate( Point v )
-{
-	// ToDo:
-	std::vector<double> coords(3);
-	coords.push_back(0);
-	return coords;
-}
-
-Point GCylinder::fromCoordinate( std::vector<double> coords )
-{
-	return Point(0,0,0);
-}
-
-bool GCylinder::excludePoints( std::vector< Vec3d >& pnts )
-{
-	// Shrink GC along its skeleton
-	return true;
-}
-
-std::vector <Vec3d> GCylinder::majorAxis()
-{
-	// ToDo:
-	return std::vector <Vec3d>();
-}
-
-std::vector < std::vector <Vec3d> > GCylinder::getCurves()
-{
-	// ToDo:
-	return std::vector < std::vector <Vec3d> >();
-}
-
-void* GCylinder::getState()
-{
-	return NULL;
-}
-
-void GCylinder::setState( void* toState)
-{
-
-}
-
 Vec3d GCylinder::selectedPartPos()
 {
 	Vec3d result(0,0,0);
@@ -348,11 +263,6 @@ Vec3d GCylinder::selectedPartPos()
 	}
 
 	return result;
-}
-
-void GCylinder::translate( Vec3d T )
-{
-
 }
 
 void GCylinder::moveCurveCenter( int cid, Vec3d delta )
@@ -392,4 +302,125 @@ void GCylinder::scaleCurve( int cid, double s )
 
 	// Re-compute frames and align the cross-sections
 	deformMesh();
+}
+
+QSurfaceMesh GCylinder::getGeometry()
+{
+	return *cage;
+}
+
+void* GCylinder::getState()
+{
+	return (void*) new std::vector<GeneralizedCylinder::Circle>(gc->crossSection);
+}
+
+void GCylinder::setState( void* toState)
+{
+	gc->crossSection = *( (std::vector<GeneralizedCylinder::Circle>*) toState );
+	updateCage();
+}
+
+std::vector<double> GCylinder::getCoordinate( Point v )
+{
+	GCDeformation::GreenCoordiante c = gcd->computeCoordinates(v);
+	
+	std::vector<double> coords(c.coord_v.size() + c.coord_n.size());
+
+	coords.insert(coords.begin(), c.coord_n.begin(), c.coord_n.end());
+	coords.insert(coords.begin(), c.coord_v.begin(), c.coord_v.end());
+
+	return coords;
+}
+
+Point GCylinder::fromCoordinate( std::vector<double> coords )
+{
+	uint NV = cage->n_vertices();
+
+	GCDeformation::GreenCoordiante c;
+
+	// Coordinates from cage vertices
+	for(uint i = 0; i < NV; i++)
+		c.coord_v.push_back(coords[i]);
+
+	// Coordinates from cage normal
+	for(uint i = 0; i < cage->n_faces(); i++)
+		c.coord_n.push_back(coords[i + NV]);
+
+	gcd->initDeform();
+	return gcd->deformedPoint(c);
+}
+
+std::vector <Vec3d> GCylinder::majorAxis()
+{
+	std::vector <Vec3d> result;
+
+	result.push_back(gc->crossSection.front().normal());
+	result.push_back(gc->crossSection.back().normal());
+
+	return result;
+}
+
+std::vector < std::vector <Vec3d> > GCylinder::getCurves()
+{
+	std::vector < std::vector <Vec3d> > result;
+
+	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
+		result.push_back(c.toSegments(cageSides, c.center, cageScale));
+
+	return result;
+}
+
+void GCylinder::reshapeFromPoints( std::vector<Vec3d>& pnts )
+{
+	// extract circles
+	for(uint i = 0; i < gc->crossSection.size(); i++)
+	{
+		int offset = 1 + (cageSides * i);
+
+		std::vector<Point> curvePoints;
+
+		for(uint s = 0; s < cageSides; s++)
+			curvePoints.push_back(pnts[offset + s]);
+		
+		// Computer center
+		Point c(0,0,0);
+		foreach(Point p, curvePoints)	c += p;
+		c /= curvePoints.size();
+		
+		gc->frames.point[i] = c;
+
+		// Compute radius
+		gc->crossSection[i].radius = (curvePoints.front() - c).norm();
+	}
+
+	// Re-compute frames and align the cross-sections
+	gc->frames.compute();
+	gc->realignCrossSections();
+	deformMesh();
+}
+
+uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
+{
+	return 0;
+}
+
+void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
+{
+
+}
+
+void GCylinder::translate( Vec3d T )
+{
+
+}
+
+void GCylinder::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
+{
+
+}
+
+bool GCylinder::excludePoints( std::vector< Vec3d >& pnts )
+{
+	// Shrink GC along its skeleton
+	return true;
 }
