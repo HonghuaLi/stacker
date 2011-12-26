@@ -36,6 +36,7 @@ public:
 	virtual void translate(Vec3d T);
 	virtual void moveCurveCenter( int cid, Vec3d t);
 	virtual void scaleCurve(int cid, double s);
+	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts);
 
 	void buildCage();
 

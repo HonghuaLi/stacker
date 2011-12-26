@@ -136,6 +136,11 @@ std::vector<Point> GeneralizedCylinder::Circle::toSegments( int numSegments, con
 	return result;
 }
 
+Normal GeneralizedCylinder::Circle::normal()
+{
+	return n;
+}
+
 void GeneralizedCylinder::realignCrossSections()
 {
 	for(uint i = 0; i < crossSection.size(); i++)
