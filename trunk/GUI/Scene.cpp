@@ -138,7 +138,7 @@ void Scene::draw()
 	// DEBUG
 	if(gc) gc->draw();
 	if(skel) skel->draw();
-	if(defCtrl) defCtrl->draw();
+	//if(defCtrl) defCtrl->draw();
 	
 	if (!isEmpty() && activeObject()->controller)
 	{

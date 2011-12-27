@@ -32,3 +32,11 @@ Vec3d Primitive::centerPoint()
 	foreach(Point p, pnts) centerPoint += p;
 	return centerPoint /= pnts.size();
 }
+
+void Primitive::addFixedPoint( Point fp )
+{
+	if (!symmPlanes.empty() || !fixedPoints.empty())
+		isFrozen = true;
+
+	fixedPoints.push_back(fp);
+}

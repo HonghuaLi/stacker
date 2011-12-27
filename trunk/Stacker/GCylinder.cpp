@@ -73,17 +73,20 @@ void GCylinder::deformMesh()
 void GCylinder::draw()
 {
 	glDisable(GL_LIGHTING);
-	glColor3d(0, 0.5, 1);
+
+	glEnable(GL_BLEND); 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4d(0, 0.5, 1, 0.5);
 
 	// Cross-sections
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
 		glLineWidth(2.0);
-		if(isSelected) glColor3d(1, 1, 0);
+		if(isSelected) glColor4d(1, 1, 0, 1.0);
 
 		if(c.index == this->selectedPartId){
 			glLineWidth(6.0);
-			glColor3d(0, 1, 0);
+			glColor4d(0, 1, 0, 1.0);
 		}
 
 		std::vector<Point> pnts = c.toSegments(30, gc->frames.U[c.index].s, deltaScale);
@@ -96,9 +99,8 @@ void GCylinder::draw()
 	// Along height side, dashed
 	glLineStipple(1, 0xAAAA);
 	glEnable(GL_LINE_STIPPLE);
-
 	glLineWidth(2.0);
-	glColor3d(0, 0.5, 1);
+	glColor4d(0, 0.5, 1, 0.5);
 
 	glBegin(GL_LINE_STRIP);
 	for(uint i = 0; i < gc->frames.count(); i++)
@@ -111,6 +113,7 @@ void GCylinder::draw()
 
 	glDisable(GL_LINE_STIPPLE);
 	glEnable(GL_LIGHTING);
+
 
 	// Debug
 	/*Vec3d p(mf1->position().x, mf1->position().y, mf1->position().z);
@@ -209,7 +212,7 @@ void GCylinder::buildCage()
 			v[(end-1) - NEXT(i + 1, cageSides)]);
 	}
 	
-	cage->setColorVertices(1,1,1,0.5);
+	cage->setColorVertices(0.8,0.8,1,0.3); // transparent cage
 	cage->update_face_normals();
 	cage->update_vertex_normals();
 
@@ -254,8 +257,7 @@ Vec3d GCylinder::selectedPartPos()
 {
 	Vec3d result(0,0,0);
 
-	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
-	{
+	foreach(GeneralizedCylinder::Circle c, gc->crossSection){
 		if(c.index == selectedPartId){
 			result = c.center;
 			break;
@@ -401,26 +403,84 @@ void GCylinder::reshapeFromPoints( std::vector<Vec3d>& pnts )
 
 uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
 {
-	return 0;
+	Point samplesCenter(0,0,0);
+	foreach(Point p, hotSamples) samplesCenter += p;
+	samplesCenter /= hotSamples.size();
+
+	uint closestIndex = 0;
+	double minDist = DBL_MAX;
+
+	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
+	{
+		double dist = (c.center - samplesCenter).norm();
+
+		if(dist < minDist)
+		{
+			minDist = dist;
+			closestIndex = c.index;
+		}
+	}
+
+	selectedPartId = closestIndex;
+
+	return selectedPartId;
 }
 
 void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
 {
-
-}
-
-void GCylinder::translate( Vec3d T )
-{
-
-}
-
-void GCylinder::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
-{
-
+	selectedPartId = cid;
+	moveCurveCenter(cid, T);
 }
 
 bool GCylinder::excludePoints( std::vector< Vec3d >& pnts )
 {
 	// Shrink GC along its skeleton
 	return true;
+}
+
+void GCylinder::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
+{
+	// deprecated..
+	printf("Primitive::deform() deprecated\n");
+}
+
+void GCylinder::translate( Vec3d &T )
+{
+	for(uint i = 0; i < gc->frames.count(); i++)
+		gc->frames.point[i] += T;
+
+	gc->frames.compute();
+	gc->realignCrossSections();
+	deformMesh();
+}
+
+Point GCylinder::closestPoint( Point p )
+{
+	return cage->closestPointVertices(p);
+}
+
+bool GCylinder::containsPoint( Point p )
+{
+	// ToDo (is this function useful?)
+	return false;
+}
+
+void GCylinder::movePoint( Point p, Vec3d T )
+{
+
+}
+
+void GCylinder::setSymmetryPlanes( int nb_fold )
+{
+
+}
+
+void GCylinder::setSelectedPartId( Vec3d normal )
+{
+
+}
+
+void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
+{
+
 }

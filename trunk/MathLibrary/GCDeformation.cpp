@@ -36,6 +36,8 @@ GCDeformation::GreenCoordiante GCDeformation::computeCoordinates(const Vec3d& po
 	gc.coord_v.resize(cage->n_vertices(), 0);
 	gc.coord_n.resize(cage->n_faces(), 0);
 
+	gc.insideCage = true;
+
 	// For each face in cage
 	for(fit = cage->faces_begin(); fit != fend; ++fit)
 	{
@@ -89,17 +91,19 @@ GCDeformation::GreenCoordiante GCDeformation::computeCoordinates(const Vec3d& po
 		}
 	}
 
-	// Last step: check if vertex is exterior to the cage
 	double coord_v_sum = 0;
 
 	for (int i = 0; i < cage->n_vertices(); ++i)
 		coord_v_sum += gc.coord_v[i];
 
-	if (coord_v_sum < 0.5f) 
+	if(coord_v_sum < 0.5f)	gc.insideCage = false;
+
+	// Check if vertex is exterior to the cage
+	if (!gc.insideCage) 
 	{
 		Surface_mesh::Face closestFace;
 		double dist_min = DBL_MAX;
-	
+
 		// find the nearest face (naive, based on Euclid distance)
 		for(fit = cage->faces_begin(); fit != fend; ++fit)
 		{
@@ -132,7 +136,7 @@ GCDeformation::GreenCoordiante GCDeformation::computeCoordinates(const Vec3d& po
 		Vector4d pnt; pnt << point.x(), point.y(), point.z(), 1.0;
 
 		Vector4d x = A.fullPivLu().solve(pnt);
-		
+
 		// Set special coordinates
 		for (int i = 0; i < 3; i++)
 			gc.coord_v[ faceVrts[i] ] += x[i];

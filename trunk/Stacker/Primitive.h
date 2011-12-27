@@ -28,20 +28,19 @@ public:
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect ) = 0;
 
 	// Reshaping
-	virtual void translate( Vec3d &T ) {}
+	virtual void translate( Vec3d &T ) = 0;
 	virtual void moveCurveCenter( int cid, Vec3d T) = 0;
-	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) {}
+	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) = 0;
 	virtual bool excludePoints( std::vector< Vec3d >& pnts ) = 0;
-	virtual void reshapePart( Vec3d q ) {}
 	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts ) = 0;
-	virtual void movePoint(Point p, Vec3d T){}
-	virtual void scaleCurve(int cid, double s){}
+	virtual void movePoint(Point p, Vec3d T) = 0;
+	virtual void scaleCurve(int cid, double s) = 0;
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v ) = 0;
 	virtual Point fromCoordinate(std::vector<double> coords) = 0;
-	virtual bool containsPoint(Point p){return true;}
-	virtual Vec3d closestPoint(Point p){return Point();}
+	virtual bool containsPoint(Point p) = 0;
+	virtual Vec3d closestPoint(Point p) = 0;
 
 	// Primitive state
 	virtual void* getState() = 0;
@@ -51,9 +50,9 @@ public:
 	virtual std::vector <Vec3d> points() = 0;
 	virtual QSurfaceMesh getGeometry() = 0;
 	virtual double volume() = 0;
-	Vec3d centerPoint();
 	virtual std::vector<Vec3d> majorAxis() = 0;
 	virtual std::vector < std::vector <Vec3d> > getCurves() = 0;
+	virtual Vec3d centerPoint();
 
 	// The underlying geometry
 	QSurfaceMesh*		m_mesh;			
@@ -67,8 +66,8 @@ public:
 	QVector<Joint> joints;
 	QVector<Point> fixedPoints;
 	QVector<Plane> symmPlanes;
-	virtual void setSymmetryPlanes(int nb_fold){}
-	virtual void addFixedPoint(Point fp){}
+	virtual void setSymmetryPlanes(int nb_fold) = 0;
+	virtual void addFixedPoint(Point fp);
 
 
 
@@ -81,8 +80,8 @@ public:
 	// Selecting
 	bool isSelected;
 	int selectedPartId;
-	virtual Vec3d selectedPartPos() {return Vec3d(0,0,0);}
-	virtual void setSelectedPartId( Vec3d normal ){}
+	virtual Vec3d selectedPartPos() = 0;
+	virtual void setSelectedPartId( Vec3d normal ) = 0;
 
 	QString id;
 	bool				isHot;			// Is this hot component?
