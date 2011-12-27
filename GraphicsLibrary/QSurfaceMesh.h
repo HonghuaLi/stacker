@@ -39,6 +39,7 @@ public:
 	double normalize();
 	double scalingFactor;
 
+	Point closestPointVertices(const Point & p);
 	double closestDistancePointVertices(const Point & p);
 
 	std::vector<Point> clonePoints();

@@ -36,47 +36,46 @@ public:
 
 	// Hot curves
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
-	virtual void translateCurve( uint cid, Vec3d T, uint sid_respected = -1 );
+	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect );
 
 	// Reshaping
-	virtual void translate( Vector3 &T );
+	virtual void translate( Vec3d &T );
+	virtual void moveCurveCenter( int cid, Vec3d T);
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
-	virtual void moveCurveCenter( int fid, Vec3d T);
 	virtual bool excludePoints( std::vector< Vec3d >& pnts );
 	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts );
 	virtual void movePoint(Point p, Vec3d T);
+	virtual void scaleCurve(int cid, double s);
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v );
 	virtual Point fromCoordinate(std::vector<double> coords);
 	virtual bool containsPoint(Point p);
-	virtual Point closestPoint(Point p);
+	virtual Vec3d closestPoint(Point p);
 
 	// Primitive state
 	virtual void* getState();
-	virtual void setState( void* state );
+	virtual void setState( void* );
 
 	// Primitive geometry
-	virtual double volume();
 	virtual std::vector <Vec3d> points();
 	virtual QSurfaceMesh getGeometry();
-	virtual std::vector <Vec3d> majorAxis();
+	virtual double volume();
+	virtual std::vector<Vec3d> majorAxis();
 	virtual std::vector < std::vector <Vec3d> > getCurves();
 
-	// Symmetry
+	// Joint, symmetry
 	virtual void setSymmetryPlanes(int nb_fold);
-	virtual void addFixedPoint(Point fp);
 
-
+	// Selecting
+	virtual Vec3d selectedPartPos();
 	virtual void setSelectedPartId( Vec3d normal );
+
 
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
 	void recoverMesh();
 	Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );
-
-	virtual Vec3d selectedPartPos();
-
 
 
 private:

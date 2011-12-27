@@ -713,12 +713,7 @@ void Cuboid::movePoint( Point p, Vec3d T )
 	deformMesh();
 }
 
-void Cuboid::addFixedPoint( Point fp )
+void Cuboid::scaleCurve( int cid, double s )
 {
-	if (!symmPlanes.empty() || !fixedPoints.empty())
-		isFrozen = true;
 
-	fixedPoints.push_back(fp);
 }
-
-
