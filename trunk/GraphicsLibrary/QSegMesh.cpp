@@ -583,19 +583,19 @@ void QSegMesh::drawAABB()
 	P[6] = P[2] + Z;
 	P[7] = P[3] + Z;
 
-	SimpleDraw::IdentifyLine(P[0], P[1]);
-	SimpleDraw::IdentifyLine(P[1], P[2]);
-	SimpleDraw::IdentifyLine(P[2], P[3]);
-	SimpleDraw::IdentifyLine(P[3], P[0]);
+	SimpleDraw::IdentifyLine(P[0], P[1], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[1], P[2], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[2], P[3], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[3], P[0], 0, 1, 1, false);
 
-	SimpleDraw::IdentifyLine(P[4], P[5]);
-	SimpleDraw::IdentifyLine(P[5], P[6]);
-	SimpleDraw::IdentifyLine(P[6], P[7]);
-	SimpleDraw::IdentifyLine(P[7], P[4]);
+	SimpleDraw::IdentifyLine(P[4], P[5], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[5], P[6], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[6], P[7], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[7], P[4], 0, 1, 1, false);
 
-	SimpleDraw::IdentifyLine(P[0], P[4]);
-	SimpleDraw::IdentifyLine(P[1], P[5]);
-	SimpleDraw::IdentifyLine(P[2], P[6]);
-	SimpleDraw::IdentifyLine(P[3], P[7]);
+	SimpleDraw::IdentifyLine(P[0], P[4], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[1], P[5], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[2], P[6], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[3], P[7], 0, 1, 1, false);
 }
 

@@ -16,6 +16,8 @@ void JointGroup::process( QVector< QString > segments, Vec3d joint )
 
 void JointGroup::draw()
 {
+	return;
+
 	// Show joints
 	Primitive * a = getPrimitive(nodes.values().first());
 	Primitive * b = getPrimitive(nodes.values().last());
