@@ -6,10 +6,10 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 {
 	cage = NULL;
 
-	deltaScale = 1.5;
+	deltaScale = 1.1;
 
-	cageScale = 1.5;
-	cageSides = 8;
+	cageScale = 1.1;
+	cageSides = 6;
 
 	// useful for fitting process
 	if(!m_mesh->vertex_array.size()){
@@ -44,14 +44,6 @@ void GCylinder::fit()
 
 	Vec3d p = gc->frames.point.front();
 	Vec3d q = gc->frames.point.back();
-
-	// Manual deformation
-	mf1 = new qglviewer::ManipulatedFrame;
-	mf2 = new qglviewer::ManipulatedFrame;
-	mf1->setPosition(qglviewer::Vec(p.x(), p.y(), p.z()));
-	mf2->setPosition(qglviewer::Vec(q.x(), q.y(), q.z()));
-	connect(mf1, SIGNAL(manipulated()), this, SLOT(update()));
-	connect(mf2, SIGNAL(manipulated()), this, SLOT(update()));
 }
 
 void GCylinder::createGC( std::vector<Point> spinePoints )
@@ -401,6 +393,12 @@ void GCylinder::reshapeFromPoints( std::vector<Vec3d>& pnts )
 	deformMesh();
 }
 
+void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
+{
+	selectedPartId = cid;
+	moveCurveCenter(cid, T);
+}
+
 uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
 {
 	Point samplesCenter(0,0,0);
@@ -426,14 +424,9 @@ uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
 	return selectedPartId;
 }
 
-void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
-{
-	selectedPartId = cid;
-	moveCurveCenter(cid, T);
-}
-
 bool GCylinder::excludePoints( std::vector< Vec3d >& pnts )
 {
+	// deprecated..
 	// Shrink GC along its skeleton
 	return true;
 }
@@ -450,7 +443,6 @@ void GCylinder::translate( Vec3d &T )
 		gc->frames.point[i] += T;
 
 	gc->frames.compute();
-	gc->realignCrossSections();
 	deformMesh();
 }
 
@@ -461,13 +453,15 @@ Point GCylinder::closestPoint( Point p )
 
 bool GCylinder::containsPoint( Point p )
 {
+	// deprecated..
 	// ToDo (is this function useful?)
 	return false;
 }
 
-void GCylinder::movePoint( Point p, Vec3d T )
+void GCylinder::setSelectedPartId( Vec3d normal )
 {
-
+	// only cuboid use it, for manual deformation and cuboid symmetry stuff
+	// useless for GC
 }
 
 void GCylinder::setSymmetryPlanes( int nb_fold )
@@ -475,12 +469,19 @@ void GCylinder::setSymmetryPlanes( int nb_fold )
 
 }
 
-void GCylinder::setSelectedPartId( Vec3d normal )
-{
-
-}
-
 void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 {
+	// theta = <p, j, p + T>
 
+	// 1) Rotate wtr to joint (theta)
+	// 2) Scale along direction (joint -> p + T)
+}
+
+void GCylinder::movePoint( Point p, Vec3d T )
+{
+	// Switch cases:
+	// 1) No joint = translate all
+	// 2) One fixed (joint) = deformRespectToJoint
+	//    Then, add fixed point (p + T)
+	// 3) More fixed points = move corresponding curve piece only
 }

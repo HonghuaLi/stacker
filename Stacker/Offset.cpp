@@ -149,17 +149,16 @@ void Offset::hotspotsFromDirection( int direction )
 	hotSpots.clear();
 
 	// Detect hot spots
-	std::vector< std::vector<Vec2i> > newHotRegions;
-
 	uint sid, fid, fid_local;
 	uint x, y;
-	for (int i=0;i<hotRegions.size();i++)	{
-
-		std::map< QString,  std::vector< Vec2i > > subHotRegions;
+	for (int i=0;i<hotRegions.size();i++)	
+	{
+		std::map< QString,  int > subHotRegionSize;
 		std::map< QString,  std::vector< Vec3d > > subHotSamples;
 
-		for (int j=0;j<hotRegions[i].size();j++){
-
+		for (int j=0;j<hotRegions[i].size();j++)
+		{
+			// 2D coordinates
 			Vec2i &hotPixel = hotRegions[i][j];
 			x = (direction == 1) ? hotPixel.x() : (w-1) - hotPixel.x();
 			y = hotPixel.y();
@@ -186,39 +185,35 @@ void Offset::hotspotsFromDirection( int direction )
 				continue;
 
 			activeObject()->global2local_fid(fid, sid, fid_local);
-			
+
 			// Store informations
 			QString segmentID = activeObject()->getSegment(sid)->objectName();
 			Vec3d hotPoint(hotP.x, hotP.y, hotP.z);
 			hotPoints[sid].push_back(hotPoint);
-			subHotRegions[segmentID].push_back(hotPixel);
+			subHotRegionSize[segmentID]++;
 			subHotSamples[segmentID].push_back(hotPoint);
 		}
 
-		// Split the hot region if necessary
-		std::map< QString,  std::vector< Vec2i > >::iterator itr;
-		for ( itr = subHotRegions.begin(); itr != subHotRegions.end(); itr++)
+		// Create hot spot
+		HotSpot HS;
+
+		std::map< QString,  int >::iterator itr = std::max_element(subHotRegionSize.begin(), subHotRegionSize.end());
+		if (subHotRegionSize.end() == itr)
 		{
-			if (itr->second.size() < 5)
-				continue; // a bad way to get rid of noise
-
-			QString segmentID = itr->first;
-			newHotRegions.push_back(itr->second);
-
-			HotSpot HS;
-			HS.hotRegionID = hotSpots.size();
-			HS.segmentID = segmentID;
-			HS.defineHeight = defineHeight( direction, itr->second );
-			HS.hotSamples = subHotSamples[segmentID];
-			hotSpots.push_back(HS);	
+			HS.hotRegionID = -1;
 		}
-
+		else
+		{
+			HS.hotRegionID = i;
+			HS.segmentID = itr->first;
+			HS.defineHeight = defineHeight( direction, hotRegions[i] );
+			HS.hotSamples = subHotSamples[HS.segmentID];
+		}
+		  
+		hotSpots.push_back(HS);	
 	}
 
-	// Update hotRegions
-	hotRegions = newHotRegions;
-
-	delete colormap;	
+	delete colormap;
 }
 
 void Offset::detectHotspots( )
@@ -226,23 +221,23 @@ void Offset::detectHotspots( )
 	// Initialization
 	clear();
 
-	// Recompute envelopes and offset
+	// Recompute envelopes and offset with high resolution
+	activeViewer->setResolution(800);
 	computeOffset();
 
 	// Detect hot regions
 	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
-	visualizeHotRegions("hot regions 1.png");
+	visualizeHotRegions("hot regions.png");
 
 	// Detect hot spots from both directions
 	hotspotsFromDirection(1);
 	hotspotsFromDirection(-1);
-	if (upperHotSpots.size() < lowerHotSpots.size())
-	{
-		// Lower hot spots are splitted, so re-detect upper hot spots
-		hotspotsFromDirection(1);
-		std::cout << "Lower hot spots are splitted. \n";
-	}
-	visualizeHotRegions("hot regions 2.png");
+
+	// Set the resultion back to low
+	activeViewer->setResolution(400);
+	computeOffset();
+
+	// Show results in the std output
 	std::cout << "Hot spots: " << std::endl;
 	for (int i=0;i<hotRegions.size();i++)
 	{
@@ -729,7 +724,7 @@ void Offset::applyHeuristicsOnHotspot( uint hid, int side )
 		if ( satisfyBBConstraint() )
 		{
 			computeOffset();
-			if (getStackability() > preStackability + 0.1)
+			if (getStackability() > preStackability + 0.3)
 				hotSolutions.push_back(ctrl->getShapeState());
 		}
 
@@ -894,7 +889,7 @@ void Offset::improveStackability()
 		{
 			computeOffset();
 			// The propagation succeeds, we obtain one candidate solution
-			if (getStackability() > preStackability + 0.1)
+			if (getStackability() > preStackability + 0.3)
 				//candidateSolutions.push(ctrl->getShapeState());
 				solutions.push_back(ctrl->getShapeState());
 		}

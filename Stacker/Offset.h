@@ -19,7 +19,7 @@ public:
 	class HotSpot
 	{
 	public:
-		uint hotRegionID;
+		int hotRegionID;
 		QString segmentID;
 		bool defineHeight;
 		std::vector< Vec3d > hotSamples;
