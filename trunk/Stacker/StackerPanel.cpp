@@ -84,8 +84,7 @@ void StackerPanel::onOffsetButtonClicked()
 	}
 
 	// compute offset
-	activeObject()->getSegment(0)->isVisible = false;
-	activeOffset->computeOffset();
+	activeOffset->computeOffsetOfShape();
 }
 
 void StackerPanel::onControllerButtonClicked()
@@ -126,7 +125,7 @@ void StackerPanel::onHotspotsButtonClicked()
 
 	activeOffset->detectHotspots();
 	activeOffset->showHotSpots();
-	emit(objectModified());
+	//emit(objectModified());
 	showMessage("Hot spots are detected.");
 }
 
@@ -142,7 +141,7 @@ void StackerPanel::setActiveScene( Scene * scene )
 
 void StackerPanel::updateActiveObject()
 {
-	activeOffset->computeOffset();	
+	activeOffset->computeOffsetOfShape();	
 	stacker_preview->updateActiveObject();
 
 	if (activeObject()->controller == NULL)

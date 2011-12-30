@@ -4,6 +4,7 @@
 #include "QSegMesh.h"
 #include "Controller.h"
 #include <QColor>
+#include <QRect>
 
 #include <queue>
 #include <functional>
@@ -47,17 +48,20 @@ public:
 	QSegMesh* activeObject();
 	
 	// Compute offset function and stackability (1 - O_max/objectH)
-	void computeEnvelope(int direction, std::vector< std::vector<double> > &envelope, std::vector< std::vector<double> > &depth);	
+	void computeEnvelope(int direction);
+	void computeEnvelopeOfShape(int direction);
+	void computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax);
 	void computeOffset();
+	void computeOffsetOfShape();
+	void computeOffsetOfRegion( std::vector< Vec2i >& region );
 	double getStackability();
 
 	// Detect hot spots
 	void hotspotsFromDirection( int direction );
 	void detectHotspots();
+	void detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion);
 	std::set<uint> getHotSegment();
 	void showHotSpots();
-	bool defineHeight( int direction, std::vector< Vec2i >& region);
-
 	// Improve stackability
 	void improveStackabilityTo(double targetS);
 	void improveStackability();
@@ -85,13 +89,12 @@ public:
 	std::vector< Vec2i > deltaVectorsToKRing(int deltaX, int deltaY, int K);
 	std::vector< Vec2i > shiftRegionInBB( std::vector< Vec2i >& region, Vec2i delta, Vec2i bbmin, Vec2i bbmax );
 	Vec2i sizeofRegion( std::vector< Vec2i >& region );
-
+	void BBofRegion( std::vector< Vec2i >& region, Vec2i &bbmin, Vec2i &bbmax );
 	// Utilities 
 	template< typename T >
 	std::vector< std::vector < T > > createImage( int w, int h, T intial);
 	Vec3d unprojectedCoordinatesOf( uint x, uint y, int direction);
-	Vec2i projectedCoordinatesOf( Vec3d point, int direction );
-
+	Vec2i projectedCoordinatesOf( Vec3d point, int pathID );
 	// Useful for debugging
 	void saveAsImage( std::vector< std::vector < double > >& image, double maxV, QString fileName );
 	void saveAsImage( std::vector< std::vector < bool > >& image, QString fileName );
