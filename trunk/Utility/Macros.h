@@ -63,8 +63,9 @@ typedef StdVector < StdVector< float > > Vector2Df;
 #define PREV(i, N) ((i + N-1) % N)
 #define NEXT(i, N) ((i + 1) % N)
 #define SWAP(x, y, T) do { T temp##x##y = x; x = y; y = temp##x##y; } while (0)
-#define TO_RAD(X) (X*M_PI/180.0)
 #define AROUND(x, target, threshold) ( (abs(x) - abs(target) < threshold) ? 1 : 0)
+#define RADIANS(deg)    ((deg)/180.0 * M_PI)
+#define DEGREES(rad)    ((rad)/M_PI * 180.0)
 
 // Basic STL converters
 template <typename T> static inline StdVector<T> SET_TO_VECTOR(StdSet<T> fromSet){
@@ -121,12 +122,27 @@ double inline gaussianFunction(double x, double mu = 0.0, double sigma = 1.0){
 	return a * exp( - (pow(x - b, 2) / (2 * pow(c, 2)) ) );
 }
 
+// Rodrigues' rotation
+#define ROTATE_VEC(v, theta, axis) (v = v * cos(theta) + cross(axis, v) * sin(theta) + axis * dot(axis, v) * (1 - cos(theta)))
+
+template <typename VECTYPE>
+VECTYPE inline RotateAround(VECTYPE point, VECTYPE pivot, VECTYPE axis, double theta){
+	VECTYPE result = point;
+
+	result -= pivot;
+	result = ROTATE_VEC(result, theta, axis);
+	result += pivot;
+
+	return result;
+}
+
 // Array operations
 #include <algorithm>
 #define MaxElement(v) (*max_element(v.begin(), v.end()))
 #define MinElement(v) (*min_element(v.begin(), v.end()))
 #define DivideVector(a,value) for(int i = 0; i < a.size(); ++i) a[i] /= value;
 #define Sum(v)  (std::accumulate(v.begin(), v.end(), 0.0))
+#define Avg(v)  (Sum(v) / v.size())
 
 // Timer
 #include <QElapsedTimer>

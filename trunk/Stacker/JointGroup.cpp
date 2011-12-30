@@ -45,7 +45,6 @@ QVector<Primitive *> JointGroup::regroup()
 		non_frozen = temp;
 	}
 
-
 	// The joint has been apart, try to join them again
 	Vec3d newPos = frozen->fromCoordinate(coordinates[frozen->id]);
 	Vec3d oldPos = non_frozen->fromCoordinate(coordinates[non_frozen->id]);

@@ -6,9 +6,9 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 {
 	cage = NULL;
 
-	deltaScale = 1.1;
+	deltaScale = 1.3;
 
-	cageScale = 1.1;
+	cageScale = 1.3;
 	cageSides = 6;
 
 	// useful for fitting process
@@ -22,6 +22,8 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 		fit();
 		buildCage();
 	}
+
+	fixedPoints.clear();
 }
 
 void GCylinder::fit()
@@ -49,6 +51,8 @@ void GCylinder::fit()
 void GCylinder::createGC( std::vector<Point> spinePoints )
 {
 	gc = new GeneralizedCylinder( spinePoints, m_mesh );
+	
+	printf(" GC with %d cross-sections. ", gc->crossSection.size());
 }
 
 void GCylinder::computeMeshCoordiantes()
@@ -115,8 +119,13 @@ void GCylinder::draw()
 	SimpleDraw::IdentifyPoint2(q);*/
 
 	//gc->draw();
-	if(cage) cage->simpleDraw();
 	//skel->draw(true);
+	if(cage) 
+	{
+		//cage->simpleDrawWireframe();
+		cage->drawDebug();
+		cage->simpleDraw();
+	}
 }
 
 void GCylinder::drawNames( int name, bool isDrawParts)
@@ -261,14 +270,34 @@ Vec3d GCylinder::selectedPartPos()
 
 void GCylinder::moveCurveCenter( int cid, Vec3d delta )
 {
+	// Using full range
+	moveCurveCenterRanged(cid, delta);
+}
+
+void GCylinder::moveCurveCenterRanged(int cid, Vec3d delta, int start, int finish)
+{
 	if(cid < 0)	cid = selectedPartId;
 
 	int N = gc->frames.count();
 
-	for(int i = 0; i < N; i++)
+	// Range parameter
+	if(finish < 0) 	finish = N;
+	else N = finish - start;
+
+	// Range check
+	if(start >= finish) 
+		return;
+
+	// Move curves, with weight
+	for(int i = start; i < finish; i++)
 	{
-		double dist = abs(double(cid - i)) / (N * 0.9);
-		double weight = gaussianFunction(dist, 0, 1.0 / sqrt(2 * M_PI));
+		double sigma = 1.0 / sqrt(2 * M_PI);
+		double mu = 0;
+
+		double decay = (double(N) / gc->frames.count()) * 0.9;
+		double dist = abs(double(cid - i)) / (N * decay);
+
+		double weight = gaussianFunction(dist, mu, sigma);
 
 		gc->frames.point[i] += delta * weight;
 	}
@@ -287,9 +316,14 @@ void GCylinder::scaleCurve( int cid, double s )
 
 	for(int i = 0; i < N; i++)
 	{
-		double dist = abs(double(cid - i)) / (N * 0.6);
+		// Gaussian parameters
+		double sigma = 1.0 / sqrt(2 * M_PI);
+		double mu = 0;
 
-		double weight = 1 + (s * gaussianFunction(dist, 0, 1.0 / sqrt(2 * M_PI)));
+		double decay = 0.6;
+		double dist = abs(double(cid - i)) / (N * decay);
+
+		double weight = 1 + (s * gaussianFunction(dist, mu, sigma));
 
 		gc->crossSection[i].radius *= weight;
 	}
@@ -359,7 +393,7 @@ std::vector < std::vector <Vec3d> > GCylinder::getCurves()
 	std::vector < std::vector <Vec3d> > result;
 
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
-		result.push_back(c.toSegments(cageSides, c.center, cageScale));
+		result.push_back(c.toSegments(cageSides, gc->frames.U[c.index].s, cageScale));
 
 	return result;
 }
@@ -402,8 +436,14 @@ void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
 uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
 {
 	Point samplesCenter(0,0,0);
-	foreach(Point p, hotSamples) samplesCenter += p;
-	samplesCenter /= hotSamples.size();
+
+	if(symmPlanes.empty())
+	{
+		foreach(Point p, hotSamples) samplesCenter += p;
+		samplesCenter /= hotSamples.size();
+	}
+	else
+		samplesCenter = hotSamples.front();
 
 	uint closestIndex = 0;
 	double minDist = DBL_MAX;
@@ -460,28 +500,114 @@ bool GCylinder::containsPoint( Point p )
 
 void GCylinder::setSelectedPartId( Vec3d normal )
 {
-	// only cuboid use it, for manual deformation and cuboid symmetry stuff
 	// useless for GC
 }
 
 void GCylinder::setSymmetryPlanes( int nb_fold )
 {
+	Vec3d normal = gc->crossSection.front().n;
+	Vec3d center = gc->crossSection.front().center;
 
+	symmPlanes.push_back(Plane(normal, center));
 }
 
 void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 {
 	// theta = <p, j, p + T>
+	Vec3d v1 = p - joint;
+	Vec3d v2 = (p + T) - joint;
+	
+	double theta = acos(dot(v1.normalized(), v2.normalized()));
+	Vec3d axis = cross(v1, v2).normalized();
 
-	// 1) Rotate wtr to joint (theta)
+	// 1) Rotate with respect to joint (theta)
+	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
+	{
+		Vec3d newNormal = RotateAround(c.n, joint, axis, theta);
+		Vec3d newCenter = RotateAround(c.center, joint, axis, theta);
+
+		gc->crossSection[c.index].n = newNormal;
+		gc->frames.point[c.index] = newCenter;
+	}
+	
 	// 2) Scale along direction (joint -> p + T)
+	double scaleAlong = v2.norm() / v1.norm();
+
+	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
+		gc->frames.point[c.index] = joint + ((gc->frames.point[c.index] - joint) * scaleAlong);
+
+	gc->frames.compute();
+	gc->realignCrossSections();
+	deformMesh();
 }
 
 void GCylinder::movePoint( Point p, Vec3d T )
 {
-	// Switch cases:
-	// 1) No joint = translate all
-	// 2) One fixed (joint) = deformRespectToJoint
-	//    Then, add fixed point (p + T)
-	// 3) More fixed points = move corresponding curve piece only
+	uint numJoints = this->joints.size();
+
+	// There is symmetry
+	if (!symmPlanes.empty())
+	{
+		GeneralizedCylinder::Circle* c = &gc->crossSection[Primitive::detectHotCurve(p)];
+
+		// Project everything onto the plane
+		Plane plane(c->normal(), c->center);
+		Point q = plane.projectionOf(p + T);
+		p = plane.projectionOf(p);
+		T = q - p;
+
+		bool isScaleUp = true;
+
+		double r1 = (p - c->center).norm();
+		double r2 = (q - c->center).norm();
+
+		if(q - p < 0) isScaleUp = false;
+
+		double s = r2 / r1;
+
+		this->scaleCurve(c->index, s / cageScale);
+	}
+	// If there are no fixed points
+	else if (fixedPoints.empty())
+	{
+		translate(T);
+	}
+	// Only one fixed point
+	else if (fixedPoints.size() < 2)
+	{
+		deformRespectToJoint(fixedPoints.front(), p, T);
+	}
+	else
+	// move corresponding curve piece only
+	{
+		int N = gc->crossSection.size();
+
+		int start = 0, finish = N;
+		GeneralizedCylinder::Circle* c = &gc->crossSection[Primitive::detectHotCurve(p)];
+
+		std::vector<bool> fixedCrossSection(N, false);
+
+		foreach(Point fp, fixedPoints)
+		{
+			int csi = gc->crossSection[Primitive::detectHotCurve(fp)].index;
+			fixedCrossSection[csi] = true;
+		}
+
+		// If point to be moved is near fixed area, do nothing
+		if(fixedCrossSection[c->index])
+			return;
+
+		// Find range
+		for(uint i = 0; i < N; i++)
+		{
+			if(i < c->index && fixedCrossSection[i])
+				start = Max(start, i);
+
+			if(i > c->index && fixedCrossSection[i])
+				finish = Min(finish, i);
+		}
+
+		// Move range
+		moveCurveCenterRanged(c->index, T, start, finish);
+	}
 }

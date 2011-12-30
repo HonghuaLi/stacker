@@ -5,7 +5,6 @@
 #include "Plane.h"
 #include <QVector>
 
-
 class Primitive
 {
 public:
@@ -24,6 +23,7 @@ public:
 	virtual	void drawNames(int name, bool isDrawParts = false) = 0;
 
 	// Hot curves
+	virtual uint detectHotCurve( Vec3d hotSample );
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples ) = 0;
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect ) = 0;
 
@@ -72,9 +72,9 @@ public:
 
 
 	// Helpful for debugging
-	std::vector<Vec3d> debugPoints;
-	std::vector< std::pair<Vec3d,Vec3d> > debugLines;
-	std::vector< std::vector<Vec3d> > debugPoly;
+	std::vector<Vec3d> debugPoints, debugPoints2, debugPoints3;
+	std::vector< std::vector<Vec3d> > debugLines, debugLines2, debugLines3;
+	std::vector< std::vector<Vec3d> > debugPoly, debugPoly2;
 	void drawDebug();
 
 	// Selecting

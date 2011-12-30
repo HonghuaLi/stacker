@@ -89,6 +89,9 @@ public:
 	int getPrimitiveIdNum(QString stringId);
 	QMap<int, QString> primitiveIdNum;
 
+	// DEBUG:
+	void test();
+
 private:
 	QMap<QString, Primitive*> primitives;
 	QSegMesh* m_mesh;

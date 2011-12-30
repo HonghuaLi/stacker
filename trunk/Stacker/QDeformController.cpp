@@ -30,7 +30,10 @@ void QDeformController::updateController()
 	Primitive * prim = ctrl->getSelectedPrimitive();
 	prim->isFrozen = true;
 
-	prim->moveCurveCenter( -1, pos() - prim->selectedPartPos() );
+	prim->moveCurveCenter( -1,  pos() - prim->selectedPartPos());
+
+	//prim->deformRespectToJoint(Vec3d(0,0,0), prim->selectedPartPos(), pos() - prim->selectedPartPos());
+	
 	ctrl->propagate();
 
 	prim->isFrozen = false;

@@ -33,7 +33,7 @@ StackerPanel::StackerPanel()
 	hiddenDock->setWidget (hidden_viewer);
 	layout->addWidget(hiddenDock, row++, 0,1,3);
 	hiddenDock->setFloating(true);
-	hiddenDock->setWindowOpacity(1.0);
+	hiddenDock->setWindowOpacity(0.0);
 
 	activeOffset = new Offset(hidden_viewer);
 

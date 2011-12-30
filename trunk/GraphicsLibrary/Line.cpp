@@ -241,3 +241,8 @@ std::vector<Vec3d> Line::uniformSample( int numSamples )
 
 	return result;
 }
+
+Line::operator const std::vector<Vec3d>()
+{
+	return uniformSample(2);
+}

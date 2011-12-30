@@ -68,12 +68,13 @@ public slots:
 	void update();
 
 private:
+	void moveCurveCenterRanged(int cid, Vec3d delta, int start = 0, int finish = -1);
+
 	GeneralizedCylinder * gc;
 	Skeleton * skel;
 
 	QSurfaceMesh * cage;
 	void updateCage();
-
 	GCDeformation * gcd;
 
 	double 	deltaScale;
