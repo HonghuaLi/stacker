@@ -6,11 +6,19 @@
 #include <numeric>
 #include <stack>
 
-#define ZERO_TOLERANCE 0.05
+#define ZERO_TOLERANCE 0.01
 #define BIG_NUMBER 9999
 
 int FILTER_SIZE = 1;
 double HOT_RANGE = 0.9;
+
+
+// OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
+// OpenGL coordinates are mainly used in this class
+
+// Camera path
+// <-1, 1> + 2 = <1, 3> : The top and bottom setting for the entire shape
+// <-1, 1> + 3 = <2, 4> : The top and bottom setting for the zoomed in region
 
 Offset::Offset( HiddenViewer *viewer )
 {
@@ -22,37 +30,21 @@ QSegMesh* Offset::activeObject()
 	return activeViewer->activeObject();
 }
 
-
-
-void Offset::computeEnvelope( int direction, std::vector< std::vector<double> > &envelope, std::vector< std::vector<double> > &depth )
+void Offset::computeEnvelope(int direction)
 {
-	// Clear
+	// Switcher
+	std::vector< std::vector<double> > &envelope = (1 == direction)? upperEnvelope : lowerEnvelope;
+	std::vector< std::vector<double> > &depth = (1 == direction)? upperDepth : lowerDepth;
 	envelope.clear();
 	depth.clear();
 
-	// Set camera
-	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
-	activeViewer->camera()->setPosition(Vec(0,0, direction * activeObject()->radius));
-	activeViewer->camera()->lookAt(Vec());	
-	activeViewer->camera()->setUpVector(Vec(1,0,0));
-	Vec delta(1, 1, 1);
-	delta *= activeObject()->radius * 0.2;
-	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin) - delta, Vec(activeObject()->bbmax) + delta);
-
-	// Save this new camera settings
-	activeViewer->camera()->deletePath(direction + 2);
-	activeViewer->camera()->addKeyFrameToPath(direction + 2);
-
-	// Compute the envelop (z value)
-	double zCamera = (activeViewer->camera()->position()).z;
-
-	activeViewer->setMode(HV_DEPTH);
-	activeViewer->updateGL(); // draw
-
+	// Read the buffer
 	GLfloat* depthBuffer = (GLfloat*)activeViewer->readBuffer(GL_DEPTH_COMPONENT, GL_FLOAT);
 
+	// Format the data
 	int w = activeViewer->width();
 	int h = activeViewer->height();
+	double zCamera = (activeViewer->camera()->position()).z;
 	double zNear = activeViewer->camera()->zNear();
 	double zFar = activeViewer->camera()->zFar();
 	envelope.resize(h);
@@ -79,21 +71,60 @@ void Offset::computeEnvelope( int direction, std::vector< std::vector<double> > 
 	delete[] depthBuffer;
 }
 
+void Offset::computeEnvelopeOfShape( int direction )
+{
+	// Set camera
+	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
+	activeViewer->camera()->setPosition(Vec(0,0, direction * activeObject()->radius));
+	activeViewer->camera()->lookAt(Vec());	
+
+	// Set \y as the upVector, then the projected 3D BB is still BB in 3D
+	activeViewer->camera()->setUpVector(Vec(0,1,0));
+	Vec delta(1, 1, 1);
+	delta *= activeObject()->radius * 0.2;
+	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin) - delta, Vec(activeObject()->bbmax) + delta);
+
+	// Save this new camera settings
+	activeViewer->camera()->deletePath(direction + 2);
+	activeViewer->camera()->addKeyFrameToPath(direction + 2);
+
+	// Render
+	activeViewer->setMode(HV_DEPTH);
+	activeViewer->updateGL(); 
+
+	// compute the envelope
+	computeEnvelope(direction);
+}
+
+
+void Offset::computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax )
+{
+	// Set camera
+	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
+	Vec3d bbCenter = (bbmin + bbmax) / 2;
+	Vec3d pos = bbCenter;
+	pos[2] += direction * 10;
+	activeViewer->camera()->setPosition(Vec(pos));
+	activeViewer->camera()->lookAt(Vec(bbCenter));	
+	activeViewer->camera()->setUpVector(Vec(0,1,0));
+	activeViewer->camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
+
+	// Save this new camera settings
+	activeViewer->camera()->deletePath(direction + 3);
+	activeViewer->camera()->addKeyFrameToPath(direction + 3);
+
+	// Render
+	activeViewer->setMode(HV_DEPTH);
+	activeViewer->updateGL(); 
+
+	// Compute
+	computeEnvelope(direction);
+}
+
 void Offset::computeOffset()
 {
-	if (!activeObject()) return;
-
-	// Compute the height of the shape
-	objectH = (activeObject()->bbmax - activeObject()->bbmin).z();
-
-	// Save original camera settings
-	activeViewer->camera()->deletePath(0);
-	activeViewer->camera()->addKeyFrameToPath(0);
-
-	// Compute the offset function
-	computeEnvelope(1, upperEnvelope, upperDepth);
-	computeEnvelope(-1, lowerEnvelope, lowerDepth);
 	offset = upperEnvelope; 
+
 	int h = upperEnvelope.size();
 	int w = upperEnvelope[0].size();
 
@@ -107,17 +138,71 @@ void Offset::computeOffset()
 				offset[y][x] = upperEnvelope[y][x] - lowerEnvelope[y][(w-1)-x];
 		}
 	}
+}
 
-	O_max = getMaxValue(offset);
+void Offset::computeOffsetOfShape()
+{
+	if (!activeObject()) return;
+
+	// Compute the height of the shape
+	objectH = (activeObject()->bbmax - activeObject()->bbmin).z();
+
+	// Save original camera settings
+	activeViewer->camera()->deletePath(0);
+	activeViewer->camera()->addKeyFrameToPath(0);
+
+	// Compute the offset function
+	computeEnvelopeOfShape(1);
+	computeEnvelopeOfShape(-1);
+	computeOffset();
 
 	// Update the stackability in QSegMesh
+	O_max = getMaxValue(offset);
 	activeObject()->O_max = O_max;
 	activeObject()->stackability = 1 - O_max/objectH;
 
-	activeViewer->updateGL();
-
 	// Save offset as image
 	saveAsImage(offset, O_max, "offset function.png");
+}
+
+void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
+{
+	// BB of hot 2D region
+	Vec2i bbmin_region, bbmax_region;
+	BBofRegion(region, bbmin_region, bbmax_region);
+
+	// Project BB of shape to 2D
+	Vec3d bbmin = activeObject()->bbmin;
+	Vec3d bbmax = activeObject()->bbmax;
+	Vec2i bbmin_shape = projectedCoordinatesOf(bbmin, 3);
+	Vec2i bbmax_shape = projectedCoordinatesOf(bbmax, 3);
+
+
+	// Shrink the BB of shape along x and y direction to contain the \region only
+	Vec2i range_2D = bbmax_shape - bbmin_shape;
+	Vec2i diff_min_2D = bbmin_region - bbmin_shape;
+	Vec2i diff_max_2D = bbmax_region - bbmin_shape;
+
+	Vec3d rang_3D = bbmax - bbmin;
+
+	for (int i=0;i<2;i++)
+	{
+		double alpha = double(diff_min_2D[i]) / range_2D[i];
+		double beta = double(diff_max_2D[i]) / range_2D[i];
+
+		bbmax[i] = bbmin[i] + rang_3D[i] * beta;
+		bbmin[i] = bbmin[i] + rang_3D[i] * alpha;
+	}
+
+	// Envelopes
+	computeEnvelopeOfRegion(1, bbmin, bbmax );
+	computeEnvelopeOfRegion(-1,  bbmin, bbmax );
+
+	// Offset
+	computeOffset();
+
+	// Save offset as image
+	saveAsImage(offset, O_max, "offset function of region.png");
 }
 
 double Offset::getStackability()
@@ -127,10 +212,10 @@ double Offset::getStackability()
 
 
 
-void Offset::hotspotsFromDirection( int direction )
+void Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion)
 {
 	// Restore the camera according to the direction
-	activeViewer->camera()->playPath( direction + 2 );
+	activeViewer->camera()->playPath( direction + 3 );
 
 	// Draw Faces Unique
 	activeViewer->setMode(HV_FACEUNIQUE);
@@ -144,76 +229,70 @@ void Offset::hotspotsFromDirection( int direction )
 
 	// Switch between directions
 	bool isUpper = (direction == 1);
-	std::vector< std::vector<double> > &depth = isUpper? upperDepth : lowerDepth;
 	std::vector< HotSpot > &hotSpots = isUpper? upperHotSpots : lowerHotSpots;
-	hotSpots.clear();
+	std::vector< std::vector<double> > &depth = isUpper? upperDepth : lowerDepth;
 
 	// Detect hot spots
 	uint sid, fid, fid_local;
 	uint x, y;
-	for (int i=0;i<hotRegions.size();i++)	
+
+	std::map< QString,  int > subHotRegionSize;
+	std::map< QString,  std::vector< Vec3d > > subHotSamples;
+
+	for (int j=0;j<hotRegion.size();j++)
 	{
-		std::map< QString,  int > subHotRegionSize;
-		std::map< QString,  std::vector< Vec3d > > subHotSamples;
+		// 2D coordinates
+		Vec2i &hotPixel = hotRegion[j];
+		x = (direction == 1) ? hotPixel.x() : (w-1) - hotPixel.x();
+		y = hotPixel.y();
 
-		for (int j=0;j<hotRegions[i].size();j++)
-		{
-			// 2D coordinates
-			Vec2i &hotPixel = hotRegions[i][j];
-			x = (direction == 1) ? hotPixel.x() : (w-1) - hotPixel.x();
-			y = hotPixel.y();
+		// 3d position of this hot sample
+		double depthVal = getValue(depth, x, y, FILTER_SIZE);
 
-			// 3d position of this hot sample
-			double depthVal = getValue(depth, x, y, FILTER_SIZE);
+		if (depthVal == BIG_NUMBER) 
+			continue;
 
-			if (depthVal == BIG_NUMBER) 
-				continue;
-
-			Vec hotP= activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (h-1)-y, depthVal));
+		Vec hotP= activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (h-1)-y, depthVal));
 
 
-			// Get the face index and segment index back
-			uint indx = ((y*w)+x)*4;
-			uint r = (uint)colormap[indx+0];
-			uint g = (uint)colormap[indx+1];
-			uint b = (uint)colormap[indx+2];
-			uint a = (uint)colormap[indx+3];
+		// Get the face index and segment index back
+		uint indx = ((y*w)+x)*4;
+		uint r = (uint)colormap[indx+0];
+		uint g = (uint)colormap[indx+1];
+		uint b = (uint)colormap[indx+2];
+		uint a = (uint)colormap[indx+3];
 
-			fid = ((255-a)<<24) + (r<<16) + (g<<8) + b - 1;
+		fid = ((255-a)<<24) + (r<<16) + (g<<8) + b - 1;
 
-			if (fid >= activeObject()->nbFaces()) 
-				continue;
+		if (fid >= activeObject()->nbFaces()) 
+			continue;
 
-			activeObject()->global2local_fid(fid, sid, fid_local);
+		activeObject()->global2local_fid(fid, sid, fid_local);
 
-			// Store informations
-			QString segmentID = activeObject()->getSegment(sid)->objectName();
-			Vec3d hotPoint(hotP.x, hotP.y, hotP.z);
-			hotPoints[sid].push_back(hotPoint);
-			subHotRegionSize[segmentID]++;
-			subHotSamples[segmentID].push_back(hotPoint);
-		}
-
-		// Create hot spot
-		HotSpot HS;
-
-		std::map< QString,  int >::iterator itr = std::max_element(subHotRegionSize.begin(), subHotRegionSize.end());
-		if (subHotRegionSize.end() == itr)
-		{
-			HS.hotRegionID = -1;
-		}
-		else
-		{
-			HS.hotRegionID = i;
-			HS.segmentID = itr->first;
-			HS.defineHeight = defineHeight( direction, hotRegions[i] );
-			HS.hotSamples = subHotSamples[HS.segmentID];
-		}
-		  
-		hotSpots.push_back(HS);	
+		// Store informations
+		QString segmentID = activeObject()->getSegment(sid)->objectName();
+		Vec3d hotPoint(hotP.x, hotP.y, hotP.z);
+		hotPoints[sid].push_back(hotPoint);
+		subHotRegionSize[segmentID]++;
+		subHotSamples[segmentID].push_back(hotPoint);
 	}
 
-	delete colormap;
+	// Create hot spot
+	HotSpot HS;
+
+	std::map< QString,  int >::iterator itr = std::max_element(subHotRegionSize.begin(), subHotRegionSize.end());
+	if (subHotRegionSize.end() == itr)
+	{
+		HS.hotRegionID = -1;
+	}
+	else
+	{
+		HS.hotRegionID = hotSpots.size();
+		HS.segmentID = itr->first;
+		HS.hotSamples = subHotSamples[HS.segmentID];
+	}
+
+	hotSpots.push_back(HS);	
 }
 
 void Offset::detectHotspots( )
@@ -221,21 +300,55 @@ void Offset::detectHotspots( )
 	// Initialization
 	clear();
 
-	// Recompute envelopes and offset with high resolution
-	activeViewer->setResolution(800);
-	computeOffset();
+	// Recompute the offset function of the entire shape
+	computeOffsetOfShape();
 
 	// Detect hot regions
 	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
 	visualizeHotRegions("hot regions.png");
 
-	// Detect hot spots from both directions
-	hotspotsFromDirection(1);
-	hotspotsFromDirection(-1);
+	// The max of \UpperEnvelope and min of \LowerEnvelope
+	double maxUE = getMaxValue(upperEnvelope);
+	double minLE = getMinValue(lowerEnvelope);
 
-	// Set the resultion back to low
-	activeViewer->setResolution(400);
-	computeOffset();
+	// Zoom into each hot region
+	int h = activeViewer->height();
+	int w = activeViewer->width();
+	for (int i=0;i<hotRegions.size();i++)
+	{
+		computeOffsetOfRegion(hotRegions[i]);
+
+		// Detect zoomed in hot region
+		std::vector< std::vector<Vec2i> > zoomedHRs
+			=  getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
+
+		// In case there are multiple regions
+		int selectedID = -1;
+		int largestSize = 0;
+		for (int j=0;j<zoomedHRs.size();j++)
+		{
+			if (largestSize < zoomedHRs[j].size())
+			{
+				largestSize = zoomedHRs[j].size();
+				selectedID = j;
+			}
+		}
+
+		if (selectedID == -1)
+		{
+			std::cout << "Zooming into a certain region fails.\n";
+			continue;
+		}
+		std::vector<Vec2i> &zoomedHR = zoomedHRs[selectedID];
+
+		// Detect hot spots from both directions
+		detectHotspotInRegion(1, zoomedHR);
+		upperHotSpots[upperHotSpots.size()-1].defineHeight = getMaxValue(upperEnvelope) > (maxUE - ZERO_TOLERANCE);
+
+		detectHotspotInRegion(-1, zoomedHR);
+		lowerHotSpots[lowerHotSpots.size()-1].defineHeight = getMinValue(lowerEnvelope) < (minLE + ZERO_TOLERANCE);
+		
+	}
 
 	// Show results in the std output
 	std::cout << "Hot spots: " << std::endl;
@@ -303,9 +416,10 @@ void Offset::saveAsImage( std::vector< std::vector < double > >& image, double m
 	int w = image[0].size();
 	QImage Output(w, h, QImage::Format_ARGB32);
 	
+	// \p y is flipped, since OpenGL has origin at the left bottom conner, while Qt at left top conner
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
-			Output.setPixel(x, y, jetColor( Max(0., image[y][x] / maxV), 0., 1.));			
+			Output.setPixel(x, (h-1)-y, jetColor( Max(0., image[y][x] / maxV), 0., 1.));			
 		}
 	}
 
@@ -324,7 +438,7 @@ void Offset::saveAsImage( std::vector< std::vector < bool > >& image, QString fi
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
 			QRgb color = image[y][x] ? red : blue;
-			Output.setPixel(x, y, color);			
+			Output.setPixel(x, (h-1)-y, color);			
 		}
 	}
 
@@ -465,25 +579,6 @@ void Offset::clear()
 	hotSegments.clear();
 }
 
-bool Offset::defineHeight( int direction, std::vector< Vec2i >& region )
-{
-	std::vector< double > values;
-	bool result;
-
-	if ( direction == 1 )
-	{
-		values = getValuesInRegion( upperEnvelope, region, false);		
-		result = MaxElement(values) > getMaxValue(upperEnvelope) - ZERO_TOLERANCE;
-	}
-	else
-	{
-		values = getValuesInRegion( lowerEnvelope, region, true);
-		result = MinElement(values) < getMinValue(lowerEnvelope) + ZERO_TOLERANCE;
-	}	
-
-	return result;
-}
-
 std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < double > >& image, 
 												 std::vector< Vec2i >& region, bool xFlipped /*= false*/ )
 {
@@ -586,14 +681,20 @@ Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int direction )
 	return Vec3d(P[0], P[1], P[2]);
 }
 
-Vec2i Offset::projectedCoordinatesOf( Vec3d point, int direction )
+Vec2i Offset::projectedCoordinatesOf( Vec3d point, int pathID )
 {
 	// Restore the camera according to the direction
-	activeViewer->camera()->playPath( direction + 2 );
+	activeViewer->camera()->playPath( pathID );
 
+	// Make sure to call /updateGL() to update the projectionMatrix!!!
+	activeViewer->updateGL();
+
+	// \p is expressed in the Qt coordinates, (0, 0) being at the top left conner
 	Vec p = activeViewer->camera()->projectedCoordinatesOf( Vec (point[0], point[1], point[2]) );
 
-	return Vec2i(p[0], (offset.size()-1) - p[1]);
+	// Convert to OpenGL coordinates
+	int h = activeViewer->height();
+	return Vec2i(p[0], (h-1)-p[1]);
 }
 
 void Offset::setRegionColor( std::vector< std::vector < double > >& image, std::vector< Vec2i >& region, double color )
@@ -931,5 +1032,25 @@ bool Offset::satisfyBBConstraint()
 
 
 	return result;
+}
+
+void Offset::BBofRegion( std::vector< Vec2i >& region, Vec2i &bbmin, Vec2i &bbmax )
+{
+	uint minX, maxX, minY, maxY;
+	minX = maxX = region[0].x();
+	minY = maxY = region[0].y();
+	for (int i=1; i<region.size(); i++)
+	{
+		uint x = region[i].x();
+		uint y = region[i].y();
+
+		if (x < minX) minX = x;
+		if (x > maxX) maxX = x;
+		if (y < minY) minY = y;
+		if (y > maxY) maxY = y;
+	}
+
+	bbmin = Vec2i(minX, minY);
+	bbmax = Vec2i(maxX, maxY);
 }
 
