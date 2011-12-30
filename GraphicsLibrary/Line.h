@@ -39,6 +39,8 @@ public:
 	Vec3d midPoint();
 
 	std::vector<Vec3d> uniformSample(int numSamples);
+	
+	operator const std::vector<Vec3d>();
 
 	void translateBy(const Vec3d& delta);
 

@@ -20,6 +20,7 @@ public:
 		std::vector<double> coord_v;
 		std::vector<double> coord_n;
 		bool insideCage;
+		bool valid;
 	};
 
 	std::vector< GreenCoordiante > coords;
@@ -28,8 +29,7 @@ public:
 
 	Point deformedPoint(GreenCoordiante gc);
 
-	GCDeformation::GreenCoordiante computeCoordinates(const Vec3d& point);
-
+	GCDeformation::GreenCoordiante computeCoordinates(Vec3d point);
 private:
 	double GCTriInt(const Vec3d& p, const Vec3d& v1, const Vec3d& v2, const Vec3d& e);
 };

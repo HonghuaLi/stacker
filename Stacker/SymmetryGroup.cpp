@@ -1,9 +1,6 @@
 #include "SymmetryGroup.h"
 #include "SimpleDraw.h"
 
-#define RADIANS(deg)    ((deg)/180.0 * M_PI)
-#define DEGREES(rad)    ((rad)/M_PI * 180.0)
-
 void SymmetryGroup::process(QVector<QString> segments)
 {
 	addNodes(segments);

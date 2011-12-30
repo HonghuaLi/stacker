@@ -1,7 +1,5 @@
 #include "TransformationPanel.h"
 
-#define RADIANS(deg)    ((deg)/180.0 * M_PI)
-
 TransformationPanel::TransformationPanel()
 {
 	rotWidget.setupUi(this);

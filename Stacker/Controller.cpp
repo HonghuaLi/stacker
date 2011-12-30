@@ -62,8 +62,8 @@ void Controller::draw()
 {
 	foreach(Primitive * prim, primitives)
 	{
-		prim->draw();
 		prim->drawDebug();
+		prim->draw();
 
 		// Draw proximity debug 
 		/*for (uint j = i + 1; j < primitives.size(); j++){
@@ -157,6 +157,7 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 		Vec3d center = cuboid->centerPoint();
 
 		Line line(center + (axis * extent), center + (-axis * extent));
+
 		std::vector<Point> spinePoints = line.uniformSample(10);
 
 		gc->createGC(spinePoints);
@@ -512,5 +513,36 @@ void Controller::regroupPair( QString id1, QString id2 )
 
 	if (pairGrp)
 		pairGrp->regroup();
+}
+
+void Controller::test()
+{
+	Primitive * prim = primitives.values().first();
+	
+	prim->isSelected = true;
+
+	std::vector< std::vector<Point> > curves = prim->getCurves();
+	int N = curves.size();
+	int NP = curves.front().size();
+
+	Point p(0,0,0), q(0,0,0), r(0,0,0), T(0,0,0);
+
+	/*  Test : deform respect joint
+	std::vector<Point> A = curves.front(), B = curves.back();
+	foreach(Point pnt, A) p += pnt; p /= N;
+	foreach(Point pnt, B) q += pnt; q /= N;
+	T = Vec3d(0.5,0.5,0);
+	prim->deformRespectToJoint(p, q, T);*/
+
+
+	/* Test: multiple fixed points  */
+	/*foreach(Point pnt, curves[N * 0.25]) p += pnt; p /= NP;
+	foreach(Point pnt, curves[N - (double(N) * 0.25)]) q += pnt; q /= NP;
+	prim->fixedPoints.clear();
+	prim->addFixedPoint(p);
+	prim->addFixedPoint(q);
+	T = Vec3d(0,0,0.5);
+	foreach(Point pnt, curves[N / 2]) r += pnt; r /= NP;
+	prim->movePoint(r, T);*/
 }
 

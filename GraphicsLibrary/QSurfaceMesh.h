@@ -52,6 +52,7 @@ public:
 	void drawFacesUnique(uint offset);
 	void drawDebug();
 	void simpleDraw();
+	void simpleDrawWireframe();
 
 	void setColorVertices(double r = 1.0, double g = 1.0, double b = 1.0, double a = 1.0);
 	void setColorVertices( Vec4d color );
@@ -60,6 +61,8 @@ public:
 	void collectEnoughRings(Vertex v, const size_t min_nb, std::vector <Vertex>& all);
 	void resetVistedVertices(std::vector <Vertex>& all);
 	void resetVistedVertices(uint toState = false); // for entire mesh
+
+	void addNoise(double delta);
 
 	// Load the mesh from file
 	void read(const std::string& filename);

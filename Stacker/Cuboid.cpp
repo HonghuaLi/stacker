@@ -4,12 +4,6 @@
 #include <Eigen/Geometry>
 using namespace Eigen;
 
-#define RADIANS(deg)    ((deg)/180.0 * M_PI)
-#define DEGREES(rad)    ((rad)/M_PI * 180.0)
-
-// Rodrigues' rotation
-#define ROTATE_VEC(v, theta, axis) (v = v * cos(theta) + cross(axis, v) * sin(theta) + axis * dot(axis, v) * (1 - cos(theta)))
-
 Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
 {
 	fit();
@@ -295,7 +289,6 @@ Vec3d Cuboid::selectedPartPos()
 
 	return partPos / face.size();
 }
-
 
 uint Cuboid::detectHotCurve( std::vector< Vec3d > &hotSamples )
 {

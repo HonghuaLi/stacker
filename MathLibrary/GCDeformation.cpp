@@ -8,7 +8,7 @@ GCDeformation::GCDeformation( QSurfaceMesh * forShape, QSurfaceMesh * usingCage 
 {
 	this->shape = forShape;
 	this->cage = usingCage;
-
+	
 	orginalCagePos = cage->clonePoints();
 	orginalCageNormal = cage->cloneFaceNormals();
 
@@ -22,12 +22,19 @@ GCDeformation::GCDeformation( QSurfaceMesh * forShape, QSurfaceMesh * usingCage 
 	{
 		GreenCoordiante gc = computeCoordinates( shapePoints[i]);
 		
+		// Numerical issue, solved by adding small noise to point
+		while(!gc.valid){
+			double t = 1e-6;
+			Point q = shapePoints[i] + Vec3d(uniform(0,t), uniform(0,t), uniform(0,t));
+			gc = computeCoordinates(q);
+		}
+
 		coords[i].coord_v = gc.coord_v;
 		coords[i].coord_n = gc.coord_n;
 	}
 }
 
-GCDeformation::GreenCoordiante GCDeformation::computeCoordinates(const Vec3d& point)
+GCDeformation::GreenCoordiante GCDeformation::computeCoordinates(Vec3d point)
 {
 	GreenCoordiante gc;
 
@@ -37,6 +44,7 @@ GCDeformation::GreenCoordiante GCDeformation::computeCoordinates(const Vec3d& po
 	gc.coord_n.resize(cage->n_faces(), 0);
 
 	gc.insideCage = true;
+	gc.valid = true;
 
 	// For each face in cage
 	for(fit = cage->faces_begin(); fit != fend; ++fit)
@@ -47,7 +55,7 @@ GCDeformation::GreenCoordiante GCDeformation::computeCoordinates(const Vec3d& po
 		std::vector<uint> faceVrts = cage->faceVerts(fit);
 		uint fi = Surface_mesh::Face(fit).idx();
 		Vec3d n = orginalCageNormal[ fi ];
-
+		
 		// 1) First "foreach"
 		for (int l = 0; l < 3; l++)
 			v[l] = (facePnts[l] - point);
@@ -75,6 +83,13 @@ GCDeformation::GreenCoordiante GCDeformation::computeCoordinates(const Vec3d& po
 			psi += s[k] * I[k];
 
 		psi = abs(psi);
+
+		// Robustness check (bug?)
+		if(psi != psi)
+		{
+			gc.valid = false;
+			return gc;
+		}
 
 		// 5) "w"
 		Vec3d w = -psi * n;
@@ -154,29 +169,33 @@ double GCDeformation::GCTriInt(const Vec3d& p, const Vec3d& v1, const Vec3d& v2,
 	const double c      = (p - e).sqrnorm();
 	const double theta[2] = { M_PI - alpha, M_PI - alpha - beta };
 
-	Vec2d I;
+	Vec2d I(0,0);
 
 	for (int i = 0; i < 2; ++i)
 	{
-		const double S = sin(theta[i]);
-		const double C = cos(theta[i]);
+		double S = sin(theta[i]);
+		double C = cos(theta[i]);
 
 		double sign = S < 0 ? -1.0 : 0 < S ? 1.0 : 0.0;
 
 		if (sign == 0.0)
 			I[i] = 0.0;
 		else
-			I[i] = -0.5 * sign * (2.0 * sqrt(c) * atan(sqrt(c) * C / sqrt(lambda + S * S * c))
-			+ sqrt(lambda) * log( 2.0 * sqrt(lambda) * S * S / ((1.0 - C) * (1.0 - C))
-			* (1.0 - 2.0 * c * C / (c * (1.0 + C) + lambda + sqrt(lambda * lambda + lambda * c * S * S)))));
+		{
+			double M = (-sign / 2.0);
+			double N = 2 * sqrt(c) * atan((sqrt(c) * C) / sqrt(lambda + (S * S * c)));
+			double O = sqrt(lambda);
+			double P = (2 * sqrt(lambda) * S * S) / pow(1.0 - C, 2);
+			double denom = ( (c*(1+C) + lambda + sqrt((lambda * lambda) + (lambda * c * S * S)) ));
+			double Q = (2 * c * C) / denom;
+			double R = 1.0 - Q;
 
-		double denomvi = sqrt(lambda + S * S * c);
-		double denomi1 = (1.0 - C) * (1.0 - C);
-		double denomi2 = c * (1.0 + C) + lambda + sqrt(lambda * lambda + lambda * c * S * S);
+			I[i] = M * (N + (O * log(P * R)));
+		}
 	}
 
-	double ret = -0.25 / M_PI * abs(I[0] - I[1] - sqrt(c) * beta);
-
+    double ret = (-0.25 / M_PI) * abs(I[0] - I[1] - sqrt(c) * beta);
+	
 	return ret;
 }
 

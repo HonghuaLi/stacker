@@ -29,9 +29,6 @@ public:
 		// First frame
 		Frame firstFrame = Frame::fromT(tangent.front());
 
-		if(U.size())
-			firstFrame = U.front();
-
 		U.clear();
 		U.push_back( firstFrame );
 

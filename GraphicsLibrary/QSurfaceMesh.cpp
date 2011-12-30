@@ -132,6 +132,25 @@ void QSurfaceMesh::drawDebug()
 	foreach(std::vector<Point> line, debug_lines3) SimpleDraw::IdentifyConnectedPoints(line, 0,0,1.0);
 }
 
+void QSurfaceMesh::simpleDrawWireframe()
+{
+	Vertex_property<Color>  vcolors  = vertex_property<Color>("v:color");
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDisable(GL_LIGHTING);
+	
+	Color prev = vcolors[Vertex(0)];
+
+	setColorVertices(Color(0.5,1,0.5, 1));
+
+	simpleDraw();
+	
+	setColorVertices(prev);
+
+	glEnable(GL_LIGHTING);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
 void QSurfaceMesh::simpleDraw()
 {
 	// Render mesh regularly (inefficient)
@@ -626,4 +645,16 @@ Point QSurfaceMesh::closestPointVertices(const Point & p)
 	}
 
 	return closePoint;
+}
+
+void QSurfaceMesh::addNoise(double delta)
+{
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	for(vit = vertices_begin(); vit != vend; ++vit)
+	{
+		Vec3d v(uniform(0, delta), uniform(0, delta), uniform(0, delta));
+		points[vit] += v;
+	}
 }

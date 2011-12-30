@@ -120,26 +120,8 @@ void Scene::draw()
 	if(!isEmpty() && vboCollection.isEmpty())
 		activeObject()->simpleDraw();
 
-	// Draw the controllers if exist
-	if (!isEmpty() && activeObject()->controller)
-		activeObject()->controller->draw();
 
-	// Wires
-	foreach(Wire w, activeWires)
-		w.draw();
-
-	// Deformer
-	if(activeDeformer) activeDeformer->draw();
-
-	// Debug
-	if (!isEmpty())
-		activeObject()->drawDebug();
-
-	// DEBUG
-	if(gc) gc->draw();
-	if(skel) skel->draw();
-	//if(defCtrl) defCtrl->draw();
-	
+	// Draw groups
 	if (!isEmpty() && activeObject()->controller)
 	{
 		Controller * ctrl = activeObject()->controller;
@@ -149,6 +131,21 @@ void Scene::draw()
 			g->draw();
 		}
 	}
+
+	// Deformer
+	if(activeDeformer) activeDeformer->draw();
+
+	// Wires
+	foreach(Wire w, activeWires)
+		w.draw();
+
+	// Draw the controllers if exist
+	if (!isEmpty() && activeObject()->controller)
+		activeObject()->controller->draw();
+
+	// DEBUG
+	if (!isEmpty())	activeObject()->drawDebug();
+	//if(defCtrl) defCtrl->draw();
 }
 
 void Scene::drawWithNames()
@@ -308,6 +305,11 @@ void Scene::keyPressEvent( QKeyEvent *e )
 	if(e->key() == Qt::Key_P)
 	{
 		this->setRenderMode(RENDER_POINT);
+	}
+
+	if(e->key() == Qt::Key_L)
+	{
+		activeObject()->controller->test();
 	}
 
 	// Regular behavior
