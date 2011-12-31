@@ -827,7 +827,7 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 
 	// Search for optional locations in 1-K rings
 	std::vector< Vec3d > Ts;
-	int K = 4;
+	int K = 8;
 	for (uint k = 1; k < K; k++)
 	{
 		std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
@@ -892,23 +892,26 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 
 	// Actually modify the shape to generate hot solutions
 	//for (int i=0;i<Ts.size();i++)
-	int i=Ts.size()-1;
+	int i=Ts.size()-12;
 	{
-		// Move the current hot segments
+		// Clear the frozen flags
+		ctrl->setPrimitivesFrozen(false);		
+		
+		// Fix the opposite hot spot
+		op_prim->addFixedPoint(op_hotPoint); 
+
+		// Move the current hot spot
 		prim->movePoint(hotPoint, Ts[i]);
+		prim->addFixedPoint(hotPoint + Ts[i]);
 			
 		// fix the hot segments pair
-		ctrl->setPrimitivesFrozen(false);
-		prim->addFixedPoint(hotPoint + Ts[i]);
-		op_prim->addFixedPoint(op_hotPoint); 
 		ctrl->regroupPair(prim->id, op_prim->id);
 
-		// Propagation among hot segments
+		// Propagation the deformation
 		prim->isFrozen = true;
 		op_prim->isFrozen = true;
 		ctrl->propagate();
 
-		return;
 
 		// Check if this is a hotSolution
 		if ( satisfyBBConstraint() )
@@ -918,6 +921,7 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 				hotSolutions.push_back(ctrl->getShapeState());
 		}
 
+		return;
 		// Restore the initial hot shape state
 		ctrl->setShapeState(initialHotShapeState);
 	}
@@ -926,22 +930,40 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 void Offset::applyHeuristics()
 {
 	Controller *ctrl = activeObject()->controller;
+	hotSolutions.clear();
 
-	// Only hot segments are visible and available
-	ctrl->setSegmentsVisible(false);
-	ctrl->setPrimitivesAvailable(false);
-	foreach(QString sid, hotSegments)
+	//// Only hot segments are visible and available
+	//ctrl->setSegmentsVisible(false);
+	//ctrl->setPrimitivesAvailable(false);
+	//foreach(QString sid, hotSegments)
+	//{
+	//	activeObject()->getSegment(sid)->isVisible = true;
+	//	ctrl->getPrimitive(sid)->isAvailable = true;
+	//}
+
+
+
+	// After getting rid of redundancy caused by symmetries, hopefully only one pair of hot spots remains
+	// For now, only apply heuristics on the hot region that has maximum offset
+	int selectedID = -1;
+	for (int i=0;upperHotSpots.size();i++)
 	{
-		activeObject()->getSegment(sid)->isVisible = true;
-		ctrl->getPrimitive(sid)->isAvailable = true;
+		int rid = upperHotSpots[i].hotRegionID;
+		if (maxOffsetInHotRegions[rid] == O_max)
+		{
+			selectedID = i;
+			break;
+		}
 	}
 
-	// Heuristics are applied for each pair of hot spots
-	// After getting rid of redundancy caused by symmetries, hopefully only one pair of hot spots remains
-	hotSolutions.clear();
-	int id = 0;
-//	applyHeuristicsOnHotspot(upperHotSpots[id], lowerHotSpots[id]);		
-	applyHeuristicsOnHotspot(lowerHotSpots[id], upperHotSpots[id]);	
+	if (-1 == selectedID)
+	{
+		std::cout << "There is no hot region contians O_max.\n";
+		return;
+	}
+
+	applyHeuristicsOnHotspot(upperHotSpots[selectedID], lowerHotSpots[selectedID]);		
+//	applyHeuristicsOnHotspot(lowerHotSpots[selectedID], upperHotSpots[selectedID]);	
 }
 
 void Offset::improveStackability()
@@ -973,7 +995,7 @@ void Offset::improveStackability()
 	// Several hot solutions might be generated, which are stored in *hotSolutions*
 	applyHeuristics();
 
-	activeObject()->computeBoundingBox();
+	//activeObject()->computeBoundingBox();
 	return;
 	//=========================================================================================
 	// Step 3: Propagate hot solutions to remaining cold parts to generate *candidateSolutions*
@@ -1065,10 +1087,10 @@ bool Offset::satisfyBBConstraint()
 		result = false;
 
 	// debug
-	//std::cout << "-----------------------------------\n"
-	//	<<"The preBB size: (" << preBB <<")\n";	
-	//std::cout << "The currBB size:(" << currBB <<")\n";
-	//std::cout << "BB-satisfying: " << result <<std::endl;
+	std::cout << "-----------------------------------\n"
+		<<"The preBB size: (" << preBB <<")\n";	
+	std::cout << "The currBB size:(" << currBB <<")\n";
+	std::cout << "BB-satisfying: " << result <<std::endl;
 
 
 	return result;
