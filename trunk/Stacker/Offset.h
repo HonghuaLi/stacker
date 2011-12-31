@@ -20,23 +20,19 @@ public:
 	class HotSpot
 	{
 	public:
+		int side;
 		int hotRegionID;
 		QString segmentID;
 		bool defineHeight;
 		std::vector< Vec3d > hotSamples;
 
 		void print(){
-			std::cout << "hotRegionID="   << hotRegionID 
+			std::cout << "side="   << side 
 					  << "\tsegmentID="	  << qPrintable(segmentID) 
 					  << "\tdefineHeight=" << defineHeight << std::endl; 
 		}
 
-		Point hotPoint(){
-			Vec3d hp(0, 0, 0);
-			for (int i=0; i<hotSamples.size();i++)
-				hp += hotSamples[i];
-			return (hp / hotSamples.size());
-		}
+		Point hotPoint(){return hotSamples[0];}
 	};
 
 public:
@@ -59,15 +55,15 @@ public:
 	// Detect hot spots
 	void hotspotsFromDirection( int direction );
 	void detectHotspots();
-	void detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion);
+	HotSpot detectHotspotInRegion(int direction, std::vector<Vec2i>& hotRegion);
 	std::set<uint> getHotSegment();
 	void showHotSpots();
 	// Improve stackability
 	void improveStackabilityTo(double targetS);
 	void improveStackability();
 	void applyHeuristics();
-	void applyHeuristicsOnHotspot( uint hid, int side );
-	std::vector< Vec3d > getHorizontalMoves( uint hid, int side );
+	void applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS );
+	std::vector< Vec3d > getHorizontalMoves( HotSpot& HS );
 	double preStackability;
 	Vec3d pre_bbmin, pre_bbmax;
 	bool satisfyBBConstraint();
@@ -76,6 +72,7 @@ public:
 	double getValue( std::vector< std::vector < double > >& image, uint x, uint y, uint r );
 	double getMinValue( std::vector< std::vector < double > >& image );
 	double getMaxValue( std::vector< std::vector < double > >& image );	
+	double maxValueInRegion( std::vector< std::vector < double > >& image,  std::vector< Vec2i >& region);
 	std::vector< double > getValuesInRegion( std::vector< std::vector < double > >& image, 
 											 std::vector< Vec2i >& region, bool xFlipped = false );	
 	template< typename PREDICATE >
@@ -119,6 +116,7 @@ public:
 
 	std::map< uint, std::vector<Vec3d> > hotPoints;
 	std::vector< std::vector<Vec2i> > hotRegions;
+	std::vector< double > maxOffsetInHotRegions;
 	std::vector< HotSpot >  upperHotSpots;
 	std::vector< HotSpot >  lowerHotSpots;
 	std::set< QString> hotSegments;

@@ -134,10 +134,15 @@ void Cuboid::draw()
 		glColor4f(0,0,1,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[2], 0.1f);
 	}
 
-	//for (int i=0;i<symmPlanes.size();i++)
-	//{
-	//	symmPlanes[i].draw();
-	//}
+	for (int i=0;i<symmPlanes.size();i++)
+	{
+		symmPlanes[i].draw();
+	}
+
+	for (int i=0;i<joints.size();i++)
+	{
+		SimpleDraw::IdentifyPoint(joints[i]);
+	}
 }
 
 void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)

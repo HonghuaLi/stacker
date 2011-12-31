@@ -59,11 +59,7 @@ public:
 	QSurfaceMesh* getMesh(){ return m_mesh; }
 
 	// Symmetry, joints, fixed points
-	struct Joint{
-		Point pos;
-		bool frozen;
-	};
-	QVector<Joint> joints;
+	QVector<Point> joints;
 	QVector<Point> fixedPoints;
 	QVector<Plane> symmPlanes;
 	virtual void setSymmetryPlanes(int nb_fold) = 0;
