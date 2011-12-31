@@ -336,12 +336,9 @@ void Controller::findJoints(double threshold)
 				segments.push_back(keys[i]);
 				segments.push_back(keys[j]);
 				newGroup->process(segments, centerPoint);
-
-				Primitive::Joint joint;
-				joint.pos = centerPoint;
-				joint.frozen = false;
-				a->joints.push_back(joint);
-				b->joints.push_back(joint);
+	
+				a->joints.push_back(centerPoint);
+				b->joints.push_back(centerPoint);
 
 				this->groups[newGroup->id] = newGroup;
 			}

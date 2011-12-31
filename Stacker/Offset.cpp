@@ -10,7 +10,7 @@
 #define BIG_NUMBER 9999
 
 int FILTER_SIZE = 1;
-double HOT_RANGE = 0.9;
+double HOT_RANGE = 0.95;
 
 
 // OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
@@ -96,18 +96,17 @@ void Offset::computeEnvelopeOfShape( int direction )
 	computeEnvelope(direction);
 }
 
-
 void Offset::computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax )
 {
 	// Set camera
 	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
 	Vec3d bbCenter = (bbmin + bbmax) / 2;
 	Vec3d pos = bbCenter;
-	pos[2] += direction * 10;
+	pos[2] = (1==direction)? bbmax.z() : bbmin.z();
 	activeViewer->camera()->setPosition(Vec(pos));
 	activeViewer->camera()->lookAt(Vec(bbCenter));	
 	activeViewer->camera()->setUpVector(Vec(0,1,0));
-	activeViewer->camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
+	//activeViewer->camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
 
 	// Save this new camera settings
 	activeViewer->camera()->deletePath(direction + 3);
@@ -212,7 +211,7 @@ double Offset::getStackability()
 
 
 
-void Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion)
+Offset::HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion)
 {
 	// Restore the camera according to the direction
 	activeViewer->camera()->playPath( direction + 3 );
@@ -229,7 +228,6 @@ void Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion)
 
 	// Switch between directions
 	bool isUpper = (direction == 1);
-	std::vector< HotSpot > &hotSpots = isUpper? upperHotSpots : lowerHotSpots;
 	std::vector< std::vector<double> > &depth = isUpper? upperDepth : lowerDepth;
 
 	// Detect hot spots
@@ -283,16 +281,16 @@ void Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion)
 	std::map< QString,  int >::iterator itr = std::max_element(subHotRegionSize.begin(), subHotRegionSize.end());
 	if (subHotRegionSize.end() == itr)
 	{
-		HS.hotRegionID = -1;
+		HS.side = 0;
 	}
 	else
 	{
-		HS.hotRegionID = hotSpots.size();
+		HS.side = direction;
 		HS.segmentID = itr->first;
 		HS.hotSamples = subHotSamples[HS.segmentID];
 	}
 
-	hotSpots.push_back(HS);	
+	return HS;
 }
 
 void Offset::detectHotspots( )
@@ -306,6 +304,12 @@ void Offset::detectHotspots( )
 	// Detect hot regions
 	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
 	visualizeHotRegions("hot regions.png");
+
+	// The max offset of hot regions
+	maxOffsetInHotRegions.clear();
+	for (int i=0;i<hotRegions.size();i++){
+		maxOffsetInHotRegions.push_back(maxValueInRegion(offset, hotRegions[i]));
+	}
 
 	// The max of \UpperEnvelope and min of \LowerEnvelope
 	double maxUE = getMaxValue(upperEnvelope);
@@ -321,38 +325,47 @@ void Offset::detectHotspots( )
 		// Detect zoomed in hot region
 		std::vector< std::vector<Vec2i> > zoomedHRs
 			=  getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
-
-		// In case there are multiple regions
-		int selectedID = -1;
-		int largestSize = 0;
-		for (int j=0;j<zoomedHRs.size();j++)
-		{
-			if (largestSize < zoomedHRs[j].size())
-			{
-				largestSize = zoomedHRs[j].size();
-				selectedID = j;
-			}
-		}
-
-		if (selectedID == -1)
-		{
-			std::cout << "Zooming into a certain region fails.\n";
+		if (zoomedHRs.size() == 0){
+			std::cout << "There is no hot region in the zoomed in view.\n";
 			continue;
 		}
-		std::vector<Vec2i> &zoomedHR = zoomedHRs[selectedID];
+
+		// If there are multiple regions, pick up the one at the center
+		std::vector<Vec2i>::iterator itr;
+		Vec2i center(w/2, h/2);
+		int j;
+		for (j=0;j<zoomedHRs.size();j++){
+			itr = std::find(zoomedHRs[j].begin(), zoomedHRs[j].end(), center);
+			if (itr != zoomedHRs[j].end())
+				break;
+		}
+		if (zoomedHRs.size() == j){
+			std::cout << "The zoomed in hot region is not centerized.\n";
+			continue;
+		}
+		std::vector<Vec2i> &zoomedHR = zoomedHRs[j];
 
 		// Detect hot spots from both directions
-		detectHotspotInRegion(1, zoomedHR);
-		upperHotSpots[upperHotSpots.size()-1].defineHeight = getMaxValue(upperEnvelope) > (maxUE - ZERO_TOLERANCE);
+		HotSpot UHS = detectHotspotInRegion(1, zoomedHR);
+		if (0 == UHS.side) continue;
+		HotSpot LHS = detectHotspotInRegion(-1, zoomedHR);
+		if (0 == LHS.side) continue;
 
-		detectHotspotInRegion(-1, zoomedHR);
-		lowerHotSpots[lowerHotSpots.size()-1].defineHeight = getMinValue(lowerEnvelope) < (minLE + ZERO_TOLERANCE);
-		
+		UHS.hotRegionID = i;
+		LHS.hotRegionID = i;
+
+		std::vector< double > valuesU = getValuesInRegion(upperEnvelope, zoomedHR, false);
+		UHS.defineHeight = MaxElement(valuesU) > (maxUE - ZERO_TOLERANCE);
+		std::vector< double > valuesL = getValuesInRegion(lowerEnvelope, zoomedHR, true);
+		LHS.defineHeight = MinElement(valuesL) < (minLE + ZERO_TOLERANCE);
+
+		upperHotSpots.push_back(UHS);
+		lowerHotSpots.push_back(LHS);
 	}
 
 	// Show results in the std output
 	std::cout << "Hot spots: " << std::endl;
-	for (int i=0;i<hotRegions.size();i++)
+	for (int i=0;i<upperHotSpots.size();i++)
 	{
 		upperHotSpots[i].print();
 		lowerHotSpots[i].print();
@@ -360,7 +373,8 @@ void Offset::detectHotspots( )
 	std::cout << std::endl;
 
 	// Hot segments
-	for (int i=0;i<hotRegions.size();i++)
+	hotSegments.clear();
+	for (int i=0;i<upperHotSpots.size();i++)
 	{
 		hotSegments.insert(upperHotSpots[i].segmentID);
 		hotSegments.insert(lowerHotSpots[i].segmentID);
@@ -450,7 +464,7 @@ double Offset::getValue( std::vector< std::vector < double > >& image, uint x, u
 {
 	int w = image[0].size();
 	int h = image.size();	
-
+	
 	uint min_x = RANGED(0, x-r ,w-1);
 	uint max_x = RANGED(0, x+r, w-1);
 	uint min_y = RANGED(0, y-r ,h-1);
@@ -492,6 +506,21 @@ double Offset::getMinValue( std::vector< std::vector < double > >& image )
 		row_min.push_back(MinElement(image[y]));
 
 	return MinElement(row_min);
+}
+
+double Offset::maxValueInRegion( std::vector< std::vector < double > >& image,  std::vector< Vec2i >& region )
+{
+	double result = 0;
+	for (int i=0;i<region.size();i++)
+	{
+		int x = region[i].x();
+		int y = region[i].y();
+
+		if (image[y][x] > result)
+			result = image[y][x];
+	}
+
+	return result;
 }
 
 template< typename PREDICATE >
@@ -598,6 +627,25 @@ std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < doub
 	return values;
 }
 
+void Offset::BBofRegion( std::vector< Vec2i >& region, Vec2i &bbmin, Vec2i &bbmax )
+{
+	uint minX, maxX, minY, maxY;
+	minX = maxX = region[0].x();
+	minY = maxY = region[0].y();
+	for (int i=1; i<region.size(); i++)
+	{
+		uint x = region[i].x();
+		uint y = region[i].y();
+
+		if (x < minX) minX = x;
+		if (x > maxX) maxX = x;
+		if (y < minY) minY = y;
+		if (y > maxY) maxY = y;
+	}
+
+	bbmin = Vec2i(minX, minY);
+	bbmax = Vec2i(maxX, maxY);
+}
 
 
 std::vector< Vec2i > Offset::deltaVectorsToKRing( int deltaX, int deltaY, int K )
@@ -742,125 +790,31 @@ void Offset::visualizeHotRegions( QString filename )
 	saveAsImage(debugImg, 1.0, filename);
 }
 
-void Offset::applyHeuristics()
+
+std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 {
-	Controller *ctrl = activeObject()->controller;
+	// Recompute the OPPOSITE envelope using hot segments only
+	computeEnvelopeOfShape(-HS.side);
 
-	// Only hot segments are visible and available
-	ctrl->setSegmentsVisible(false);
-	ctrl->setPrimitivesAvailable(false);
-	foreach(QString sid, hotSegments)
-	{
-		activeObject()->getSegment(sid)->isVisible = true;
-		ctrl->getPrimitive(sid)->isAvailable = true;
-	}
-
-	// Heuristics are applied for each pair of hot spots	
-	hotSolutions.clear();
-	applyHeuristicsOnHotspot(0, 1);		
-	applyHeuristicsOnHotspot(0, -1);	
-}
-
-void Offset::applyHeuristicsOnHotspot( uint hid, int side )
-{
-	// Hot spot
-	Controller *ctrl = activeObject()->controller;
-
-	HotSpot HS = upperHotSpots[hid];
-	HotSpot opHS =  lowerHotSpots[hid];
-	if (-1 == side)
-	{
-		HS = lowerHotSpots[hid];
-		opHS = upperHotSpots[hid];
-	}
-	Primitive* prim = ctrl->getPrimitive(HS.segmentID);
-	Primitive* op_prim = ctrl->getPrimitive(opHS.segmentID);
-
-	// find the centroid of hot samples as the representative
-	Point hotPoint = HS.hotPoint();
-	Point op_hotPoint = opHS.hotPoint();
-
-	// Save the initial hot shape state
-	ShapeState initialHotShapeState = ctrl->getShapeState();
-
-
-	// Move hot spot side away or closer to each other
-	std::vector< Vec3d > Ts; // translations of hot spots
-	if (HS.defineHeight)
-	{
-		// Recompute the offset and envelops using only hot segments
-		computeOffset();
-
-		Ts = getHorizontalMoves(hid, side);
-	}
-	else
-	{
-		// Move up/down directly
-		Vec3d T(0, 0, 1);
-		if (1 == side) T *= -1;
-
-		Ts.push_back( T );
-	}
-
-	// Actually modify the shape to generate hot solutions
-	for (int i=0;i<Ts.size();i++)
-	//int i=23;
-	{
-		// Move the current hot segments
-		prim->movePoint(hotPoint, Ts[i]);
-			
-		// fix the hot segments pair
-		ctrl->setPrimitivesFrozen(false);
-		prim->addFixedPoint(hotPoint + Ts[i]);
-		op_prim->addFixedPoint(op_hotPoint); 
-		// There is one case that neither *prim* nor *op_prim* is *frozen*.
-		ctrl->regroupPair(prim->id, op_prim->id);
-		prim->isFrozen = true;
-		op_prim->isFrozen = true;
-
-		// Propagation among hot segments
-		ctrl->propagate();
-
-		// Check if this is a hotSolution
-		if ( satisfyBBConstraint() )
-		{
-			computeOffset();
-			if (getStackability() > preStackability + 0.3)
-				hotSolutions.push_back(ctrl->getShapeState());
-		}
-
-
-		// Restore the initial hot shape state
-		ctrl->setShapeState(initialHotShapeState);
-	}
-}
-
-
-std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
-{
 	// The hot region	
-	std::vector< Vec2i > &hotRegion = hotRegions[hid];
-	
-	// The size of buffer
-	int w = offset[0].size();
-	int h = offset.size();
+	std::vector< Vec2i > &hotRegion = hotRegions[HS.hotRegionID];
 
 	// Switchers
-	bool isUpper = (side == 1);
+	bool isUpper = (HS.side == 1);
 	bool x_flipped = isUpper;
-	std::vector< std::vector<double> > &opp_envelope = isUpper ? lowerEnvelope : upperEnvelope;
+	std::vector< std::vector<double> > &op_envelope = isUpper ? lowerEnvelope : upperEnvelope;
 
 	// Project BB to 2D buffer
 	std::vector< std::vector< double > > BBImg = createImage( offset[0].size(), offset.size(), 0. );
-	Vec2i bbmin = projectedCoordinatesOf(pre_bbmin, 1);
-	Vec2i bbmax = projectedCoordinatesOf(pre_bbmax, 1);
+	Vec2i bbmin = projectedCoordinatesOf(pre_bbmin, 3);
+	Vec2i bbmax = projectedCoordinatesOf(pre_bbmax, 3);
 	setPixelColor(BBImg, bbmin, 1.0);
 	setPixelColor(BBImg, bbmax, 0.5);
 	saveAsImage(BBImg, 1.0, "BB projection.png");
 
-	// Current position measures
-	std::vector< double > curr_env = getValuesInRegion(opp_envelope, hotRegion, x_flipped);
-	double threshold = isUpper? MaxElement(curr_env) : MinElement( curr_env );
+	// Opposite envelope at current position
+	std::vector< double > curr_op_env = getValuesInRegion(op_envelope, hotRegion, x_flipped);
+	double threshold = isUpper? MaxElement(curr_op_env) : MinElement( curr_op_env );
 
 	//============ debug code
 	std::vector< std::vector< double > > debugImg = createImage( offset[0].size(), offset.size(), 0. );
@@ -869,13 +823,11 @@ std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
 
 	// The size of the hot region
 	Vec2i size = sizeofRegion(hotRegion);
-	uint rw = size.x();
-	uint rh = size.y();
-	int step = Max(rw, rh);
+	int step = Max(size.x(), size.y());
 
 	// Search for optional locations in 1-K rings
 	std::vector< Vec3d > Ts;
-	int K = 8;
+	int K = 4;
 	for (uint k = 1; k < K; k++)
 	{
 		std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
@@ -888,8 +840,8 @@ std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
 			setRegionColor(debugImg, shiftedRegion, 1.0 - k * 0.1 );
 			//============ end of debug code
 
-			std::vector< double > new_env = getValuesInRegion(opp_envelope, shiftedRegion, x_flipped);
-			double newValue = isUpper? MinElement( new_env ) : MaxElement( new_env );
+			std::vector< double > new_op_env = getValuesInRegion(op_envelope, shiftedRegion, x_flipped);
+			double newValue = isUpper? MinElement( new_op_env ) : MaxElement( new_op_env );
 			bool isBetter = isUpper? (newValue > threshold) : (newValue < threshold);
 
 			if (isBetter)
@@ -913,39 +865,83 @@ std::vector< Vec3d > Offset::getHorizontalMoves( uint hid, int side )
 	return Ts;
 }
 
-void Offset::improveStackabilityTo( double targetS )
+void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
+{
+
+	Controller *ctrl = activeObject()->controller;
+	Primitive* prim = ctrl->getPrimitive(HS.segmentID);
+	Primitive* op_prim = ctrl->getPrimitive(opHS.segmentID);
+
+	// Find the representative hot samples
+	Point hotPoint = HS.hotPoint();
+	Point op_hotPoint = opHS.hotPoint();
+
+	// Save the initial hot shape state
+	ShapeState initialHotShapeState = ctrl->getShapeState();
+
+	// Move hot spot side away or closer to each other
+	std::vector< Vec3d > Ts; // translations of hot spots
+	if (HS.defineHeight)
+		Ts = getHorizontalMoves(HS);
+	else
+	{	// Move up/down directly
+		Vec3d T(0, 0, 1);
+		if (1 == HS.side) T *= -1;
+		Ts.push_back( T );
+	}
+
+	// Actually modify the shape to generate hot solutions
+	//for (int i=0;i<Ts.size();i++)
+	int i=Ts.size()-1;
+	{
+		// Move the current hot segments
+		prim->movePoint(hotPoint, Ts[i]);
+			
+		// fix the hot segments pair
+		ctrl->setPrimitivesFrozen(false);
+		prim->addFixedPoint(hotPoint + Ts[i]);
+		op_prim->addFixedPoint(op_hotPoint); 
+		ctrl->regroupPair(prim->id, op_prim->id);
+
+		// Propagation among hot segments
+		prim->isFrozen = true;
+		op_prim->isFrozen = true;
+		ctrl->propagate();
+
+		return;
+
+		// Check if this is a hotSolution
+		if ( satisfyBBConstraint() )
+		{
+			computeOffsetOfShape();
+			if (getStackability() > preStackability + 0.3)
+				hotSolutions.push_back(ctrl->getShapeState());
+		}
+
+		// Restore the initial hot shape state
+		ctrl->setShapeState(initialHotShapeState);
+	}
+}
+
+void Offset::applyHeuristics()
 {
 	Controller *ctrl = activeObject()->controller;
 
-	// The bounding box constraint is hard
-	pre_bbmin = activeObject()->bbmin * 1.05;
-	pre_bbmax = activeObject()->bbmax * 1.05;
-
-	// Push the current shape as the initial candidate solution
-	candidateSolutions.push(ctrl->getShapeState());
-
-//	while(!candidateSolutions.empty())
+	// Only hot segments are visible and available
+	ctrl->setSegmentsVisible(false);
+	ctrl->setPrimitivesAvailable(false);
+	foreach(QString sid, hotSegments)
 	{
-		// Get the first candidate solution
-		ShapeState currShape = candidateSolutions.front();
-		candidateSolutions.pop();
-		ctrl->setShapeState(currShape);
-
-		// Check if this candidate is a solution
-		computeOffset();
-		if (getStackability() >= targetS)
-		{
-			// Yes. Got one solution.
-			solutions.push_back(currShape);
-			//continue;
-		}
-		else
-		{
-			// No. Try to improve the current shape
-			// This iteration might generate several candidate solutions
-			improveStackability();
-		}
+		activeObject()->getSegment(sid)->isVisible = true;
+		ctrl->getPrimitive(sid)->isAvailable = true;
 	}
+
+	// Heuristics are applied for each pair of hot spots
+	// After getting rid of redundancy caused by symmetries, hopefully only one pair of hot spots remains
+	hotSolutions.clear();
+	int id = 0;
+//	applyHeuristicsOnHotspot(upperHotSpots[id], lowerHotSpots[id]);		
+	applyHeuristicsOnHotspot(lowerHotSpots[id], upperHotSpots[id]);	
 }
 
 void Offset::improveStackability()
@@ -955,14 +951,22 @@ void Offset::improveStackability()
 	// improve the stackability of current shape in three steps
 	//=========================================================================================
 	// Step 1: Detect hot spots
-	std::cout << "FilterSize = " << FILTER_SIZE << std::endl;
-	detectHotspots();
-	if (hotRegions.empty())
-	{
-		std::cout << "Hot spots detection failed.\n";
-		return;
-	}
+	computeOffsetOfShape();
 	preStackability = getStackability();
+
+	HOT_RANGE = 0.95;
+	detectHotspots();
+	while (upperHotSpots.empty())
+	{
+		HOT_RANGE -= 0.05;
+		detectHotspots();
+
+		if (HOT_RANGE < 0.8)
+		{
+			std::cout << "Hot spots detection failed.\n";
+			return;
+		}
+	}
 
 	//=========================================================================================
 	// Step 2: Apply heuristics on hot spots
@@ -998,6 +1002,42 @@ void Offset::improveStackability()
 	}
 }
 
+void Offset::improveStackabilityTo( double targetS )
+{
+	Controller *ctrl = activeObject()->controller;
+
+	// The bounding box constraint is hard
+	pre_bbmin = activeObject()->bbmin * 1.05;
+	pre_bbmax = activeObject()->bbmax * 1.05;
+
+	// Push the current shape as the initial candidate solution
+	candidateSolutions.push(ctrl->getShapeState());
+
+//	while(!candidateSolutions.empty())
+	{
+		// Get the first candidate solution
+		ShapeState currShape = candidateSolutions.front();
+		candidateSolutions.pop();
+		ctrl->setShapeState(currShape);
+
+		// Check if this candidate is a solution
+		computeOffsetOfShape();
+		if (getStackability() >= targetS)
+		{
+			// Yes. Got one solution.
+			solutions.push_back(currShape);
+			//continue;
+		}
+		else
+		{
+			// No. Try to improve the current shape
+			// This iteration might generate several candidate solutions
+			improveStackability();
+		}
+	}
+}
+
+
 void Offset::showHotSolution( int i )
 {
 	if (hotSolutions.empty())
@@ -1025,32 +1065,13 @@ bool Offset::satisfyBBConstraint()
 		result = false;
 
 	// debug
-	std::cout << "-----------------------------------\n"
-		<<"The preBB size: (" << preBB <<")\n";	
-	std::cout << "The currBB size:(" << currBB <<")\n";
-	std::cout << "BB-satisfying: " << result <<std::endl;
+	//std::cout << "-----------------------------------\n"
+	//	<<"The preBB size: (" << preBB <<")\n";	
+	//std::cout << "The currBB size:(" << currBB <<")\n";
+	//std::cout << "BB-satisfying: " << result <<std::endl;
 
 
 	return result;
 }
 
-void Offset::BBofRegion( std::vector< Vec2i >& region, Vec2i &bbmin, Vec2i &bbmax )
-{
-	uint minX, maxX, minY, maxY;
-	minX = maxX = region[0].x();
-	minY = maxY = region[0].y();
-	for (int i=1; i<region.size(); i++)
-	{
-		uint x = region[i].x();
-		uint y = region[i].y();
-
-		if (x < minX) minX = x;
-		if (x > maxX) maxX = x;
-		if (y < minY) minY = y;
-		if (y > maxY) maxY = y;
-	}
-
-	bbmin = Vec2i(minX, minY);
-	bbmax = Vec2i(maxX, maxY);
-}
 
