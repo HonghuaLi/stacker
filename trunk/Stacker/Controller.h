@@ -7,7 +7,13 @@
 
 class QSegMesh;
 
-typedef QMap< QString, void* > ShapeState;
+struct ShapeState
+{
+	QMap< QString, PrimitiveState > primStates;
+	double stackability;
+	QVector<QString> seeds;
+	QMap< QString, QMap<QString, std::vector<double>> > jointCoords;
+};
 
 class Controller
 {
@@ -57,13 +63,16 @@ public:
 	void setShapeState( ShapeState &shapeState );
 
 	// Propagation
-	void propagate();
+	void weakPropagate(QVector<QString> seeds);
+	void weakPropagate();
+	QVector<ShapeState> strongPropagate();
 	void regroupPair(QString id1, QString id2);
 
 
 	// Debug items
 	std::vector<Point> debugPoints;
 	std::vector< std::vector<Point> > debugLines;
+	QMap< QString, bool > getFrozenFlags();
 
 	// Flags
 	void setSegmentsVisible(bool isVisible = true);

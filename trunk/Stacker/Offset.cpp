@@ -9,8 +9,8 @@
 
 #define ZERO_TOLERANCE 0.01
 #define BIG_NUMBER 10
+#define DEPTH_EDGE_THRESHOLD 0.1
 
-int FILTER_SIZE = 1;
 
 // OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
 // OpenGL coordinates are mainly used in this class
@@ -107,7 +107,7 @@ void Offset::computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax )
 	activeViewer->camera()->setPosition(Vec(pos));
 	activeViewer->camera()->lookAt(Vec(bbCenter));	
 	activeViewer->camera()->setUpVector(Vec(0,1,0));
-	//activeViewer->camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
+	activeViewer->camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
 
 	// Save this new camera settings
 	activeViewer->camera()->deletePath(direction + 3);
@@ -238,21 +238,19 @@ Offset::HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> 
 	std::map< QString,  int > subHotRegionSize;
 	std::map< QString,  std::vector< Vec3d > > subHotSamples;
 
+	//QImage debugImg(w, h, QImage::Format_ARGB32);
+	
 	for (int j=0;j<hotRegion.size();j++)
 	{
-		// 2D coordinates
+		// 2D coordinates in OpenGL format
 		Vec2i &hotPixel = hotRegion[j];
 		x = (direction == 1) ? hotPixel.x() : (w-1) - hotPixel.x();
 		y = hotPixel.y();
 
 		// 3d position of this hot sample
-		double depthVal = getValue(depth, x, y, FILTER_SIZE);
-
-		if (depthVal == BIG_NUMBER) 
-			continue;
-
+		// Flip \y to work in Qt format
+		double depthVal = depth[y][x];
 		Vec hotP= activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (h-1)-y, depthVal));
-
 
 		// Get the face index and segment index back
 		uint indx = ((y*w)+x)*4;
@@ -271,11 +269,15 @@ Offset::HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> 
 		// Store informations
 		QString segmentID = activeObject()->getSegment(sid)->objectName();
 		Vec3d hotPoint(hotP.x, hotP.y, hotP.z);
-		hotPoints[sid].push_back(hotPoint);
 		subHotRegionSize[segmentID]++;
 		subHotSamples[segmentID].push_back(hotPoint);
+		hotPoints[segmentID].push_back(hotPoint);
+
+		// debuging
+		//debugImg.setPixel(x, y, QColor(r, g, b).rgb());
 	}
 
+	//debugImg.save("face unique.png");
 	// Create hot spot
 	HotSpot HS;
 
@@ -304,7 +306,7 @@ void Offset::detectHotspots( )
 
 	// Detect hot regions
 	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
-	visualizeHotRegions("hot regions.png");
+	visualizeRegions(hotRegions, "hot regions of shape.png");
 
 	// The max offset of hot regions
 	maxOffsetInHotRegions.clear();
@@ -327,11 +329,13 @@ void Offset::detectHotspots( )
 		std::vector< std::vector<Vec2i> > zoomedHRs
 			=  getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
 		if (zoomedHRs.size() == 0){
-			std::cout << "There is no hot region in the zoomed in view.\n";
+			std::cout << "There is no hot region in the zoomed-in view.\n";
 			continue;
 		}
 
 		// If there are multiple regions, pick up the one at the center
+		visualizeRegions(zoomedHRs, "zommed in hot regions.png");
+
 		std::vector<Vec2i>::iterator itr;
 		Vec2i center(w/2, h/2);
 		int j;
@@ -397,9 +401,9 @@ void Offset::showHotSpots()
 	}
 
 	// Show hot segments and hot spots
-	for (std::map< uint, std::vector< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
+	for (std::map< QString, std::vector< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
 	{
-		uint sid = i->first;
+		QString sid = i->first;
 		QSurfaceMesh* segment = activeObject()->getSegment(sid);
 
 		segment->setColorVertices(Color(1, 0, 0, 1)); // red
@@ -411,11 +415,11 @@ void Offset::showHotSpots()
 	}
 }
 
-std::set<uint> Offset::getHotSegment()
+std::set<QString> Offset::getHotSegment()
 {
-	std::set< uint > hs;
+	std::set< QString > hs;
 
-	for (std::map< uint, std::vector< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
+	for (std::map< QString, std::vector< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
 		hs.insert(i->first);
 
 	return hs;
@@ -667,7 +671,7 @@ std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < doub
 		y = region[i].y();
 		if(xFlipped) x = (w-1) - x;
 
-		values.push_back(getValue(image, x, y, 0));
+		values.push_back(image[y][x]);
 	}
 
 	return values;
@@ -763,14 +767,15 @@ Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int direction )
 {
 	// Restore the camera according to the direction
 	activeViewer->camera()->playPath( direction + 2 );
+	activeViewer->updateGL();
+
+	int w = activeViewer->height();
+	int h = activeViewer->width();
 
 	std::vector< std::vector<double> > &depth = (direction == 1)? upperDepth : lowerDepth;
-	if (direction == -1){
-		x = depth[0].size() - 1 - x;
-	}
-	double depthVal = RANGED(0, getValue(depth, x, y, FILTER_SIZE), 1);
+	if (direction == -1)	x = (w-1) - x;
 
-	Vec P = activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (depth.size()-1)-y, depthVal));
+	Vec P = activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (h-1)-y, depth[y][x]));
 
 	return Vec3d(P[0], P[1], P[2]);
 }
@@ -825,13 +830,15 @@ QRgb Offset::jetColor( double val, double min, double max )
 	return QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba();
 }
 
-void Offset::visualizeHotRegions( QString filename )
+void Offset::visualizeRegions( std::vector< std::vector<Vec2i> >& regions, QString filename )
 {
-	std::vector< std::vector< double > > debugImg = createImage(offset[0].size(), offset.size(), 0.0);
-	double step = 1.0 / hotRegions.size();
-	for (int i=0;i<hotRegions.size();i++)
+	int w = activeViewer->width();
+	int h = activeViewer->height();
+	std::vector< std::vector< double > > debugImg = createImage(w, h, 0.0);
+	double step = 1.0 / regions.size();
+	for (int i=0;i<regions.size();i++)
 	{
-		setRegionColor(debugImg, hotRegions[i], step * (i+1));
+		setRegionColor(debugImg, regions[i], step * (i+1));
 	}
 	saveAsImage(debugImg, 1.0, filename);
 }
@@ -926,19 +933,18 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 	ShapeState initialHotShapeState = ctrl->getShapeState();
 
 	// Move hot spot side away or closer to each other
-	std::vector< Vec3d > Ts; // translations of hot spots
-	if (HS.defineHeight)
-		Ts = getHorizontalMoves(HS);
-	else
-	{	// Move up/down directly
-		Vec3d T(0, 0, 1);
+	std::vector< Vec3d > Ts = getHorizontalMoves(HS);
+	if (!HS.defineHeight)
+	{// Move up/down directly
+		Vec3d T(0, 0, 0.2 * objectH);
 		if (1 == HS.side) T *= -1;
 		Ts.push_back( T );
 	}
 
+	//Ts.push_back(Vec3d(-0.2, 0.4, 0));
 	// Actually modify the shape to generate hot solutions
-	//for (int i=0;i<Ts.size();i++)
-	int i=Ts.size()-12;
+	for (int i=0;i<Ts.size();i++)
+	//int i = Ts.size() - 1;
 	{
 		// Clear the frozen flags
 		ctrl->setPrimitivesFrozen(false);		
@@ -949,6 +955,7 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 		// Move the current hot spot
 		prim->movePoint(hotPoint, Ts[i]);
 		prim->addFixedPoint(hotPoint + Ts[i]);
+
 			
 		// fix the hot segments pair
 		ctrl->regroupPair(prim->id, op_prim->id);
@@ -956,18 +963,29 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 		// Propagation the deformation
 		prim->isFrozen = true;
 		op_prim->isFrozen = true;
-		ctrl->propagate();
+		QVector< ShapeState > shapeStates = ctrl->strongPropagate();
 
-
-		// Check if this is a hotSolution
-		if ( satisfyBBConstraint() )
+		foreach( ShapeState state, shapeStates )
+			candidateSolutions.enqueue(state);
 		{
-			computeOffsetOfShape();
-			if (getStackability() > preStackability + 0.3)
-				hotSolutions.push_back(ctrl->getShapeState());
+			//ctrl->setShapeState(state);
+
+			//// Check if this is a hotSolution
+			//if ( satisfyBBConstraint() )
+			//{
+			//	computeOffsetOfShape();
+			//	if (getStackability() > preStackability + 0.1)
+			//	{
+					//ctrl->weakPropagate();
+					//ShapeState state = ctrl->getShapeState();
+					//state.stackability = getStackability();
+					//candidateSolutions.enqueue(state);
+			//	}
+			//}
+
+
 		}
 
-		return;
 		// Restore the initial hot shape state
 		ctrl->setShapeState(initialHotShapeState);
 	}
@@ -976,17 +994,11 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 void Offset::applyHeuristics()
 {
 	Controller *ctrl = activeObject()->controller;
-	hotSolutions.clear();
-
-	//// Only hot segments are visible and available
+	
+	// Set only hot segments visible
 	//ctrl->setSegmentsVisible(false);
-	//ctrl->setPrimitivesAvailable(false);
-	//foreach(QString sid, hotSegments)
-	//{
-	//	activeObject()->getSegment(sid)->isVisible = true;
-	//	ctrl->getPrimitive(sid)->isAvailable = true;
-	//}
-
+	//foreach (QString segmentID, hotSegments)
+	//	activeObject()->getSegment(segmentID)->isVisible = true;
 
 
 	// After getting rid of redundancy caused by symmetries, hopefully only one pair of hot spots remains
@@ -1009,7 +1021,7 @@ void Offset::applyHeuristics()
 	}
 
 	applyHeuristicsOnHotspot(upperHotSpots[selectedID], lowerHotSpots[selectedID]);		
-//	applyHeuristicsOnHotspot(lowerHotSpots[selectedID], upperHotSpots[selectedID]);	
+	applyHeuristicsOnHotspot(lowerHotSpots[selectedID], upperHotSpots[selectedID]);	
 }
 
 void Offset::improveStackability()
@@ -1037,37 +1049,11 @@ void Offset::improveStackability()
 	}
 
 	//=========================================================================================
-	// Step 2: Apply heuristics on hot spots
+	// Step 2: Apply heuristics on hot spots and propagate deformations
 	// Several hot solutions might be generated, which are stored in *hotSolutions*
 	applyHeuristics();
 
-	//activeObject()->computeBoundingBox();
-	return;
-	//=========================================================================================
-	// Step 3: Propagate hot solutions to remaining cold parts to generate *candidateSolutions*
-	for (int i=0;i<hotSolutions.size();i++)
-	{
-		QMap< QString, void* > &currShape = hotSolutions[i];
-		ctrl->setShapeState(currShape);
-		ctrl->setPrimitivesFrozen(false);
-		foreach(QString id, hotSegments)
-		{
-			Primitive *prim = ctrl->getPrimitive(id);
-			prim->isFrozen = true;
-		}
-		ctrl->setPrimitivesAvailable(true);
-		ctrl->propagate();
-
-		if ( satisfyBBConstraint() )
-		{
-			computeOffset();
-			// The propagation succeeds, we obtain one candidate solution
-			if (getStackability() > preStackability + 0.3)
-				//candidateSolutions.push(ctrl->getShapeState());
-				solutions.push_back(ctrl->getShapeState());
-		}
-
-	}
+	activeObject()->computeBoundingBox();
 }
 
 void Offset::improveStackabilityTo( double targetS )
@@ -1079,46 +1065,46 @@ void Offset::improveStackabilityTo( double targetS )
 	pre_bbmax = activeObject()->bbmax * 1.05;
 
 	// Push the current shape as the initial candidate solution
-	candidateSolutions.push(ctrl->getShapeState());
+	ShapeState state = ctrl->getShapeState();
+	state.stackability = getStackability();
+	candidateSolutions.enqueue(state);
 
 //	while(!candidateSolutions.empty())
 	{
 		// Get the first candidate solution
-		ShapeState currShape = candidateSolutions.front();
-		candidateSolutions.pop();
-		ctrl->setShapeState(currShape);
+		ShapeState candidateState = candidateSolutions.dequeue();
 
-		// Check if this candidate is a solution
-		computeOffsetOfShape();
-		if (getStackability() >= targetS)
+		if ( candidateState.stackability >= targetS)
 		{
 			// Yes. Got one solution.
-			solutions.push_back(currShape);
+			solutions.push_back(candidateState);
 			//continue;
 		}
 		else
 		{
 			// No. Try to improve the current shape
 			// This iteration might generate several candidate solutions
+			ctrl->setShapeState(candidateState);
 			improveStackability();
 		}
+
 	}
 }
 
 
-void Offset::showHotSolution( int i )
+void Offset::showCandidateSolution( int i )
 {
-	if (hotSolutions.empty())
+	if (candidateSolutions.empty())
 	{
 		std::cout << "There is no solution.\n";
 		return;
 	}
 
-	int id = i % hotSolutions.size();
+	int id = i % candidateSolutions.size();
 	Controller *ctrl = activeObject()->controller;
-	ctrl->setShapeState(hotSolutions[id]);
+	ctrl->setShapeState(candidateSolutions[id]);
 
-	std::cout << "Showing the " << id << "th hot solution out of " << hotSolutions.size() <<".\n";
+	std::cout << "Showing the " << id << "th hot solution out of " << candidateSolutions.size() <<".\n";
 }
 
 bool Offset::satisfyBBConstraint()

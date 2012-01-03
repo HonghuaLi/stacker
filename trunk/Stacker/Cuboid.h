@@ -54,8 +54,8 @@ public:
 	virtual Vec3d closestPoint(Point p);
 
 	// Primitive state
-	virtual void* getState();
-	virtual void setState( void* );
+	virtual void* getGeometryState();
+	virtual void setGeometryState( void* );
 
 	// Primitive geometry
 	virtual std::vector <Vec3d> points();

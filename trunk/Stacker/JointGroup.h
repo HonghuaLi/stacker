@@ -16,7 +16,7 @@ public:
 
 	void draw();	
 
-	QVector<Primitive *> regroup();
+	QVector<QString> regroup();
 
 	QMap<QString, std::vector<double>> coordinates;
 };

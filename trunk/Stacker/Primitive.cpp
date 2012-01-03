@@ -8,7 +8,6 @@ Primitive::Primitive( QSurfaceMesh* mesh, QString newId )
 	id = newId;
 
 	isSelected = false;
-	isAvailable = true;
 	isFrozen = false;
 }
 
@@ -50,4 +49,22 @@ uint Primitive::detectHotCurve( Vec3d hotSample )
 	std::vector<Vec3d> samples;
 	samples.push_back(hotSample);
 	return this->detectHotCurve(samples);
+}
+
+PrimitiveState Primitive::getState()
+{
+	PrimitiveState state;
+	state.geometry = getGeometryState();
+	state.isFrozen = isFrozen;
+	state.fixedPoints = fixedPoints;
+
+	return state;
+}
+
+void Primitive::setState( PrimitiveState state)
+{
+	setGeometryState(state.geometry);
+
+	isFrozen = state.isFrozen;
+	fixedPoints = state.fixedPoints;
 }
