@@ -58,7 +58,10 @@ public slots:
 	
 	void findJoints();
 
+	void outputForPaper();
+
 signals:
 	void printMessage( QString );
 	void objectModified();
+
 };

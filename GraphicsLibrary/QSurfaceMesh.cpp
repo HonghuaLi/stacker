@@ -490,6 +490,32 @@ void QSurfaceMesh::read( const std::string& filename )
 	buildUp();
 }
 
+void QSurfaceMesh::writeObj( const std::string& filename )
+{
+	Vertex_property<Point>  points   = vertex_property<Point>("v:point");
+	Face_iterator fit, fend = faces_end();
+	Vertex_iterator vit, vend = vertices_end();
+	Vertex_around_face_circulator fvit;
+	Vertex v0, v1, v2;
+
+	FILE * outF = fopen(filename.c_str(), "w");
+
+	// Vertices
+	for(vit = vertices_begin(); vit != vend; ++vit){
+		fprintf(outF, "v %f %f %f\n", points[vit].x(), points[vit].y(), points[vit].z());
+	}
+
+	// Faces
+	for(fit = faces_begin(); fit != fend; ++fit){
+		fvit = vertices(fit);
+		v0 = fvit; v1 = ++fvit; v2 = ++fvit;
+		
+		fprintf(outF, "f %u %u %u\n", v0.idx() + 1, v1.idx() + 1, v2.idx() + 1);
+	}
+
+	fclose(outF);
+}
+
 // Build up the mesh
 void QSurfaceMesh::buildUp()
 {
@@ -656,5 +682,16 @@ void QSurfaceMesh::addNoise(double delta)
 	{
 		Vec3d v(uniform(0, delta), uniform(0, delta), uniform(0, delta));
 		points[vit] += v;
+	}
+}
+
+void QSurfaceMesh::translate( Vec3d delta )
+{
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	for(vit = vertices_begin(); vit != vend; ++vit)
+	{
+		points[vit] += delta;
 	}
 }

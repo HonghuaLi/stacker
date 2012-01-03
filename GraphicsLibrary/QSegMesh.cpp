@@ -266,6 +266,11 @@ void QSegMesh::saveObj( QString fileName )
 	fclose(outF);
 }
 
+void QSegMesh::insertCopyMesh(QSurfaceMesh * newSegment)
+{
+	this->segment.push_back(new QSurfaceMesh(*newSegment));
+}
+
 void QSegMesh::build_up()
 {
 	computeBoundingBox();
@@ -597,5 +602,46 @@ void QSegMesh::drawAABB()
 	SimpleDraw::IdentifyLine(P[1], P[5], 0, 1, 1, false);
 	SimpleDraw::IdentifyLine(P[2], P[6], 0, 1, 1, false);
 	SimpleDraw::IdentifyLine(P[3], P[7], 0, 1, 1, false);
+}
+
+QSurfaceMesh * QSegMesh::flattenMesh()
+{
+	QSurfaceMesh * flattend = new QSurfaceMesh;
+	Surface_mesh::Vertex v0, v1, v2;
+
+	flattend->id = objectName();
+	flattend->setObjectName(objectName());
+
+	// Add geometry of all segments together
+	int offset = 0;
+
+	for (uint i = 0; i < nbSegments();i++)
+	{
+		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
+		Surface_mesh::Vertex_iterator vit, vend = segment[i]->vertices_end();
+
+		// Add vertices
+		for (vit = segment[i]->vertices_begin(); vit != vend; ++vit)
+			flattend->add_vertex(points[vit]);
+
+		Surface_mesh::Face_iterator fit, fend = segment[i]->faces_end();
+
+		// Add faces
+		for (fit = segment[i]->faces_begin(); fit!=fend; ++fit)
+		{
+			std::vector<uint> v = segment[i]->vertexIndicesAroundFace(Surface_mesh::Face(fit).idx());
+			
+			v[0] += offset;
+			v[1] += offset;
+			v[2] += offset;
+
+			flattend->add_triangle(Surface_mesh::Vertex(v[0]), Surface_mesh::Vertex(v[1]), Surface_mesh::Vertex(v[2]));
+		}
+
+		// offset for next segment
+		offset += segment[i]->n_vertices();
+	}
+
+	return flattend;
 }
 

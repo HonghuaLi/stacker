@@ -2,16 +2,15 @@
 #include "HiddenViewer.h"
 #include "ColorMap.h"
 #include "SimpleDraw.h"
+#include <QFile>
 
 #include <numeric>
 #include <stack>
 
 #define ZERO_TOLERANCE 0.01
-#define BIG_NUMBER 9999
+#define BIG_NUMBER 10
 
 int FILTER_SIZE = 1;
-double HOT_RANGE = 0.95;
-
 
 // OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
 // OpenGL coordinates are mainly used in this class
@@ -23,6 +22,8 @@ double HOT_RANGE = 0.95;
 Offset::Offset( HiddenViewer *viewer )
 {
 	activeViewer = viewer;
+
+	HOT_RANGE = 0.95;
 }
 
 QSegMesh* Offset::activeObject()
@@ -363,6 +364,9 @@ void Offset::detectHotspots( )
 		lowerHotSpots.push_back(LHS);
 	}
 
+	if(upperHotSpots.size() + lowerHotSpots.size() == 0)
+		return;
+
 	// Show results in the std output
 	std::cout << "Hot spots: " << std::endl;
 	for (int i=0;i<upperHotSpots.size();i++)
@@ -440,6 +444,48 @@ void Offset::saveAsImage( std::vector< std::vector < double > >& image, double m
 	Output.save(fileName);
 }
 
+void Offset::saveAsData( std::vector< std::vector < double > >& image, double maxV, QString fileName )
+{
+	int h = image.size();
+	int w = image[0].size();
+
+	QFile file(fileName); 
+	file.open(QIODevice::WriteOnly | QIODevice::Text);
+
+	// \p y is flipped, since OpenGL has origin at the left bottom conner, while Qt at left top conner
+	for(int y = 0; y < h; y++){
+		for(int x = 0; x < w; x++)	{
+			file.write(qPrintable(QString::number(image[y][x] / maxV) + "\t"));
+		}
+		file.write("\n");
+	}
+
+	file.close();
+}
+
+void Offset::saveHotSpots( QString filename, int direction, double percent)
+{
+	std::vector< HotSpot > curHotSpot = upperHotSpots;
+	if(direction < 0) curHotSpot = lowerHotSpots;
+
+	QFile file(filename); 
+	file.open(QIODevice::WriteOnly | QIODevice::Text);
+
+	foreach(HotSpot hp, curHotSpot){
+		for(uint i = 0; i < Max(1, percent * hp.hotSamples.size()); i++)
+		{
+			Point p = hp.hotSamples[i];
+			QString line = QString("%1 %2 %3\n").arg(p.x()).arg(p.y()).arg(p.z());
+			file.write(qPrintable(line));
+
+		}
+
+		file.write("\n");
+	}
+
+	file.close();
+}
+
 void Offset::saveAsImage( std::vector< std::vector < bool > >& image, QString fileName )
 {
 	int h = image.size();
@@ -460,7 +506,7 @@ void Offset::saveAsImage( std::vector< std::vector < bool > >& image, QString fi
 }
 
 
-double Offset::getValue( std::vector< std::vector < double > >& image, uint x, uint y, uint r )
+double Offset::getValue( std::vector< std::vector < double > >& image, int x, int y, int r )
 {
 	int w = image[0].size();
 	int h = image.size();	

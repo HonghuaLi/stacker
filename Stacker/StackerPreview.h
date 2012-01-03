@@ -39,6 +39,9 @@ public:
 	// Active object
 	QSegMesh* activeObject();
 
+	// Output
+	void saveStackObj( QString fileName, int numStack = 3, double scaleFactor = -1.0);
+
 public slots:
 	void setActiveScene(Scene * toScene);
 	void updateActiveObject();

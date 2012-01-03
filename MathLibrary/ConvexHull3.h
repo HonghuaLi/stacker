@@ -21,7 +21,7 @@ class  ConvexHull3
 public:
 	ConvexHull3(Surface_mesh * mesh);
 	ConvexHull3( std::vector<Vector3> pnts );
-	void computeCH();
+	bool computeCH();
 	void draw();
 
 	int getNumSimplices(){	return mNumSimplices;}
