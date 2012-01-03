@@ -27,7 +27,7 @@ public:
 
 	// Compute symmetry, cocentric, coplanar, ..., etc.
 	virtual void process(QVector< QString > segments) = 0;
-	virtual QVector<Primitive *> regroup();
+	virtual QVector<QString> regroup();
 
 	// Primitives
 	Primitive * getPrimitive(QString nodeId);

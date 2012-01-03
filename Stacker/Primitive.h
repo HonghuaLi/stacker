@@ -5,6 +5,13 @@
 #include "Plane.h"
 #include <QVector>
 
+struct PrimitiveState
+{
+	 void* geometry;
+	 bool isFrozen;
+	 QVector<Point> fixedPoints;
+};
+
 class Primitive
 {
 public:
@@ -43,8 +50,10 @@ public:
 	virtual Vec3d closestPoint(Point p) = 0;
 
 	// Primitive state
-	virtual void* getState() = 0;
-	virtual void setState( void* ) = 0;
+	virtual PrimitiveState getState();
+	virtual void setState( PrimitiveState state);
+	virtual void* getGeometryState() = 0;
+	virtual void setGeometryState( void* ) = 0;
 
 	// Primitive geometry
 	virtual std::vector <Vec3d> points() = 0;
@@ -55,11 +64,10 @@ public:
 	virtual Vec3d centerPoint();
 
 	// The underlying geometry
-	QSurfaceMesh*		m_mesh;			
+	QSurfaceMesh*	m_mesh;			
 	QSurfaceMesh* getMesh(){ return m_mesh; }
 
 	// Symmetry, joints, fixed points
-	QVector<Point> joints;
 	QVector<Point> fixedPoints;
 	QVector<Plane> symmPlanes;
 	virtual void setSymmetryPlanes(int nb_fold) = 0;
@@ -82,6 +90,5 @@ public:
 	QString id;
 	bool				isHot;			// Is this hot component?
 	bool				isDirty;		// Has the underlying geometry been updated?
-	bool				isAvailable;	// if propagation affect this primitive
 	bool				isFrozen;		// The seed of propagation
 };

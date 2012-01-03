@@ -36,18 +36,16 @@ public:
 public slots:
 	// Buttons
 	void onOffsetButtonClicked();
-	void onControllerButtonClicked();
 	void onImproveButtonClicked();
 	void onHotspotsButtonClicked();
 	void onIterateButtonClicked();
-	void onHotSolutionButtonClicked();
+	void onCandSolutionButtonClicked();
 
 	// Others
 	void setActiveScene( Scene * );
 	void updateActiveObject();
 
 	void setConvexHullPrecision(int p);
-	void setHotspotFilterSize(int size);
 	void setHotRange(double range);
 
 	// Primitives modification

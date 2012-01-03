@@ -10,7 +10,6 @@ Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newI
 
 	selectedPartId = -1;
 	isDrawAxis = false;
-	isAvailable = true;
 	isFrozen = false;
 }
 
@@ -139,10 +138,6 @@ void Cuboid::draw()
 		symmPlanes[i].draw();
 	}
 
-	for (int i=0;i<joints.size();i++)
-	{
-		SimpleDraw::IdentifyPoint(joints[i]);
-	}
 }
 
 void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
@@ -508,6 +503,9 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	Vec3d v1 = p - joint;
 	Vec3d v2 = q - joint;
 
+	Vec3d oldJointCoords = getCoordinatesInBox(currBox, joint);
+	Vec3d pCoords = getCoordinatesInBox(currBox, p);
+
 	if (v1.norm() == 0 || v2.norm() == 0)
 		return; // Undefined behavior
 
@@ -536,27 +534,25 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	currBox.normalizeAxis();
 
 	// Scale the box only along one axis
-	v2.normalize();
 	uint selected_axis = -1;
-	double largest_dot = 0;
-	bool positive;
+	double largest_abs_dot = 0;
 	for (int i = 0; i < 3; i++)
 	{
-		double dot_prod = dot( currBox.Axis[i], v2 );
-		double abs_dot = abs( dot_prod );
-		if (abs_dot > largest_dot)
+		double abs_dot = abs( dot( currBox.Axis[i], v2 ) );
+		if (abs_dot > largest_abs_dot)
 		{
 			selected_axis = i;
-			largest_dot = abs_dot;
-			positive = ( dot_prod > 0 );
+			largest_abs_dot = abs_dot;
 		}
 	}
 
-	double dis = (scale - 1) * currBox.Extent[selected_axis];
-	Vec3d t = currBox.Axis[selected_axis] * dis;
-	if (!positive) t = -t;
-	currBox.Center += t;
+	double alpha = - oldJointCoords[selected_axis];
+	double beta = pCoords[selected_axis];
+	double sum = alpha + beta;
+	alpha /= sum;
+	beta /= sum;
 
+	currBox.Center = joint * beta + q * alpha;
 	currBox.Extent[selected_axis] *= scale;
 }
 
@@ -569,13 +565,14 @@ std::vector <Vec3d> Cuboid::majorAxis()
 	return result;
 }
 
-void* Cuboid::getState()
+
+void* Cuboid::getGeometryState()
 {
 	MinOBB3::Box3 *box = new MinOBB3::Box3(currBox);
 	return (void*)box;
 }
 
-void Cuboid::setState( void *state)
+void Cuboid::setGeometryState( void* state)
 {
 	currBox = *( (MinOBB3::Box3*) state );
 }
@@ -715,3 +712,4 @@ void Cuboid::scaleCurve( int cid, double s )
 {
 
 }
+

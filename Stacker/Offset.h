@@ -5,13 +5,11 @@
 #include "Controller.h"
 #include <QColor>
 #include <QRect>
-
-#include <queue>
+#include <QQueue>
 #include <functional>
 
 class HiddenViewer;
 
-extern int FILTER_SIZE;
 
 class Offset
 {
@@ -55,7 +53,7 @@ public:
 	void hotspotsFromDirection( int direction );
 	void detectHotspots();
 	HotSpot detectHotspotInRegion(int direction, std::vector<Vec2i>& hotRegion);
-	std::set<uint> getHotSegment();
+	std::set<QString> getHotSegment();
 	void showHotSpots();
 	// Improve stackability
 	void improveStackabilityTo(double targetS);
@@ -100,8 +98,8 @@ public:
 	void setRegionColor( std::vector< std::vector < double > >& image, std::vector< Vec2i >& region, double color );
 	void setPixelColor( std::vector< std::vector < double > >& image, Vec2i pos, double color );
 	static QRgb jetColor( double val, double min, double max );
-	void visualizeHotRegions( QString filename );
-	void showHotSolution(int i);
+	void showCandidateSolution( int i );
+	void visualizeRegions( std::vector< std::vector<Vec2i> >& regions, QString filename );
 
 	double HOT_RANGE;
 
@@ -119,14 +117,13 @@ public:
 	std::vector< std::vector<double> > lowerDepth;
 	std::vector< std::vector<double> > offset; 	
 
-	std::map< uint, std::vector<Vec3d> > hotPoints;
+	std::map< QString, std::vector<Vec3d> > hotPoints;
 	std::vector< std::vector<Vec2i> > hotRegions;
 	std::vector< double > maxOffsetInHotRegions;
 	std::vector< HotSpot >  upperHotSpots;
 	std::vector< HotSpot >  lowerHotSpots;
 	std::set< QString> hotSegments;
 
-	std::queue< ShapeState > candidateSolutions;
+	QQueue< ShapeState > candidateSolutions;
 	std::vector< ShapeState > solutions;
-	std::vector< ShapeState > hotSolutions;
 };

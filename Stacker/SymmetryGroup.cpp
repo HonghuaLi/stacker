@@ -59,14 +59,15 @@ void SymmetryGroup::draw()
 		SimpleDraw::DrawArrowDirected(symmetryAxisPos, symmetryAxis, 2);
 }
 
-QVector<Primitive *> SymmetryGroup::regroup()
+
+QVector<QString> SymmetryGroup::regroup()
 {
-	QVector<Primitive *> result;
+	QVector<QString> result;
 
 	Primitive * frozen = getPrimitive(nodes.values().first());
 	Primitive * non_frozen = getPrimitive(nodes.values().last());
 
-	if(frozen->isFrozen == non_frozen->isFrozen || !non_frozen->isAvailable)
+	if(frozen->isFrozen == non_frozen->isFrozen)
 		return result;
 
 	// Swap if needed
@@ -91,8 +92,9 @@ QVector<Primitive *> SymmetryGroup::regroup()
 	}
 	
 	non_frozen->reshapeFromPoints(pointsB);
+	non_frozen->isFrozen = true;
 
-	result.push_back(non_frozen);
+	result.push_back(non_frozen->id);
 
 	return result;
 }

@@ -9,7 +9,7 @@ public:
 	SymmetryGroup(Controller * controller, GroupType newType) : Group(controller, newType){}
 
 	void process(QVector< QString > segments);
-	QVector<Primitive *> regroup();
+	QVector<QString> regroup();
 	void draw();
 
 	Plane symmetryPlane;

@@ -337,12 +337,12 @@ QSurfaceMesh GCylinder::getGeometry()
 	return *cage;
 }
 
-void* GCylinder::getState()
+void* GCylinder::getGeometryState()
 {
 	return (void*) new std::vector<GeneralizedCylinder::Circle>(gc->crossSection);
 }
 
-void GCylinder::setState( void* toState)
+void GCylinder::setGeometryState( void* toState)
 {
 	gc->crossSection = *( (std::vector<GeneralizedCylinder::Circle>*) toState );
 	updateCage();
@@ -543,8 +543,6 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 
 void GCylinder::movePoint( Point p, Vec3d T )
 {
-	uint numJoints = this->joints.size();
-
 	// There is symmetry
 	if (!symmPlanes.empty())
 	{

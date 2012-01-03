@@ -336,9 +336,6 @@ void Controller::findJoints(double threshold)
 				segments.push_back(keys[i]);
 				segments.push_back(keys[j]);
 				newGroup->process(segments, centerPoint);
-	
-				a->joints.push_back(centerPoint);
-				b->joints.push_back(centerPoint);
 
 				this->groups[newGroup->id] = newGroup;
 			}
@@ -381,7 +378,11 @@ ShapeState Controller::getShapeState()
 	ShapeState state;
 
 	foreach(Primitive * prim, primitives)
-		state[prim->id] = prim->getState();
+		state.primStates[prim->id] = prim->getState();
+
+	foreach(Group* grp, groups)
+		if(grp->type == JOINT) 
+			state.jointCoords[grp->id] = ((JointGroup*) grp)->coordinates;
 
 	return state;
 }
@@ -390,9 +391,13 @@ void Controller::setShapeState( ShapeState &shapeState )
 {
 	foreach(Primitive * prim, primitives)
 	{
-		prim->setState(shapeState[prim->id]);
+		prim->setState(shapeState.primStates[prim->id]);
 		prim->deformMesh();
-	}	
+	}
+
+
+	foreach(QString groupID, shapeState.jointCoords.keys())
+		((JointGroup*)groups[groupID])->coordinates = shapeState.jointCoords[groupID];
 }
 
 std::set< QString > Controller::getRidOfRedundancy( std::set< QString > Ids )
@@ -433,32 +438,101 @@ std::set< QString > Controller::getRidOfRedundancy( std::set< QString > Ids )
 	return result;
 }
 
-// Propagations happen only to *available* segments
 // From *frozen* segments to *unfrozen* ones
-void Controller::propagate()
+void Controller::weakPropagate(QVector<QString> seeds)
 {
-	// Stack frozen primitives
-	QQueue<Primitive *> frozen;
-	foreach(Primitive * p, primitives)
-		if(p->isFrozen) frozen.enqueue(p);
-	
+	QMap< QString, bool > debugFrozenFlags1 = getFrozenFlags();
+
+	QQueue<QString> frozen;
+	foreach(QString id, seeds)
+		frozen.enqueue(id);
+
 	while(!frozen.isEmpty())
 	{
-		Primitive * prim = frozen.dequeue();
-
-		QVector< Group * > grps = groupsOf(prim->id);
+		QString seed = frozen.dequeue();
+		QVector< Group * > grps = groupsOf(seed);
 
 		foreach(Group * g, grps)
 		{
-			QVector<Primitive *> regrouped = g->regroup();
+			QVector<QString> regrouped = g->regroup();
 
-			foreach(Primitive * next, regrouped)
+			// Only frozen \next's are considered
+			foreach(QString next, regrouped)
+				if (getPrimitive(next)->isFrozen)	frozen.enqueue(next);
+
+			QMap< QString, bool > debugFrozenFlags2 = getFrozenFlags();
+		}
+	}
+}
+
+void Controller::weakPropagate()
+{
+	QVector<QString> seeds;
+	foreach(Primitive * p, primitives)
+		if(p->isFrozen) seeds.push_back(p->id);
+
+	weakPropagate(seeds);
+}
+
+// In case semi-frozen primitives exist, force one of them as frozen and apply weakPropagation
+QVector<ShapeState> Controller::strongPropagate()
+{
+	QVector< ShapeState > results;
+
+	// Initialize the queue of candidates
+	QQueue< ShapeState > candidates;
+	candidates.enqueue(getShapeState());
+
+	while (!candidates.isEmpty())
+	{
+		// Pick up one candidate
+		ShapeState currCandidate = candidates.dequeue();
+		setShapeState(currCandidate);
+
+		// Apply weak propagation
+		QMap< QString, bool > debugFrozenFlags1 = getFrozenFlags();
+		if (currCandidate.seeds.isEmpty())
+			weakPropagate();
+		else
+			weakPropagate(currCandidate.seeds);
+		QMap< QString, bool > debugFrozenFlags2 = getFrozenFlags();
+
+		// Check whether the propagation is done
+		QQueue<QString> semi_frozen;
+		foreach(Primitive * p, primitives)
+			if(!p->isFrozen && !p->fixedPoints.isEmpty()) 
+				semi_frozen.enqueue(p->id);	
+
+		int debug = 0;
+
+		if (semi_frozen.isEmpty())
+		{
+			// Weak propagation is done
+			results.push_back(getShapeState());
+		}
+		else
+		{
+			// Weak propagation is stuck because of the semi-frozen primitives
+			// Force one of them to be frozen and continue the weak propagation
+			for (int i=0;i<semi_frozen.size();i++)
 			{
-				next->isFrozen = true;
-				frozen.enqueue(next);
+				Primitive * prim = getPrimitive(semi_frozen[i]);
+				prim->isFrozen = true;
+				QMap< QString, bool > debugFrozenFlags3 = getFrozenFlags();
+				ShapeState state = getShapeState();
+				state.seeds.push_back(prim->id);
+				candidates.enqueue(state);
+
+				// Restore 
+				prim->isFrozen = false;
+				QMap< QString, bool > debugFrozenFlags4 = getFrozenFlags();
+
 			}
 		}
 	}
+
+
+	return results;
 }
 
 QVector< Group * > Controller::groupsOf( QString id )
@@ -488,13 +562,6 @@ void Controller::setPrimitivesFrozen( bool isFrozen /*= false*/ )
 	}
 }
 
-void Controller::setPrimitivesAvailable( bool isAvailable /*= true*/ )
-{
-	foreach(Primitive* prim, primitives)
-	{
-		prim->isAvailable = isAvailable;
-	}
-}
 
 void Controller::regroupPair( QString id1, QString id2 )
 {
@@ -541,5 +608,15 @@ void Controller::test()
 	T = Vec3d(0,0,0.5);
 	foreach(Point pnt, curves[N / 2]) r += pnt; r /= NP;
 	prim->movePoint(r, T);*/
+}
+
+QMap< QString, bool > Controller::getFrozenFlags()
+{
+	QMap< QString, bool > result;
+
+	foreach(Primitive * p, primitives)
+		result[p->id] = p->isFrozen;
+
+	return result;
 }
 

@@ -16,25 +16,22 @@ void JointGroup::process( QVector< QString > segments, Vec3d joint )
 
 void JointGroup::draw()
 {
-	return;
-
 	// Show joints
 	Primitive * a = getPrimitive(nodes.values().first());
 	Primitive * b = getPrimitive(nodes.values().last());
 
-	glClear(GL_DEPTH_BUFFER_BIT);
 	SimpleDraw::IdentifyPoint( a->fromCoordinate(coordinates[a->id]) );
 	SimpleDraw::IdentifyPoint( b->fromCoordinate(coordinates[b->id]) );
 }
 
-QVector<Primitive *> JointGroup::regroup()
+QVector<QString> JointGroup::regroup()
 {
-	QVector<Primitive *> result;
+	QVector<QString> result;
 
 	Primitive * frozen = getPrimitive(nodes.values().first());
 	Primitive * non_frozen = getPrimitive(nodes.values().last());
 
-	if(frozen->isFrozen == non_frozen->isFrozen || !non_frozen->isAvailable)
+	if(frozen->isFrozen == non_frozen->isFrozen)
 		return result;
 
 	// Swap if needed
@@ -53,8 +50,7 @@ QVector<Primitive *> JointGroup::regroup()
 
 	// Fixed the joint
 	non_frozen->addFixedPoint(newPos);
-	if (non_frozen->isFrozen)
-		result.push_back(non_frozen);
+	result.push_back(non_frozen->id);
 
 	return result;
 }

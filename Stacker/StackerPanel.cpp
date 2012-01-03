@@ -41,11 +41,10 @@ StackerPanel::StackerPanel()
 
 	// Connections
 	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
-	connect(panel.controllerButton, SIGNAL(clicked()), SLOT(onControllerButtonClicked()));
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
 	connect(panel.iterateButton, SIGNAL(clicked()), SLOT(onIterateButtonClicked()));
-	connect(panel.hotSolutionButton, SIGNAL(clicked()), SLOT(onHotSolutionButtonClicked()));
+	connect(panel.candSolutionButton, SIGNAL(clicked()), SLOT(onCandSolutionButtonClicked()));
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(panel.userControl, SIGNAL(clicked()), SLOT(userControlledPrimatives()));
 
@@ -56,7 +55,6 @@ StackerPanel::StackerPanel()
 	CH_PRECISION = panel.chPrecision->value();
 
 	// Offset 
-	connect(panel.hotspotFilter, SIGNAL(valueChanged (int)), this, SLOT(setHotspotFilterSize(int)));
 	connect(panel.hotRange, SIGNAL(valueChanged (double)), this, SLOT(setHotRange(double)));
 
 	// Connect controller deformer
@@ -92,20 +90,6 @@ void StackerPanel::onOffsetButtonClicked()
 	activeOffset->computeOffsetOfShape();
 }
 
-void StackerPanel::onControllerButtonClicked()
-{
-	if (!activeScene || activeScene->isEmpty())
-	{
-		emit(printMessage("There is no valid object."));
-		return;
-	}
-
-	activeObject()->controller = new Controller(activeObject());
-
-	activeScene->setSelectMode(CONTROLLER);
-
-	showMessage("Controller is built for " + activeObject()->objectName());
-}
 
 void StackerPanel::onImproveButtonClicked()
 {
@@ -194,14 +178,13 @@ void StackerPanel::gradientDescentOptimize()
 
 	// Get hot segments
 	activeOffset->detectHotspots();
-	std::set< uint > hotSegs = activeOffset->getHotSegment();
+	std::set< QString > hotSegs = activeOffset->getHotSegment();
 	int nHotSeg = hotSegs.size();
 
 	// Initialization
 	PrimitiveParamMap optimalParams;
-	foreach (uint id, hotSegs) 
+	foreach (QString sid, hotSegs) 
 	{
-		QString sid = ctrl->primitiveIdNum[id];
 		optimalParams[sid] = (PrimitiveParam*) new CuboidParam(sid);
 	}
 
@@ -221,9 +204,9 @@ void StackerPanel::gradientDescentOptimize()
 		currParams = optimalParams;
 
 		// Check all the neighbors in the deformation space
-		for (std::set< uint >::iterator i=hotSegs.begin(); i!=hotSegs.end(); i++)
+		for (std::set< QString >::iterator i=hotSegs.begin(); i!=hotSegs.end(); i++)
 		{
-			QString sid = ctrl->primitiveIdNum[*i];
+			QString sid = *i;
 
 			for (int j=0; j < currParams[sid]->numParams(); j++)
 			{
@@ -414,15 +397,10 @@ void StackerPanel::onIterateButtonClicked()
 	emit(objectModified());
 }
 
-void StackerPanel::onHotSolutionButtonClicked()
+void StackerPanel::onCandSolutionButtonClicked()
 {
-	activeOffset->showHotSolution(panel.hsID->value());
+	activeOffset->showCandidateSolution(panel.hsID->value());
 	emit(objectModified());
-}
-
-void StackerPanel::setHotspotFilterSize( int size )
-{
-	FILTER_SIZE = size;
 }
 
 void StackerPanel::setHotRange( double range)
