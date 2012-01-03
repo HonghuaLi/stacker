@@ -11,7 +11,14 @@ ConvexHull3::ConvexHull3( std::vector<Vector3> pnts )
 	isReady = false;
 	epsilon = Epsilon_LOW;
 
-	computeCH();
+	while(!computeCH())
+	{
+		CH_PRECISION++;
+		printf("INFO: ConvexHull precision changed to : %d \n", CH_PRECISION);
+
+		// rest
+		mPnts = pnts;
+	}
 }
 
 ConvexHull3::ConvexHull3( Surface_mesh * mesh )
@@ -23,14 +30,21 @@ ConvexHull3::ConvexHull3( Surface_mesh * mesh )
 	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
 		mPnts.push_back(points[vit]);
 
+	std::vector<Vector3> copyPnts = mPnts;
+
 	isReady = false;
 
 	// Compute CH
-	computeCH();
+	while(!computeCH())
+	{
+		CH_PRECISION++;
+		printf("INFO: ConvexHull precision changed to : %d \n", CH_PRECISION);
+		mPnts = copyPnts;
+	}
 }
 
 
-void ConvexHull3::computeCH()
+bool ConvexHull3::computeCH()
 {
 	std::vector<int> mExtreme;
 	bool CCW = getExtremes(mExtreme);
@@ -79,13 +93,18 @@ void ConvexHull3::computeCH()
 	{
 		if (!Update(i)){
 			DeleteHull();
-			return;
+			return true;
 		}
+
+		if(mPnts.size() == 0)
+			return false;
 	}
 
 	ExtractIndices();
 
 	isReady = true;
+
+	return true;
 }
 
 bool ConvexHull3::Update (int i)
@@ -117,6 +136,7 @@ bool ConvexHull3::Update (int i)
     visibleSet.push(visible);
     visible->OnStack = true;
     int j, v0, v1;
+
     while (!visibleSet.empty())
     {
         tri = visibleSet.top();
@@ -148,14 +168,24 @@ bool ConvexHull3::Update (int i)
                 }
             }
         }
-        mHull.erase(tri);
-        delete tri;
+
+		mHull.erase(tri);
+
+		delete tri;
+		tri = NULL;
     }
 
     // Insert the new edges formed by the input point and the terminator
     // between visible and invisible TriFaces.
     int size = (int)terminator.size();
     std::map<int,TerminatorData>::iterator edge = terminator.begin();
+
+	if(edge == terminator.end())
+	{
+		mPnts.clear();
+		return true;
+	}
+
     v0 = edge->second.V[0];
     v1 = edge->second.V[1];
     tri = new TriFace(i, v0, v1);
@@ -171,6 +201,13 @@ bool ConvexHull3::Update (int i)
     for (j = 1; j < size; ++j)
     {
         edge = terminator.find(v1);
+
+		if(edge == terminator.end())
+		{
+			mPnts.clear();
+			return true;
+		}
+
         v0 = v1;
         v1 = edge->second.V[1];
 
@@ -208,6 +245,7 @@ void ConvexHull3::ExtractIndices ()
 			mIndices.push_back(tri->V[j]);
 		}
 		delete tri;
+		tri = NULL;
 	}
 	mHull.clear();
 }
@@ -220,6 +258,7 @@ void ConvexHull3::DeleteHull ()
 	{
 		TriFace* tri = *iter;
 		delete tri;
+		tri = NULL;
 	}
 	mHull.clear();
 }
@@ -361,9 +400,13 @@ ConvexHull3::TriFace::TriFace (int v0, int v1, int v2)
 	Adj[2] = nullptr;
 }
 
-
 int ConvexHull3::TriFace::GetSign( int id , std::vector<Vector3> &pnts, Real epsilon )
 {
+	// check indices
+	if(V[0] < 0 || V[0] >= pnts.size()) return 1;
+	if(V[1] < 0 || V[1] >= pnts.size()) return 1;
+	if(V[2] < 0 || V[2] >= pnts.size()) return 1;
+
 	Vector3 ab = pnts[V[1]] - pnts[V[0]];
 	ab.normalize();
 	Vector3 ac = pnts[V[2]] - pnts[V[0]];

@@ -190,3 +190,28 @@ void StackerPreview::setRenderMode( RENDER_MODE toMode )
 
 	updateGL();
 }
+
+void StackerPreview::saveStackObj( QString fileName, int numStack, double scaleFactor)
+{
+	int stackCount = numStack;
+	double O_max = activeObject()->O_max;
+	double S = activeObject()->stackability;
+
+	Vec3d delta = O_max * stackDirection;
+
+	QSegMesh outputMesh;
+	QSurfaceMesh * deltaMesh = activeObject()->flattenMesh();
+
+	if(scaleFactor < 0) scaleFactor = activeObject()->scaleFactor;
+
+	outputMesh.scaleFactor = scaleFactor;
+
+	for(int i = 0; i < stackCount; i++)
+	{
+		outputMesh.insertCopyMesh(deltaMesh);
+		deltaMesh->translate(delta);
+	}
+
+	outputMesh.saveObj(fileName);
+	// delete deltaMesh?
+}

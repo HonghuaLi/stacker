@@ -31,6 +31,7 @@ public:
 
 	void computeBoundingBox();
 	void moveCenterToOrigin();
+	void translate(Vec3d delta);
 
 	double getAverageEdgeLength();
 	double averageEdgeLength;
@@ -66,6 +67,7 @@ public:
 
 	// Load the mesh from file
 	void read(const std::string& filename);
+	void writeObj(const std::string& filename);
 
 	// Build up
 	void buildUp();

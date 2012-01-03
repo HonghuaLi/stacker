@@ -53,6 +53,8 @@ public:
 	void update_face_normals();
 	void update_vertex_normals();
 	void normalize();
+	void insertCopyMesh(QSurfaceMesh * newSegment);
+	QSurfaceMesh * flattenMesh();
 
 	// Properties
 	bool isReady;

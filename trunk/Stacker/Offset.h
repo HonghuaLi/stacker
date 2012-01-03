@@ -12,7 +12,6 @@
 class HiddenViewer;
 
 extern int FILTER_SIZE;
-extern double HOT_RANGE;
 
 class Offset
 {
@@ -69,9 +68,9 @@ public:
 	bool satisfyBBConstraint();
 
 	// Numeric
-	double getValue( std::vector< std::vector < double > >& image, uint x, uint y, uint r );
-	double getMinValue( std::vector< std::vector < double > >& image );
-	double getMaxValue( std::vector< std::vector < double > >& image );	
+	double getValue( std::vector< std::vector < double > >& image, int x, int y, int r );
+	static double getMinValue( std::vector< std::vector < double > >& image );
+	static double getMaxValue( std::vector< std::vector < double > >& image );	
 	double maxValueInRegion( std::vector< std::vector < double > >& image,  std::vector< Vec2i >& region);
 	std::vector< double > getValuesInRegion( std::vector< std::vector < double > >& image, 
 											 std::vector< Vec2i >& region, bool xFlipped = false );	
@@ -93,13 +92,19 @@ public:
 	Vec3d unprojectedCoordinatesOf( uint x, uint y, int direction);
 	Vec2i projectedCoordinatesOf( Vec3d point, int pathID );
 	// Useful for debugging
-	void saveAsImage( std::vector< std::vector < double > >& image, double maxV, QString fileName );
-	void saveAsImage( std::vector< std::vector < bool > >& image, QString fileName );
+	static void saveAsImage( std::vector< std::vector < double > >& image, double maxV, QString fileName );
+	static void saveAsImage( std::vector< std::vector < bool > >& image, QString fileName );
+	static void saveAsData( std::vector< std::vector < double > >& image, double maxV, QString fileName );
+	void saveHotSpots( QString filename, int direction = 1, double percent = 1.0 );
+
 	void setRegionColor( std::vector< std::vector < double > >& image, std::vector< Vec2i >& region, double color );
 	void setPixelColor( std::vector< std::vector < double > >& image, Vec2i pos, double color );
-	QRgb jetColor( double val, double min, double max );
+	static QRgb jetColor( double val, double min, double max );
 	void visualizeHotRegions( QString filename );
 	void showHotSolution(int i);
+
+	double HOT_RANGE;
+
 public:
 	HiddenViewer * activeViewer;
 	int filterSize;

@@ -8,6 +8,8 @@
 #include <fstream>
 #include <algorithm>
 #include <numeric>
+#include <QFile>
+#include <QDir>
 #include "Macros.h"
 
 StackerPanel::StackerPanel()
@@ -33,7 +35,7 @@ StackerPanel::StackerPanel()
 	hiddenDock->setWidget (hidden_viewer);
 	layout->addWidget(hiddenDock, row++, 0,1,3);
 	hiddenDock->setFloating(true);
-	hiddenDock->setWindowOpacity(1.0);
+	hiddenDock->setWindowOpacity(0.0);
 
 	activeOffset = new Offset(hidden_viewer);
 
@@ -73,6 +75,9 @@ StackerPanel::StackerPanel()
 
 	// Joints between primitives
 	connect(panel.findJointsButton, SIGNAL(clicked()), SLOT(findJoints()));
+
+	// Paper stuff
+	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
 }
 
 void StackerPanel::onOffsetButtonClicked()
@@ -422,7 +427,76 @@ void StackerPanel::setHotspotFilterSize( int size )
 
 void StackerPanel::setHotRange( double range)
 {
-	HOT_RANGE = range;
+	activeOffset->HOT_RANGE = range;
 }
 
+void StackerPanel::outputForPaper()
+{
+	// Make directory and set file paths
+	QString outputName = panel.outputFileName->text();
+	QString currDirectory = QDir::currentPath();
+	QString exportDir = currDirectory + "/" + outputName;
+	QDir().mkdir(exportDir);
 
+	QMap<QString, QString> data;
+
+	data["srcObj"] = activeObject()->objectName();
+	data["upperEnvelope"] = "envelope_upper.png";
+	data["lowerEnvelope"] = "envelope_lower.png";
+	data["offsetImg"] = "offset_function.png";
+	data["offsetData"] = "offset_function.dat";
+
+	// Compute everything
+	activeOffset->computeOffsetOfShape();
+	
+
+	// 1) Save envelopes + offset function (both image + values)
+	double maxUE = Offset::getMaxValue(activeOffset->upperEnvelope);
+	double minLE = Offset::getMinValue(activeOffset->lowerEnvelope);
+
+	Offset::saveAsImage(activeOffset->upperEnvelope, maxUE, exportDir + "/" + data["upperEnvelope"]);
+	Offset::saveAsImage(activeOffset->lowerEnvelope, minLE, exportDir + "/" + data["lowerEnvelope"]);
+
+	Offset::saveAsImage(activeOffset->offset, activeOffset->O_max, exportDir + "/" + data["offsetImg"]);
+	Offset::saveAsData(activeOffset->offset, activeOffset->O_max, exportDir + "/" + data["offsetData"]);
+	data["O_max"] = QString::number(activeOffset->O_max);
+	data["Stackability"] = QString::number(activeOffset->getStackability());
+
+
+	// 2) Save meshes stacked
+	data["stackPreview"] = "stackPreview.obj";
+	stacker_preview->saveStackObj(exportDir + "/" + data["stackPreview"], 3, 1.0);
+
+
+	// 3) Save stuck points / region
+	data["upperStuck"] = "upperStuck.dat";
+	data["lowerStuck"] = "lowerStuck.dat";
+
+	activeOffset->HOT_RANGE = 0.95;
+	activeOffset->detectHotspots();
+	while (activeOffset->upperHotSpots.empty()){
+		activeOffset->HOT_RANGE -= 0.05;
+		activeOffset->detectHotspots();
+	}
+
+	activeOffset->detectHotspots();
+	double sampleSize = 1.0; // % 5
+	activeOffset->saveHotSpots(exportDir + "/" + data["upperStuck"], 1, sampleSize);
+	activeOffset->saveHotSpots(exportDir + "/" + data["lowerStuck"], -1, sampleSize);
+
+	// 4) Save stacking direction
+	Vec3d direction = stacker_preview->stackDirection;
+	data["stackDir"] = QString("%1 %2 %3").arg(direction.x()).arg(direction.y()).arg(direction.z());
+
+
+	// Write info file
+	QFile infoFile(exportDir + "/" + QString("info.txt"));
+	infoFile.open(QIODevice::WriteOnly | QIODevice::Text);
+
+	QMapIterator<QString, QString> i(data);
+	while (i.hasNext()) {
+		i.next();
+		infoFile.write(qPrintable(i.key().leftJustified(14) + "\t" + i.value() + "\n"));
+	}
+	infoFile.close();
+}
