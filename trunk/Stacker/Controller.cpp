@@ -169,6 +169,16 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 	delete oldPrimitive;
 }
 
+void Controller::convertToCuboid( QString primitiveId )
+{
+	Primitive * oldPrimitive = primitives[primitiveId];
+
+	primitives[primitiveId] = new Cuboid(primitives[primitiveId]->getMesh(), primitiveId);
+
+	// bug?
+	//delete oldPrimitive;
+}
+
 void Controller::deformShape( PrimitiveParamMap& primParams, bool isPermanent )
 {
 	foreach(PrimitiveParam* param, primParams.params)

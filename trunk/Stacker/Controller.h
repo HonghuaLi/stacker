@@ -33,6 +33,8 @@ public:
 	void fitPrimitives();
 	void fitOBBs();	
 	void convertToGC( QString primitiveId, bool isUsingSkeleton = true, int cuboidAxis = 0 );
+	void convertToCuboid( QString primitiveId );
+
 
 	// Joints
 	void findJoints();
