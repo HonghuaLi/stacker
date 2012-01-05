@@ -51,6 +51,7 @@ public slots:
 
 	// Primitives modification
 	void convertGC();
+	void convertCuboid();
 	void updateController();
 	void resetCtrlDeformerPanel();
 	void userControlledPrimatives();

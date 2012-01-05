@@ -46,6 +46,7 @@ StackerPanel::StackerPanel()
 	connect(panel.iterateButton, SIGNAL(clicked()), SLOT(onIterateButtonClicked()));
 	connect(panel.solutionButton, SIGNAL(clicked()), SLOT(onSolutionButtonClicked()));
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
+	connect(panel.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
 	connect(panel.userControl, SIGNAL(clicked()), SLOT(userControlledPrimatives()));
 
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
@@ -187,6 +188,16 @@ void StackerPanel::convertGC()
 		if(prim->isSelected)
 			ctrl->convertToGC(prim->id, !panel.basicFitGC->isChecked(), panel.convertGcAxis->value());
 	}
+}
+
+void StackerPanel::convertCuboid()
+{
+	if(!activeObject() || !activeObject()->controller) return;
+
+	Controller* ctrl = activeObject()->controller;
+
+	foreach(Primitive * prim, ctrl->getPrimitives())
+		if(prim->isSelected) ctrl->convertToCuboid(prim->id);
 }
 
 void StackerPanel::gradientDescentOptimize()
