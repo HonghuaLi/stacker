@@ -45,7 +45,7 @@ public:
 	void computeEnvelopeOfShape(int direction);
 	void computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax);
 	void computeOffset();
-	void computeOffsetOfShape();
+	double computeOffsetOfShape();
 	void computeOffsetOfRegion( std::vector< Vec2i >& region );
 	double getStackability();
 

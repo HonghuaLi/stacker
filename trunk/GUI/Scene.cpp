@@ -297,6 +297,11 @@ void Scene::mouseMoveEvent( QMouseEvent* e )
 
 void Scene::keyPressEvent( QKeyEvent *e )
 {
+	if(e->key() == Qt::Key_R)
+	{
+		updateVBOs();		
+	}
+
 	if(e->key() == Qt::Key_W)
 	{
 		this->setRenderMode(RENDER_WIREFRAME);
@@ -407,7 +412,7 @@ void Scene::postDraw()
 
 	bool currGLcontext = isValid();
 
-	SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
+	//SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 
 	// Textual log messages
 	for(int i = 0; i < osdMessages.size(); i++){

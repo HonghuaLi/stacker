@@ -124,6 +124,7 @@ double inline gaussianFunction(double x, double mu = 0.0, double sigma = 1.0){
 
 // Rodrigues' rotation
 #define ROTATE_VEC(v, theta, axis) (v = v * cos(theta) + cross(axis, v) * sin(theta) + axis * dot(axis, v) * (1 - cos(theta)))
+#define ROTATED_VEC(v, theta, axis) (v * cos(theta) + cross(axis, v) * sin(theta) + axis * dot(axis, v) * (1 - cos(theta)))
 
 template <typename VECTYPE>
 VECTYPE inline RotateAround(VECTYPE point, VECTYPE pivot, VECTYPE axis, double theta){
@@ -134,6 +135,17 @@ VECTYPE inline RotateAround(VECTYPE point, VECTYPE pivot, VECTYPE axis, double t
 	result += pivot;
 
 	return result;
+}
+
+template <typename VECTYPE>
+void inline RotateFromTo(VECTYPE from, VECTYPE to, VECTYPE & point, VECTYPE pivot = VECTYPE(0,0,0))
+{
+	VECTYPE axis = cross(from, to).normalized();
+	double theta = acos(dot(from.normalize(), to.normalize()));
+
+	point -= pivot;
+	point = ROTATE_VEC(point, theta, axis);
+	point += pivot;
 }
 
 // Array operations

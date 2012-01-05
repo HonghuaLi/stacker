@@ -35,7 +35,7 @@ StackerPanel::StackerPanel()
 	hiddenDock->setWidget (hidden_viewer);
 	layout->addWidget(hiddenDock, row++, 0,1,3);
 	hiddenDock->setFloating(true);
-	hiddenDock->setWindowOpacity(0.0);
+	hiddenDock->setWindowOpacity(1.0);
 
 	activeOffset = new Offset(hidden_viewer);
 
@@ -76,6 +76,9 @@ StackerPanel::StackerPanel()
 
 	// Paper stuff
 	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
+
+	// Stacking direction
+	connect(panel.searchDirectionButton, SIGNAL(clicked()), SLOT(searchDirection()));
 }
 
 void StackerPanel::onOffsetButtonClicked()
@@ -157,6 +160,17 @@ void StackerPanel::showMessage( QString message )
 void StackerPanel::setConvexHullPrecision( int p )
 {
 	CH_PRECISION = p;
+
+	if (!activeScene || activeScene->isEmpty()){
+		emit(printMessage("There is no valid object."));
+		return;
+	}
+
+	activeObject()->controller = new Controller(activeObject());
+
+	activeScene->setSelectMode(CONTROLLER);
+
+	showMessage("Controller is built for " + activeObject()->objectName());
 }
 
 void StackerPanel::convertGC()
@@ -477,4 +491,86 @@ void StackerPanel::outputForPaper()
 		infoFile.write(qPrintable(i.key().leftJustified(14) + "\t" + i.value() + "\n"));
 	}
 	infoFile.close();
+}
+
+void StackerPanel::searchDirection()
+{
+	int num = panel.searchDensity->value();
+	int angleNum = panel.searchAngleDensity->value();
+	int num2 = num;		// maybe num2 = num * 2 for bias
+	double r = 1.0;
+
+	double x,y,z, theta = 0, phi = 0;
+
+	double deltaTheta = M_PI / num;
+	double deltaPhi = 2.0 * M_PI / num2;
+	
+	std::vector<Vec3d> samples;
+
+	for(uint i = 0; i <= num2; i++){
+		for(uint j = 0; j <= num; j++){
+			x = r * cos(phi) * sin(theta);
+			y = r * sin(phi) * sin (theta);
+			z = r * cos(theta);
+
+			// Sample
+			Vec3d v(x,y,z);
+			samples.push_back(v.normalized());
+
+			theta += deltaTheta;
+		}
+
+		phi += deltaPhi;
+		theta = 0;
+	}
+
+	int sampleCount = 0;
+	double maxStackbaility = activeOffset->computeOffsetOfShape(); // don't go worse than start
+	int bestIndex = 0;
+	double bestAngle = 0;
+
+	QElapsedTimer timing; timing.start();
+
+	for(int i = 0; i < samples.size(); i++){
+		activeObject()->rotateUp(samples[i]);
+
+		double omega = M_PI / angleNum;
+
+		for(double theta = 0; theta <= 2 * M_PI; theta += omega)
+		{
+			activeObject()->rotateAroundUp(omega);
+
+			double stackability = activeOffset->computeOffsetOfShape();
+			
+			if(stackability > maxStackbaility)
+			{
+				bestIndex = i;
+				bestAngle = theta;
+				maxStackbaility = stackability;
+			}
+
+			sampleCount++;
+		}
+
+		// restore back
+		activeObject()->rotateUp(Vec3d(0,0,1));
+
+		// report percent
+		double progress = int((double(i) / samples.size()) * 100);
+		std::cout << "progress: " << progress << " % \r" << std::flush;
+	}
+
+	std::cout << "\r" << "Done.\n";
+
+	double bestX = samples[bestIndex].x();
+	double bestY = samples[bestIndex].y();
+	double bestZ = samples[bestIndex].z();
+
+	printf("\nSampled (%d) samples for best direction.\n", sampleCount);
+	printf("Best stackability = %f\t direction %.3f,%.3f,%.3f\n", maxStackbaility, bestX,bestY,bestZ);
+	printf("Time (%d ms).", timing.elapsed());
+
+	activeObject()->rotateUp(samples[bestIndex]);
+
+	emit(objectModified());
 }

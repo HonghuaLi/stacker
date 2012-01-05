@@ -56,6 +56,11 @@ public:
 	void insertCopyMesh(QSurfaceMesh * newSegment);
 	QSurfaceMesh * flattenMesh();
 
+	// Basic rotations
+	void rotateUp(Vec3d to);
+	Vec3d upVec;
+	void rotateAroundUp(double theta);
+
 	// Properties
 	bool isReady;
 	Point bbmin, bbmax, center;

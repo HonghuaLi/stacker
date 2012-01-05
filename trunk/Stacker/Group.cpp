@@ -63,7 +63,7 @@ void Group::draw()
 
 	foreach(QString node, nodes)
 	{
-		SimpleDraw::IdentifyPoint(getPrimitive(node)->centerPoint(), 0,0,1);
+	//	SimpleDraw::IdentifyPoint(getPrimitive(node)->centerPoint(), 0,0,1);
 	}
 
 	drawDebug();

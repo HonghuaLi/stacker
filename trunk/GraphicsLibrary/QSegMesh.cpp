@@ -12,6 +12,7 @@ QSegMesh::QSegMesh()
 {
 	isReady = false;
 	controller = NULL;
+	upVec = Vec3d(0,0,1);
 }
 
 QSegMesh::QSegMesh( const QSegMesh& from )
@@ -28,6 +29,8 @@ QSegMesh::QSegMesh( const QSegMesh& from )
 		QSurfaceMesh *seg_mesh = new QSurfaceMesh(*from.segment[i]);
 		segment.push_back(seg_mesh);
 	}
+
+	this->upVec = from.upVec;
 }
 
 QSegMesh& QSegMesh::operator=( const QSegMesh& rhs )
@@ -44,6 +47,8 @@ QSegMesh& QSegMesh::operator=( const QSegMesh& rhs )
 		QSurfaceMesh *seg_mesh = new QSurfaceMesh(*rhs.segment[i]);
 		segment.push_back(seg_mesh);
 	}
+
+	this->upVec = rhs.upVec;
 
 	return *this;
 }
@@ -282,8 +287,10 @@ void QSegMesh::build_up()
 	update_vertex_normals();
 
 	for (int i = 0; i < nbSegments();i++)
+	{
 		segment[i]->buildUp();
-
+	}
+	
 	setColorVertices();
 
 	printf("Segments loaded: %d \n", nbSegments());
@@ -548,6 +555,31 @@ void QSegMesh::normalize()
 	}
 
 	scaleFactor = radius;
+}
+
+void QSegMesh::rotateAroundUp( double theta )
+{
+	for (uint i = 0; i < nbSegments();i++)
+		segment[i]->rotateAroundUp(theta);
+}
+
+void QSegMesh::rotateUp( Vec3d to )
+{
+	double theta = acos(dot(upVec, to));
+	if(theta == 0)	return;
+	Vec3d axis = cross(upVec, to).normalized();
+
+	for (uint i = 0; i < nbSegments();i++)
+	{
+		Vec3d oldCenter = segment[i]->center;
+		Vec3d newCenter = ROTATED_VEC(oldCenter, theta, axis);
+		Vec3d delta = newCenter - oldCenter;
+		segment[i]->translate(delta);
+
+		segment[i]->rotateUp(to);
+	}
+
+	upVec = to;
 }
 
 uint QSegMesh::segmentIdOfVertex( uint vid )
