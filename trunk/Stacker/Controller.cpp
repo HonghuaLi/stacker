@@ -7,6 +7,8 @@
 #include <QQueue>
 #include "JointGroup.h"
 
+double JOINT_THRESHOLD = 0.035;
+
 Controller::Controller( QSegMesh* mesh )
 {
 	m_mesh = mesh;
@@ -298,14 +300,47 @@ Primitive * Controller::getSelectedPrimitive()
 	return NULL;
 }
 
-void Controller::findJoints(double threshold)
+
+bool Controller::findJoint( QString a, QString b, Vec3d &joint )
+{
+	Primitive * primA = getPrimitive(a);
+	QSurfaceMesh meshA(primA->getGeometry());
+	Voxeler voxelerA(&meshA, JOINT_THRESHOLD);
+
+	Primitive * primB = getPrimitive(b);
+	QSurfaceMesh meshB(primB->getGeometry());
+	Voxeler voxelerB(&meshB, JOINT_THRESHOLD);
+
+	std::vector<Voxel> intersection = voxelerA.Intersects(&voxelerB);
+	bool result;
+	if(intersection.empty())
+		result = false;
+	else
+	{
+		int N = intersection.size();
+		Voxel center;
+		foreach(Voxel v, intersection){
+			center.x += v.x;
+			center.y += v.y; 
+			center.z += v.z;
+		}
+		double scale = JOINT_THRESHOLD / N;
+		joint = Vec3d(center.x * scale, center.y * scale, center.z * scale);
+		result = true;
+	}
+
+	return result;
+}
+
+
+void Controller::findJoints()
 {
 	std::vector<Voxeler> voxels;
 
 	foreach(Primitive * prim, primitives)
 	{
 		QSurfaceMesh mesh(prim->getGeometry());
-		voxels.push_back( Voxeler(&mesh, threshold) );
+		voxels.push_back( Voxeler(&mesh, JOINT_THRESHOLD) );
 	}
 
 	QVector<QString> keys = primitives.keys().toVector();
@@ -320,7 +355,7 @@ void Controller::findJoints(double threshold)
 
 			std::vector<Voxel> intersection = voxels[i].Intersects(&voxels[j]);
 
-			if(intersection.size()){
+			if(!intersection.empty()){
 				int N = intersection.size();
 				Voxel center;
 				foreach(Voxel v, intersection){
@@ -328,7 +363,7 @@ void Controller::findJoints(double threshold)
 					center.y += v.y; 
 					center.z += v.z;
 				}
-				double scale = threshold / N;
+				double scale = JOINT_THRESHOLD / N;
 				Point centerPoint(center.x * scale, center.y * scale, center.z * scale);
 
 				JointGroup *newGroup = new JointGroup(this, JOINT);
@@ -380,10 +415,6 @@ ShapeState Controller::getShapeState()
 	foreach(Primitive * prim, primitives)
 		state.primStates[prim->id] = prim->getState();
 
-	foreach(Group* grp, groups)
-		if(grp->type == JOINT) 
-			state.jointCoords[grp->id] = ((JointGroup*) grp)->coordinates;
-
 	return state;
 }
 
@@ -394,10 +425,6 @@ void Controller::setShapeState( ShapeState &shapeState )
 		prim->setState(shapeState.primStates[prim->id]);
 		prim->deformMesh();
 	}
-
-
-	foreach(QString groupID, shapeState.jointCoords.keys())
-		((JointGroup*)groups[groupID])->coordinates = shapeState.jointCoords[groupID];
 }
 
 std::set< QString > Controller::getRidOfRedundancy( std::set< QString > Ids )
@@ -460,7 +487,7 @@ void Controller::weakPropagate(QVector<QString> seeds)
 			foreach(QString next, regrouped)
 				if (getPrimitive(next)->isFrozen)	frozen.enqueue(next);
 
-			QMap< QString, bool > debugFrozenFlags2 = getFrozenFlags();
+			//QMap< QString, bool > debugFrozenFlags2 = getFrozenFlags();
 		}
 	}
 }
@@ -490,12 +517,12 @@ QVector<ShapeState> Controller::strongPropagate()
 		setShapeState(currCandidate);
 
 		// Apply weak propagation
-		QMap< QString, bool > debugFrozenFlags1 = getFrozenFlags();
+//		QMap< QString, bool > debugFrozenFlags1 = getFrozenFlags();
 		if (currCandidate.seeds.isEmpty())
 			weakPropagate();
 		else
 			weakPropagate(currCandidate.seeds);
-		QMap< QString, bool > debugFrozenFlags2 = getFrozenFlags();
+//		QMap< QString, bool > debugFrozenFlags2 = getFrozenFlags();
 
 		// Check whether the propagation is done
 		QQueue<QString> semi_frozen;
@@ -503,7 +530,7 @@ QVector<ShapeState> Controller::strongPropagate()
 			if(!p->isFrozen && !p->fixedPoints.isEmpty()) 
 				semi_frozen.enqueue(p->id);	
 
-		int debug = 0;
+//		int debug = 0;
 
 		if (semi_frozen.isEmpty())
 		{
@@ -616,6 +643,19 @@ QMap< QString, bool > Controller::getFrozenFlags()
 
 	foreach(Primitive * p, primitives)
 		result[p->id] = p->isFrozen;
+
+	return result;
+}
+
+double Controller::similarity( ShapeState state1, ShapeState state2 )
+{
+	double result = 0;
+
+	foreach(Primitive* prim, primitives)
+	{
+		QString id = prim->id;
+		result += prim->similarity(state1.primStates[id], state2.primStates[id]);
+	}
 
 	return result;
 }

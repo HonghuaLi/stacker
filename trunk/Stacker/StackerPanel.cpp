@@ -44,7 +44,7 @@ StackerPanel::StackerPanel()
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
 	connect(panel.iterateButton, SIGNAL(clicked()), SLOT(onIterateButtonClicked()));
-	connect(panel.candSolutionButton, SIGNAL(clicked()), SLOT(onCandSolutionButtonClicked()));
+	connect(panel.solutionButton, SIGNAL(clicked()), SLOT(onSolutionButtonClicked()));
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(panel.userControl, SIGNAL(clicked()), SLOT(userControlledPrimatives()));
 
@@ -56,6 +56,9 @@ StackerPanel::StackerPanel()
 
 	// Offset 
 	connect(panel.hotRange, SIGNAL(valueChanged (double)), this, SLOT(setHotRange(double)));
+
+	// Voxel size
+	connect(panel.jointsThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
 
 	// Connect controller deformer
 	/*connect(ctrlDeformer.transX, SIGNAL(valueChanged(int)), SLOT(updateController()));
@@ -402,7 +405,7 @@ void StackerPanel::findJoints()
 {
 	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
 	
-	activeObject()->controller->findJoints(panel.jointsThreshold->value());
+	activeObject()->controller->findJoints();
 }
 
 void StackerPanel::onIterateButtonClicked()
@@ -411,9 +414,9 @@ void StackerPanel::onIterateButtonClicked()
 	emit(objectModified());
 }
 
-void StackerPanel::onCandSolutionButtonClicked()
+void StackerPanel::onSolutionButtonClicked()
 {
-	activeOffset->showCandidateSolution(panel.hsID->value());
+	activeOffset->showSolution(panel.hsID->value());
 	emit(objectModified());
 }
 
@@ -491,6 +494,11 @@ void StackerPanel::outputForPaper()
 		infoFile.write(qPrintable(i.key().leftJustified(14) + "\t" + i.value() + "\n"));
 	}
 	infoFile.close();
+}
+
+void StackerPanel::setJointThreshold( double threshold )
+{
+	JOINT_THRESHOLD = threshold;
 }
 
 void StackerPanel::searchDirection()

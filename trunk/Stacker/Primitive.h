@@ -9,7 +9,7 @@ struct PrimitiveState
 {
 	 void* geometry;
 	 bool isFrozen;
-	 QVector<Point> fixedPoints;
+//	 QVector<Point> fixedPoints;
 };
 
 class Primitive
@@ -73,6 +73,8 @@ public:
 	virtual void setSymmetryPlanes(int nb_fold) = 0;
 	virtual void addFixedPoint(Point fp);
 
+	// Similarity between two primitives
+	double similarity(PrimitiveState state1, PrimitiveState state2);
 
 
 	// Helpful for debugging
