@@ -147,6 +147,7 @@ double Offset::computeOffsetOfShape()
 	if (!activeObject()) return 0;
 
 	// Compute the height of the shape
+	activeObject()->computeBoundingBox();
 	objectH = (activeObject()->bbmax - activeObject()->bbmin).z();
 
 	// Save original camera settings
