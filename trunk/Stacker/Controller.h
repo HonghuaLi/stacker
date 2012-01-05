@@ -19,7 +19,7 @@ struct ShapeState
 class Controller
 {
 public:
-	Controller(QSegMesh* mesh);
+	Controller(QSegMesh* mesh, bool useAABB = true);
 	~Controller();
 
 public:
@@ -31,10 +31,9 @@ public:
 
 	// Fitting
 	void fitPrimitives();
-	void fitOBBs();	
+	void fitOBBs(bool useAABB = true);	
 	void convertToGC( QString primitiveId, bool isUsingSkeleton = true, int cuboidAxis = 0 );
-	void convertToCuboid( QString primitiveId );
-
+	void convertToCuboid( QString primitiveId, bool useAABB /*= true*/ );
 
 	// Joints
 	void findJoints();

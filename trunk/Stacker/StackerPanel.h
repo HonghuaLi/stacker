@@ -55,7 +55,8 @@ public slots:
 	void updateController();
 	void resetCtrlDeformerPanel();
 	void userControlledPrimatives();
-	
+
+
 	void findJoints();
 
 	void searchDirection();

@@ -2,14 +2,18 @@
 #include "SkeletonExtract.h"
 #include "SimpleDraw.h"
 
+int GCylinder::DefaultSkeletonJoints = 10;
+
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {
 	cage = NULL;
 
-	deltaScale = 1.3;
-
 	cageScale = 1.3;
-	cageSides = 6;
+	cageSides = 15;
+	skeletonJoints = 10;
+
+	// For visualization
+	deltaScale = 1.3;
 
 	// useful for fitting process
 	if(!m_mesh->vertex_array.size()){
@@ -37,7 +41,7 @@ void GCylinder::fit()
 	skel->selectLongestPath();
 
 	// Compute generalized cylinder given spine points
-	int numSteps = Max(skel->sortedSelectedNodes.size(), 10);
+	int numSteps = Max(skel->sortedSelectedNodes.size(), skeletonJoints);
 	std::vector<Point> reSampledSpinePoints;
 	foreach(ResampledPoint sample, skel->resampleSmoothSelectedPath(numSteps, 3)) 
 		reSampledSpinePoints.push_back(sample.pos);

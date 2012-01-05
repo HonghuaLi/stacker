@@ -66,6 +66,7 @@ public:
 	Vec3d pre_bbmin, pre_bbmax;
 	bool satisfyBBConstraint();
 	bool isUnique( ShapeState state, double threshold );
+
 	// Numeric
 	double getValue( std::vector< std::vector < double > >& image, int x, int y, int r );
 	static double getMinValue( std::vector< std::vector < double > >& image );
@@ -85,6 +86,8 @@ public:
 	std::vector< Vec2i > shiftRegionInBB( std::vector< Vec2i >& region, Vec2i delta, Vec2i bbmin, Vec2i bbmax );
 	Vec2i sizeofRegion( std::vector< Vec2i >& region );
 	void BBofRegion( std::vector< Vec2i >& region, Vec2i &bbmin, Vec2i &bbmax );
+
+
 	// Utilities 
 	template< typename T >
 	std::vector< std::vector < T > > createImage( int w, int h, T intial);

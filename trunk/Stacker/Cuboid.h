@@ -19,11 +19,12 @@
 class Cuboid : public Primitive
 {
 public:
-	Cuboid( QSurfaceMesh* segment, QString newId );
+	Cuboid( QSurfaceMesh* segment, QString newId, bool useAABB = true );
 
 public:
 	// Fit primitive to the underlying QSurfaceMesh
-	virtual void fit();
+	virtual void fit(){}
+	void fit(bool useAABB /*= true */ );
 	virtual void computeMeshCoordiantes();
 
 	// Deform the underlying geometry according to the \pre_state and current state

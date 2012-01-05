@@ -80,4 +80,9 @@ private:
 	double 	deltaScale;
 	double cageScale;
 	int cageSides;
+	int skeletonJoints;
+
+	// how to add static variable?
+public:
+	static int DefaultSkeletonJoints;
 };

@@ -142,7 +142,7 @@ void StackerPanel::updateActiveObject()
 
 	if (activeObject()->controller == NULL)
 	{
-		activeObject()->controller = new Controller(activeObject());
+		activeObject()->controller = new Controller(activeObject(), panel.useAABB->isChecked());
 		activeScene->setSelectMode(CONTROLLER);
 		showMessage("Controller is built for " + activeObject()->objectName());
 	}
@@ -170,7 +170,7 @@ void StackerPanel::setConvexHullPrecision( int p )
 		return;
 	}
 
-	activeObject()->controller = new Controller(activeObject());
+	activeObject()->controller = new Controller(activeObject(), panel.useAABB->isChecked());
 
 	activeScene->setSelectMode(CONTROLLER);
 
@@ -197,7 +197,7 @@ void StackerPanel::convertCuboid()
 	Controller* ctrl = activeObject()->controller;
 
 	foreach(Primitive * prim, ctrl->getPrimitives())
-		if(prim->isSelected) ctrl->convertToCuboid(prim->id);
+		if(prim->isSelected) ctrl->convertToCuboid(prim->id, panel.useAABB->isChecked());
 }
 
 void StackerPanel::gradientDescentOptimize()
@@ -614,3 +614,4 @@ void StackerPanel::searchDirection()
 
 	emit(objectModified());
 }
+
