@@ -33,6 +33,10 @@ public:
 	void moveCenterToOrigin();
 	void translate(Vec3d delta);
 
+	void rotateUp( Vec3d to);
+	Vec3d upVec;
+	void rotateAroundUp(double theta);
+
 	double getAverageEdgeLength();
 	double averageEdgeLength;
 

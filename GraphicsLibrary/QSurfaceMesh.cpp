@@ -15,6 +15,8 @@ QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 	isDrawBB = false;
 	isVisible = true;
 
+	upVec = Vec3d(0,0,1);
+
 	averageEdgeLength = -1;
 }
 
@@ -30,6 +32,7 @@ QSurfaceMesh::QSurfaceMesh( const QSurfaceMesh& from ) : Surface_mesh(from)
 	this->isReady = from.isReady;
 	this->isDirty = from.isDirty;
 	this->isDrawBB = from.isDrawBB;
+	this->upVec = from.upVec;
 
 	this->assignFaceArray();
 	this->assignVertexArray();
@@ -48,6 +51,7 @@ QSurfaceMesh& QSurfaceMesh::operator=( const QSurfaceMesh& rhs )
 	this->isReady = rhs.isReady;
 	this->isDirty = rhs.isDirty;
 	this->isDrawBB = rhs.isDrawBB;
+	this->upVec = rhs.upVec;
 
 	this->assignFaceArray();
 	this->assignVertexArray();
@@ -61,8 +65,10 @@ void QSurfaceMesh::computeBoundingBox()
 	Vertex_iterator vit, vend = vertices_end();
 
 	// compute bounding box
-	bbmin = Point( DBL_MAX, DBL_MAX, DBL_MAX);
-	bbmax = Point( DBL_MIN, DBL_MIN, DBL_MIN);
+	this->bbmin = Vec3d( DBL_MAX-1, DBL_MAX-1, DBL_MAX-1);
+	this->bbmax = -bbmin;
+
+	center = Vec3d(0,0,0);
 
 	for (vit = vertices_begin(); vit != vend; ++vit)
 	{
@@ -693,5 +699,42 @@ void QSurfaceMesh::translate( Vec3d delta )
 	for(vit = vertices_begin(); vit != vend; ++vit)
 	{
 		points[vit] += delta;
+	}
+
+	center += delta;
+}
+
+void QSurfaceMesh::rotateUp( Vec3d to)
+{
+	// Compute rotation of current 'upVec' to vector 'to'
+	double theta = acos(dot(upVec, to));
+
+	if(theta == 0)	return;
+
+	Vec3d axis = cross(upVec, to).normalized();
+
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	for(vit = vertices_begin(); vit != vend; ++vit)
+	{
+		points[vit] -= center;
+		points[vit] = ROTATE_VEC(points[vit], theta, axis);
+		points[vit] += center;
+	}
+
+	upVec = to;
+}
+
+void QSurfaceMesh::rotateAroundUp( double theta )
+{
+	if(theta == 0) return;
+
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	for(vit = vertices_begin(); vit != vend; ++vit)
+	{
+		points[vit] = ROTATE_VEC(points[vit], theta, upVec);
 	}
 }

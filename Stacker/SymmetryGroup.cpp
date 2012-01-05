@@ -53,12 +53,9 @@ void SymmetryGroup::draw()
 	// Draw debug and stuff
 	Group::draw();
 
+	glColor4d(1,1,1,0.5);
 	symmetryPlane.draw();
-
-	if(hasSymmetryAxis)
-		SimpleDraw::DrawArrowDirected(symmetryAxisPos, symmetryAxis, 2);
 }
-
 
 QVector<QString> SymmetryGroup::regroup()
 {

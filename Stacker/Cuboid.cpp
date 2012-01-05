@@ -122,9 +122,9 @@ void Cuboid::draw()
 	//SimpleDraw::IdentifyPoint(currBox.Center);
 
 	if(isSelected)
-		drawCube(5, Vec4d(1,1,0,1));
+		drawCube(4, Vec4d(1,1,0,0.9));
 	else
-		drawCube(2, Vec4d(0,0,1,1));
+		drawCube(2, Vec4d(0,0,1,0.6));
 
 	// Draw axis
 	if(isDrawAxis){
@@ -146,7 +146,7 @@ void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
 
 	if(selectedPartId >= 0)
 	{
-		SimpleDraw::DrawSquare(faces[this->selectedPartId], false, 6, Vec4d(0,1,0,1));
+		SimpleDraw::DrawSquare(faces[this->selectedPartId], false, lineWidth * 2, Vec4d(0,1,0,1));
 		//SimpleDraw::IdentifyPoint(selectedPartPos(), 0,1,0,20);
 	}
 

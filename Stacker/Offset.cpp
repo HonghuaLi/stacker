@@ -51,6 +51,7 @@ void Offset::computeEnvelope(int direction)
 	envelope.resize(h);
 	depth.resize(h);
 
+	#pragma omp parallel for
 	for(int y = 0; y < h; y++)
 	{
 		envelope[y].resize(w);
@@ -128,6 +129,7 @@ void Offset::computeOffset()
 	int h = upperEnvelope.size();
 	int w = upperEnvelope[0].size();
 
+	#pragma omp parallel for
 	for (int y = 0; y < h; y++){
 		for (int x = 0; x < w; x++)
 		{
@@ -140,9 +142,9 @@ void Offset::computeOffset()
 	}
 }
 
-void Offset::computeOffsetOfShape()
+double Offset::computeOffsetOfShape()
 {
-	if (!activeObject()) return;
+	if (!activeObject()) return 0;
 
 	// Compute the height of the shape
 	objectH = (activeObject()->bbmax - activeObject()->bbmin).z();
@@ -162,7 +164,9 @@ void Offset::computeOffsetOfShape()
 	activeObject()->stackability = 1 - O_max/objectH;
 
 	// Save offset as image
-	saveAsImage(offset, O_max, "offset function.png");
+	//saveAsImage(offset, O_max, "offset function.png");
+
+	return activeObject()->stackability;
 }
 
 void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )

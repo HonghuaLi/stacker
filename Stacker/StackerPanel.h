@@ -56,6 +56,8 @@ public slots:
 	
 	void findJoints();
 
+	void searchDirection();
+
 	void outputForPaper();
 
 signals:
