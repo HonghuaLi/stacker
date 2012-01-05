@@ -2,15 +2,15 @@
 #include "SkeletonExtract.h"
 #include "SimpleDraw.h"
 
-int GCylinder::DefaultSkeletonJoints = 10;
+int GCylinder::DefaultSkeletonJoints = 4;
 
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {
 	cage = NULL;
 
 	cageScale = 1.3;
-	cageSides = 15;
-	skeletonJoints = 10;
+	cageSides = 10;
+	skeletonJoints = 4;
 
 	// For visualization
 	deltaScale = 1.3;

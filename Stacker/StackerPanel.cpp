@@ -146,6 +146,8 @@ void StackerPanel::updateActiveObject()
 		activeScene->setSelectMode(CONTROLLER);
 		showMessage("Controller is built for " + activeObject()->objectName());
 	}
+
+	std::cout << "objectH = " << activeOffset->objectH << std::endl;
 }
 
 QSegMesh* StackerPanel::activeObject()
