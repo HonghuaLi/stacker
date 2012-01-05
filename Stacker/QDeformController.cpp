@@ -47,14 +47,18 @@ void QDeformController::scaleUp( double s )
 	ctrl->setPrimitivesFrozen(false);
 
 	Primitive * prim = ctrl->getSelectedPrimitive();
-	prim->isFrozen = true;
 
-	prim->scaleCurve(-1, s);
-	ctrl->weakPropagate();
+	if(prim != NULL)
+	{
+		prim->isFrozen = true;
 
-	prim->isFrozen = false;
-	
-	emit( objectModified() );
+		prim->scaleCurve(-1, s);
+		ctrl->weakPropagate();
+
+		prim->isFrozen = false;
+
+		emit( objectModified() );
+	}
 }
 
 void QDeformController::draw()

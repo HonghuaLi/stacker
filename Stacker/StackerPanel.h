@@ -39,7 +39,7 @@ public slots:
 	void onImproveButtonClicked();
 	void onHotspotsButtonClicked();
 	void onIterateButtonClicked();
-	void onCandSolutionButtonClicked();
+	void onSolutionButtonClicked();
 
 	// Others
 	void setActiveScene( Scene * );
@@ -47,6 +47,7 @@ public slots:
 
 	void setConvexHullPrecision(int p);
 	void setHotRange(double range);
+	void setJointThreshold(double threshold);
 
 	// Primitives modification
 	void convertGC();

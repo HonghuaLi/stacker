@@ -1,6 +1,7 @@
 #include "JointGroup.h"
 #include "SimpleDraw.h"
 #include "Voxeler.h"
+#include "Controller.h"
 
 
 void JointGroup::process( QVector< QString > segments, Vec3d joint )
@@ -64,7 +65,8 @@ QVector<QString> JointGroup::regroup()
 
 	// Fixed the joint
 	non_frozen->addFixedPoint(newPos);
-	result.push_back(non_frozen->id);
+	if (non_frozen->isFrozen)
+		result.push_back(non_frozen->id);
 
 	return result;
 }

@@ -55,6 +55,7 @@ public:
 	HotSpot detectHotspotInRegion(int direction, std::vector<Vec2i>& hotRegion);
 	std::set<QString> getHotSegment();
 	void showHotSpots();
+
 	// Improve stackability
 	void improveStackabilityTo(double targetS);
 	void improveStackability();
@@ -64,7 +65,7 @@ public:
 	double preStackability;
 	Vec3d pre_bbmin, pre_bbmax;
 	bool satisfyBBConstraint();
-
+	bool isUnique( ShapeState state, double threshold );
 	// Numeric
 	double getValue( std::vector< std::vector < double > >& image, int x, int y, int r );
 	static double getMinValue( std::vector< std::vector < double > >& image );
@@ -98,9 +99,8 @@ public:
 	void setRegionColor( std::vector< std::vector < double > >& image, std::vector< Vec2i >& region, double color );
 	void setPixelColor( std::vector< std::vector < double > >& image, Vec2i pos, double color );
 	static QRgb jetColor( double val, double min, double max );
-	void showCandidateSolution( int i );
 	void visualizeRegions( std::vector< std::vector<Vec2i> >& regions, QString filename );
-
+	void showSolution( int i );
 	double HOT_RANGE;
 
 public:
@@ -124,6 +124,7 @@ public:
 	std::vector< HotSpot >  lowerHotSpots;
 	std::set< QString> hotSegments;
 
+	QVector< ShapeState > usedCandidateSolutions;
 	QQueue< ShapeState > candidateSolutions;
-	std::vector< ShapeState > solutions;
+	QVector< ShapeState > solutions;
 };

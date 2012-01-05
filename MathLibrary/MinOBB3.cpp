@@ -354,7 +354,6 @@ void MinOBB3::Box3::makeRightHanded()
 }
 
 
-
 MinOBB3::EdgeKey::EdgeKey (int v0, int v1)
 {
 	if (v0 < v1)

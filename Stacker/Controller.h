@@ -5,6 +5,8 @@
 #include "Voxeler.h"
 #include "Group.h"
 
+extern double JOINT_THRESHOLD;
+
 class QSegMesh;
 
 struct ShapeState
@@ -12,7 +14,6 @@ struct ShapeState
 	QMap< QString, PrimitiveState > primStates;
 	double stackability;
 	QVector<QString> seeds;
-	QMap< QString, QMap<QString, std::vector<double>> > jointCoords;
 };
 
 class Controller
@@ -32,9 +33,10 @@ public:
 	void fitPrimitives();
 	void fitOBBs();	
 	void convertToGC( QString primitiveId, bool isUsingSkeleton = true, int cuboidAxis = 0 );
-	// Joints
-	void findJoints(double threshold);
 
+	// Joints
+	void findJoints();
+	bool findJoint( QString a, QString b, Vec3d &joint );
 	// Interaction
 	void select(int id);
 	void select(QString id);
@@ -61,6 +63,9 @@ public:
 	// Shape state
 	ShapeState getShapeState();
 	void setShapeState( ShapeState &shapeState );
+
+	// Similarity between two shape state
+	double similarity(ShapeState state1, ShapeState state2);
 
 	// Propagation
 	void weakPropagate(QVector<QString> seeds);

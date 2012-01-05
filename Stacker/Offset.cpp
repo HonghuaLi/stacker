@@ -206,7 +206,7 @@ void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
 	computeOffset();
 
 	// Save offset as image
-	saveAsImage(offset, O_max, "offset function of region.png");
+	//saveAsImage(offset, O_max, "offset function of region.png");
 }
 
 double Offset::getStackability()
@@ -239,10 +239,10 @@ Offset::HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> 
 	uint sid, fid, fid_local;
 	uint x, y;
 
-	std::map< QString,  int > subHotRegionSize;
-	std::map< QString,  std::vector< Vec3d > > subHotSamples;
+	QMap< QString,  int > subHotRegionSize;
+	QMap< QString,  std::vector< Vec3d > > subHotSamples;
 
-	//QImage debugImg(w, h, QImage::Format_ARGB32);
+//	QImage debugImg(w, h, QImage::Format_ARGB32);
 	
 	for (int j=0;j<hotRegion.size();j++)
 	{
@@ -278,22 +278,29 @@ Offset::HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> 
 		hotPoints[segmentID].push_back(hotPoint);
 
 		// debuging
-		//debugImg.setPixel(x, y, QColor(r, g, b).rgb());
+//		debugImg.setPixel(x, y, QColor(r, g, b).rgb());
 	}
 
-	//debugImg.save("face unique.png");
+//	debugImg.save("face unique.png");
 	// Create hot spot
 	HotSpot HS;
-
-	std::map< QString,  int >::iterator itr = std::max_element(subHotRegionSize.begin(), subHotRegionSize.end());
-	if (subHotRegionSize.end() == itr)
+	if (subHotRegionSize.isEmpty())
 	{
 		HS.side = 0;
 	}
 	else
 	{
+		int largestRegionSize = 0;
+		foreach(QString id, subHotRegionSize.keys())
+		{
+			if (subHotRegionSize[id] > largestRegionSize)
+			{
+				largestRegionSize = subHotRegionSize[id];
+				HS.segmentID = id;
+			}
+		}
+
 		HS.side = direction;
-		HS.segmentID = itr->first;
 		HS.hotSamples = subHotSamples[HS.segmentID];
 	}
 
@@ -310,7 +317,7 @@ void Offset::detectHotspots( )
 
 	// Detect hot regions
 	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
-	visualizeRegions(hotRegions, "hot regions of shape.png");
+	//visualizeRegions(hotRegions, "hot regions of shape.png");
 
 	// The max offset of hot regions
 	maxOffsetInHotRegions.clear();
@@ -338,7 +345,7 @@ void Offset::detectHotspots( )
 		}
 
 		// If there are multiple regions, pick up the one at the center
-		visualizeRegions(zoomedHRs, "zommed in hot regions.png");
+		//visualizeRegions(zoomedHRs, "zoomed in hot regions.png");
 
 		std::vector<Vec2i>::iterator itr;
 		Vec2i center(w/2, h/2);
@@ -862,12 +869,12 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 	std::vector< std::vector<double> > &op_envelope = isUpper ? lowerEnvelope : upperEnvelope;
 
 	// Project BB to 2D buffer
-	std::vector< std::vector< double > > BBImg = createImage( offset[0].size(), offset.size(), 0. );
+	//std::vector< std::vector< double > > BBImg = createImage( offset[0].size(), offset.size(), 0. );
 	Vec2i bbmin = projectedCoordinatesOf(pre_bbmin, 3);
 	Vec2i bbmax = projectedCoordinatesOf(pre_bbmax, 3);
-	setPixelColor(BBImg, bbmin, 1.0);
-	setPixelColor(BBImg, bbmax, 0.5);
-	saveAsImage(BBImg, 1.0, "BB projection.png");
+	//setPixelColor(BBImg, bbmin, 1.0);
+	//setPixelColor(BBImg, bbmax, 0.5);
+	//saveAsImage(BBImg, 1.0, "BB projection.png");
 
 	// Opposite envelope at current position
 	std::vector< double > curr_op_env = getValuesInRegion(op_envelope, hotRegion, x_flipped);
@@ -884,7 +891,7 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 
 	// Search for optional locations in 1-K rings
 	std::vector< Vec3d > Ts;
-	int K = 8;
+	int K = 5;
 	for (uint k = 1; k < K; k++)
 	{
 		std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
@@ -940,15 +947,15 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 	std::vector< Vec3d > Ts = getHorizontalMoves(HS);
 	if (!HS.defineHeight)
 	{// Move up/down directly
-		Vec3d T(0, 0, 0.2 * objectH);
+		Vec3d T(0, 0, 0.1 * objectH);
 		if (1 == HS.side) T *= -1;
 		Ts.push_back( T );
 	}
 
-	//Ts.push_back(Vec3d(-0.2, 0.4, 0));
+//	Ts.push_back(Vec3d(-0.2, 0.4, 0));
 	// Actually modify the shape to generate hot solutions
 	for (int i=0;i<Ts.size();i++)
-	//int i = Ts.size() - 1;
+//	int i = Ts.size() - 1;
 	{
 		// Clear the frozen flags
 		ctrl->setPrimitivesFrozen(false);		
@@ -967,28 +974,24 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 		// Propagation the deformation
 		prim->isFrozen = true;
 		op_prim->isFrozen = true;
-		QVector< ShapeState > shapeStates = ctrl->strongPropagate();
+		ctrl->weakPropagate();
 
-		foreach( ShapeState state, shapeStates )
-			candidateSolutions.enqueue(state);
+		// Check if this is a candidate solution
+
+		if ( satisfyBBConstraint() )
 		{
-			//ctrl->setShapeState(state);
-
-			//// Check if this is a hotSolution
-			//if ( satisfyBBConstraint() )
-			//{
-			//	computeOffsetOfShape();
-			//	if (getStackability() > preStackability + 0.1)
-			//	{
-					//ctrl->weakPropagate();
-					//ShapeState state = ctrl->getShapeState();
-					//state.stackability = getStackability();
-					//candidateSolutions.enqueue(state);
-			//	}
-			//}
-
-
+			double stackability = computeOffsetOfShape();
+			if (stackability > preStackability + 0.1)
+			{
+				ShapeState state = ctrl->getShapeState();
+				if (isUnique(state, 4))
+				{
+					state.stackability = stackability;
+					candidateSolutions.enqueue(state);
+				}				
+			}
 		}
+
 
 		// Restore the initial hot shape state
 		ctrl->setShapeState(initialHotShapeState);
@@ -1056,33 +1059,42 @@ void Offset::improveStackability()
 	// Step 2: Apply heuristics on hot spots and propagate deformations
 	// Several hot solutions might be generated, which are stored in *hotSolutions*
 	applyHeuristics();
-
-	activeObject()->computeBoundingBox();
 }
 
 void Offset::improveStackabilityTo( double targetS )
 {
 	Controller *ctrl = activeObject()->controller;
 
+	// Clear
+	candidateSolutions.clear();
+	usedCandidateSolutions.clear();
+	solutions.clear();
+
 	// The bounding box constraint is hard
-	pre_bbmin = activeObject()->bbmin * 1.05;
-	pre_bbmax = activeObject()->bbmax * 1.05;
+	pre_bbmin = activeObject()->bbmin;
+	pre_bbmax = activeObject()->bbmax;
+	pre_bbmin[0] *= 1.1;
+	pre_bbmin[2] *= 1.1;
+	pre_bbmax[0] *= 1.1;
+	pre_bbmax[2] *= 1.1;
 
 	// Push the current shape as the initial candidate solution
 	ShapeState state = ctrl->getShapeState();
 	state.stackability = getStackability();
 	candidateSolutions.enqueue(state);
 
-//	while(!candidateSolutions.empty())
+	while(!candidateSolutions.empty())
 	{
+
 		// Get the first candidate solution
 		ShapeState candidateState = candidateSolutions.dequeue();
+		usedCandidateSolutions.push_back(candidateState);
 
 		if ( candidateState.stackability >= targetS)
 		{
 			// Yes. Got one solution.
 			solutions.push_back(candidateState);
-			//continue;
+			continue;
 		}
 		else
 		{
@@ -1092,42 +1104,96 @@ void Offset::improveStackabilityTo( double targetS )
 			improveStackability();
 		}
 
+
+		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;
+		std::cout << "#Solutions = " << solutions.size() << std::endl;
 	}
+
+	// Debug: add candidate solutions to solutions
+	//foreach (ShapeState state, candidateSolutions)
+	//	solutions.push_back(state);
+
+
+	// Cluster the solutions to get rid of redundancies
+
+	
+	ctrl->setShapeState(state);
+	activeObject()->computeBoundingBox();
 }
 
 
-void Offset::showCandidateSolution( int i )
+void Offset::showSolution( int i )
 {
-	if (candidateSolutions.empty())
+	if (solutions.empty())
 	{
 		std::cout << "There is no solution.\n";
 		return;
 	}
 
-	int id = i % candidateSolutions.size();
+	int id = i % solutions.size();
 	Controller *ctrl = activeObject()->controller;
-	ctrl->setShapeState(candidateSolutions[id]);
+	ctrl->setShapeState(solutions[id]);
 
-	std::cout << "Showing the " << id << "th hot solution out of " << candidateSolutions.size() <<".\n";
+	std::cout << "Showing the " << id << "th solution out of " << solutions.size() <<".\n";
 }
 
 bool Offset::satisfyBBConstraint()
 {
 	bool result = true;
+
 	Vec3d preBB = pre_bbmax - pre_bbmin;
 	activeObject()->computeBoundingBox();
 	Vec3d currBB = activeObject()->bbmax - activeObject()->bbmin;
 
 	Vec3d diff = preBB - currBB;
-	if ( diff[0] < 0 || diff[1] < 0 || diff[2] < 0 )
+	if ( diff[0] < 0 || diff[2] < 0 )
+		result = false;
+
+	if( abs(diff[1]) > 0.1 )
 		result = false;
 
 	// debug
-	std::cout << "-----------------------------------\n"
-		<<"The preBB size: (" << preBB <<")\n";	
-	std::cout << "The currBB size:(" << currBB <<")\n";
-	std::cout << "BB-satisfying: " << result <<std::endl;
+	//std::cout << "-----------------------------------\n"
+	//	<<"The preBB size: (" << preBB <<")\n";	
+	//std::cout << "The currBB size:(" << currBB <<")\n";
+	//std::cout << "BB-satisfying: " << result <<std::endl;
 
+
+	return result;
+}
+
+bool Offset::isUnique( ShapeState state, double threshold )
+{
+	bool result = true;
+	Controller *ctrl = activeObject()->controller;
+
+	// \state should be dissimilar to all (used)candidate solutions
+	foreach(ShapeState candState, usedCandidateSolutions)
+	{
+		double sim = ctrl->similarity(candState, state);
+		if( sim < threshold)
+		{
+			result = false;
+			break;
+		}
+//		std::cout << sim << '\t';
+	}
+
+	if (result)
+	{
+		foreach(ShapeState candState, candidateSolutions)
+		{
+			double sim = ctrl->similarity(candState, state);
+			if( sim < threshold)
+			{
+				result = false;
+				break;
+			}
+//			std::cout << sim << '\t';
+		}
+	}
+
+	//std::cout << "Unique: " << result <<std::endl;
 
 	return result;
 }

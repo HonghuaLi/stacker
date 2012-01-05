@@ -56,7 +56,6 @@ PrimitiveState Primitive::getState()
 	PrimitiveState state;
 	state.geometry = getGeometryState();
 	state.isFrozen = isFrozen;
-	state.fixedPoints = fixedPoints;
 
 	return state;
 }
@@ -66,5 +65,25 @@ void Primitive::setState( PrimitiveState state)
 	setGeometryState(state.geometry);
 
 	isFrozen = state.isFrozen;
-	fixedPoints = state.fixedPoints;
+}
+
+double Primitive::similarity( PrimitiveState state1, PrimitiveState state2 )
+{
+	// Save the current state
+	PrimitiveState state = getState();
+	
+	std::vector<Vec3d> points1, points2;
+	setState(state1);
+	points1 = points();
+	setState(state2);
+	points2 = points();
+
+	double result = 0;
+	for (int i=0; i<points1.size();i++)
+		result += (points1[i] - points2[i]).norm();
+	
+	// Restore the current state
+	setState(state);
+
+	return result;
 }

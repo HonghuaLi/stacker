@@ -702,6 +702,7 @@ void Cuboid::movePoint( Point p, Vec3d T )
 	}
 	else
 	{
+		// Only two fix points are allowed
 		deformRespectToJoint(fixedPoints[0], p, T);
 	}
 
