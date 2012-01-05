@@ -5,6 +5,8 @@
 
 void JointGroup::process( QVector< QString > segments, Vec3d joint )
 {
+	nodes.clear();
+
 	addNodes(segments);
 
 	// Set the joint position and coordinates in two primitives
@@ -12,10 +14,22 @@ void JointGroup::process( QVector< QString > segments, Vec3d joint )
 	Primitive * b = getPrimitive(segments.last());
 	coordinates[segments.first()] = a->getCoordinate(joint);
 	coordinates[segments.last()] = b->getCoordinate(joint);
+
+	m_joint = joint;
+}
+
+void JointGroup::process( QVector< QString > segments )
+{
+	nodes.clear();
+
+	addNodes(segments);
+	m_joint = Point(0,0,0);
 }
 
 void JointGroup::draw()
 {
+	if(nodes.isEmpty()) return;
+
 	// Show joints
 	Primitive * a = getPrimitive(nodes.values().first());
 	Primitive * b = getPrimitive(nodes.values().last());
@@ -53,4 +67,11 @@ QVector<QString> JointGroup::regroup()
 	result.push_back(non_frozen->id);
 
 	return result;
+}
+
+void JointGroup::save( std::ofstream &outF )
+{
+	Group::save(outF);
+
+	outF << m_joint;
 }

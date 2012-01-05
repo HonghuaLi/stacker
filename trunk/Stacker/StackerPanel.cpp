@@ -507,7 +507,12 @@ void StackerPanel::searchDirection()
 	
 	std::vector<Vec3d> samples;
 
-	for(uint i = 0; i <= num2; i++){
+	if(panel.searchAlongAxis->isChecked())
+	{
+		deltaPhi = M_PI;
+	}
+
+	for(uint i = 0; i <= num2 && phi < 2 * M_PI; i++){
 		for(uint j = 0; j <= num; j++){
 			x = r * cos(phi) * sin(theta);
 			y = r * sin(phi) * sin (theta);
@@ -524,10 +529,25 @@ void StackerPanel::searchDirection()
 		theta = 0;
 	}
 
+	if(panel.searchAlongAxis->isChecked()){
+		for(int i = 0; i < samples.size(); i++){
+			switch(panel.searchAxis->value())
+			{
+			case 0: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(1,0,0)); break;
+			case 1: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(0,1,0)); break;
+			case 2: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(0,0,1)); break;
+			}
+
+			activeObject()->getSegment(0)->debug_points.push_back(samples[i]);
+		}
+	}
+	
 	int sampleCount = 0;
 	double maxStackbaility = activeOffset->computeOffsetOfShape(); // don't go worse than start
 	int bestIndex = 0;
 	double bestAngle = 0;
+
+	printf("Start stackability = %f \n", maxStackbaility);
 
 	QElapsedTimer timing; timing.start();
 
@@ -556,8 +576,9 @@ void StackerPanel::searchDirection()
 		activeObject()->rotateUp(Vec3d(0,0,1));
 
 		// report percent
-		double progress = int((double(i) / samples.size()) * 100);
-		std::cout << "progress: " << progress << " % \r" << std::flush;
+		int progress = (double(i) / samples.size()) * 100;
+
+		printf("progress: %d %%  \t best = %.3f \r", progress, maxStackbaility);
 	}
 
 	std::cout << "\r" << "Done.\n";

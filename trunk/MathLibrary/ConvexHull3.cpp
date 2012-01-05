@@ -150,6 +150,12 @@ bool ConvexHull3::Update (int i)
                 // Detach TriFace and adjacent TriFace from each other.
                 int nullIndex = tri->DetachFrom(j, adj);
 
+				if(tri->Time != -1)
+				{
+					mPnts.clear();
+					return true;
+				}
+
                 if (adj->GetSign(i, mPnts, epsilon) > 0)
                 {
                     if (!adj->OnStack)

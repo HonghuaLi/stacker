@@ -15,12 +15,14 @@ GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 	connect(groupWidget.removeButton, SIGNAL(clicked()), SLOT(removeSelectedItem()));
 	connect(groupWidget.saveGroupsButton, SIGNAL(clicked()), SLOT(saveGroups()));
 	connect(groupWidget.loadGroupsButton, SIGNAL(clicked()), SLOT(loadGroups()));
+	connect(groupWidget.clearButton, SIGNAL(clicked()), SLOT(clearGroups()));
 
 	// Strings to show in tree, ordered as in group type enum
 	groupTypes.push_back("SYMMETRY");
 	groupTypes.push_back("JOINT");
 	groupTypes.push_back("CONCENTRIC");
 	groupTypes.push_back("COPLANNAR");
+	groupTypes.push_back("SELF_SYMMETRY");
 }
 
 void GroupPanel::setActiveScene( Scene * newScene )
@@ -125,6 +127,16 @@ void GroupPanel::saveGroups()
 		outF << '\n';
 	}
 
+	foreach(Primitive * prim, ctrl->getPrimitives())
+	{
+		int nb = prim->symmPlanes.size();
+		
+		if(nb > 0)
+		{
+			outF << qPrintable(groupTypes[SELF_SYMMETRY]) << "\t" << qPrintable(prim->id) << "\t" << nb << std::endl;
+		}
+	}
+
 	outF.close();
 	std::cout << "Groups have been saved.\n";
 }
@@ -143,8 +155,6 @@ void GroupPanel::loadGroups()
 
 	if (!inF) return;
 
-	ctrl->groups.clear();
-	
 	while (inF)
 	{
 		std::string str;
@@ -165,17 +175,53 @@ void GroupPanel::loadGroups()
 		case COPLANNAR:
 			newGroup = new CoplanarGroup(ctrl, COPLANNAR);
 			break;
+		case JOINT:
+			newGroup = new JointGroup(ctrl, JOINT);
+			break;
+		case SELF_SYMMETRY:
+			inF >> str;
+			QString primId = QString(str.c_str());
+			int nb_fold = 0; inF >> nb_fold;
+			ctrl->getPrimitive(primId)->setSymmetryPlanes(nb_fold);
+			break;
 		}
-
 
 		if(newGroup)
 		{
 			newGroup->load(inF);
 			ctrl->groups[newGroup->id] = newGroup;
+
+			if(type == JOINT)
+			{
+				JointGroup * jg = (JointGroup*)newGroup;
+
+				Point joint;
+				inF >> joint.x() >> joint.y() >> joint.z();
+
+				QVector<QString> segments;
+
+				foreach(QString node, jg->nodes)
+					segments.push_back(node);
+				
+				jg->process(segments, joint);
+			}
 		}
 	}
 
 	std::cout << "Groups have been loaded.\n";
+	updateWidget();
+}
+
+void GroupPanel::clearGroups()
+{
+	Controller * ctrl = activeScene->activeObject()->controller;
+	ctrl->groups.clear();
+
+	// Clear self symmetry
+	foreach(Primitive * prim, ctrl->getPrimitives())
+		prim->symmPlanes.clear();
+
+	std::cout << "Groups cleared.\n";
 	updateWidget();
 }
 
