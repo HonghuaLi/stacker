@@ -25,6 +25,7 @@ public slots:
 	void removeSelectedItem();
 	void saveGroups();
 	void loadGroups();
+	void clearGroups();
 
 signals:
 

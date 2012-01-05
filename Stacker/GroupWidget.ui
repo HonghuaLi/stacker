@@ -51,6 +51,18 @@
      </property>
     </widget>
    </item>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="clearButton">
+     <property name="styleSheet">
+      <string notr="true">color:rgb(85, 85, 85);
+font: italic;
+</string>
+     </property>
+     <property name="text">
+      <string>Clear</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources>

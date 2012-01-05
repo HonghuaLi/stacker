@@ -206,10 +206,16 @@ void StackerPreview::saveStackObj( QString fileName, int numStack, double scaleF
 
 	outputMesh.scaleFactor = scaleFactor;
 
+	QString singleFileName = fileName;
+	singleFileName.replace(".obj", "_single.obj");
+
 	for(int i = 0; i < stackCount; i++)
 	{
 		outputMesh.insertCopyMesh(deltaMesh);
 		deltaMesh->translate(delta);
+
+		// Output single mesh first
+		if(i == 0) outputMesh.saveObj(singleFileName);
 	}
 
 	outputMesh.saveObj(fileName);
