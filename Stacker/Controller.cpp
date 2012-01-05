@@ -9,13 +9,13 @@
 
 double JOINT_THRESHOLD = 0.035;
 
-Controller::Controller( QSegMesh* mesh )
+
+Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 {
 	m_mesh = mesh;
 
 	// Fit
-	// fitPrimitives()
-	fitOBBs();
+	fitOBBs(useAABB);
 
 	// Assign numerical IDs
 	assignIds();
@@ -46,13 +46,14 @@ void Controller::fitPrimitives()
 	}
 }
 
-void Controller::fitOBBs()
+
+void Controller::fitOBBs( bool useAABB /*= true*/ )
 {
 	foreach (QSurfaceMesh* segment, m_mesh->getSegments())
 	{
 		QString segId = segment->objectName();
 
-		Cuboid* cub = new Cuboid(segment, segId);
+		Cuboid* cub = new Cuboid(segment, segId, useAABB);
 
 		primitives[segId] = cub;
 
@@ -160,7 +161,7 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 
 		Line line(center + (axis * extent), center + (-axis * extent));
 
-		std::vector<Point> spinePoints = line.uniformSample(10);
+		std::vector<Point> spinePoints = line.uniformSample(GCylinder::DefaultSkeletonJoints);
 
 		gc->createGC(spinePoints);
 		gc->buildCage();
@@ -169,11 +170,11 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 	delete oldPrimitive;
 }
 
-void Controller::convertToCuboid( QString primitiveId )
+void Controller::convertToCuboid( QString primitiveId, bool useAABB /*= true*/ )
 {
 	Primitive * oldPrimitive = primitives[primitiveId];
 
-	primitives[primitiveId] = new Cuboid(primitives[primitiveId]->getMesh(), primitiveId);
+	primitives[primitiveId] = new Cuboid(primitives[primitiveId]->getMesh(), primitiveId, useAABB);
 
 	// bug?
 	//delete oldPrimitive;

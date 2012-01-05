@@ -4,19 +4,36 @@
 #include <Eigen/Geometry>
 using namespace Eigen;
 
-Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
+Cuboid::Cuboid( QSurfaceMesh* segment, QString newId, bool useAABB /*= true */  ) : Primitive(segment, newId)
 {
-	fit();
+	fit(useAABB);
 
 	selectedPartId = -1;
 	isDrawAxis = false;
 	isFrozen = false;
 }
 
-void Cuboid::fit()
+
+void Cuboid::fit(bool useAABB /*= true */ )
 {	
-	MinOBB3 obb(m_mesh);
-	originalBox = currBox = obb.mMinBox;
+	if (useAABB)
+	{
+		m_mesh->computeBoundingBox();
+		currBox.Center = (m_mesh->bbmax + m_mesh->bbmin) / 2;
+
+		currBox.Axis[0] = Vec3d(1,0,0);
+		currBox.Axis[1] = Vec3d(0,1,0);
+		currBox.Axis[2] = Vec3d(0,0,1);
+
+		currBox.Extent = (m_mesh->bbmax - m_mesh->bbmin) / 2;
+	}
+	else
+	{
+		MinOBB3 obb(m_mesh);
+		currBox = obb.mMinBox;
+	}
+
+	originalBox = currBox;
 	id = m_mesh->objectName();
 
 	computeMeshCoordiantes();

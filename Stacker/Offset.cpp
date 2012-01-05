@@ -1199,3 +1199,4 @@ bool Offset::isUnique( ShapeState state, double threshold )
 }
 
 
+
