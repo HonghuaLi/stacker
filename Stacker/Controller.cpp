@@ -709,7 +709,7 @@ void Controller::load( std::ifstream &inF )
 		switch(primType)
 		{
 			case CUBOID: primitives[primId] = new Cuboid(m_mesh->getSegment(primId), primId); break;
-			case GC: primitives[primId] = new GCylinder(m_mesh->getSegment(primId), primId); break;
+			case GC: primitives[primId] = new GCylinder(m_mesh->getSegment(primId), primId, false); break;
 		}
 
 		primitives[primId]->load(inF);
