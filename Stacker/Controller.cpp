@@ -163,7 +163,7 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 
 		Line line(center + (axis * extent), center + (-axis * extent));
 
-		std::vector<Point> spinePoints = line.uniformSample(GCylinder::DefaultSkeletonJoints);
+		std::vector<Point> spinePoints = line.uniformSample(skeletonJoints);
 
 		gc->createGC(spinePoints);
 		gc->buildCage();
@@ -571,7 +571,9 @@ QVector<ShapeState> Controller::strongPropagate()
 		}
 	}
 
-
+	// set the shape as the first result
+	setShapeState(results[0]);
+ 
 	return results;
 }
 

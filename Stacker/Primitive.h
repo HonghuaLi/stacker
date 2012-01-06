@@ -70,6 +70,7 @@ public:
 	QSurfaceMesh* getMesh(){ return m_mesh; }
 
 	// Symmetry, joints, fixed points
+	bool isRotationalSymmetry;
 	QVector<Point> fixedPoints;
 	QVector<Plane> symmPlanes;
 	virtual void setSymmetryPlanes(int nb_fold) = 0;

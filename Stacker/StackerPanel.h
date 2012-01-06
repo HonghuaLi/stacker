@@ -38,7 +38,6 @@ public slots:
 	void onOffsetButtonClicked();
 	void onImproveButtonClicked();
 	void onHotspotsButtonClicked();
-	void onIterateButtonClicked();
 	void onSolutionButtonClicked();
 
 	// Others
@@ -48,13 +47,15 @@ public slots:
 	void setConvexHullPrecision(int p);
 	void setHotRange(double range);
 	void setJointThreshold(double threshold);
+	void setSkeletonJoints(int num);
 
 	// Primitives modification
 	void convertGC();
 	void convertCuboid();
 	void updateController();
 	void resetCtrlDeformerPanel();
-	void userControlledPrimatives();
+	void selectModeController();
+	void selectModeControllerElement();
 
 
 	void findJoints();
@@ -66,5 +67,4 @@ public slots:
 signals:
 	void printMessage( QString );
 	void objectModified();
-
 };
