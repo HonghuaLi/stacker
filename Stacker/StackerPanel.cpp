@@ -466,7 +466,7 @@ void StackerPanel::outputForPaper()
 	Offset::saveAsImage(activeOffset->lowerEnvelope, minLE, exportDir + "/" + data["lowerEnvelope"]);
 
 	Offset::saveAsImage(activeOffset->offset, activeOffset->O_max, exportDir + "/" + data["offsetImg"]);
-	Offset::saveAsData(activeOffset->offset, activeOffset->O_max, exportDir + "/" + data["offsetData"]);
+	Offset::saveAsData(activeOffset->offset, 1.0, exportDir + "/" + data["offsetData"]);
 	data["O_max"] = QString::number(activeOffset->O_max);
 	data["Stackability"] = QString::number(activeOffset->getStackability());
 
