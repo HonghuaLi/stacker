@@ -68,8 +68,6 @@ SkeletonExtract::SkeletonExtract( QSurfaceMesh * fromMesh )
 	this->GeometryCollapse();
 
 	//  2) Simplification
-	mesh.assignFaceArray();
-	mesh.assignVertexArray();
 	this->Simplification();
 
 	//  3) Improve Embedding

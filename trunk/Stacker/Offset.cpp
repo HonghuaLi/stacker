@@ -303,6 +303,7 @@ Offset::HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> 
 
 		HS.side = direction;
 		HS.hotSamples = subHotSamples[HS.segmentID];
+		HS.isRing = activeObject()->controller->getPrimitive(HS.segmentID)->isRotationalSymmetry;
 	}
 
 	return HS;
@@ -375,6 +376,7 @@ void Offset::detectHotspots( )
 		UHS.defineHeight = MaxElement(valuesU) > (maxUE - ZERO_TOLERANCE);
 		std::vector< double > valuesL = getValuesInRegion(lowerEnvelope, zoomedHR, true);
 		LHS.defineHeight = MinElement(valuesL) < (minLE + ZERO_TOLERANCE);
+
 
 		upperHotSpots.push_back(UHS);
 		lowerHotSpots.push_back(LHS);
@@ -858,11 +860,13 @@ void Offset::visualizeRegions( std::vector< std::vector<Vec2i> >& regions, QStri
 
 std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 {
-	// Recompute the OPPOSITE envelope using hot segments only
-	computeEnvelopeOfShape(-HS.side);
+	std::vector< Vec3d > Ts;
 
 	// The hot region	
 	std::vector< Vec2i > &hotRegion = hotRegions[HS.hotRegionID];
+
+	// Recompute the OPPOSITE envelope using hot segments only
+	computeEnvelopeOfShape(-HS.side);
 
 	// Switchers
 	bool isUpper = (HS.side == 1);
@@ -882,8 +886,8 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 	double threshold = isUpper? MaxElement(curr_op_env) : MinElement( curr_op_env );
 
 	//============ debug code
-	std::vector< std::vector< double > > debugImg = createImage( offset[0].size(), offset.size(), 0. );
-	setRegionColor(debugImg, hotRegion, 1.0);
+	//std::vector< std::vector< double > > debugImg = createImage( offset[0].size(), offset.size(), 0. );
+	//setRegionColor(debugImg, hotRegion, 1.0);
 	//============ end of debug code
 
 	// The size of the hot region
@@ -891,7 +895,6 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 	int step = Max(size.x(), size.y());
 
 	// Search for optional locations in 1-K rings
-	std::vector< Vec3d > Ts;
 	int K = 5;
 	for (uint k = 1; k < K; k++)
 	{
@@ -901,9 +904,9 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 			std::vector< Vec2i > shiftedRegion = shiftRegionInBB(hotRegion, deltas[j], bbmin, bbmax);
 			if (shiftedRegion.empty())  continue; // Out of BB
 
-			//============ debug code
-			setRegionColor(debugImg, shiftedRegion, 1.0 - k * 0.1 );
-			//============ end of debug code
+			////============ debug code
+			//setRegionColor(debugImg, shiftedRegion, 1.0 - k * 0.1 );
+			////============ end of debug code
 
 			std::vector< double > new_op_env = getValuesInRegion(op_envelope, shiftedRegion, x_flipped);
 			double newValue = isUpper? MinElement( new_op_env ) : MaxElement( new_op_env );
@@ -914,8 +917,8 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 				// Get the 3D translation
 				Vec2i a = hotRegion[0];
 				Vec2i b = shiftedRegion[0];
-				Vec3d proj_a = unprojectedCoordinatesOf(a.x(), a.y(), -1);
-				Vec3d proj_b = unprojectedCoordinatesOf(b.x(), b.y(), -1);
+				Vec3d proj_a = unprojectedCoordinatesOf(a.x(), a.y(), HS.side);
+				Vec3d proj_b = unprojectedCoordinatesOf(b.x(), b.y(), HS.side);
 				Vec3d T = proj_b - proj_a;
 				// Force the translation to be horizontal
 				T[2] = 0;
@@ -925,7 +928,7 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 		}
 	}
 
-	saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
+//	saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
 
 	return Ts;
 }
@@ -946,6 +949,7 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 
 	// Move hot spot side away or closer to each other
 	std::vector< Vec3d > Ts = getHorizontalMoves(HS);
+	
 	if (!HS.defineHeight)
 	{// Move up/down directly
 		Vec3d T(0, 0, 0.1 * objectH);
@@ -999,6 +1003,75 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 	}
 }
 
+void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
+{
+	Controller *ctrl = activeObject()->controller;
+	Primitive* prim = ctrl->getPrimitive(HS.segmentID);
+
+	// The hot region	
+	std::vector< Vec2i > &hotRegion = hotRegions[HS.hotRegionID];
+
+	Vec2i center(0, 0);
+	for (int i=0;i<hotRegion.size();i++)
+		center += hotRegion[i];
+	center /= hotRegion.size();
+
+	Vec2i p = hotRegion[0];
+
+	// Translations
+	std::vector< Vec3d > Ts;
+	Vec3d proj_c = unprojectedCoordinatesOf(center.x(), center.y(), HS.side);
+	Vec3d proj_p = unprojectedCoordinatesOf(p.x(), p.y(),  HS.side);
+	double step = 0.05 * activeObject()->radius;
+	Vec3d T1 = (proj_p - proj_c) * step;
+	T1[2] = 0; 
+	Ts.push_back(T1);
+	Vec3d T2 = (proj_c - proj_p) * step;
+	T2[2] = 0;
+	Ts.push_back(T2);
+
+	// Save the initial hot shape state
+	ShapeState initialHotShapeState = ctrl->getShapeState();
+
+
+	Vec3d hotPoint = HS.hotSamples[0];
+	for (int i=0;i<Ts.size();i++)
+	{
+		// Clear the frozen flags
+		ctrl->setPrimitivesFrozen(false);		
+
+		// Move the current hot spot
+		prim->movePoint(hotPoint, Ts[i]);
+
+		// Propagation the deformation
+		prim->isFrozen = true;
+
+		ctrl->weakPropagate();
+
+		// Check if this is a candidate solution
+
+		if ( satisfyBBConstraint() )
+		{
+			double stackability = computeOffsetOfShape();
+			if (stackability > preStackability + 0.1)
+			{
+				ShapeState state = ctrl->getShapeState();
+				if (isUnique(state, 4))
+				{
+					state.stackability = stackability;
+					candidateSolutions.enqueue(state);
+				}				
+			}
+		}
+		
+		// Restore the initial hot shape state
+		ctrl->setShapeState(initialHotShapeState);
+	}
+
+
+}
+
+
 void Offset::applyHeuristics()
 {
 	Controller *ctrl = activeObject()->controller;
@@ -1028,8 +1101,18 @@ void Offset::applyHeuristics()
 		return;
 	}
 
-	applyHeuristicsOnHotspot(upperHotSpots[selectedID], lowerHotSpots[selectedID]);		
-	applyHeuristicsOnHotspot(lowerHotSpots[selectedID], upperHotSpots[selectedID]);	
+	HotSpot& upperHS = upperHotSpots[selectedID];
+	HotSpot& lowerHS = lowerHotSpots[selectedID];
+
+	if (upperHS.isRing)
+		applyHeuristicsOnHotRing(upperHS);
+	else
+		applyHeuristicsOnHotspot(upperHS, lowerHS);		
+
+	if (lowerHS.isRing)
+		applyHeuristicsOnHotRing(lowerHS);
+	else
+		applyHeuristicsOnHotspot(lowerHS, upperHS);	
 }
 
 void Offset::improveStackability()
@@ -1198,6 +1281,7 @@ bool Offset::isUnique( ShapeState state, double threshold )
 
 	return result;
 }
+
 
 
 

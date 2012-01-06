@@ -21,6 +21,7 @@ public:
 		int hotRegionID;
 		QString segmentID;
 		bool defineHeight;
+		bool isRing;
 		std::vector< Vec3d > hotSamples;
 
 		void print(){
@@ -61,6 +62,7 @@ public:
 	void improveStackability();
 	void applyHeuristics();
 	void applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS );
+	void applyHeuristicsOnHotRing( HotSpot& HS );
 	std::vector< Vec3d > getHorizontalMoves( HotSpot& HS );
 	double preStackability;
 	Vec3d pre_bbmin, pre_bbmax;
