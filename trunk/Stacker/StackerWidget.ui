@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>257</width>
+    <width>271</width>
     <height>536</height>
    </rect>
   </property>
@@ -178,11 +178,30 @@
          <item row="2" column="1">
           <widget class="QSpinBox" name="convertGcAxis"/>
          </item>
-         <item row="3" column="0">
+         <item row="3" column="1">
           <widget class="QPushButton" name="convertToCuboid">
            <property name="text">
             <string>to Cuboid</string>
            </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QComboBox" name="cuboidMethod">
+           <item>
+            <property name="text">
+             <string>MinOBB3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>OBB</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>OBB2</string>
+            </property>
+           </item>
           </widget>
          </item>
         </layout>

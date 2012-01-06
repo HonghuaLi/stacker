@@ -148,4 +148,35 @@ public:
 
 		glPopMatrix();
 	}
+
+	std::vector<Vec3d> axis()
+	{
+		std::vector<Vec3d> result;
+
+		Vector3f p(0, 0, 0);
+		Vector4f r(rotation[0], rotation[1], rotation[2], rotation[3]);
+
+		Transform<float,3,Affine> t = Translation3f(p) * Quaternionf(r);
+
+		Vector3f xAxis(1,0,0);	xAxis = t * xAxis;
+		Vector3f yAxis(0,1,0);	yAxis = t * yAxis;
+		Vector3f zAxis(0,0,1);	zAxis = t * zAxis;
+
+		result.push_back(Vec3d(xAxis[0], xAxis[1], xAxis[2]));
+		result.push_back(Vec3d(yAxis[0], yAxis[1], yAxis[2]));
+		result.push_back(Vec3d(zAxis[0], zAxis[1], zAxis[2]));
+
+		return result;
+	}
+
+	Point center()
+	{
+		return translation;
+	}
+
+	Vec3d extents()
+	{
+		return sides * 0.5;
+	}
 };
+

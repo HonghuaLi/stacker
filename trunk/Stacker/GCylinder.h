@@ -11,7 +11,9 @@ class GCylinder : public QObject, public Primitive
 	Q_OBJECT
 
 public:
-	GCylinder( QSurfaceMesh* segment, QString newId, bool doFit = true);
+
+	GCylinder( QSurfaceMesh* segment, QString newId);
+	GCylinder( QSurfaceMesh* segment, QString newId, bool doFit);
 
 public:
 	virtual void fit();
@@ -58,11 +60,14 @@ public:
 	// Selecting
 	virtual Vec3d selectedPartPos();
 	virtual void setSelectedPartId( Vec3d normal );
+	
+	// Save and load
+	virtual void save(std::ofstream &outF);
+	virtual void load(std::ifstream &inF);
 
 	void buildCage();
 
 	qglviewer::ManipulatedFrame *mf1, *mf2;
-
 
 public slots:
 	void update();
@@ -81,6 +86,9 @@ private:
 	double cageScale;
 	int cageSides;
 	int skeletonJoints;
+
+	bool isFitted;
+	std::vector<Point> originalSpine;
 
 	// how to add static variable?
 public:

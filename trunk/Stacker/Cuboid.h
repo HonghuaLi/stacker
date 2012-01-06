@@ -19,13 +19,13 @@
 class Cuboid : public Primitive
 {
 public:
-	Cuboid( QSurfaceMesh* segment, QString newId, bool useAABB = true );
-
+	Cuboid( QSurfaceMesh* segment, QString newId);
+	Cuboid( QSurfaceMesh* segment, QString newId, bool useAABB, int fit_method);
 public:
 	// Fit primitive to the underlying QSurfaceMesh
 	virtual void fit(){}
-	void fit(bool useAABB /*= true */ );
 	virtual void computeMeshCoordiantes();
+	void fit(bool useAABB = true, int obb_method = 0);
 
 	// Deform the underlying geometry according to the \pre_state and current state
 	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
@@ -78,6 +78,9 @@ public:
 	void recoverMesh();
 	Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );
 
+	// Save and load
+	virtual void save(std::ofstream &outF);
+	virtual void load(std::ifstream &inF);
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);
@@ -93,6 +96,7 @@ private:
 	
 	// Debug
 	bool isDrawAxis;
+	bool isUsedAABB;
 
 public:
 	std::vector< Vector3 > coordinates;

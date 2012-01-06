@@ -199,7 +199,7 @@ void StackerPanel::convertCuboid()
 	Controller* ctrl = activeObject()->controller;
 
 	foreach(Primitive * prim, ctrl->getPrimitives())
-		if(prim->isSelected) ctrl->convertToCuboid(prim->id, panel.useAABB->isChecked());
+		if(prim->isSelected) ctrl->convertToCuboid(prim->id, panel.useAABB->isChecked(), panel.cuboidMethod->currentIndex());
 }
 
 void StackerPanel::gradientDescentOptimize()
