@@ -53,7 +53,7 @@ void QDeformController::scaleUp( double s )
 		prim->isFrozen = true;
 
 		prim->scaleCurve(-1, s);
-		ctrl->weakPropagate();
+		ctrl->strongPropagate();
 
 		prim->isFrozen = false;
 

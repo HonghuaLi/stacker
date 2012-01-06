@@ -6,6 +6,8 @@
 #include "GCDeformation.h"
 #include "QGLViewer/manipulatedFrame.h"
 
+extern int skeletonJoints;
+
 class GCylinder : public QObject, public Primitive
 {
 	Q_OBJECT
@@ -85,12 +87,7 @@ private:
 	double 	deltaScale;
 	double cageScale;
 	int cageSides;
-	int skeletonJoints;
 
 	bool isFitted;
 	std::vector<Point> originalSpine;
-
-	// how to add static variable?
-public:
-	static int DefaultSkeletonJoints;
 };

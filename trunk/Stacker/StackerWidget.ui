@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>271</width>
-    <height>536</height>
+    <width>272</width>
+    <height>746</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -110,103 +110,6 @@
         </property>
        </widget>
       </item>
-      <item row="11" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Iteration</string>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="2">
-       <widget class="QPushButton" name="solutionButton">
-        <property name="text">
-         <string>Show Sln</string>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="1">
-       <widget class="QSpinBox" name="hsID">
-        <property name="maximum">
-         <number>10000</number>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Solution:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="17" column="0" colspan="3">
-       <widget class="QGroupBox" name="controllersPanel">
-        <property name="title">
-         <string>Controllers</string>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="1" column="0">
-          <widget class="QLabel" name="convertGCLabel">
-           <property name="text">
-            <string>Convert to GC</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="3">
-          <widget class="QPushButton" name="convertToGC">
-           <property name="text">
-            <string>Convert..</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="3">
-          <widget class="QPushButton" name="userControl">
-           <property name="text">
-            <string>User control</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="basicFitGC">
-           <property name="text">
-            <string>Basic</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QSpinBox" name="convertGcAxis"/>
-         </item>
-         <item row="3" column="1">
-          <widget class="QPushButton" name="convertToCuboid">
-           <property name="text">
-            <string>to Cuboid</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QComboBox" name="cuboidMethod">
-           <item>
-            <property name="text">
-             <string>MinOBB3</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>OBB</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>OBB2</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
       <item row="22" column="0" colspan="3">
        <widget class="QGroupBox" name="controllerDeformerPanel">
         <property name="title">
@@ -223,10 +126,10 @@
          <double>1.000000000000000</double>
         </property>
         <property name="singleStep">
-         <double>0.010000000000000</double>
+         <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>1.000000000000000</double>
+         <double>0.500000000000000</double>
         </property>
        </widget>
       </item>
@@ -241,20 +144,6 @@
        <widget class="QLabel" name="targetStackLabel">
         <property name="text">
          <string>Target stack</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0" colspan="3">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="2">
-       <widget class="QPushButton" name="iterateButton">
-        <property name="text">
-         <string>Iterate</string>
         </property>
        </widget>
       </item>
@@ -324,20 +213,6 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="2">
-       <widget class="QPushButton" name="outputButton">
-        <property name="text">
-         <string>Output</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" colspan="2">
-       <widget class="QLineEdit" name="outputFileName">
-        <property name="text">
-         <string>result_0</string>
-        </property>
-       </widget>
-      </item>
       <item row="18" column="0" colspan="3">
        <widget class="QLabel" name="label_6">
         <property name="text">
@@ -403,6 +278,186 @@
         <property name="checked">
          <bool>true</bool>
         </property>
+       </widget>
+      </item>
+      <item row="9" column="0" colspan="3">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0">
+       <widget class="QLineEdit" name="outputFileName">
+        <property name="text">
+         <string>result_0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="2">
+       <widget class="QPushButton" name="outputButton">
+        <property name="text">
+         <string>Output</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Solution:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QSpinBox" name="hsID">
+        <property name="maximum">
+         <number>10000</number>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="2">
+       <widget class="QPushButton" name="solutionButton">
+        <property name="text">
+         <string>Show Sln</string>
+        </property>
+       </widget>
+      </item>
+      <item row="17" column="0" colspan="3">
+       <widget class="QGroupBox" name="controllersPanel">
+        <property name="title">
+         <string>Controllers</string>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="1" column="0">
+          <widget class="QLabel" name="convertGCLabel">
+           <property name="text">
+            <string>Convert to GC</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1" colspan="2">
+          <widget class="QSpinBox" name="convertGcAxis">
+           <property name="maximum">
+            <number>2</number>
+           </property>
+           <property name="value">
+            <number>2</number>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Convert to CB</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="3">
+          <widget class="QPushButton" name="convertToCuboid">
+           <property name="text">
+            <string>Convert..</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0">
+          <widget class="QComboBox" name="cuboidMethod">
+           <item>
+            <property name="text">
+             <string>MinOBB3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>OBB</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>OBB2</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="11" column="0" colspan="2">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Select mode switch</string>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="0">
+          <widget class="QRadioButton" name="radioController">
+           <property name="text">
+            <string>Controller</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="1" colspan="3">
+          <widget class="QRadioButton" name="radioControllerElement">
+           <property name="text">
+            <string>Controller element</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>SKtn joints</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>GC axis</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="3">
+          <widget class="QCheckBox" name="basicFitGC">
+           <property name="text">
+            <string>Basic</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0" colspan="4">
+          <widget class="Line" name="line_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="3">
+          <widget class="QPushButton" name="convertToGC">
+           <property name="text">
+            <string>Convert..</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0" colspan="4">
+          <widget class="Line" name="line_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1" colspan="2">
+          <widget class="QSpinBox" name="skeletonJoints">
+           <property name="singleStep">
+            <number>2</number>
+           </property>
+           <property name="value">
+            <number>10</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>

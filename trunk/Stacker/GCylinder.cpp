@@ -2,18 +2,17 @@
 #include "SkeletonExtract.h"
 #include "SimpleDraw.h"
 
-int GCylinder::DefaultSkeletonJoints = 6;
+int skeletonJoints = 6;
 
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {
 	cage = NULL;
 
-	cageScale = 1.3;
+	cageScale = 1.2;
 	cageSides = 8;
-	skeletonJoints = 6;
 
 	// For visualization
-	deltaScale = 1.3;
+	deltaScale = 1.2;
 
 	// useful for fitting process
 	if(!m_mesh->vertex_array.size()){
@@ -652,7 +651,7 @@ void GCylinder::load( std::ifstream &inF )
 	inF >> this->cageSides;
 	inF >> this->deltaScale;
 
-	inF >> this->skeletonJoints;
+	inF >> skeletonJoints;
 
 	for(int i = 0; i < skeletonJoints; i++)
 	{

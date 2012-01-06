@@ -23,6 +23,7 @@ GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 	groupTypes.push_back("CONCENTRIC");
 	groupTypes.push_back("COPLANNAR");
 	groupTypes.push_back("SELF_SYMMETRY");
+	groupTypes.push_back("SELF_ROT_SYMMETRY");
 }
 
 void GroupPanel::setActiveScene( Scene * newScene )
@@ -135,6 +136,11 @@ void GroupPanel::saveGroups()
 		{
 			outF << qPrintable(groupTypes[SELF_SYMMETRY]) << "\t" << qPrintable(prim->id) << "\t" << nb << std::endl;
 		}
+
+		if (prim->isRotationalSymmetry)
+		{
+			outF << qPrintable(groupTypes[SELF_ROT_SYMMETRY]) << "\t" << qPrintable(prim->id) << std::endl;
+		}
 	}
 
 	outF.close();
@@ -179,11 +185,20 @@ void GroupPanel::loadGroups()
 			newGroup = new JointGroup(ctrl, JOINT);
 			break;
 		case SELF_SYMMETRY:
-			inF >> str;
-			QString primId = QString(str.c_str());
-			int nb_fold = 0; inF >> nb_fold;
-			ctrl->getPrimitive(primId)->setSymmetryPlanes(nb_fold);
-			break;
+			{
+				inF >> str;
+				QString primId = QString(str.c_str());
+				int nb_fold = 0; inF >> nb_fold;
+				ctrl->getPrimitive(primId)->setSymmetryPlanes(nb_fold);
+				break;
+			}
+		case SELF_ROT_SYMMETRY:
+			{
+				inF >> str;
+				QString primId = QString(str.c_str());
+				ctrl->getPrimitive(primId)->isRotationalSymmetry = true;
+				break;
+			}
 		}
 
 		if(newGroup)

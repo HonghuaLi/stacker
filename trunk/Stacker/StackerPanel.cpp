@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QDir>
 #include "Macros.h"
+#include "GCylinder.h"
 
 StackerPanel::StackerPanel()
 {
@@ -35,7 +36,7 @@ StackerPanel::StackerPanel()
 	hiddenDock->setWidget (hidden_viewer);
 	layout->addWidget(hiddenDock, row++, 0,1,3);
 	hiddenDock->setFloating(true);
-	hiddenDock->setWindowOpacity(1.0);
+	hiddenDock->setWindowOpacity(0.0);
 
 	activeOffset = new Offset(hidden_viewer);
 
@@ -43,11 +44,11 @@ StackerPanel::StackerPanel()
 	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
-	connect(panel.iterateButton, SIGNAL(clicked()), SLOT(onIterateButtonClicked()));
 	connect(panel.solutionButton, SIGNAL(clicked()), SLOT(onSolutionButtonClicked()));
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(panel.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
-	connect(panel.userControl, SIGNAL(clicked()), SLOT(userControlledPrimatives()));
+	connect(panel.radioController, SIGNAL(clicked()), SLOT(selectModeController()));
+	connect(panel.radioControllerElement, SIGNAL(clicked()), SLOT(selectModeControllerElement()));
 
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 
@@ -60,6 +61,9 @@ StackerPanel::StackerPanel()
 
 	// Voxel size
 	connect(panel.jointsThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
+
+	// GC
+	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
 
 	// Connect controller deformer
 	/*connect(ctrlDeformer.transX, SIGNAL(valueChanged(int)), SLOT(updateController()));
@@ -111,7 +115,7 @@ void StackerPanel::onImproveButtonClicked()
 	}
 
 	activeOffset->improveStackabilityTo(panel.targetS->value());
-//	gradientDescentOptimize();
+	emit(objectModified());
 }
 
 void StackerPanel::onHotspotsButtonClicked()
@@ -407,12 +411,21 @@ void StackerPanel::resetCtrlDeformerPanel()
 	emit(objectModified());
 }
 
-void StackerPanel::userControlledPrimatives()
+void StackerPanel::selectModeController()
 {
 	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
 	
+	activeScene->setSelectMode(CONTROLLER);
+}
+
+
+void StackerPanel::selectModeControllerElement()
+{
+	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
+
 	activeScene->setSelectMode(CONTROLLER_ELEMENT);
 }
+
 
 void StackerPanel::findJoints()
 {
@@ -421,11 +434,6 @@ void StackerPanel::findJoints()
 	activeObject()->controller->findJoints();
 }
 
-void StackerPanel::onIterateButtonClicked()
-{
-	activeOffset->improveStackabilityTo(panel.targetS->value());
-	emit(objectModified());
-}
 
 void StackerPanel::onSolutionButtonClicked()
 {
@@ -615,5 +623,10 @@ void StackerPanel::searchDirection()
 	activeObject()->rotateUp(samples[bestIndex]);
 
 	emit(objectModified());
+}
+
+void StackerPanel::setSkeletonJoints( int num )
+{
+	skeletonJoints = num;
 }
 
