@@ -24,6 +24,9 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	gp = new GroupPanel();
 	ui.rightDockWidget->layout()->addWidget(gp);
 
+	cp = new ControllerPanel();
+	ui.rightDockWidget->layout()->addWidget(cp);
+
 	// Create MeshDoc, where stores all the meshes
 	mDoc = new QMeshDoc();
 	connect(ui.actionImportObject, SIGNAL(triggered()), mDoc, SLOT(importObject()));
@@ -88,6 +91,7 @@ void Workspace::addNewScene()
 	// Explicit updates
 	sp->setActiveScene(newScene);
 	gp->setActiveScene(newScene);
+	cp->setActiveScene(newScene);
 
 	this->setActiveScene(newScene);
 

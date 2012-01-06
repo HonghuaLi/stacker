@@ -2,15 +2,15 @@
 #include "SkeletonExtract.h"
 #include "SimpleDraw.h"
 
-int GCylinder::DefaultSkeletonJoints = 4;
+int GCylinder::DefaultSkeletonJoints = 6;
 
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {
 	cage = NULL;
 
 	cageScale = 1.3;
-	cageSides = 10;
-	skeletonJoints = 4;
+	cageSides = 8;
+	skeletonJoints = 6;
 
 	// For visualization
 	deltaScale = 1.3;
@@ -28,6 +28,21 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 	}
 
 	fixedPoints.clear();
+
+	isFitted = doFit;
+
+	primType = GC;
+}
+
+GCylinder::GCylinder( QSurfaceMesh* segment, QString newId) : Primitive(segment, newId)
+{
+	cage = NULL;
+	cageScale = 0;
+	cageSides = 0;
+	skeletonJoints = 0;
+	deltaScale = 0;
+	isFitted = false;
+	primType = GC;
 }
 
 void GCylinder::fit()
@@ -57,6 +72,8 @@ void GCylinder::createGC( std::vector<Point> spinePoints )
 	gc = new GeneralizedCylinder( spinePoints, m_mesh );
 	
 	printf(" GC with %d cross-sections. ", gc->crossSection.size());
+	
+	this->originalSpine = spinePoints;
 }
 
 void GCylinder::computeMeshCoordiantes()
@@ -612,4 +629,38 @@ void GCylinder::movePoint( Point p, Vec3d T )
 		// Move range
 		moveCurveCenterRanged(c->index, T, start, finish);
 	}
+}
+
+void GCylinder::save( std::ofstream &outF )
+{
+	outF << this->isFitted << "\t";
+	outF << this->cageScale << "\t";
+	outF << this->cageSides << "\t";
+	outF << this->deltaScale << "\t";
+	outF << this->originalSpine.size() << "\t";
+
+	foreach(Point p, originalSpine)
+	{
+		outF << p << "\t";
+	}
+}
+
+void GCylinder::load( std::ifstream &inF )
+{
+	inF >> this->isFitted;
+	inF >> this->cageScale;
+	inF >> this->cageSides;
+	inF >> this->deltaScale;
+
+	inF >> this->skeletonJoints;
+
+	for(int i = 0; i < skeletonJoints; i++)
+	{
+		Point p(0,0,0);
+		inF >> p;
+		originalSpine.push_back(p);
+	}
+
+	createGC(originalSpine);
+	buildCage();
 }

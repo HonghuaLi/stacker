@@ -5,6 +5,8 @@
 #include "Plane.h"
 #include <QVector>
 
+enum PrimType{ CUBOID, GC, WIRE};
+
 struct PrimitiveState
 {
 	 void* geometry;
@@ -89,7 +91,12 @@ public:
 	virtual Vec3d selectedPartPos() = 0;
 	virtual void setSelectedPartId( Vec3d normal ) = 0;
 
+	// Save and load
+	virtual void save(std::ofstream &outF) = 0;
+	virtual void load(std::ifstream &inF) = 0;
+
 	QString id;
+	PrimType primType;
 	bool				isHot;			// Is this hot component?
 	bool				isDirty;		// Has the underlying geometry been updated?
 	bool				isFrozen;		// The seed of propagation

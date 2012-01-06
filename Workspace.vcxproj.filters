@@ -413,6 +413,18 @@
     <ClCompile Include="Stacker\JointGroup.cpp">
       <Filter>Groups\Source</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ControllerPanel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ControllerPanel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_ControllerPanel.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\ControllerPanel.cpp">
+      <Filter>Stacker\Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -610,6 +622,9 @@
     <ClInclude Include="Stacker\JointGroup.h">
       <Filter>Groups\Header</Filter>
     </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_ControllerWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Workspace.rc" />
@@ -685,6 +700,12 @@
       <Filter>Stacker\ui</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\GroupPanel.h">
+      <Filter>Stacker\Tools</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\ControllerWidget.ui">
+      <Filter>Stacker\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\ControllerPanel.h">
       <Filter>Stacker\Tools</Filter>
     </CustomBuild>
   </ItemGroup>

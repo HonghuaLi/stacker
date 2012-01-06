@@ -17,6 +17,8 @@ private:
 	Vec3d	m_pos;		// translation component of the transformation
 	Vec3d	m_ext;		// bounding box extents
 
+	Vec3d r,u,f;
+
 	bool isReady;
 
 	// method to set the OBB parameters which produce a box oriented according to
@@ -27,9 +29,9 @@ private:
 		Eigen::Matrix3d eigvec = es.eigenvectors();
 
 		// find the right, up and forward vectors from the eigenvectors
-		Vec3d r( eigvec(0,0), eigvec(1,0), eigvec(2,0) );
-		Vec3d u( eigvec(0,1), eigvec(1,1), eigvec(2,1) );
-		Vec3d f( eigvec(0,2), eigvec(1,2), eigvec(2,2) );
+		r = Vec3d ( eigvec(0,0), eigvec(1,0), eigvec(2,0) );
+		u = Vec3d ( eigvec(0,1), eigvec(1,1), eigvec(2,1) );
+		f = Vec3d ( eigvec(0,2), eigvec(1,2), eigvec(2,2) );
 		r.normalize(); u.normalize(), f.normalize();
 
 		// set the rotation matrix using the eigenvectors
@@ -220,5 +222,26 @@ public:
 		SimpleDraw::IdentifyLine(pnts[5], pnts[6]);
 		SimpleDraw::IdentifyLine(pnts[6], pnts[7]);
 		SimpleDraw::IdentifyLine(pnts[7], pnts[4]);
+	}
+
+	Point center()
+	{
+		return m_pos;
+	}
+
+	Vec3d extents()
+	{
+		return m_ext;
+	}
+
+	std::vector<Vec3d> axis()
+	{
+		std::vector<Vec3d> result;
+
+		result.push_back(r);
+		result.push_back(u);
+		result.push_back(f);
+
+		return result;
 	}
 };

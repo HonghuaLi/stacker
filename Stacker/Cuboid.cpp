@@ -4,17 +4,31 @@
 #include <Eigen/Geometry>
 using namespace Eigen;
 
-Cuboid::Cuboid( QSurfaceMesh* segment, QString newId, bool useAABB /*= true */  ) : Primitive(segment, newId)
+#include "OBB.h"
+#include "OBB2.h"
+
+Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
 {
-	fit(useAABB);
+	selectedPartId = -1;
+	isDrawAxis = false;
+	isFrozen = false;
+
+	primType = CUBOID;
+}
+
+Cuboid::Cuboid( QSurfaceMesh* segment, QString newId, bool useAABB, int fit_method  ) : Primitive(segment, newId)
+{
+	fit(useAABB, fit_method);
 
 	selectedPartId = -1;
 	isDrawAxis = false;
 	isFrozen = false;
+
+	primType = CUBOID;
+	isUsedAABB = useAABB;
 }
 
-
-void Cuboid::fit(bool useAABB /*= true */ )
+void Cuboid::fit( bool useAABB, int obb_method )
 {	
 	if (useAABB)
 	{
@@ -29,8 +43,42 @@ void Cuboid::fit(bool useAABB /*= true */ )
 	}
 	else
 	{
-		MinOBB3 obb(m_mesh);
-		currBox = obb.mMinBox;
+		MinOBB3::Box3 fittedBox;
+
+		switch(obb_method)
+		{
+		case 0:
+			{
+				MinOBB3 obb(m_mesh);
+				fittedBox = obb.mMinBox;
+				break;
+			}
+		case 1:
+			{
+				OBB obb;
+				obb.build_from_mesh(m_mesh);
+
+				// set box parameters
+				fittedBox.Center = obb.center();
+				fittedBox.Axis = obb.axis();
+				fittedBox.Extent = obb.extents();
+
+				break;
+			}
+		case 2:
+			{
+				OBB2 obb(m_mesh);
+
+				// set box parameters
+				fittedBox.Center = obb.center();
+				fittedBox.Axis = obb.axis();
+				fittedBox.Extent = obb.extents();
+
+				break;
+			}
+		}
+
+		currBox = fittedBox;
 	}
 
 	originalBox = currBox;
@@ -731,3 +779,31 @@ void Cuboid::scaleCurve( int cid, double s )
 
 }
 
+void Cuboid::save( std::ofstream &outF )
+{
+	outF << this->currBox.Center << "\t" 
+		<< this->currBox.Axis[0] << "\t" 
+		<< this->currBox.Axis[1] << "\t" 
+		<< this->currBox.Axis[2] << "\t"
+		<< this->currBox.Extent[0] << "\t"
+		<< this->currBox.Extent[1] << "\t"
+		<< this->currBox.Extent[2] << "\t"
+		<< this->isUsedAABB << "\t";
+}
+
+void Cuboid::load( std::ifstream &inF )
+{
+	inF >> this->currBox.Center
+		>> this->currBox.Axis[0] 
+		>> this->currBox.Axis[1] 
+		>> this->currBox.Axis[2] 
+		>> this->currBox.Extent[0] 
+		>> this->currBox.Extent[1]
+		>> this->currBox.Extent[2]
+		>> this->isUsedAABB;
+
+	originalBox = currBox;
+	id = m_mesh->objectName();
+
+	computeMeshCoordiantes();
+}

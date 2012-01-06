@@ -9,7 +9,6 @@
 
 double JOINT_THRESHOLD = 0.035;
 
-
 Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 {
 	m_mesh = mesh;
@@ -22,6 +21,10 @@ Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 
 	// Save original stats
 	originalStat = getStat();
+
+	primTypeNames.push_back("CUBOID");
+	primTypeNames.push_back("GC");
+	primTypeNames.push_back("WIRE");
 }
 
 Controller::~Controller()
@@ -46,14 +49,13 @@ void Controller::fitPrimitives()
 	}
 }
 
-
 void Controller::fitOBBs( bool useAABB /*= true*/ )
 {
 	foreach (QSurfaceMesh* segment, m_mesh->getSegments())
 	{
 		QString segId = segment->objectName();
 
-		Cuboid* cub = new Cuboid(segment, segId, useAABB);
+		Cuboid* cub = new Cuboid(segment, segId, useAABB, 0);
 
 		primitives[segId] = cub;
 
@@ -170,11 +172,11 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 	delete oldPrimitive;
 }
 
-void Controller::convertToCuboid( QString primitiveId, bool useAABB /*= true*/ )
+void Controller::convertToCuboid( QString primitiveId, bool useAABB, int fit_method)
 {
 	Primitive * oldPrimitive = primitives[primitiveId];
 
-	primitives[primitiveId] = new Cuboid(primitives[primitiveId]->getMesh(), primitiveId, useAABB);
+	primitives[primitiveId] = new Cuboid(primitives[primitiveId]->getMesh(), primitiveId, useAABB, fit_method);
 
 	// bug?
 	//delete oldPrimitive;
@@ -671,3 +673,53 @@ double Controller::similarity( ShapeState state1, ShapeState state2 )
 	return result;
 }
 
+void Controller::save( std::ofstream &outF )
+{
+	foreach(Primitive * prim, primitives)
+	{
+		QString id = prim->id;
+		
+		outF << qPrintable(primTypeNames[prim->primType]) << "\t" << qPrintable(id) << "\t";
+
+		prim->save(outF);
+
+		outF << std::endl;
+	}
+}
+
+void Controller::load( std::ifstream &inF )
+{
+	primitives.clear();
+
+	while(!inF.eof())
+	{
+		std::string strType, strId;
+		
+		// Get type and name
+		inF >> strType >> strId;
+
+		int primType = primTypeNames.indexOf(QString(strType.c_str()));
+		QString primId(strId.c_str());
+
+		if(primType < 0)
+			continue;
+
+		switch(primType)
+		{
+			case CUBOID: primitives[primId] = new Cuboid(m_mesh->getSegment(primId), primId); break;
+			case GC: primitives[primId] = new GCylinder(m_mesh->getSegment(primId), primId); break;
+		}
+
+		primitives[primId]->load(inF);
+	}
+}
+
+void Controller::removePrimitive( Primitive * prim )
+{
+	primitives.remove(prim->id);
+}
+
+void Controller::clearPrimitives()
+{
+	primitives.clear();
+}

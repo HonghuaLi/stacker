@@ -33,7 +33,7 @@ public:
 	void fitPrimitives();
 	void fitOBBs(bool useAABB = true);	
 	void convertToGC( QString primitiveId, bool isUsingSkeleton = true, int cuboidAxis = 0 );
-	void convertToCuboid( QString primitiveId, bool useAABB /*= true*/ );
+	void convertToCuboid( QString primitiveId, bool useAABB, int fit_method);
 
 	// Joints
 	void findJoints();
@@ -103,6 +103,15 @@ public:
 	QVector<QString> stringIds(QVector<int> numericalIds);
 	int getPrimitiveIdNum(QString stringId);
 	QMap<int, QString> primitiveIdNum;
+
+	void removePrimitive( Primitive * prim );
+	void clearPrimitives();
+
+	QVector<QString> primTypeNames;
+
+	// Save and load
+	void save(std::ofstream &outF);
+	void load(std::ifstream &inF);
 
 	// DEBUG:
 	void test();
