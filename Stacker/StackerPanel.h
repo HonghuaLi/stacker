@@ -57,8 +57,9 @@ public slots:
 	void selectModeController();
 	void selectModeControllerElement();
 
-
+	// Joints
 	void findJoints();
+	void findPairwiseJoints();
 
 	void searchDirection();
 

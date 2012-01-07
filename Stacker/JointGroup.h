@@ -16,6 +16,8 @@ public:
 
 	virtual void save( std::ofstream &outF );
 
+	virtual void load( std::ifstream &inF );
+
 	void draw();	
 
 	QVector<QString> regroup();

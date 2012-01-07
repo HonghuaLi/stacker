@@ -81,6 +81,7 @@ StackerPanel::StackerPanel()
 
 	// Joints between primitives
 	connect(panel.findJointsButton, SIGNAL(clicked()), SLOT(findJoints()));
+	connect(panel.findPairwiseJointsButton, SIGNAL(clicked()), SLOT(findPairwiseJoints()));
 
 	// Paper stuff
 	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
@@ -434,7 +435,19 @@ void StackerPanel::findJoints()
 	activeObject()->controller->findJoints();
 }
 
+void StackerPanel::findPairwiseJoints()
+{
+	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
 
+	if (activeScene->selection.size() < 2) return;
+
+	Controller* ctrl = activeObject()->controller;
+
+	int selID1 = activeScene->selection[0];
+	int selID2 = activeScene->selection[1];
+
+	activeObject()->controller->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
+}
 void StackerPanel::onSolutionButtonClicked()
 {
 	activeOffset->showSolution(panel.hsID->value());
@@ -629,4 +642,6 @@ void StackerPanel::setSkeletonJoints( int num )
 {
 	skeletonJoints = num;
 }
+
+
 

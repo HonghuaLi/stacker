@@ -37,7 +37,8 @@ public:
 
 	// Joints
 	void findJoints();
-	bool findJoint( QString a, QString b, Vec3d &joint );
+	void findPairwiseJoints( QString a, QString b, int nbJoints );
+	QVector< Vec3d > centerOfClusters( QVector< Vec3d> &data, int nbCluster );
 	// Interaction
 	void select(int id);
 	void select(QString id);
