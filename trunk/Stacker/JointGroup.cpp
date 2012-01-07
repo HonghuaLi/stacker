@@ -77,3 +77,22 @@ void JointGroup::save( std::ofstream &outF )
 
 	outF << m_joint;
 }
+
+void JointGroup::load( std::ifstream &inF )
+{
+	int n;
+	inF >> n;
+	std::string str;
+	QVector<QString> segments;
+	for (int i=0;i<n;i++)
+	{
+		inF >> str;
+		segments.push_back(str.c_str());
+	}
+
+	Vec3d joint;
+	inF >> joint;
+
+	process(segments, joint);
+
+}

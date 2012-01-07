@@ -8,11 +8,11 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 {
 	cage = NULL;
 
-	cageScale = 1.2;
+	cageScale = 1.3;
 	cageSides = 8;
 
 	// For visualization
-	deltaScale = 1.2;
+	deltaScale = 1.3;
 
 	// useful for fitting process
 	if(!m_mesh->vertex_array.size()){
@@ -334,19 +334,22 @@ void GCylinder::scaleCurve( int cid, double s )
 
 	int N = gc->frames.count();
 
-	for(int i = 0; i < N; i++)
+	std::cout << "Curve scaling: s = " << s << " weights= "; 
+	for(int i = 0; i < N; i++)	
 	{
 		// Gaussian parameters
-		double sigma = 1.0 / sqrt(2 * M_PI);
+		double sigma = 0.3;
 		double mu = 0;
 
-		double decay = 0.6;
-		double dist = abs(double(cid - i)) / (N * decay);
+		double dist = abs(double(cid - i)) / N;
 
 		double weight = 1 + (s * gaussianFunction(dist, mu, sigma));
-
+			
+		std::cout << weight << ", ";
 		gc->crossSection[i].radius *= weight;
 	}
+	std::cout << std::endl;
+
 
 	// Re-compute frames and align the cross-sections
 	deformMesh();
@@ -564,26 +567,27 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 void GCylinder::movePoint( Point p, Vec3d T )
 {
 	// There is symmetry
-	if (!symmPlanes.empty())
+	if (isRotationalSymmetry)
 	{
 		GeneralizedCylinder::Circle* c = &gc->crossSection[Primitive::detectHotCurve(p)];
 
-		// Project everything onto the plane
-		Plane plane(c->normal(), c->center);
-		Point q = plane.projectionOf(p + T);
-		p = plane.projectionOf(p);
-		T = q - p;
+		//// Project everything onto the plane
+		//Plane plane(c->normal(), c->center);
+		//Point q = plane.projectionOf(p + T);
+		//p = plane.projectionOf(p);
+		//T = q - p;
 
-		bool isScaleUp = true;
+		//bool isScaleUp = true;
 
-		double r1 = (p - c->center).norm();
-		double r2 = (q - c->center).norm();
+		//double r1 = (p - c->center).norm();
+		//double r2 = (q - c->center).norm();
 
-		if(q - p < 0) isScaleUp = false;
+		//if(q - p < 0) isScaleUp = false;
 
-		double s = r2 / r1;
-
-		this->scaleCurve(c->index, s / cageScale);
+		//double s = r2 / r1;
+		
+		double s = (T[0] > 0)? 0.1 : -0.1;
+		this->scaleCurve(c->index, s );
 	}
 	// If there are no fixed points
 	else if (fixedPoints.empty())

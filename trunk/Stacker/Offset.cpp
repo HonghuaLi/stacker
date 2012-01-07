@@ -346,22 +346,25 @@ void Offset::detectHotspots( )
 			continue;
 		}
 
-		// If there are multiple regions, pick up the one at the center
+		// If there are multiple regions, pick up the one closest to the center
 		//visualizeRegions(zoomedHRs, "zoomed in hot regions.png");
-
-		std::vector<Vec2i>::iterator itr;
 		Vec2i center(w/2, h/2);
-		int j;
-		for (j=0;j<zoomedHRs.size();j++){
-			itr = std::find(zoomedHRs[j].begin(), zoomedHRs[j].end(), center);
-			if (itr != zoomedHRs[j].end())
-				break;
+		int minDis = w;
+		int closestID = -1;
+		for (int j=0;j<zoomedHRs.size();j++)
+		{
+			Vec2i c = centerOfRegion(zoomedHRs[j]);
+			int dx = c.x() - center.x();
+			int dy = c.y() - center.y();
+			int dis = dx * dx + dy * dy;
+			if (dis < minDis)
+			{
+				minDis = dis;
+				closestID = j;
+			}
 		}
-		if (zoomedHRs.size() == j){
-			std::cout << "The zoomed in hot region is not centerized.\n";
-			continue;
-		}
-		std::vector<Vec2i> &zoomedHR = zoomedHRs[j];
+
+		std::vector<Vec2i> &zoomedHR = zoomedHRs[closestID];
 
 		// Detect hot spots from both directions
 		HotSpot UHS = detectHotspotInRegion(1, zoomedHR);
@@ -1011,24 +1014,22 @@ void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
 	// The hot region	
 	std::vector< Vec2i > &hotRegion = hotRegions[HS.hotRegionID];
 
-	Vec2i center(0, 0);
-	for (int i=0;i<hotRegion.size();i++)
-		center += hotRegion[i];
-	center /= hotRegion.size();
-
+	Vec2i center = centerOfRegion(hotRegion);
 	Vec2i p = hotRegion[0];
 
 	// Translations
 	std::vector< Vec3d > Ts;
-	Vec3d proj_c = unprojectedCoordinatesOf(center.x(), center.y(), HS.side);
-	Vec3d proj_p = unprojectedCoordinatesOf(p.x(), p.y(),  HS.side);
-	double step = 0.05 * activeObject()->radius;
-	Vec3d T1 = (proj_p - proj_c) * step;
-	T1[2] = 0; 
-	Ts.push_back(T1);
-	Vec3d T2 = (proj_c - proj_p) * step;
-	T2[2] = 0;
-	Ts.push_back(T2);
+	double s = 0.15;
+	Ts.push_back(Vec3d(1,0,0)*s);
+	Ts.push_back(Vec3d(-1,0,0)*s);
+	//Vec3d proj_c = unprojectedCoordinatesOf(center.x(), center.y(), HS.side);
+	//Vec3d proj_p = unprojectedCoordinatesOf(p.x(), p.y(),  HS.side);
+	//double step = 0.5 * activeObject()->radius;
+	//Vec3d T = proj_p - proj_c;
+	//T[2] = 0; 
+	//T .normalize();
+	//Ts.push_back(T * step);
+	//Ts.push_back(-T * step);
 
 	// Save the initial hot shape state
 	ShapeState initialHotShapeState = ctrl->getShapeState();
@@ -1050,13 +1051,13 @@ void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
 
 		// Check if this is a candidate solution
 
-		if ( satisfyBBConstraint() )
+//		if ( satisfyBBConstraint() )
 		{
 			double stackability = computeOffsetOfShape();
-			if (stackability > preStackability + 0.1)
+//			if (stackability > preStackability + 0.1)
 			{
 				ShapeState state = ctrl->getShapeState();
-				if (isUnique(state, 4))
+//				if (isUnique(state, 0))
 				{
 					state.stackability = stackability;
 					candidateSolutions.enqueue(state);
@@ -1108,6 +1109,7 @@ void Offset::applyHeuristics()
 		applyHeuristicsOnHotRing(upperHS);
 	else
 		applyHeuristicsOnHotspot(upperHS, lowerHS);		
+
 
 	if (lowerHS.isRing)
 		applyHeuristicsOnHotRing(lowerHS);
@@ -1167,7 +1169,7 @@ void Offset::improveStackabilityTo( double targetS )
 	state.stackability = getStackability();
 	candidateSolutions.enqueue(state);
 
-	while(!candidateSolutions.empty())
+//	while(!candidateSolutions.empty())
 	{
 
 		// Get the first candidate solution
@@ -1178,7 +1180,7 @@ void Offset::improveStackabilityTo( double targetS )
 		{
 			// Yes. Got one solution.
 			solutions.push_back(candidateState);
-			continue;
+//			continue;
 		}
 		else
 		{
@@ -1194,13 +1196,12 @@ void Offset::improveStackabilityTo( double targetS )
 	}
 
 	// Debug: add candidate solutions to solutions
-	//foreach (ShapeState state, candidateSolutions)
-	//	solutions.push_back(state);
+	foreach (ShapeState state, candidateSolutions)
+		solutions.push_back(state);
 
 
 	// Cluster the solutions to get rid of redundancies
 
-	
 	ctrl->setShapeState(state);
 	activeObject()->computeBoundingBox();
 }
@@ -1280,6 +1281,21 @@ bool Offset::isUnique( ShapeState state, double threshold )
 	//std::cout << "Unique: " << result <<std::endl;
 
 	return result;
+}
+
+Vec2i Offset::centerOfRegion( std::vector< Vec2i >& region )
+{
+	Vec2i center(0, 0);
+
+	if (!region.empty())
+	{
+		for (int i=0;i<region.size();i++)
+			center += region[i];
+
+		center /= region.size();
+	}
+
+	return center;
 }
 
 

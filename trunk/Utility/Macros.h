@@ -119,7 +119,8 @@ double inline gaussianFunction(double x, double mu = 0.0, double sigma = 1.0){
 	double b = mu;
 	double c = sigma;
 
-	return a * exp( - (pow(x - b, 2) / (2 * pow(c, 2)) ) );
+	// normalized guassian with N(0, \sigma) = 1
+	return exp( - (pow(x - b, 2) / (2 * pow(c, 2)) ) );
 }
 
 // Rodrigues' rotation

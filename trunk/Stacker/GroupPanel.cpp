@@ -205,21 +205,6 @@ void GroupPanel::loadGroups()
 		{
 			newGroup->load(inF);
 			ctrl->groups[newGroup->id] = newGroup;
-
-			if(type == JOINT)
-			{
-				JointGroup * jg = (JointGroup*)newGroup;
-
-				Point joint;
-				inF >> joint.x() >> joint.y() >> joint.z();
-
-				QVector<QString> segments;
-
-				foreach(QString node, jg->nodes)
-					segments.push_back(node);
-				
-				jg->process(segments, joint);
-			}
 		}
 	}
 

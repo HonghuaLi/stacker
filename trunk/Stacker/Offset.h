@@ -88,6 +88,7 @@ public:
 	std::vector< Vec2i > shiftRegionInBB( std::vector< Vec2i >& region, Vec2i delta, Vec2i bbmin, Vec2i bbmax );
 	Vec2i sizeofRegion( std::vector< Vec2i >& region );
 	void BBofRegion( std::vector< Vec2i >& region, Vec2i &bbmin, Vec2i &bbmax );
+	Vec2i centerOfRegion( std::vector< Vec2i >& region );
 
 
 	// Utilities 
