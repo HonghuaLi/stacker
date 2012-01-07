@@ -665,7 +665,6 @@
     <ClInclude Include="Utility\Graph.h" />
     <ClInclude Include="Utility\HashTable.h" />
     <ClInclude Include="Utility\Macros.h" />
-    <ClInclude Include="Utility\OpenMeshGL.h" />
     <ClInclude Include="Utility\SimpleDraw.h" />
     <ClInclude Include="GraphicsLibrary\Sampler.h" />
     <ClInclude Include="GraphicsLibrary\VBO.h" />

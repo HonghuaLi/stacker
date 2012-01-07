@@ -166,6 +166,7 @@ double Offset::computeOffsetOfShape()
 
 	// Save offset as image
 	//saveAsImage(offset, O_max, "offset function.png");
+	activeObject()->data2D["offset"] = offset;
 
 	return activeObject()->stackability;
 }

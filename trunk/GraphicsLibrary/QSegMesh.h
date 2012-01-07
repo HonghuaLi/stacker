@@ -2,6 +2,7 @@
 #include <QObject>
 #include <QString>
 #include <QVector>
+#include <QMap>
 #include "QSurfaceMesh.h"
 #include <vector>
 
@@ -77,6 +78,10 @@ public:
 	// Stackability
 	Scalar O_max;
 	Scalar stackability;
+
+	// Other auxiliary data
+	QMap<QString, std::vector<double> > data1D, data1D_b, data1D_c;
+	QMap<QString, std::vector< std::vector<double> > > data2D, data2D_b, data2D_c;
 
 private:
 	std::vector<QSurfaceMesh*> segment;
