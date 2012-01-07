@@ -50,7 +50,8 @@ public:
 
 	static void PointArrowAt(Vec3d point, float radius = 1.0);
 	static void DrawBarChart(const StdVector<double> & data, int x, int y, double height = 100.0, double width = 300, int barWidth = 1.0);
-	
+	static void DrawGraph2D(const StdVector< StdVector <double> > & data, double maximum = 1.0);
+
 	// Misc.
 	static void drawCornerAxis(const double * cameraOrientation);
 

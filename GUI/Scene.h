@@ -79,6 +79,8 @@ public:
 	// hack
 	StackerPanel * sp;
 
+	bool isDrawOffset;
+
 // TEXT ON SCREEN
 public slots:
 	void print(QString message, long age = 1000);

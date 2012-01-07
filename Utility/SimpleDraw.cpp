@@ -4,6 +4,7 @@
 // Bad includes.. needed for rotations for now
 #include "QGLViewer/qglviewer.h"
 #include "QGLViewer/quaternion.h"
+#include "ColorMap.h"
 
 void SimpleDraw::DrawBox(const Vec3d& center, float width, float length, float height, float r, float g, float b)
 {
@@ -852,10 +853,6 @@ void SimpleDraw::drawCornerAxis(const double * cameraOrientation)
 	// original image.
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	// Tune for best line rendering
-	glDisable(GL_LIGHTING);
-	glLineWidth(3.0);
-
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -865,6 +862,10 @@ void SimpleDraw::drawCornerAxis(const double * cameraOrientation)
 	glPushMatrix();
 	glLoadIdentity();
 	glMultMatrixd(cameraOrientation);
+
+	// Tune for best line rendering
+	glDisable(GL_LIGHTING);
+	glLineWidth(3.0);
 
 	glBegin(GL_LINES);
 	glColor3f(1.0, 0.0, 0.0);
@@ -903,4 +904,55 @@ std::vector<Vec4d> SimpleDraw::RandomColors( int count )
 		colors.push_back(Vec4d(r, g, b, 1.0));
 	}
 	return colors;
+}
+
+void SimpleDraw::DrawGraph2D( const StdVector< StdVector <double> > & data, double maximum)
+{
+	int w = data.front().size();
+	int h = data.size();
+
+	// Compute length of each grid quad
+	double q = 1.0 / Max(w,h);
+
+	// Find actual data max
+	double actualMax = DBL_MIN;
+	for(int i = 0; i < data.size(); i++)
+		actualMax = Max(actualMax, MaxElement(data[i]));
+
+	uchar rgb[3];	
+
+	glDisable(GL_LIGHTING);
+
+	glBegin(GL_QUADS);
+
+	for(int y = 0; y < h - 1; y++)
+	{
+		for(int x = 0; x < w - 1; x++)
+		{
+			double c1 = Max(0, data[y][x]);
+			double c2 = Max(0, data[y+1][x]);
+			double c3 = Max(0, data[y][x+1]);
+			double c4 = Max(0, data[y+1][x+1]);
+
+			ColorMap::jetColorMap(rgb, c1, 0, actualMax);
+			glColor3ubv(rgb);
+			glVertex3dv(Vec3d(y * q, x * q, c1 / maximum));
+
+			ColorMap::jetColorMap(rgb, c3, 0, actualMax);
+			glColor3ubv(rgb);
+			glVertex3dv(Vec3d(y * q, (x+1) * q, c3 / maximum));
+
+			ColorMap::jetColorMap(rgb, c4, 0, actualMax);
+			glColor3ubv(rgb);
+			glVertex3dv(Vec3d((y+1) * q, (x+1) * q, c4 / maximum));
+
+			ColorMap::jetColorMap(rgb, c2, 0, actualMax);
+			glColor3ubv(rgb);
+			glVertex3dv(Vec3d((y+1) * q, x * q, c2 / maximum));
+		}
+	}
+
+	glEnd();
+
+	glEnable(GL_LIGHTING);
 }

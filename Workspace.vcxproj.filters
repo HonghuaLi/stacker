@@ -445,9 +445,6 @@
     <ClInclude Include="Utility\Macros.h">
       <Filter>Utility\Header</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\OpenMeshGL.h">
-      <Filter>Utility\Header</Filter>
-    </ClInclude>
     <ClInclude Include="Utility\SimpleDraw.h">
       <Filter>Utility\Header</Filter>
     </ClInclude>

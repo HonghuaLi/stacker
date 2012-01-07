@@ -43,6 +43,8 @@ Scene::Scene( QWidget *parent)
 	this->setSelectRegionWidth(10);
 	displayMessage(tr("New scene created."));
 
+	isDrawOffset = false;
+
 	// Testing
 	skel = NULL;
 	skelExt = NULL;
@@ -311,6 +313,11 @@ void Scene::keyPressEvent( QKeyEvent *e )
 		this->setRenderMode(RENDER_WIREFRAME);
 	}
 
+	if(e->key() == Qt::Key_O)
+	{
+		isDrawOffset = !isDrawOffset;
+	}
+
 	if(e->key() == Qt::Key_P)
 	{
 		this->setRenderMode(RENDER_POINT);
@@ -320,6 +327,7 @@ void Scene::keyPressEvent( QKeyEvent *e )
 	{
 		activeObject()->controller->test();
 	}
+
 
 	// Regular behavior
 	QGLViewer::keyPressEvent(e);
@@ -426,6 +434,34 @@ void Scene::postDraw()
 
 		qglColor(Qt::white);
 		renderText(x, y, osdMessages.at(i));
+	}
+
+	// Draw offset function
+	if(isDrawOffset && activeObject() && activeObject()->data2D.contains("offset"))
+	{
+		int size = 400;
+
+		glViewport(width() - size, size * -0.1,size,size);
+		glScissor(width() - size, size * -0.1,size,size);
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glMatrixMode(GL_PROJECTION);glPushMatrix();	glLoadIdentity();
+		glOrtho(-1, 1, -1, 1, -1, 1);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();glLoadIdentity();glMultMatrixd(camera()->orientation().inverse().matrix());
+
+		// Draw graph
+		glTranslated(-0.5, -0.5, 0);
+		SimpleDraw::DrawGraph2D(activeObject()->data2D["offset"]);
+
+		Vec3d p(0, 0, 0); Vec3d q = p + Vec3d(0,0,1.0);
+		SimpleDraw::IdentifyLine(p,q, 0,0,0,false,1.0);
+
+		glMatrixMode(GL_PROJECTION);glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);glPopMatrix();
+
+		glViewport(0,0,width(),height());
+		glScissor(0,0,width(),height());
 	}
 }
 
