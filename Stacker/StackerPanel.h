@@ -48,6 +48,7 @@ public slots:
 	void setHotRange(double range);
 	void setJointThreshold(double threshold);
 	void setSkeletonJoints(int num);
+	void setStackCount(int num);
 
 	// Primitives modification
 	void convertGC();

@@ -65,6 +65,9 @@ StackerPanel::StackerPanel()
 	// GC
 	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
 
+	// Stacking
+	connect(panel.stackCount, SIGNAL(valueChanged(int)), this, SLOT(setStackCount(int)) );
+
 	// Connect controller deformer
 	/*connect(ctrlDeformer.transX, SIGNAL(valueChanged(int)), SLOT(updateController()));
 	connect(ctrlDeformer.transY, SIGNAL(valueChanged(int)), SLOT(updateController()));
@@ -142,7 +145,13 @@ void StackerPanel::setActiveScene( Scene * scene )
 
 void StackerPanel::updateActiveObject()
 {
-	activeOffset->computeOffsetOfShape();	
+	if (panel.rotAroundAxis->isChecked())
+		activeOffset->computeOffsetOfShape(panel.rotStackingDensity->value(), true);
+	else if (panel.rotFreeForm->isChecked())
+
+		activeOffset->computeOffsetOfShape();
+
+	stacker_preview->stackCount = panel.stackCount->value();
 	stacker_preview->updateActiveObject();
 
 	if (activeObject()->controller == NULL)
@@ -641,6 +650,12 @@ void StackerPanel::searchDirection()
 void StackerPanel::setSkeletonJoints( int num )
 {
 	skeletonJoints = num;
+}
+
+void StackerPanel::setStackCount( int num )
+{
+	stacker_preview->stackCount = num;
+	stacker_preview->updateActiveObject();
 }
 
 

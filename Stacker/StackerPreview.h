@@ -35,6 +35,7 @@ public:
 
 	// Stacking parameters
 	Vec3d stackDirection;
+	int stackCount;
 
 	// Active object
 	QSegMesh* activeObject();

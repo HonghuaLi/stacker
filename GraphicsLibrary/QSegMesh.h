@@ -78,6 +78,8 @@ public:
 	// Stackability
 	Scalar O_max;
 	Scalar stackability;
+	Scalar theta, phi;
+	Vec3d translation;
 
 	// Other auxiliary data
 	QMap<QString, std::vector<double> > data1D, data1D_b, data1D_c;

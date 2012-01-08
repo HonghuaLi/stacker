@@ -41,7 +41,7 @@ void StackerPreview::init()
 void StackerPreview::setupCamera()
 {
 	camera()->setUpVector(Vec(0,0,1));
-	camera()->setPosition(Vec(2,-2,2));
+	camera()->setPosition(Vec(1,-2,1));
 	camera()->lookAt(Vec());
 }
 
@@ -69,11 +69,13 @@ void StackerPreview::draw()
 	// Update VBO is needed
 	updateVBOs();
 
-	int stackCount = 3;
 	double O_max = activeObject()->O_max;
 	double S = activeObject()->stackability;
 
 	Vec3d delta = O_max * stackDirection;
+	double theta = activeObject()->theta;
+	double phi = activeObject()->phi;
+	Vec3d shift = activeObject()->translation;
 
 	glPushMatrix();
 
@@ -88,6 +90,9 @@ void StackerPreview::draw()
 			activeObject()->simpleDraw();
 
 		glTranslated(delta[0],delta[1],delta[2]);
+		glRotated(theta, 1, 0, 0);
+		glRotated(phi, 0, 0, 1);
+		glTranslated(shift[0], shift[1], shift[2]);
 	}
 
 	glPopMatrix();
@@ -144,9 +149,17 @@ void StackerPreview::updateActiveObject()
 {
 	if(activeScene && !activeScene->isEmpty())
 	{
-		camera()->setSceneRadius(activeScene->activeObject()->radius * 2);
-		camera()->showEntireScene();
-		camera()->setSceneRadius(activeScene->activeObject()->radius * 4);
+		Vec3d bbmin = activeObject()->bbmin;
+		Vec3d bbmax = activeObject()->bbmax;
+		bbmax[2] += (stackCount-1) * activeObject()->O_max;
+
+		Vec3d center = (bbmax + bbmin) / 2;
+		Vec3d pos(1, 1, center[2]);
+
+		camera()->setUpVector(Vec(0,0,1));
+		camera()->setPosition(Vec(pos));
+		camera()->lookAt(Vec(center));
+		camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
 	}
 	
 	vboCollection.clear();
