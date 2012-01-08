@@ -73,18 +73,19 @@ void Offset::computeEnvelope(int direction)
 	delete[] depthBuffer;
 }
 
-void Offset::computeEnvelopeOfShape( int direction )
+void Offset::computeEnvelopeOfShape( Vec3d pos, Vec3d upVector /*= Vec3d(0,1,0)*/, Vec3d horizontalShift /*= Vec3d(0,0,0)*/ )
 {
 	// Set camera
 	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
-	activeViewer->camera()->setPosition(Vec(0,0, direction * activeObject()->radius));
+	activeViewer->camera()->setPosition(Vec(pos));
 	activeViewer->camera()->lookAt(Vec());	
 
 	// Set \y as the upVector, then the projected 3D BB is still BB in 3D
-	activeViewer->camera()->setUpVector(Vec(0,1,0));
+	activeViewer->camera()->setUpVector(Vec(upVector));
 	Vec delta(1, 1, 1);
-	delta *= activeObject()->radius * 0.2;
+	delta *= activeObject()->radius * 0.25;
 	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin) - delta, Vec(activeObject()->bbmax) + delta);
+	activeViewer->camera()->setPosition(activeViewer->camera()->position() + Vec(horizontalShift));
 
 	// Save this new camera settings
 	activeViewer->camera()->deletePath(direction + 2);
@@ -142,7 +143,8 @@ void Offset::computeOffset()
 	}
 }
 
-double Offset::computeOffsetOfShape()
+
+double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int rotDensity /*= 1*/ )
 {
 	if (!activeObject()) return 0;
 
@@ -154,15 +156,99 @@ double Offset::computeOffsetOfShape()
 	activeViewer->camera()->deletePath(0);
 	activeViewer->camera()->addKeyFrameToPath(0);
 
-	// Compute the offset function
-	computeEnvelopeOfShape(1);
-	computeEnvelopeOfShape(-1);
-	computeOffset();
+	// The upper envelope
+	computeEnvelopeOfShape(Vec3d(0,0,1));
+
+	// Rotation can be simulated by changing the position and upVector of the camera
+
+	
+	// Camera postions: posAngles are on y-z plane, starting from z in clockwise
+	// Camera UpVector: upVectorAngles on the new x-y plane, string from y in clockwise
+	double angleStep = 2 * M_PI / rotDensity;
+	std::vector< double > angles, singleAngle;
+	singleAngle.push_back(0);
+	for (int i=0;i<rotDensity;i++)
+		angles.push_back(i * angleStep);
+
+	std::vector< double > PosAngles, UVAngles;
+	bool shifting = false;
+	switch (type)
+	{
+	case STRAIGHT_LINE:
+		PosAngles = singleAngle;
+		UVAngles = singleAngle;
+		shifting = false;
+	case ROT_AROUND_AXIS:
+		PosAngles = singleAngle;
+		UVAngles = angles;
+		shifting = true;
+		break;
+	case ROT_FREE_FORM:
+		PosAngles = angles;
+		UVAngles = angles;
+		shifting = true;
+		break;
+	}
+
+	// Searching
+	double minO_max = 2 * objectH;
+	double bestPosAngle = 0;
+	double bestUVAngle = 0;	
+	Vec3d bestShift;
+
+	Vec3d X(1,0,0);
+	for (int i=0;i<PosAngles.size();i++)
+	{
+		// Camera position
+		double alpha = PosAngles[i];
+		Vec3d cameraPos(0, sin(alpha), cos(alpha));
+		cameraPos.normalize();
+
+		for(int j=0;j<UVAngles.size();j++)
+		{
+			// Up vector
+			double beta = UVAngles[j];
+			Vec3d newY = cross(cameraPos, X);
+			Vec3d UV = X * sin(beta) + newY * cos(beta);
+
+			// Horizontal shifting 
+			int numSteps = shifting? 2 : 0;
+			Vec3d bb = activeObject()->bbmax - activeObject()->bbmin;
+			double xStep = bb[0] / 20;
+			double yStep = bb[1] / 20;
+			for (int j = -numSteps; j <= numSteps; j++)	{
+				double xShift = j * xStep;
+				for (int k = -numSteps; k <= numSteps; k++)
+				{
+					Vec3d horizontalShift(xShift, k * yStep, 0);
+
+					// The rotated and shifted lower envelope
+					computeEnvelopeOfShape(-1, upVector, horizontalShift);
+
+					// Compute the offset function
+					computeOffset();
+					O_max = getMaxValue(offset);
+
+					if (O_max < minO_max)
+					{
+						minO_max = O_max;
+						bestPosAngle = alpha;
+						bestUVAngle = beta;
+						bestShift = horizontalShift;
+					}
+				}
+			}
+		}
+	
+	}
 
 	// Update the stackability in QSegMesh
-	O_max = getMaxValue(offset);
+	O_max = minO_max;
 	activeObject()->O_max = O_max;
 	activeObject()->stackability = 1 - O_max/objectH;
+	activeObject()->theta = DEGREES(bestPosAngle);
+	activeObject()->phi = DEGREES(bestUVAngle);
+	activeObject()->translation = bestShift;
 
 	// Save offset as image
 	//saveAsImage(offset, O_max, "offset function.png");
