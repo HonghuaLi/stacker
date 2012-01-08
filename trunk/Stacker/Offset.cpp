@@ -73,7 +73,12 @@ void Offset::computeEnvelope(int direction)
 	delete[] depthBuffer;
 }
 
-void Offset::computeEnvelopeOfShape( Vec3d pos, Vec3d upVector /*= Vec3d(0,1,0)*/, Vec3d horizontalShift /*= Vec3d(0,0,0)*/ )
+void Offset::computeEnvelopeOfShape( int direction )
+{
+	computeEnvelopeOfShape(direction, Vec3d(0,0,direction));
+}
+
+void Offset::computeEnvelopeOfShape( int direction, Vec3d pos, Vec3d upVector /*= Vec3d(0,1,0)*/, Vec3d horizontalShift /*= Vec3d(0,0,0)*/ )
 {
 	// Set camera
 	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
@@ -88,8 +93,9 @@ void Offset::computeEnvelopeOfShape( Vec3d pos, Vec3d upVector /*= Vec3d(0,1,0)*
 	activeViewer->camera()->setPosition(activeViewer->camera()->position() + Vec(horizontalShift));
 
 	// Save this new camera settings
-	activeViewer->camera()->deletePath(direction + 2);
-	activeViewer->camera()->addKeyFrameToPath(direction + 2);
+	activeViewer->camera()->deletePath(direction+2);
+	activeViewer->camera()->addKeyFrameToPath(direction+2);
+
 
 	// Render
 	activeViewer->setMode(HV_DEPTH);
@@ -157,7 +163,7 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 	activeViewer->camera()->addKeyFrameToPath(0);
 
 	// The upper envelope
-	computeEnvelopeOfShape(Vec3d(0,0,1));
+	computeEnvelopeOfShape(1, Vec3d(0,0,1));
 
 	// Rotation can be simulated by changing the position and upVector of the camera
 
@@ -201,7 +207,7 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 	{
 		// Camera position
 		double alpha = PosAngles[i];
-		Vec3d cameraPos(0, sin(alpha), cos(alpha));
+		Vec3d cameraPos(0, -sin(alpha), -cos(alpha));
 		cameraPos.normalize();
 
 		for(int j=0;j<UVAngles.size();j++)
@@ -223,7 +229,7 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 					Vec3d horizontalShift(xShift, k * yStep, 0);
 
 					// The rotated and shifted lower envelope
-					computeEnvelopeOfShape(-1, upVector, horizontalShift);
+					computeEnvelopeOfShape(-1, cameraPos, UV, horizontalShift);
 
 					// Compute the offset function
 					computeOffset();

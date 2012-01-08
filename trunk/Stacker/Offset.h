@@ -47,7 +47,8 @@ public:
 	
 	// Compute offset function and stackability (1 - O_max/objectH)
 	void computeEnvelope(int direction);
-	void computeEnvelopeOfShape(Vec3d pos, Vec3d upVector = Vec3d(0,1,0), Vec3d horizontalShift = Vec3d(0,0,0));
+	void computeEnvelopeOfShape(int direction);
+	void computeEnvelopeOfShape(int direction, Vec3d pos, Vec3d upVector = Vec3d(0,1,0), Vec3d horizontalShift = Vec3d(0,0,0));
 	void computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax);
 	void computeOffset();
 	double computeOffsetOfShape( STACKING_TYPE type = STRAIGHT_LINE, int rotDensity = 1);
