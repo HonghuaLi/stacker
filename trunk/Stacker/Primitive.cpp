@@ -88,3 +88,45 @@ double Primitive::similarity( PrimitiveState state1, PrimitiveState state2 )
 
 	return result;
 }
+
+
+// Theta is measured in degree
+Eigen::Matrix3d Primitive::rotationMatrixAroundAxis( Vec3d u, double theta )
+{
+	u.normalize();
+
+	double x = u[0], y = u[1], z = u[2];
+
+	Eigen::Matrix3d I, cpm, tp, R;
+
+	I = Eigen::Matrix3d::Identity(3,3);
+
+	tp <<	x*x, x*y, x*z,
+		x*y, y*y, y*z,
+		x*z, y*z, z*z;
+
+	cpm <<  0, -z,  y,
+		z,  0, -x,
+		-y,  x,  0;
+
+	theta = RADIANS(theta);
+	R = cos(theta)*I + sin(theta)*cpm + (1-cos(theta))*tp;
+
+	return R;
+}
+
+Vec3d Primitive::rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p )
+{
+	Eigen::Vector3d rp = R * V2E(p);
+	return E2V(rp);
+}
+
+Eigen::Vector3d Primitive::V2E( Vec3d &vec )
+{
+	return Eigen::Vector3d(vec[0], vec[1], vec[2]);
+}
+
+Vec3d Primitive::E2V( Eigen::Vector3d &vec )
+{
+	return Vec3d(vec[0], vec[1], vec[2]);
+}

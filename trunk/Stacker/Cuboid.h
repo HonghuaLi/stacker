@@ -76,7 +76,6 @@ public:
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
 	void recoverMesh();
-	Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );
 
 	// Save and load
 	virtual void save(std::ofstream &outF);
@@ -85,14 +84,13 @@ public:
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);
 	Vector3 getPositionInBox(MinOBB3::Box3 &box, Vector3 &coord);	
-	Eigen::Matrix3d rotationMatrixAroundAxis(Vec3d u, double theta);
+
 	std::vector<Vector3> getBoxConners(MinOBB3::Box3 &box);
 	std::vector< std::vector<Vector3> > getBoxFaces(MinOBB3::Box3 &fromBox);
 	Vec3d faceCenterOfBox( MinOBB3::Box3 &box, uint fid );
 
 	void drawCube(double lineWidth, Vec4d color, bool isOpaque = false);
-	Eigen::Vector3d V2E(Vector3 &vec);
-	Vector3 E2V(Eigen::Vector3d &vec);
+
 	
 	// Debug
 	bool isDrawAxis;

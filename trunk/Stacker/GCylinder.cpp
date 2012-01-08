@@ -338,7 +338,7 @@ void GCylinder::scaleCurve( int cid, double s )
 	for(int i = 0; i < N; i++)	
 	{
 		// Gaussian parameters
-		double sigma = 0.3;
+		double sigma = 0.1;
 		double mu = 0;
 
 		double dist = abs(double(cid - i)) / N;
@@ -538,19 +538,24 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 {
 	// theta = <p, j, p + T>
 	Vec3d v1 = p - joint;
-	Vec3d v2 = (p + T) - joint;
+	Vec3d v2 = (p + T) - joint;	
 	
-	double theta = acos(dot(v1.normalized(), v2.normalized()));
-	Vec3d axis = cross(v1, v2).normalized();
+	// Rotation matrix
+	Vec3d rotAxis = cross( v1, v2 );
+	double theta = DEGREES( acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1)) );
+	if ( dot( rotAxis, cross( v1.normalized(),v2.normalized() ) ) < 0 )
+		theta *= -1;
+
+	Eigen::Matrix3d R = rotationMatrixAroundAxis(rotAxis, theta);
 
 	// 1) Rotate with respect to joint (theta)
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
-		Vec3d newNormal = RotateAround(c.n, joint, axis, theta);
-		Vec3d newCenter = RotateAround(c.center, joint, axis, theta);
+		Vec3d newCenter = rotatePointByMatrix( R, c.center - joint ) + joint;
+		Vec3d newNormal = rotatePointByMatrix( R, c.n);
 
-		gc->crossSection[c.index].n = newNormal;
 		gc->frames.point[c.index] = newCenter;
+		gc->crossSection[c.index].n = newNormal;
 	}
 	
 	// 2) Scale along direction (joint -> p + T)
