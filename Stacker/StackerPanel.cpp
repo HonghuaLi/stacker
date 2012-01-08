@@ -146,9 +146,10 @@ void StackerPanel::setActiveScene( Scene * scene )
 void StackerPanel::updateActiveObject()
 {
 	if (panel.rotAroundAxis->isChecked())
-		activeOffset->computeOffsetOfShape(panel.rotStackingDensity->value(), true);
+		activeOffset->computeOffsetOfShape( ROT_AROUND_AXIS, panel.rotStackingDensity->value() );
 	else if (panel.rotFreeForm->isChecked())
-
+		activeOffset->computeOffsetOfShape( ROT_FREE_FORM, panel.rotStackingDensity->value() );
+	else
 		activeOffset->computeOffsetOfShape();
 
 	stacker_preview->stackCount = panel.stackCount->value();
