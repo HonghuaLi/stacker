@@ -243,15 +243,7 @@ void Cuboid::drawNames(int name, bool isDrawParts)
 	}
 }
 
-Eigen::Vector3d Cuboid::V2E( Vec3d &vec )
-{
-	return Eigen::Vector3d(vec[0], vec[1], vec[2]);
-}
 
-Vec3d Cuboid::E2V( Eigen::Vector3d &vec )
-{
-	return Vec3d(vec[0], vec[1], vec[2]);
-}
 
 void Cuboid::scaleAlongAxis( Vec3d &scales )
 {
@@ -265,30 +257,7 @@ void Cuboid::translate( Vec3d &T )
 	currBox.Center += T;
 }
 
-// Theta is measured in degree
-Eigen::Matrix3d Cuboid::rotationMatrixAroundAxis( Vec3d u, double theta )
-{
-	u.normalize();
 
-	double x = u[0], y = u[1], z = u[2];
-
-	Eigen::Matrix3d I, cpm, tp, R;
-
-	I = Eigen::Matrix3d::Identity(3,3);
-
-	tp <<	x*x, x*y, x*z,
-			x*y, y*y, y*z,
-			x*z, y*z, z*z;
-
-	cpm <<  0, -z,  y,
-			z,  0, -x,
-		   -y,  x,  0;
-
-	theta = RADIANS(theta);
-	R = cos(theta)*I + sin(theta)*cpm + (1-cos(theta))*tp;
-
-	return R;
-}
 
 
 void Cuboid::rotateAroundAxes( Vec3d &angles )
@@ -439,11 +408,7 @@ Vec3d Cuboid::faceCenterOfBox( MinOBB3::Box3 &box, uint fid )
 	return faceCenter;
 }
 
-Vec3d Cuboid::rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p )
-{
-	Eigen::Vector3d rp = R * V2E(p);
-	return E2V(rp);
-}
+
 
 QSurfaceMesh Cuboid::getGeometry()
 {
