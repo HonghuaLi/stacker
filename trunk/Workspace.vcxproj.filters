@@ -610,9 +610,6 @@
     <ClInclude Include="MathLibrary\ShapeDistribution.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="MathLibrary\ShapeDistribution.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\JointGroup.h">
       <Filter>Groups\Header</Filter>
     </ClInclude>
@@ -620,6 +617,9 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Plane.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Line.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\EditSuggestion.h">

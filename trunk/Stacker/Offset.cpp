@@ -572,7 +572,7 @@ void Offset::saveAsData( std::vector< std::vector < double > >& image, double ma
 	// \p y is flipped, since OpenGL has origin at the left bottom conner, while Qt at left top conner
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
-			file.write(qPrintable(QString::number(image[y][x] / maxV) + "\t"));
+			file.write(qPrintable(QString::number(image[y][x]) + "\t"));
 		}
 		file.write("\n");
 	}
