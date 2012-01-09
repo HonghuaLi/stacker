@@ -8,6 +8,8 @@
 #include <QQueue>
 #include <functional>
 
+#include "EditSuggestion.h"
+
 class HiddenViewer;
 
 enum STACKING_TYPE
@@ -34,7 +36,7 @@ public:
 					  << "\tdefineHeight=" << defineHeight << std::endl; 
 		}
 
-		Point hotPoint(){return hotSamples[0];}
+		Point hotPoint(){return hotSamples[hotSamples.size()/2];}
 	};
 
 public:
@@ -69,10 +71,13 @@ public:
 	void applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS );
 	void applyHeuristicsOnHotRing( HotSpot& HS );
 	std::vector< Vec3d > getHorizontalMoves( HotSpot& HS );
-	double preStackability;
+	double preStackability, preVolume;
 	Vec3d pre_bbmin, pre_bbmax;
 	bool satisfyBBConstraint();
 	bool isUnique( ShapeState state, double threshold );
+
+	// Suggestions
+	QVector<EditSuggestion> getSuggestions();
 
 	// Numeric
 	double getValue( std::vector< std::vector < double > >& image, int x, int y, int r );
@@ -134,6 +139,7 @@ public:
 	std::vector< HotSpot >  upperHotSpots;
 	std::vector< HotSpot >  lowerHotSpots;
 	std::set< QString> hotSegments;
+	QVector<EditSuggestion> suggestions;
 
 	QVector< ShapeState > usedCandidateSolutions;
 	QQueue< ShapeState > candidateSolutions;

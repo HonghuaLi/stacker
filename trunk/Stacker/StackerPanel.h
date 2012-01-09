@@ -39,6 +39,9 @@ public slots:
 	void onImproveButtonClicked();
 	void onHotspotsButtonClicked();
 	void onSolutionButtonClicked();
+	void onSuggestButtonClicked();
+	void onSaveSuggestionsButtonClicked();
+	void onLoadSuggestionsButtonClicked();
 
 	// Others
 	void setActiveScene( Scene * );

@@ -46,6 +46,7 @@ public:
 
 	Point closestPointVertices(const Point & p);
 	double closestDistancePointVertices(const Point & p);
+	uint closestVertex( const Point & p );
 
 	std::vector<Point> clonePoints();
 	void setFromPoints(const std::vector<Point>& fromPoints);
@@ -95,6 +96,7 @@ public:
 	Vec3d getBaryFace( Face f, double U, double V );
 	void fillTrianglesList();
 	std::vector<unsigned int> cloneTriangleIndices();
+
 	std::vector<unsigned int> triangles, edges;
 
 	QString id;

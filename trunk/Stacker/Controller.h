@@ -5,6 +5,8 @@
 #include "Voxeler.h"
 #include "Group.h"
 
+class EditSuggestion;
+
 extern double JOINT_THRESHOLD;
 
 class QSegMesh;
@@ -113,9 +115,11 @@ public:
 	// Save and load
 	void save(std::ofstream &outF);
 	void load(std::ifstream &inF);
+	double volume();
 
 	// DEBUG:
 	void test();
+
 
 private:
 	QMap<QString, Primitive*> primitives;

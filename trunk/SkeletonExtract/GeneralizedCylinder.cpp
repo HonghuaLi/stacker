@@ -4,43 +4,47 @@
 #include "ClosedPolygon.h"
 #include "SimpleDraw.h"
 
-GeneralizedCylinder::GeneralizedCylinder( std::vector<Point> spinePoints, QSurfaceMesh * mesh )
+GeneralizedCylinder::GeneralizedCylinder( std::vector<Point> spinePoints, QSurfaceMesh * mesh, bool computeRadius /*= true */ )
 {
 	// Build minimum rotation frames on this spine
 	frames = RMF (spinePoints);
 
 	double sumRadius = 0; // for average radius
 	int numNonZero = 0;
-	double nonZeroRadius = 0.0;
+	double nonZeroRadius = 1.0;
 
 	// Build cross-section
 	for(uint i = 0; i < spinePoints.size(); i++)
 	{
 		// Find radius from the cross-section
 		double radius = 0;
-		std::vector<Point> cur_cs;
+
+		if(computeRadius)
+		{
+			std::vector<Point> cur_cs;
 		
-		ClosedPolygon polygon(frames.point[i]);
+			ClosedPolygon polygon(frames.point[i]);
 
-		for(uint fi = 0; fi < mesh->face_array.size(); fi++)
-		{
-			Vec3d p1, p2;
+			for(uint fi = 0; fi < mesh->face_array.size(); fi++)
+			{
+				Vec3d p1, p2;
 
-			if(ContourFacet(frames.U[i].t, frames.point[i], mesh->facePoints(mesh->face_array[fi]), p1, p2) > 0)
-				polygon.insertLine(p1,p2);
+				if(ContourFacet(frames.U[i].t, frames.point[i], mesh->facePoints(mesh->face_array[fi]), p1, p2) > 0)
+					polygon.insertLine(p1,p2);
+			}
+
+			polygon.close();
+
+			// Sort based on distance and filter based on segment distance
+			foreach(Point p, polygon.closedPoints)
+			{
+				radius = Max(radius, (p - frames.point[i]).norm());
+			}
+
+			// Some filters to be fail-safe
+			if(nonZeroRadius == 0 && radius != 0)	nonZeroRadius = radius;
+			if(radius > 10 * nonZeroRadius)	radius = 0;
 		}
-
-		polygon.close();
-
-		// Sort based on distance and filter based on segment distance
-		foreach(Point p, polygon.closedPoints)
-		{
-			radius = Max(radius, (p - frames.point[i]).norm());
-		}
-
-		// Some filters to be fail-safe
-		if(nonZeroRadius == 0 && radius != 0)	nonZeroRadius = radius;
-		if(radius > 10 * nonZeroRadius)	radius = 0;
 
 		crossSection.push_back(Circle(frames.point[i], radius, frames.U[i].t, i));
 

@@ -19,6 +19,7 @@ QDeformController * defCtrl;
 #include "ConcentricGroup.h"
 #include "CoplanarGroup.h"
 
+
 Scene::Scene( QWidget *parent)
 {
 	activeMesh = NULL;
@@ -148,6 +149,14 @@ void Scene::draw()
 	// DEBUG
 	if (!isEmpty())	activeObject()->drawDebug();
 	//if(defCtrl) defCtrl->draw();
+
+	// Suggestions
+	Vec p = camera()->position();
+	Vec3d pos(p.x, p.y, p.z);
+	double scaling = 0.05;//pos.norm() / 100.0;
+	pos.normalize();	
+	foreach(EditSuggestion sg, suggestions)
+		sg.draw(scaling, Vec3d(0,0,1));
 }
 
 void Scene::drawWithNames()
@@ -327,7 +336,6 @@ void Scene::keyPressEvent( QKeyEvent *e )
 	{
 		activeObject()->controller->test();
 	}
-
 
 	// Regular behavior
 	QGLViewer::keyPressEvent(e);
