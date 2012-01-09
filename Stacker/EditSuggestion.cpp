@@ -58,7 +58,7 @@ void EditSuggestion::draw(double scale, Vec3d normal)
 	foreach(Point p, tail) glVertex3dv(p);
 	glEnd();
 
-	SimpleDraw::DrawSphere(center, 0.02);
+	SimpleDraw::DrawSphere(center, 0.02f);
 
 	// Outline
 	glColor3d(0,0,0);
