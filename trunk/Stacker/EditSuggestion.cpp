@@ -37,7 +37,7 @@ void EditSuggestion::draw(double scale, Vec3d normal)
 	tail.push_back(pos - 0.5*u - 0.5*v);
 
 	glDisable(GL_LIGHTING);
-	glClear(GL_DEPTH);
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 	// Color
 	uchar * rgb = new uchar[3];	
@@ -61,7 +61,7 @@ void EditSuggestion::draw(double scale, Vec3d normal)
 	SimpleDraw::DrawSphere(center, 0.02f);
 
 	// Outline
-	glColor3d(0,0,0);
+	glColor3d(0.2,0.2,0.2);
 	glBegin(GL_LINE_STRIP);
 	foreach(Point p, arrow) glVertex3dv(p);
 	glEnd();

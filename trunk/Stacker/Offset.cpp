@@ -188,7 +188,7 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 	case ROT_AROUND_AXIS:
 		PosAngles = singleAngle;
 		UVAngles = angles;
-		shifting = true;
+		shifting = false;
 		break;
 	case ROT_FREE_FORM:
 		PosAngles = angles;
@@ -217,7 +217,7 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 		{
 			// Up vector
 			double beta = UVAngles[j];
-			Vec3d newY = cross(cameraPos, X);
+			Vec3d newY = cross(X, cameraPos);
 			Vec3d UV = X * sin(beta) + newY * cos(beta);
 
 			// Horizontal shifting 
@@ -446,7 +446,7 @@ void Offset::detectHotspots( )
 		//visualizeRegions(zoomedHRs, "zoomed in hot regions.png");
 		Vec2i center(w/2, h/2);
 		int minDis = w;
-		int closestID = -1;
+		int closestID = 0;
 		for (int j=0;j<zoomedHRs.size();j++)
 		{
 			Vec2i c = centerOfRegion(zoomedHRs[j]);

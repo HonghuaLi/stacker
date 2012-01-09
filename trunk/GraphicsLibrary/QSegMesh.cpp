@@ -423,7 +423,7 @@ void QSegMesh::drawDebug()
 	for (int i=0;i<segment.size();i++)
 		segment[i]->drawDebug();
 
-	drawAABB();
+	//drawAABB();
 }
 
 void QSegMesh::setObjectName( const QString &name )

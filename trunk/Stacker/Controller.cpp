@@ -69,7 +69,7 @@ void Controller::draw()
 {
 	foreach(Primitive * prim, primitives)
 	{
-		prim->drawDebug();
+		//prim->drawDebug();
 		prim->draw();
 
 		// Draw proximity debug 
@@ -83,11 +83,11 @@ void Controller::draw()
 	}
 
 	// DEBUG:
-	foreach(Point p, debugPoints)
-		SimpleDraw::IdentifyPoint(p);
+	//foreach(Point p, debugPoints)
+	//	SimpleDraw::IdentifyPoint(p);
 
-	foreach(std::vector<Point> line, debugLines) 
-		SimpleDraw::IdentifyConnectedPoints(line, 1.0,0,0);
+	//foreach(std::vector<Point> line, debugLines) 
+	//	SimpleDraw::IdentifyConnectedPoints(line, 1.0,0,0);
 }
 
 void Controller::drawNames(bool isDrawParts)
