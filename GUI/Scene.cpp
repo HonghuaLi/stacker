@@ -61,7 +61,7 @@ void Scene::init()
 	this->modifyMode = DEFAULT;
 
 	// Background
-	setBackgroundColor(backColor = QColor(50,50,60));
+	setBackgroundColor(backColor = QColor(255,255,255));
 
 	// Lights
 	setupLights();
@@ -447,7 +447,7 @@ void Scene::postDraw()
 	// Draw offset function
 	if(isDrawOffset && activeObject() && activeObject()->data2D.contains("offset"))
 	{
-		int size = 400;
+		int size = width();
 
 		glViewport(width() - size, size * -0.1,size,size);
 		glScissor(width() - size, size * -0.1,size,size);

@@ -86,7 +86,7 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;QtMultimediad4.lib;QtXmld4.lib;GLee.lib;QtScriptd4.lib;QGLViewerd2.lib;libamd.lib;libumfpack.lib;QtOpenGLd4.lib;libgles_cm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;QtMultimediad4.lib;QtXmld4.lib;GLee.lib;QtScriptd4.lib;QGLViewerd2.lib;libamd.lib;libumfpack.lib;QtOpenGLd4.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.\libQGLViewer\QGLViewer\lib;.\GL;.\OpenMesh\lib;.\SkeletonExtract\Solver\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
