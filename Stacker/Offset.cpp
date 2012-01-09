@@ -184,6 +184,7 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 		PosAngles = singleAngle;
 		UVAngles = singleAngle;
 		shifting = false;
+		break;
 	case ROT_AROUND_AXIS:
 		PosAngles = singleAngle;
 		UVAngles = angles;
@@ -195,6 +196,8 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 		shifting = true;
 		break;
 	}
+
+	//std::cout << "Stacking type: " << type << "\t Shifting = " << shifting << std::endl;
 
 	// Searching
 	double minO_max = 2 * objectH;
@@ -218,7 +221,7 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 			Vec3d UV = X * sin(beta) + newY * cos(beta);
 
 			// Horizontal shifting 
-			int numSteps = shifting? 2 : 0;
+			int numSteps = shifting? 3 : 0;
 			Vec3d bb = activeObject()->bbmax - activeObject()->bbmin;
 			double xStep = bb[0] / 20;
 			double yStep = bb[1] / 20;
@@ -254,7 +257,7 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 	activeObject()->stackability = 1 - O_max/objectH;
 	activeObject()->theta = DEGREES(bestPosAngle);
 	activeObject()->phi = DEGREES(bestUVAngle);
-	activeObject()->translation = bestShift;
+	activeObject()->translation = Vec3d(bestShift[0], -bestShift[1], 0);
 
 	// Save offset as image
 	//saveAsImage(offset, O_max, "offset function.png");
@@ -982,13 +985,14 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 	double threshold = isUpper? MaxElement(curr_op_env) : MinElement( curr_op_env );
 
 	//============ debug code
-	//std::vector< std::vector< double > > debugImg = createImage( offset[0].size(), offset.size(), 0. );
-	//setRegionColor(debugImg, hotRegion, 1.0);
+	std::vector< std::vector< double > > debugImg = createImage( offset[0].size(), offset.size(), 0. );
+	setRegionColor(debugImg, hotRegion, 1.0);
 	//============ end of debug code
 
 	// The size of the hot region
 	Vec2i size = sizeofRegion(hotRegion);
 	int step = Max(size.x(), size.y());
+	step *= 1.5;
 
 	// Search for optional locations in 1-K rings
 	int K = 5;
@@ -998,11 +1002,15 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 		for (int j = 0; j < deltas.size(); j++ )
 		{
 			std::vector< Vec2i > shiftedRegion = shiftRegionInBB(hotRegion, deltas[j], bbmin, bbmax);
-			if (shiftedRegion.empty())  continue; // Out of BB
+			if (shiftedRegion.empty())  
+			{
+				std::cout << "Out of BB" << std::endl;
+				continue; // 
+			}
 
-			////============ debug code
-			//setRegionColor(debugImg, shiftedRegion, 1.0 - k * 0.1 );
-			////============ end of debug code
+			//============ debug code
+			setRegionColor(debugImg, shiftedRegion, 1.0 - k * 0.1 );
+			//============ end of debug code
 
 			std::vector< double > new_op_env = getValuesInRegion(op_envelope, shiftedRegion, x_flipped);
 			double newValue = isUpper? MinElement( new_op_env ) : MaxElement( new_op_env );
@@ -1024,7 +1032,7 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 		}
 	}
 
-//	saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
+	saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
 
 	return Ts;
 }
@@ -1066,33 +1074,44 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 
 		// Move the current hot spot
 		prim->movePoint(hotPoint, Ts[i]);
+
 		prim->addFixedPoint(hotPoint + Ts[i]);
 
-			
 		// fix the hot segments pair
 		ctrl->regroupPair(prim->id, op_prim->id);
+
 
 		// Propagation the deformation
 		prim->isFrozen = true;
 		op_prim->isFrozen = true;
 		ctrl->weakPropagate();
 
+
 		// Check if this is a candidate solution
 
-		if ( satisfyBBConstraint() )
+//		if ( satisfyBBConstraint() )
 		{
 			double stackability = computeOffsetOfShape();
-			if (stackability > preStackability + 0.1)
+//			if (stackability > preStackability + 0.05)
 			{
 				ShapeState state = ctrl->getShapeState();
-				if (isUnique(state, 4))
+//				if (isUnique(state, 0.5))
 				{
 					state.stackability = stackability;
 					candidateSolutions.enqueue(state);
+
+					// Suggestion
+					EditSuggestion suggest;
+					suggest.center = hotPoint;
+					suggest.direction = Ts[i];
+					suggest.deltaS = stackability - preStackability;
+					suggest.deltaV = abs(ctrl->volume() - preVolume);
+
+
+					suggestions.push_back(suggest);
 				}				
 			}
 		}
-
 
 		// Restore the initial hot shape state
 		ctrl->setShapeState(initialHotShapeState);
@@ -1202,7 +1221,6 @@ void Offset::applyHeuristics()
 		applyHeuristicsOnHotRing(upperHS);
 	else
 		applyHeuristicsOnHotspot(upperHS, lowerHS);		
-
 
 	if (lowerHS.isRing)
 		applyHeuristicsOnHotRing(lowerHS);
@@ -1324,10 +1342,10 @@ bool Offset::satisfyBBConstraint()
 	Vec3d currBB = activeObject()->bbmax - activeObject()->bbmin;
 
 	Vec3d diff = preBB - currBB;
-	if ( diff[0] < 0 || diff[2] < 0 )
+	if ( diff[0] < 0 || diff[1] < 0 )
 		result = false;
 
-	if( abs(diff[1]) > 0.1 )
+	if( abs(diff[2]) > 0.1 )
 		result = false;
 
 	// debug
@@ -1392,5 +1410,73 @@ Vec2i Offset::centerOfRegion( std::vector< Vec2i >& region )
 }
 
 
+QVector<EditSuggestion> Offset::getSuggestions()
+{
+	suggestions.clear();
+	candidateSolutions.clear();
+	solutions.clear();
+	// The bounding box constraint is hard
+	pre_bbmin = activeObject()->bbmin;
+	pre_bbmax = activeObject()->bbmax;
+	double scale = 1.2;
+	pre_bbmin[0] *= scale;
+	pre_bbmin[1] *= scale;
+	pre_bbmax[0] *= scale;
+	pre_bbmax[1] *= scale;
 
+	preVolume = activeObject()->controller->volume();
 
+	improveStackability();
+
+	// Debug: add candidate solutions to solutions
+	foreach (ShapeState state, candidateSolutions)
+		solutions.push_back(state);
+
+	double minS = DBL_MAX;
+	double maxS = DBL_MIN;
+	double minV = DBL_MAX;
+	double maxV = DBL_MIN;
+
+	foreach(EditSuggestion sg, suggestions)
+	{
+		double s = sg.deltaS;
+		double v = sg.deltaV;
+
+		minS = Min(minS, s);
+		maxS = Max(maxS, s);
+		minV = Min(minV, v);
+		maxV = Max(maxV, v);
+	}
+
+	double rangeS = maxS - minS;
+	double rangeV = maxV - minV;
+	for(int i = 0; i < suggestions.size(); i++)
+	{
+		double s = (suggestions[i].deltaS - minS) / rangeS;
+		double v = (suggestions[i].deltaV - minV) / rangeV;
+
+		double alpha = 0.7;
+		suggestions[i].value = alpha * s + (1-alpha)*v;
+
+	}
+
+	double minValue = DBL_MAX;
+	double maxValue = DBL_MIN;
+
+	foreach(EditSuggestion sg, suggestions)
+	{
+		double s = sg.value;
+
+		minValue = Min(minValue, s);
+		maxValue = Max(maxValue, s);
+
+	}
+
+	double range = maxValue - minValue;
+	for(int i = 0; i < suggestions.size(); i++)
+	{
+		suggestions[i].value = (suggestions[i].value - minValue) / range;
+	}
+
+	return suggestions;
+}

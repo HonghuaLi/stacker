@@ -19,7 +19,8 @@ public:
 
 public:
 	virtual void fit();
-	virtual void createGC( std::vector<Point> spinePoints );
+	virtual void createGC( std::vector<Point> spinePoints, bool computeRadius = true );
+
 	virtual void computeMeshCoordiantes();
 	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
 	virtual void deformMesh();

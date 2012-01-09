@@ -35,8 +35,8 @@ void JointGroup::draw()
 	Primitive * a = getPrimitive(nodes.values().first());
 	Primitive * b = getPrimitive(nodes.values().last());
 
-	SimpleDraw::IdentifyPoint( a->fromCoordinate(coordinates[a->id]) );
-	SimpleDraw::IdentifyPoint( b->fromCoordinate(coordinates[b->id]) );
+	SimpleDraw::IdentifyPoint( a->fromCoordinate(coordinates[a->id]), 1,0,1, 5 );
+	SimpleDraw::IdentifyPoint( b->fromCoordinate(coordinates[b->id]), 0,1,0, 8 );
 }
 
 QVector<QString> JointGroup::regroup()
@@ -60,8 +60,10 @@ QVector<QString> JointGroup::regroup()
 	// The joint has been apart, try to join them again
 	Vec3d newPos = frozen->fromCoordinate(coordinates[frozen->id]);
 	Vec3d oldPos = non_frozen->fromCoordinate(coordinates[non_frozen->id]);
+
 	non_frozen->movePoint(oldPos, newPos - oldPos);
-	coordinates[non_frozen->id] = non_frozen->getCoordinate(newPos);
+
+//	coordinates[non_frozen->id] = non_frozen->getCoordinate(newPos);
 
 	// Fixed the joint
 	non_frozen->addFixedPoint(newPos);

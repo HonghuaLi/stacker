@@ -66,9 +66,9 @@ void GCylinder::fit()
 	Vec3d q = gc->frames.point.back();
 }
 
-void GCylinder::createGC( std::vector<Point> spinePoints )
+void GCylinder::createGC( std::vector<Point> spinePoints, bool computeRadius )
 {
-	gc = new GeneralizedCylinder( spinePoints, m_mesh );
+	gc = new GeneralizedCylinder( spinePoints, m_mesh, computeRadius );
 	
 	printf(" GC with %d cross-sections. ", gc->crossSection.size());
 	
@@ -92,17 +92,18 @@ void GCylinder::draw()
 
 	glEnable(GL_BLEND); 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4d(0, 0.5, 1, 0.5);
 
 	// Cross-sections
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
 		glLineWidth(2.0);
-		if(isSelected) glColor4d(1, 1, 0, 1.0);
+		glColor4d(0, 0.5, 1, 0.5); // blue
+
+		if(isSelected) glColor4d(1, 1, 0, 1.0); // yellow
 
 		if(c.index == this->selectedPartId){
 			glLineWidth(6.0);
-			glColor4d(0, 1, 0, 1.0);
+			glColor4d(0, 1, 0, 1.0); // green
 		}
 
 		std::vector<Point> pnts = c.toSegments(30, gc->frames.U[c.index].s, deltaScale);
@@ -380,6 +381,18 @@ std::vector<double> GCylinder::getCoordinate( Point v )
 	coords.insert(coords.begin(), c.coord_n.begin(), c.coord_n.end());
 	coords.insert(coords.begin(), c.coord_v.begin(), c.coord_v.end());
 
+	//uint vi = m_mesh->closestVertex(v);
+
+	//Point closestPoint = m_mesh->getVertexPos(vi);
+	//Vec3d delta = v - closestPoint;
+
+	//std::vector<double> coords;
+
+	//coords.push_back(vi);
+	//coords.push_back(delta[0]);
+	//coords.push_back(delta[1]);
+	//coords.push_back(delta[2]);
+
 	return coords;
 }
 
@@ -399,6 +412,12 @@ Point GCylinder::fromCoordinate( std::vector<double> coords )
 
 	gcd->initDeform();
 	return gcd->deformedPoint(c);
+
+	//uint vi = coords[0];
+
+	//Vec3d delta(coords[1], coords[2], coords[3]);
+
+	//return m_mesh->getVertexPos(vi) + delta;
 }
 
 std::vector <Vec3d> GCylinder::majorAxis()
@@ -506,6 +525,7 @@ void GCylinder::translate( Vec3d &T )
 		gc->frames.point[i] += T;
 
 	gc->frames.compute();
+	gc->realignCrossSections();
 	deformMesh();
 }
 
@@ -536,30 +556,28 @@ void GCylinder::setSymmetryPlanes( int nb_fold )
 
 void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 {
+
 	// theta = <p, j, p + T>
 	Vec3d v1 = p - joint;
-	Vec3d v2 = (p + T) - joint;	
-	
-	// Rotation matrix
-	Vec3d rotAxis = cross( v1, v2 );
-	double theta = DEGREES( acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1)) );
-	if ( dot( rotAxis, cross( v1.normalized(),v2.normalized() ) ) < 0 )
-		theta *= -1;
+	Vec3d v2 = (p + T) - joint;
 
-	Eigen::Matrix3d R = rotationMatrixAroundAxis(rotAxis, theta);
+	double theta = acos(dot(v1.normalized(), v2.normalized()));
+	Vec3d axis = cross(v1, v2).normalized();
 
 	// 1) Rotate with respect to joint (theta)
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
-		Vec3d newCenter = rotatePointByMatrix( R, c.center - joint ) + joint;
-		Vec3d newNormal = rotatePointByMatrix( R, c.n);
+		Vec3d newNormal = RotateAround(c.n, joint, axis, theta);
+		Vec3d newCenter = RotateAround(c.center, joint, axis, theta);
 
-		gc->frames.point[c.index] = newCenter;
 		gc->crossSection[c.index].n = newNormal;
+		gc->frames.point[c.index] = newCenter;
 	}
-	
+
 	// 2) Scale along direction (joint -> p + T)
-	double scaleAlong = v2.norm() / v1.norm();
+	double scaleAlong = 1;
+	if (v1.norm() > 1e-10)
+		scaleAlong = v2.norm() / v1.norm();
 
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 		gc->frames.point[c.index] = joint + ((gc->frames.point[c.index] - joint) * scaleAlong);
@@ -567,6 +585,41 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	gc->frames.compute();
 	gc->realignCrossSections();
 	deformMesh();
+
+	//// theta = <p, j, p + T>
+	//Vec3d v1 = p - joint;
+	//Vec3d v2 = (p + T) - joint;	
+
+	//
+	//// Rotation matrix
+	//Vec3d rotAxis = cross( v1, v2 );
+	//double theta = DEGREES( acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1)) );
+	//if ( dot( rotAxis, cross( v1.normalized(),v2.normalized() ) ) < 0 )
+	//	theta *= -1;
+
+	//Eigen::Matrix3d R = rotationMatrixAroundAxis(rotAxis, theta);
+
+	//// 1) Rotate with respect to joint (theta)
+	//foreach(GeneralizedCylinder::Circle c, gc->crossSection)
+	//{
+	//	Vec3d newCenter = rotatePointByMatrix( R, c.center - joint ) + joint;
+	//	Vec3d newNormal = rotatePointByMatrix( R, c.n);
+
+	//	gc->frames.point[c.index] = newCenter;
+	//	gc->crossSection[c.index].n = newNormal;
+	//}
+	//
+	//// 2) Scale along direction (joint -> p + T)
+	//double scaleAlong = 1;
+	//if (v1.norm() > 1e-10)
+	//	scaleAlong = v2.norm() / v1.norm();
+
+	//foreach(GeneralizedCylinder::Circle c, gc->crossSection)
+	//	gc->frames.point[c.index] = joint + ((gc->frames.point[c.index] - joint) * scaleAlong);
+
+	//gc->frames.compute();
+	//gc->realignCrossSections();
+	//deformMesh();
 }
 
 void GCylinder::movePoint( Point p, Vec3d T )
@@ -603,6 +656,7 @@ void GCylinder::movePoint( Point p, Vec3d T )
 	else if (fixedPoints.size() < 2)
 	{
 		deformRespectToJoint(fixedPoints.front(), p, T);
+
 	}
 	else
 	// move corresponding curve piece only
@@ -651,6 +705,11 @@ void GCylinder::save( std::ofstream &outF )
 	{
 		outF << p << "\t";
 	}
+
+	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
+	{
+		outF << c.radius << "\t";
+	}
 }
 
 void GCylinder::load( std::ifstream &inF )
@@ -669,6 +728,12 @@ void GCylinder::load( std::ifstream &inF )
 		originalSpine.push_back(p);
 	}
 
-	createGC(originalSpine);
+	createGC(originalSpine, false);
+
+	for(int i = 0; i < skeletonJoints; i++)
+	{
+		inF >> gc->crossSection[i].radius;
+	}
+
 	buildCage();
 }

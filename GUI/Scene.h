@@ -25,6 +25,9 @@ enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE,
 #include "QDeformController.h"
 extern QDeformController * defCtrl;
 
+
+#include "EditSuggestion.h"
+
 class Scene : public QGLViewer{
 
 	Q_OBJECT
@@ -92,6 +95,9 @@ private:
 
 
 // Objects in the scene
+public:
+	QVector<EditSuggestion> suggestions;
+
 private:
 	ManipulatedFrame * activeFrame;
 	QVector<Wire> activeWires;

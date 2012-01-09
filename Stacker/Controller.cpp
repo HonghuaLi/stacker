@@ -5,9 +5,11 @@
 #include "Primitive.h"
 #include "Offset.h"
 #include <QQueue>
-#include "JointGroup.h"
 
+#include "JointGroup.h"
 double JOINT_THRESHOLD = 0.035;
+
+#include "EditSuggestion.h"
 
 Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 {
@@ -111,6 +113,7 @@ void Controller::select(QString id)
 	{
 		foreach(Primitive * prim, primitives)
 			prim->isSelected = false;
+
 		return;
 	}
 
@@ -502,7 +505,7 @@ void Controller::weakPropagate(QVector<QString> seeds)
 
 			// Only frozen \next's are considered
 			foreach(QString next, regrouped)
-				if (getPrimitive(next)->isFrozen)	frozen.enqueue(next);
+				frozen.enqueue(next);
 
 			//QMap< QString, bool > debugFrozenFlags2 = getFrozenFlags();
 		}
@@ -637,12 +640,12 @@ void Controller::test()
 
 	Point p(0,0,0), q(0,0,0), r(0,0,0), T(0,0,0);
 
-	/*  Test : deform respect joint
+	/*  Test : deform respect joint*/
 	std::vector<Point> A = curves.front(), B = curves.back();
 	foreach(Point pnt, A) p += pnt; p /= N;
 	foreach(Point pnt, B) q += pnt; q /= N;
 	T = Vec3d(0.5,0.5,0);
-	prim->deformRespectToJoint(p, q, T);*/
+	prim->deformRespectToJoint(p, q, T);
 
 
 	/* Test: multiple fixed points  */
@@ -788,4 +791,15 @@ QVector< Vec3d > Controller::centerOfClusters( QVector< Vec3d> &data, int nbClus
 	}
 
 	return centers;
+}
+
+double Controller::volume()
+{
+	double result = 0;
+
+	foreach (Primitive * prim, primitives)
+		result += prim->volume();
+
+	return result;
+
 }

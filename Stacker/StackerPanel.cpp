@@ -12,6 +12,7 @@
 #include <QDir>
 #include "Macros.h"
 #include "GCylinder.h"
+#include <QFileDialog>
 
 StackerPanel::StackerPanel()
 {
@@ -36,7 +37,7 @@ StackerPanel::StackerPanel()
 	hiddenDock->setWidget (hidden_viewer);
 	layout->addWidget(hiddenDock, row++, 0,1,3);
 	hiddenDock->setFloating(true);
-	hiddenDock->setWindowOpacity(0.0);
+	hiddenDock->setWindowOpacity(1.0);
 
 	activeOffset = new Offset(hidden_viewer);
 
@@ -45,6 +46,9 @@ StackerPanel::StackerPanel()
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
 	connect(panel.solutionButton, SIGNAL(clicked()), SLOT(onSolutionButtonClicked()));
+	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
+	connect(panel.saveSuggestionsButton, SIGNAL(clicked()), SLOT(onSaveSuggestionsButtonClicked()));
+	connect(panel.loadSuggestionsButton, SIGNAL(clicked()), SLOT(onLoadSuggestionsButtonClicked()));
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(panel.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
 	connect(panel.radioController, SIGNAL(clicked()), SLOT(selectModeController()));
@@ -657,6 +661,52 @@ void StackerPanel::setStackCount( int num )
 {
 	stacker_preview->stackCount = num;
 	stacker_preview->updateActiveObject();
+}
+
+void StackerPanel::onSuggestButtonClicked()
+{
+	activeScene->suggestions.clear();
+	activeScene->suggestions = activeOffset->getSuggestions();
+	
+	emit(objectModified());
+}
+
+void StackerPanel::onSaveSuggestionsButtonClicked()
+{
+	if(!activeScene || !activeObject())	return;
+
+	QVector< EditSuggestion > &suggestions = activeScene->suggestions;
+	if (suggestions.empty()) return;
+
+	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", "", "Group File (*.sgt)"); 
+	std::ofstream outF(qPrintable(fileName), std::ios::out);
+
+	outF << suggestions.size() << std::endl;
+	foreach(EditSuggestion sgt, suggestions)
+	{
+		outF << sgt.center << '\t' << sgt.direction << '\t' << sgt.value << std::endl;
+	}
+	outF.close();
+}
+
+void StackerPanel::onLoadSuggestionsButtonClicked()
+{
+	if(!activeScene)	return;
+
+	QString fileName = QFileDialog::getOpenFileName(0, "Import Groups", "", "Group File (*.sgt)"); 
+	std::ifstream inF(qPrintable(fileName), std::ios::in);
+
+	int num;
+	inF >> num;
+	activeScene->suggestions.clear();
+	for (int i=0; i<num; i++)
+	{
+		EditSuggestion sgt;
+		inF >> sgt.center >> sgt.direction >> sgt.value;
+		activeScene->suggestions.push_back(sgt);
+	}
+
+	inF.close();
 }
 
 

@@ -657,6 +657,30 @@ double QSurfaceMesh::closestDistancePointVertices( const Point & p )
 	return (p - closestPointVertices(p)).norm();
 }
 
+uint QSurfaceMesh::closestVertex( const Point & p )
+{
+	Point closePoint(0,0,0);
+	double minDist = DBL_MAX;
+	uint closestIndex = 0;
+
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	for(vit = vertices_begin(); vit != vend; ++vit)
+	{
+		double currDist = (points[vit] - p).norm();
+
+		if(currDist < minDist)
+		{
+			minDist = currDist;
+			closePoint = points[vit];
+			closestIndex = Vertex(vit).idx();
+		}
+	}
+
+	return closestIndex;
+}
+
 Point QSurfaceMesh::closestPointVertices(const Point & p)
 {
 	Point closePoint(0,0,0);

@@ -106,9 +106,14 @@ void StackerPreview::postDraw()
 
 	if(activeObject())
 	{
-		QString message = QString("O_max = %1; S = %2").arg(activeObject()->O_max).arg(
-			activeObject()->stackability);
+		QString message = QString("O_max = %1; S = %2").arg(activeObject()->O_max).arg(activeObject()->stackability);
 		renderText(0, this->height()- 10, message);
+
+		QString message2 = QString("Theta = %1; Phi = %2").arg(activeObject()->theta).arg(activeObject()->phi);
+		renderText(0, this->height()- 30, message2);
+
+		QString message3 = QString("Shift = %1,%2,%3").arg(activeObject()->translation[0]).arg(activeObject()->translation[1]).arg(activeObject()->translation[2]);
+		renderText(0, this->height()- 50, message3);
 	}
 }
 
