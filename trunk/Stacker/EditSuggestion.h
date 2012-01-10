@@ -15,6 +15,7 @@ public:
 	double value;
 
 	// debug values
+	int side;
 	double deltaS;
 	double deltaV;
 };
