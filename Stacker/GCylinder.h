@@ -22,7 +22,6 @@ public:
 	virtual void createGC( std::vector<Point> spinePoints, bool computeRadius = true );
 
 	virtual void computeMeshCoordiantes();
-	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
 	virtual void deformMesh();
 	virtual void draw();
 	virtual	void drawNames(int name, bool isDrawParts = false);

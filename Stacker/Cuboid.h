@@ -2,7 +2,6 @@
 #include "Primitive.h"
 #include "MinOBB3.h"
 #include <Eigen/Dense>
-#include "CuboidParam.h"
 
 //		  7-----------6                     Y
 //		 /|          /|                   f2^   /f5
@@ -28,7 +27,6 @@ public:
 	void fit(bool useAABB = true, int obb_method = 0);
 
 	// Deform the underlying geometry according to the \pre_state and current state
-	virtual void deform( PrimitiveParam* params, bool isPermanent = false);
 	virtual void deformMesh();
 
 	// Visualize the primitive and potential actions

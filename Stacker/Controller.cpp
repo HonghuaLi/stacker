@@ -21,9 +21,6 @@ Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 	// Assign numerical IDs
 	assignIds();
 
-	// Save original stats
-	originalStat = getStat();
-
 	primTypeNames.push_back("CUBOID");
 	primTypeNames.push_back("GC");
 	primTypeNames.push_back("WIRE");
@@ -60,8 +57,6 @@ void Controller::fitOBBs( bool useAABB /*= true*/ )
 		Cuboid* cub = new Cuboid(segment, segId, useAABB, 0);
 
 		primitives[segId] = cub;
-
-		currStat.params[segId] = (PrimitiveParam*) new CuboidParam(segId);
 	}
 }
 
@@ -185,22 +180,6 @@ void Controller::convertToCuboid( QString primitiveId, bool useAABB, int fit_met
 	//delete oldPrimitive;
 }
 
-void Controller::deformShape( PrimitiveParamMap& primParams, bool isPermanent )
-{
-	foreach(PrimitiveParam* param, primParams.params)
-	{
-		QString p_id = param->id;
-		Primitive * pri = primitives[p_id];
-		pri->deform(param);
-
-		// Update param for each primitive
-		PrimitiveParam* tmp = currStat.params[p_id];
-		currStat.params[p_id] = param->clone();
-		delete tmp;
-	}
-
-	m_mesh->computeBoundingBox();
-}
 
 Primitive * Controller::getPrimitive( uint id )
 {
@@ -217,16 +196,6 @@ uint Controller::numPrimitives()
 	return primitives.size();
 }
 
-void Controller::recoverShape()
-{
-	foreach(Primitive * prim, primitives)
-		(( Cuboid* )prim)->recoverMesh();
-		
-	// recovery the stat
-	currStat.params = originalStat.params;
-
-	m_mesh->computeBoundingBox();
-}
 
 int Controller::numHotPrimitives()
 {
@@ -239,71 +208,6 @@ int Controller::numHotPrimitives()
 	return num;
 }
 
-Controller::Stat& Controller::getStat()
-{
-	// Compute volume of each controller + total volume of Bounding Box
-	Point bbmin = Point( DBL_MAX, DBL_MAX, DBL_MAX);
-	Point bbmax = Point( DBL_MIN, DBL_MIN, DBL_MIN);
-
-	int pi = 0;
-	currStat.volumePrim = std::vector<double>(primitives.size());
-
-	foreach (Primitive * prim, primitives)
-	{
-		foreach (Point p, prim->points())
-		{
-			bbmin.minimize(p);
-			bbmax.maximize(p);
-		}
-
-		// Compute volume of each controller
-		currStat.volumePrim[pi++] = prim->volume();
-	}
-
-	// Compute total volume of controllers BB
-	Point center = (bbmin + bbmax) / 2.0;
-
-	currStat.volumeBB = abs((bbmax.x() - center.x()) * 
-						(bbmax.y() - center.y()) *
-						(bbmax.z() - center.z())) * 8;
-
-	QVector<QString> keys = primitives.keys().toVector();
-
-	// Compute proximity measure
-	for(uint i = 0; i < primitives.size(); i++)
-	{
-		for (uint j = i + 1; j < primitives.size(); j++)
-		{
-			Cuboid * pi = (Cuboid *)primitives[keys[i]];
-			Cuboid * pj = (Cuboid *)primitives[keys[j]];
-			
-			Vec3d p, q;
-
-			pi->currBox.ClosestSegment(pj->currBox, p, q);
-
-			currStat.proximity[std::make_pair(i, j)] = (p-q).norm();
-		}
-	}
-
-	// Compute coplanarity measure
-	for(uint i = 0; i < primitives.size(); i++)
-	{
-		for (uint j = i + 1; j < primitives.size(); j++)
-		{
-			Primitive * pi = primitives[keys[i]];
-			Primitive * pj = primitives[keys[j]];
-
-			currStat.coplanarity[std::make_pair(i, j)] = 0;
-		}
-	}
-
-	return currStat;
-}
-
-Controller::Stat& Controller::getOriginalStat()
-{
-	return this->originalStat;
-}
 
 Primitive * Controller::getSelectedPrimitive()
 {
@@ -802,4 +706,27 @@ double Controller::volume()
 
 	return result;
 
+}
+
+double Controller::originalVolume()
+{
+	double result = 0;
+
+	foreach (Primitive * prim, primitives)
+		result += prim->originalVolume;
+
+	return result;
+}
+
+double Controller::getDistortion()
+{
+	// Distortion terms
+	std::vector< double > D; 	
+
+	// Total volume difference
+	double orgV = originalVolume();
+	double D1 = abs(volume() - orgV) /orgV;
+
+	// Total Energy
+	return Sum(D);
 }

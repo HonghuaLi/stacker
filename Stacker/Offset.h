@@ -17,6 +17,14 @@ enum STACKING_TYPE
 	STRAIGHT_LINE, ROT_AROUND_AXIS, ROT_FREE_FORM
 };
 
+
+extern int NUM_EXPECTED_SOLUTION;
+extern double BB_TOLERANCE;
+
+
+typedef std::vector< std::vector<double> >	Buffer2d;
+typedef std::vector< std::vector<bool> >	Buffer2b;
+
 class Offset
 {
 public:
@@ -71,28 +79,25 @@ public:
 	void applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS );
 	void applyHeuristicsOnHotRing( HotSpot& HS );
 	std::vector< Vec3d > getHorizontalMoves( HotSpot& HS );
-	double preStackability, preVolume;
-	Vec3d pre_bbmin, pre_bbmax;
+	std::vector< Vec3d > getLocalMoves( HotSpot& HS );
 	bool satisfyBBConstraint();
 	bool isUnique( ShapeState state, double threshold );
 
 	// Suggestions
 	QVector<EditSuggestion> getSuggestions();
+	void normalizeSuggestions();
 
 	// Numeric
-	double getValue( std::vector< std::vector < double > >& image, int x, int y, int r );
-	static double getMinValue( std::vector< std::vector < double > >& image );
-	static double getMaxValue( std::vector< std::vector < double > >& image );	
-	double maxValueInRegion( std::vector< std::vector < double > >& image,  std::vector< Vec2i >& region);
-	std::vector< double > getValuesInRegion( std::vector< std::vector < double > >& image, 
+	static double getMinValue( Buffer2d & image );
+	static double getMaxValue( Buffer2d & image );	
+	double maxValueInRegion( Buffer2d& image,  std::vector< Vec2i >& region);
+	std::vector< double > getValuesInRegion( Buffer2d& image, 
 											 std::vector< Vec2i >& region, bool xFlipped = false );	
 	template< typename PREDICATE >
-	std::vector< Vec2i > getRegion( std::vector< std::vector < double > >& image, 
-									 std::vector< std::vector < bool > >& mask, 
+	std::vector< Vec2i > getRegion( Buffer2d& image, Buffer2b& mask, 
 									 Vec2i seed, PREDICATE predicate );
 	template< typename PREDICATE >
-	std::vector< std::vector< Vec2i > > getRegions(std::vector< std::vector < double > >& image, 
-																			PREDICATE predicate);
+	std::vector< std::vector< Vec2i > > getRegions(Buffer2d& image, PREDICATE predicate);
 
 	std::vector< Vec2i > deltaVectorsToKRing(int deltaX, int deltaY, int K);
 	std::vector< Vec2i > shiftRegionInBB( std::vector< Vec2i >& region, Vec2i delta, Vec2i bbmin, Vec2i bbmax );
@@ -107,13 +112,13 @@ public:
 	Vec3d unprojectedCoordinatesOf( uint x, uint y, int direction);
 	Vec2i projectedCoordinatesOf( Vec3d point, int pathID );
 	// Useful for debugging
-	static void saveAsImage( std::vector< std::vector < double > >& image, double maxV, QString fileName );
-	static void saveAsImage( std::vector< std::vector < bool > >& image, QString fileName );
-	static void saveAsData( std::vector< std::vector < double > >& image, double maxV, QString fileName );
+	static void saveAsImage( Buffer2d& image, double maxV, QString fileName );
+	static void saveAsImage( Buffer2d& image, QString fileName );
+	static void saveAsData( Buffer2d& image, double maxV, QString fileName );
 	void saveHotSpots( QString filename, int direction = 1, double percent = 1.0 );
 
-	void setRegionColor( std::vector< std::vector < double > >& image, std::vector< Vec2i >& region, double color );
-	void setPixelColor( std::vector< std::vector < double > >& image, Vec2i pos, double color );
+	void setRegionColor( Buffer2d& image, std::vector< Vec2i >& region, double color );
+	void setPixelColor( Buffer2d& image, Vec2i pos, double color );
 	static QRgb jetColor( double val, double min, double max );
 	void visualizeRegions( std::vector< std::vector<Vec2i> >& regions, QString filename );
 	void showSolution( int i );
@@ -127,21 +132,30 @@ public:
 	double O_max;
 	double objectH;
 
-	std::vector< std::vector<double> > upperEnvelope;
-	std::vector< std::vector<double> > lowerEnvelope;	
-	std::vector< std::vector<double> > upperDepth;
-	std::vector< std::vector<double> > lowerDepth;
-	std::vector< std::vector<double> > offset; 	
+	// Buffers
+	Buffer2d upperEnvelope;
+	Buffer2d lowerEnvelope;	
+	Buffer2d upperDepth;
+	Buffer2d lowerDepth;
+	Buffer2d offset; 	
 
+	// Hot stuff
 	std::map< QString, std::vector<Vec3d> > hotPoints;
 	std::vector< std::vector<Vec2i> > hotRegions;
 	std::vector< double > maxOffsetInHotRegions;
 	std::vector< HotSpot >  upperHotSpots;
 	std::vector< HotSpot >  lowerHotSpots;
 	std::set< QString> hotSegments;
+
+	// Suggestion
+	bool isSuggesting;
 	QVector<EditSuggestion> suggestions;
 
+	// Beat Searching
+	double orgStackability;
+	Vec3d org_bbmin, org_bbmax;
+	ShapeState currentCandidate;
 	QVector< ShapeState > usedCandidateSolutions;
-	QQueue< ShapeState > candidateSolutions;
-	QVector< ShapeState > solutions;
+	PQLessEnergy candidateSolutions;
+	PQLessDistortion solutions;
 };

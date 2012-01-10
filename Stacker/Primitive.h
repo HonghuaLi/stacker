@@ -1,19 +1,13 @@
 #pragma once
 
 #include "QSurfaceMesh.h"
-#include "PrimativeParam.h"
 #include "Plane.h"
 #include <QVector>
 #include <Eigen/Dense>
+#include "ShapeState.h"
 
 enum PrimType{ CUBOID, GC, WIRE};
 
-struct PrimitiveState
-{
-	 void* geometry;
-	 bool isFrozen;
-//	 QVector<Point> fixedPoints;
-};
 
 class Primitive
 {
@@ -26,7 +20,6 @@ public:
 
 	// Deform the underlying geometry according to the \pre_state and current state
 	virtual void deformMesh() = 0;
-	virtual void deform( PrimitiveParam* params, bool isPermanent = false) = 0;
 
 	// Visualize the primitive and potential actions
 	virtual void draw() = 0;
@@ -61,6 +54,7 @@ public:
 	// Primitive geometry
 	virtual std::vector <Vec3d> points() = 0;
 	virtual QSurfaceMesh getGeometry() = 0;
+	double originalVolume;
 	virtual double volume() = 0;
 	virtual std::vector<Vec3d> majorAxis() = 0;
 	virtual std::vector < std::vector <Vec3d> > getCurves() = 0;
@@ -108,4 +102,5 @@ public:
 	bool				isHot;			// Is this hot component?
 	bool				isDirty;		// Has the underlying geometry been updated?
 	bool				isFrozen;		// The seed of propagation
+	bool				isDraw;
 };

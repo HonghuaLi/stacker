@@ -7,9 +7,13 @@
 #include <numeric>
 #include <stack>
 
-#define ZERO_TOLERANCE 0.01
+#define ZERO_TOLERANCE 0.001
 #define BIG_NUMBER 10
 #define DEPTH_EDGE_THRESHOLD 0.1
+
+
+int NUM_EXPECTED_SOLUTION = 1;
+double BB_TOLERANCE = 1.1;
 
 
 // OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
@@ -24,6 +28,8 @@ Offset::Offset( HiddenViewer *viewer )
 	activeViewer = viewer;
 
 	HOT_RANGE = 0.95;
+
+	isSuggesting = false;
 }
 
 QSegMesh* Offset::activeObject()
@@ -545,7 +551,7 @@ std::vector< std::vector < T > > Offset::createImage( int w, int h, T intial )
 	return std::vector< std::vector < T > > ( h, std::vector<T>( w, intial ) );
 }
 
-void Offset::saveAsImage( std::vector< std::vector < double > >& image, double maxV, QString fileName )
+void Offset::saveAsImage( Buffer2d& image, double maxV, QString fileName )
 {
 	int h = image.size();
 	int w = image[0].size();
@@ -561,7 +567,7 @@ void Offset::saveAsImage( std::vector< std::vector < double > >& image, double m
 	Output.save(fileName);
 }
 
-void Offset::saveAsData( std::vector< std::vector < double > >& image, double maxV, QString fileName )
+void Offset::saveAsData( Buffer2d& image, double maxV, QString fileName )
 {
 	int h = image.size();
 	int w = image[0].size();
@@ -603,7 +609,7 @@ void Offset::saveHotSpots( QString filename, int direction, double percent)
 	file.close();
 }
 
-void Offset::saveAsImage( std::vector< std::vector < bool > >& image, QString fileName )
+void Offset::saveAsImage( Buffer2d& image, QString fileName )
 {
 	int h = image.size();
 	int w = image[0].size();
@@ -623,33 +629,7 @@ void Offset::saveAsImage( std::vector< std::vector < bool > >& image, QString fi
 }
 
 
-double Offset::getValue( std::vector< std::vector < double > >& image, int x, int y, int r )
-{
-	int w = image[0].size();
-	int h = image.size();	
-	
-	uint min_x = RANGED(0, x-r ,w-1);
-	uint max_x = RANGED(0, x+r, w-1);
-	uint min_y = RANGED(0, y-r ,h-1);
-	uint max_y = RANGED(0, y+r, h-1);
-
-	// Collect all the values in the neighborhood
-	std::vector<double> vals;
-	for (int i=min_y;i<=max_y;i++)
-		for (int j=min_x;j<=max_x;j++)
-			vals.push_back(image[i][j]);
-
-	// Check if (x, y) is on an edge by comparing the min and max
-	double result;
-	if (MaxElement(vals) - MinElement(vals) > ZERO_TOLERANCE)
-		result = BIG_NUMBER;
-	else
-		result = Sum(vals) / ((2*r+1)*(2*r+1));
-
-	return result;
-}
-
-double Offset::getMaxValue( std::vector< std::vector < double > >& image )
+double Offset::getMaxValue( Buffer2d& image )
 {
 	int h = image.size();
 
@@ -660,7 +640,7 @@ double Offset::getMaxValue( std::vector< std::vector < double > >& image )
 	return MaxElement(row_max);
 }
 
-double Offset::getMinValue( std::vector< std::vector < double > >& image )
+double Offset::getMinValue( Buffer2d& image )
 {
 	int h = image.size();
 
@@ -671,7 +651,7 @@ double Offset::getMinValue( std::vector< std::vector < double > >& image )
 	return MinElement(row_min);
 }
 
-double Offset::maxValueInRegion( std::vector< std::vector < double > >& image,  std::vector< Vec2i >& region )
+double Offset::maxValueInRegion( Buffer2d& image,  std::vector< Vec2i >& region )
 {
 	double result = 0;
 	for (int i=0;i<region.size();i++)
@@ -688,7 +668,7 @@ double Offset::maxValueInRegion( std::vector< std::vector < double > >& image,  
 
 template< typename PREDICATE >
 std::vector< Vec2i > 
-	Offset::getRegion( std::vector< std::vector < double > >& image, 
+	Offset::getRegion( Buffer2d& image, 
 			std::vector< std::vector < bool > >& mask, 	Vec2i seed, PREDICATE predicate )
 {
 	std::vector< Vec2i > region;
@@ -730,7 +710,7 @@ std::vector< Vec2i >
 
 template< typename PREDICATE >
 std::vector< std::vector< Vec2i > >
-	Offset::getRegions( std::vector< std::vector < double > >& image, PREDICATE predicate )
+	Offset::getRegions( Buffer2d& image, PREDICATE predicate )
 {
 	std::vector< std::vector< Vec2i > > regions;
 
@@ -771,7 +751,7 @@ void Offset::clear()
 	hotSegments.clear();
 }
 
-std::vector< double > Offset::getValuesInRegion( std::vector< std::vector < double > >& image, 
+std::vector< double > Offset::getValuesInRegion( Buffer2d& image, 
 												 std::vector< Vec2i >& region, bool xFlipped /*= false*/ )
 {
 	std::vector< double > values;
@@ -909,7 +889,7 @@ Vec2i Offset::projectedCoordinatesOf( Vec3d point, int pathID )
 	return Vec2i(p[0], (h-1)-p[1]);
 }
 
-void Offset::setRegionColor( std::vector< std::vector < double > >& image, std::vector< Vec2i >& region, double color )
+void Offset::setRegionColor( Buffer2d& image, std::vector< Vec2i >& region, double color )
 {
 	uint w = image[0].size();
 	uint h = image.size();
@@ -923,7 +903,7 @@ void Offset::setRegionColor( std::vector< std::vector < double > >& image, std::
 	}
 }
 
-void Offset::setPixelColor( std::vector< std::vector < double > >& image, Vec2i pos, double color )
+void Offset::setPixelColor( Buffer2d& image, Vec2i pos, double color )
 {
 	uint w = image[0].size();
 	uint h = image.size();
@@ -964,8 +944,8 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 	// The hot region	
 	std::vector< Vec2i > &hotRegion = hotRegions[HS.hotRegionID];
 
-	// Recompute the OPPOSITE envelope using hot segments only
-	computeEnvelopeOfShape(-HS.side);
+	// Recompute the envelopes using hot segments only
+	computeOffsetOfShape();
 
 	// Switchers
 	bool isUpper = (HS.side == 1);
@@ -974,8 +954,8 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 
 	// Project BB to 2D buffer
 	//std::vector< std::vector< double > > BBImg = createImage( offset[0].size(), offset.size(), 0. );
-	Vec2i bbmin = projectedCoordinatesOf(pre_bbmin, 3);
-	Vec2i bbmax = projectedCoordinatesOf(pre_bbmax, 3);
+	Vec2i bbmin = projectedCoordinatesOf(org_bbmin, 3);
+	Vec2i bbmax = projectedCoordinatesOf(org_bbmax, 3);
 	//setPixelColor(BBImg, bbmin, 1.0);
 	//setPixelColor(BBImg, bbmax, 0.5);
 	//saveAsImage(BBImg, 1.0, "BB projection.png");
@@ -992,10 +972,10 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 	// The size of the hot region
 	Vec2i size = sizeofRegion(hotRegion);
 	int step = Max(size.x(), size.y());
-	step *= 1.5;
+	step *= 2;
 
 	// Search for optional locations in 1-K rings
-	int K = 5;
+	int K = 4;
 	for (uint k = 1; k < K; k++)
 	{
 		std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
@@ -1014,7 +994,7 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 
 			std::vector< double > new_op_env = getValuesInRegion(op_envelope, shiftedRegion, x_flipped);
 			double newValue = isUpper? MinElement( new_op_env ) : MaxElement( new_op_env );
-			bool isBetter = isUpper? (newValue > threshold) : (newValue < threshold);
+			bool isBetter = isUpper? (newValue > threshold + ZERO_TOLERANCE) : (newValue < threshold - ZERO_TOLERANCE);
 
 			if (isBetter)
 			{
@@ -1037,9 +1017,62 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 	return Ts;
 }
 
-void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
-{
 
+std::vector< Vec3d > Offset::getLocalMoves( HotSpot& HS )
+{
+	std::vector< Vec3d > result;
+
+	// pos
+	Vec3d hotPoint = HS.hotPoint();
+
+	// Local moves
+	Vec3d step = (org_bbmax - org_bbmin) / 20;
+	int K = 4;
+
+	double min_x = - step[0] * K;
+	double max_x = - min_x;
+	double min_y = - step[1] * K;
+	double max_y = - min_y;
+	double min_z, max_z;
+	if (HS.defineHeight)
+	{// Horizontal moves only
+		min_z = max_z = 0;
+	}
+	//else if ( 1 == HS.side)
+	//{
+	//	min_z = - step[2] * K;
+	//	max_z = 0;
+	//}
+	//else
+	//{
+	//	min_z = 0 ;
+	//	max_z = step[2] * K;
+	//}
+
+
+	for (double x = min_x; x <= max_x; x += step[0]){
+		for (double y = min_y; y <= max_y; y += step[1]){
+			for (double z = min_z; z <= max_z; z += step[2])
+			{
+				Vec3d delta(x,y,z);
+				Vec3d pos = hotPoint + delta;
+
+				// check whether \pos is in BB
+				if (RANGE(pos[0], org_bbmin[0], org_bbmax[0])
+				 && RANGE(pos[1], org_bbmin[1], org_bbmax[1])
+				 && RANGE(pos[2], org_bbmin[2], org_bbmax[2]))
+				{
+					result.push_back(delta);
+				}
+			}			
+		}
+	}
+
+	return result;
+}
+
+void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
+{
 	Controller *ctrl = activeObject()->controller;
 	Primitive* prim = ctrl->getPrimitive(HS.segmentID);
 	Primitive* op_prim = ctrl->getPrimitive(opHS.segmentID);
@@ -1048,11 +1081,12 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 	Point hotPoint = HS.hotPoint();
 	Point op_hotPoint = opHS.hotPoint();
 
-	// Save the initial hot shape state
-	ShapeState initialHotShapeState = ctrl->getShapeState();
+	// Save the current shape state
+	ShapeState currShapeState = ctrl->getShapeState();
 
 	// Move hot spot side away or closer to each other
-	std::vector< Vec3d > Ts = getHorizontalMoves(HS);
+	//std::vector< Vec3d > Ts = getHorizontalMoves(HS);
+	std::vector< Vec3d > Ts = getLocalMoves(HS);
 	
 	if (!HS.defineHeight)
 	{// Move up/down directly
@@ -1061,10 +1095,11 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 		Ts.push_back( T );
 	}
 
-//	Ts.push_back(Vec3d(-0.2, 0.4, 0));
+	//Ts.clear();
+	//Ts.push_back(Vec3d(-0.3, 0.3, 0));
+
 	// Actually modify the shape to generate hot solutions
 	for (int i=0;i<Ts.size();i++)
-//	int i = Ts.size() - 1;
 	{
 		// Clear the frozen flags
 		ctrl->setPrimitivesFrozen(false);		
@@ -1092,29 +1127,33 @@ void Offset::applyHeuristicsOnHotspot( HotSpot &HS, HotSpot&opHS )
 //		if ( satisfyBBConstraint() )
 		{
 			double stackability = computeOffsetOfShape();
-//			if (stackability > preStackability + 0.05)
+//			if (stackability > orgStackability + 0.05)
 			{
 				ShapeState state = ctrl->getShapeState();
-//				if (isUnique(state, 0.5))
+				if (isUnique(state, 0.5))
 				{
-					state.stackability = stackability;
-					candidateSolutions.enqueue(state);
+					state.deltaStackability = stackability - orgStackability;
+					state.distortion = ctrl->getDistortion();
+					candidateSolutions.push(state);
 
 					// Suggestion
-					EditSuggestion suggest;
-					suggest.center = hotPoint;
-					suggest.direction = Ts[i];
-					suggest.deltaS = stackability - preStackability;
-					suggest.deltaV = abs(ctrl->volume() - preVolume);
+					if (isSuggesting)
+					{
+						EditSuggestion suggest;
 
+						suggest.center = hotPoint;
+						suggest.direction = Ts[i];
+						suggest.deltaS = state.deltaStackability;
+						suggest.deltaV = state.distortion;
 
-					suggestions.push_back(suggest);
+						suggestions.push_back(suggest);
+					}
 				}				
 			}
 		}
 
 		// Restore the initial hot shape state
-		ctrl->setShapeState(initialHotShapeState);
+		ctrl->setShapeState(currShapeState);
 	}
 }
 
@@ -1166,13 +1205,13 @@ void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
 //		if ( satisfyBBConstraint() )
 		{
 			double stackability = computeOffsetOfShape();
-//			if (stackability > preStackability + 0.1)
+//			if (stackability > orgStackability + 0.1)
 			{
 				ShapeState state = ctrl->getShapeState();
 //				if (isUnique(state, 0))
 				{
-					state.stackability = stackability;
-					candidateSolutions.enqueue(state);
+					state.deltaStackability = stackability - orgStackability;
+					candidateSolutions.push(state);
 				}				
 			}
 		}
@@ -1236,7 +1275,7 @@ void Offset::improveStackability()
 	//=========================================================================================
 	// Step 1: Detect hot spots
 	computeOffsetOfShape();
-	preStackability = getStackability();
+	orgStackability = getStackability();
 
 	HOT_RANGE = 0.95;
 	detectHotspots();
@@ -1263,52 +1302,44 @@ void Offset::improveStackabilityTo( double targetS )
 	Controller *ctrl = activeObject()->controller;
 
 	// Clear
-	candidateSolutions.clear();
+	candidateSolutions = PQLessEnergy();
+	solutions = PQLessDistortion();
 	usedCandidateSolutions.clear();
-	solutions.clear();
 
 	// The bounding box constraint is hard
-	pre_bbmin = activeObject()->bbmin;
-	pre_bbmax = activeObject()->bbmax;
-	pre_bbmin[0] *= 1.1;
-	pre_bbmin[2] *= 1.1;
-	pre_bbmax[0] *= 1.1;
-	pre_bbmax[2] *= 1.1;
+	org_bbmin = activeObject()->bbmin;
+	org_bbmax = activeObject()->bbmax;
+	org_bbmin[0] *= 1.1;
+	org_bbmin[2] *= 1.1;
+	org_bbmax[0] *= 1.1;
+	org_bbmax[2] *= 1.1;
 
 	// Push the current shape as the initial candidate solution
 	ShapeState state = ctrl->getShapeState();
-	state.stackability = getStackability();
-	candidateSolutions.enqueue(state);
+	state.deltaStackability = getStackability() - orgStackability;
+	candidateSolutions.push(state);
 
 //	while(!candidateSolutions.empty())
 	{
 
 		// Get the first candidate solution
-		ShapeState candidateState = candidateSolutions.dequeue();
-		usedCandidateSolutions.push_back(candidateState);
+		currentCandidate = candidateSolutions.top();
+		candidateSolutions.pop();
+		usedCandidateSolutions.push_back(currentCandidate);
 
-		if ( candidateState.stackability >= targetS)
-		{
-			// Yes. Got one solution.
-			solutions.push_back(candidateState);
-//			continue;
-		}
-		else
-		{
-			// No. Try to improve the current shape
-			// This iteration might generate several candidate solutions
-			ctrl->setShapeState(candidateState);
-			improveStackability();
-		}
-
+		ctrl->setShapeState(currentCandidate);
+		improveStackability();
 
 		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;
 		std::cout << "#Solutions = " << solutions.size() << std::endl;
 	}
 
 	// Debug: add candidate solutions to solutions
-	foreach (ShapeState state, candidateSolutions)
-		solutions.push_back(state);
+	while (!candidateSolutions.empty())
+	{
+		solutions.push( candidateSolutions.top() );
+		candidateSolutions.pop();
+	}
 
 
 	// Cluster the solutions to get rid of redundancies
@@ -1328,7 +1359,12 @@ void Offset::showSolution( int i )
 
 	int id = i % solutions.size();
 	Controller *ctrl = activeObject()->controller;
-	ctrl->setShapeState(solutions[id]);
+
+	PQLessDistortion solutionsCopy = solutions;
+	for (int i=0;i<id;i++)
+		solutionsCopy.pop();
+
+	ctrl->setShapeState(solutionsCopy.top());
 
 	std::cout << "Showing the " << id << "th solution out of " << solutions.size() <<".\n";
 }
@@ -1337,7 +1373,7 @@ bool Offset::satisfyBBConstraint()
 {
 	bool result = true;
 
-	Vec3d preBB = pre_bbmax - pre_bbmin;
+	Vec3d preBB = org_bbmax - org_bbmin;
 	activeObject()->computeBoundingBox();
 	Vec3d currBB = activeObject()->bbmax - activeObject()->bbmin;
 
@@ -1360,38 +1396,27 @@ bool Offset::satisfyBBConstraint()
 
 bool Offset::isUnique( ShapeState state, double threshold )
 {
-	bool result = true;
 	Controller *ctrl = activeObject()->controller;
 
-	// \state should be dissimilar to all (used)candidate solutions
-	foreach(ShapeState candState, usedCandidateSolutions)
+	// dissimilar to \solutions
+	PQLessDistortion solutionsCopy = solutions;
+	while(!solutionsCopy.empty())
 	{
-		double sim = ctrl->similarity(candState, state);
-		if( sim < threshold)
-		{
-			result = false;
-			break;
-		}
-//		std::cout << sim << '\t';
+		ShapeState ss = solutionsCopy.top();
+
+		if (ctrl->similarity(ss, state) < threshold)
+			return false;
+
+		solutionsCopy.pop();
 	}
 
-	if (result)
-	{
-		foreach(ShapeState candState, candidateSolutions)
-		{
-			double sim = ctrl->similarity(candState, state);
-			if( sim < threshold)
-			{
-				result = false;
-				break;
-			}
-//			std::cout << sim << '\t';
-		}
-	}
+	// dissimilar to used candidate solutions
+
+
 
 	//std::cout << "Unique: " << result <<std::endl;
 
-	return result;
+	return true;
 }
 
 Vec2i Offset::centerOfRegion( std::vector< Vec2i >& region )
@@ -1413,24 +1438,43 @@ Vec2i Offset::centerOfRegion( std::vector< Vec2i >& region )
 QVector<EditSuggestion> Offset::getSuggestions()
 {
 	suggestions.clear();
-	candidateSolutions.clear();
-	solutions.clear();
+	candidateSolutions = PQLessEnergy();
+	solutions = PQLessDistortion();
 	// The bounding box constraint is hard
-	pre_bbmin = activeObject()->bbmin;
-	pre_bbmax = activeObject()->bbmax;
-	double scale = 1.2;
-	pre_bbmin[0] *= scale;
-	pre_bbmin[1] *= scale;
-	pre_bbmax[0] *= scale;
-	pre_bbmax[1] *= scale;
+	org_bbmin = activeObject()->bbmin;
+	org_bbmax = activeObject()->bbmax;
+	double scale = 1;
+	org_bbmin[0] *= scale;
+	org_bbmin[1] *= scale;
+	org_bbmax[0] *= scale;
+	org_bbmax[1] *= scale;
 
-	preVolume = activeObject()->controller->volume();
-
+	isSuggesting = true;
 	improveStackability();
+	isSuggesting = false;
 
 	// Debug: add candidate solutions to solutions
-	foreach (ShapeState state, candidateSolutions)
-		solutions.push_back(state);
+	while (!candidateSolutions.empty())
+	{
+		solutions.push( candidateSolutions.top() );
+		candidateSolutions.pop();
+	}
+
+	normalizeSuggestions();
+	return suggestions;
+}
+
+void Offset::normalizeSuggestions()
+{
+	if (suggestions.isEmpty())
+		return;
+
+	if (suggestions.size() == 1)
+	{
+		suggestions.first().value = 1;
+		return;
+	}
+
 
 	double minS = DBL_MAX;
 	double maxS = DBL_MIN;
@@ -1450,13 +1494,16 @@ QVector<EditSuggestion> Offset::getSuggestions()
 
 	double rangeS = maxS - minS;
 	double rangeV = maxV - minV;
+
+	bool zeroRangeS = abs(rangeS) < 1e-10;
+	bool zeroRangeV = abs(rangeV) < 1e-10;
 	for(int i = 0; i < suggestions.size(); i++)
 	{
-		double s = (suggestions[i].deltaS - minS) / rangeS;
-		double v = (suggestions[i].deltaV - minV) / rangeV;
+		double s = zeroRangeS? 1 : (suggestions[i].deltaS - minS) / rangeS;
+		double v = zeroRangeV? 1 : (suggestions[i].deltaV - minV) / rangeV;
 
 		double alpha = 0.7;
-		suggestions[i].value = alpha * s + (1-alpha)*v;
+		suggestions[i].value = alpha * s - (1-alpha)*v;
 
 	}
 
@@ -1473,10 +1520,19 @@ QVector<EditSuggestion> Offset::getSuggestions()
 	}
 
 	double range = maxValue - minValue;
+	bool zeroRang = abs(range) < 1e-10;
 	for(int i = 0; i < suggestions.size(); i++)
 	{
-		suggestions[i].value = (suggestions[i].value - minValue) / range;
+		suggestions[i].value = zeroRang? 1 : (suggestions[i].value - minValue) / range;
 	}
 
-	return suggestions;
+
+	//Output
+	std::cout << "There are " << suggestions.size() << " suggestions (from offset):\n";
+	for (int i=0;i<suggestions.size();i++)
+	{
+		std::cout << i+1 <<"th: " << "center = " << suggestions[i].center 
+			//<< " direction = " << suggestions[i].direction
+			<< " value = " << suggestions[i].value << std::endl;
+	}
 }

@@ -10,7 +10,7 @@ Group::Group( Controller * controller, GroupType newType )
 	this->type = newType;
 	this->id = QString("%1").arg(GroupUniqueID++);
 
-	this->isDraw = false;
+	this->isDraw = true;
 }
 
 void Group::addNode( QString nodeId )

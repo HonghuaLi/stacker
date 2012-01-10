@@ -41,11 +41,10 @@ StackerPanel::StackerPanel()
 
 	activeOffset = new Offset(hidden_viewer);
 
-	// Connections
+	// Buttons
 	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
-	connect(panel.solutionButton, SIGNAL(clicked()), SLOT(onSolutionButtonClicked()));
 	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
 	connect(panel.saveSuggestionsButton, SIGNAL(clicked()), SLOT(onSaveSuggestionsButtonClicked()));
 	connect(panel.loadSuggestionsButton, SIGNAL(clicked()), SLOT(onLoadSuggestionsButtonClicked()));
@@ -56,21 +55,17 @@ StackerPanel::StackerPanel()
 
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 
-	// Convex Hull
+	// Parameters
 	connect(panel.chPrecision, SIGNAL(valueChanged (int)), this, SLOT(setConvexHullPrecision(int)));
 	CH_PRECISION = panel.chPrecision->value();
-
-	// Offset 
 	connect(panel.hotRange, SIGNAL(valueChanged (double)), this, SLOT(setHotRange(double)));
-
-	// Voxel size
 	connect(panel.jointsThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
-
-	// GC
 	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
-
-	// Stacking
 	connect(panel.stackCount, SIGNAL(valueChanged(int)), this, SLOT(setStackCount(int)) );
+	connect(panel.solutionID, SIGNAL(valueChanged(int)), this, SLOT(setSolutionID(int)));
+
+	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
+	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
 
 	// Connect controller deformer
 	/*connect(ctrlDeformer.transX, SIGNAL(valueChanged(int)), SLOT(updateController()));
@@ -159,14 +154,14 @@ void StackerPanel::updateActiveObject()
 	stacker_preview->stackCount = panel.stackCount->value();
 	stacker_preview->updateActiveObject();
 
-	if (activeObject()->controller == NULL)
+	if (activeScene && activeObject() && activeObject()->controller == NULL)
 	{
 		activeObject()->controller = new Controller(activeObject(), panel.useAABB->isChecked());
 		activeScene->setSelectMode(CONTROLLER);
 		showMessage("Controller is built for " + activeObject()->objectName());
 	}
 
-	std::cout << "objectH = " << activeOffset->objectH << std::endl;
+	//std::cout << "objectH = " << activeOffset->objectH << std::endl;
 }
 
 QSegMesh* StackerPanel::activeObject()
@@ -221,210 +216,6 @@ void StackerPanel::convertCuboid()
 		if(prim->isSelected) ctrl->convertToCuboid(prim->id, panel.useAABB->isChecked(), panel.cuboidMethod->currentIndex());
 }
 
-void StackerPanel::gradientDescentOptimize()
-{
-	Controller* ctrl = activeObject()->controller;
-
-	// Get hot segments
-	activeOffset->detectHotspots();
-	std::set< QString > hotSegs = activeOffset->getHotSegment();
-	int nHotSeg = hotSegs.size();
-
-	// Initialization
-	PrimitiveParamMap optimalParams;
-	foreach (QString sid, hotSegs) 
-	{
-		optimalParams[sid] = (PrimitiveParam*) new CuboidParam(sid);
-	}
-
-	// Optimize
-	double currE = sumEnergy();
-	double step = 0.3;
-	printf("Init energy = %f\n", currE);
-
-	printf("\nStarting search");
-
-	while(1)
-	{
-		double minE = DBL_MAX;
-		
-		// make deep copies..
-		PrimitiveParamMap bestNeighborParams, currParams;
-		currParams = optimalParams;
-
-		// Check all the neighbors in the deformation space
-		for (std::set< QString >::iterator i=hotSegs.begin(); i!=hotSegs.end(); i++)
-		{
-			QString sid = *i;
-
-			for (int j=0; j < currParams[sid]->numParams(); j++)
-			{
-				double E = 0;
-
-				// Forward
-				currParams[sid]->stepForward(j, step);
-				ctrl->deformShape(currParams);
-				emit(objectModified());
-				E = sumEnergy();
-				if (E < minE)
-				{
-					minE = E;
-					bestNeighborParams = currParams;
-				}
-				currParams[sid]->stepForward(j, -step);
-				ctrl->recoverShape();
-				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
-
-
-				// Backward
-				currParams[sid]->stepForward(j, -step);
-				ctrl->deformShape(currParams);
-				emit(objectModified());
-				E = sumEnergy();
-				if (E < minE)
-				{
-					minE = E;
-					bestNeighborParams = currParams;
-				}
-				currParams[sid]->stepForward(j, step);
-				ctrl->recoverShape();
-				printf("\n Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), E);
-			}
-		}
-
-		printf(".");
-
-		if(currE <= minE)
-			// All neighbors are worse than the current state, stop
-			break;
-		else
-		{
-			// Update the current state the to best neighbor
-			currE = minE;
-			optimalParams = bestNeighborParams;		
-
-			// Print current state
-			printf("==============================\nThe current deformation parameters:\n\n");
-			printf("Stackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), currE);
-		}
-
-	}
-
-	// Apply the optimal solution
-	ctrl->deformShape(optimalParams);
-	emit(objectModified());
-	printf("\n===\nOptimization is done ;)\n");
-
-	// Print optimal solution
-	//optimalParams.print();
-	printf("\nStackability: %.3f Energy: %.3f\n", activeOffset->getStackability(), currE);
-}
-
-double StackerPanel::sumEnergy( )
-{
-	// Energy terms
-	std::vector< double > E; 	
-	
-	// Compute the energy based on the original and current controllers
-	Controller* ctrl = activeObject()->controller;
-	int numPrimitive = ctrl->numPrimitives();
-
-	// NOTE: struct Stat cannot deep copy params, so have to use reference here!!!
-	Controller::Stat& s1 = ctrl->getStat();
-	Controller::Stat& s0 = ctrl->getOriginalStat();
-
-	// SHAPE BB:
-	E.push_back(abs(s1.volumeBB - s0.volumeBB) / s0.volumeBB);
-
-
-	// PART BB:
-	double diffV = 0, sumV = 0;
-	for(int i = 0; i < numPrimitive; i++)	{
-		diffV += abs(s1.volumePrim[i] - s0.volumePrim[i]);
-		sumV += s0.volumePrim[i];
-	}
-	E.push_back(diffV/sumV);
-
-
-	// PROXMIITY:
-	double diffP = 0, sumP = 0;
-	for(uint i = 0; i <numPrimitive; i++)	{
-		for (uint j = i + 1; j < numPrimitive; j++)		{
-			diffP += abs(s1.proximity[std::make_pair(i,j)] - s0.proximity[std::make_pair(i,j)]);
-			sumP += s0.proximity[std::make_pair(i,j)];
-		}
-	}
-	E.push_back( sumP==0 ? diffP : diffP/sumP);
-
-	// ROTATION
-	double sumR = 0;
-	for(int i = 0; i < numPrimitive; i++)	{	
-		CuboidParam* params = (CuboidParam*) (s1.params[ctrl->primitiveIdNum[i]]);
-		Vec3d R = params->getR();
-		double diffR = ( abs(R[0]) + abs(R[1]) + abs(R[2]) ) / ( 3*360 );
-		double w = s1.volumePrim[i];///s1.volumeBB;
-
-		sumR += diffR ;
-	}
-	E.push_back( sumR );
-
-	// SIGGRAPH 2012: last one... :D
-	return Sum(E)- activeOffset->getStackability();
-}
-
-void StackerPanel::updateController()
-{
-	if(!activeObject() || !activeObject()->controller) return;
-
-	Controller* ctrl = activeObject()->controller;
-	ctrl->recoverShape();
-
-	double scaling = 0.01;
-	std::vector<double> vals(9);
-	vals[0] = scaling * ctrlDeformer.transX->value();
-	vals[1] = scaling * ctrlDeformer.transY->value();
-	vals[2] = scaling * ctrlDeformer.transZ->value();
-
-	vals[3] = scaling * ctrlDeformer.rotX->value();
-	vals[4] = scaling * ctrlDeformer.rotY->value();
-	vals[5] = scaling * ctrlDeformer.rotZ->value();
-
-	vals[6] = scaling * ctrlDeformer.scaleX->value();
-	vals[7] = scaling * ctrlDeformer.scaleY->value();
-	vals[8] = scaling * ctrlDeformer.scaleZ->value();
-
-	PrimitiveParam* param = ( CuboidParam* ) new CuboidParam("");
-	param->setParams(vals);
-
-	for(uint i = 0; i < ctrl->numPrimitives(); i++){
-		Cuboid * prim = (Cuboid *) ctrl->getPrimitive(ctrl->primitiveIdNum[i]);
-
-		if(prim->isSelected)
-			prim->deform(param);
-	}
-	
-	emit(objectModified());
-
-	printf("Stackability: %.3f | Energy: %.3f\n", activeOffset->getStackability(), 0.0);
-}
-
-void StackerPanel::resetCtrlDeformerPanel()
-{
-	CuboidParam param("");
-	std::vector< double > defaultParams = param.getDefaulParam();
-
-	ctrlDeformer.transX->setValue( defaultParams[0] * 100 );
-	ctrlDeformer.transY->setValue( defaultParams[1] * 100 );	
-	ctrlDeformer.transZ->setValue( defaultParams[2] * 100 );
-	ctrlDeformer.rotX->setValue( defaultParams[3] * 100 );
-	ctrlDeformer.rotY->setValue( defaultParams[4] * 100 );	
-	ctrlDeformer.rotZ->setValue( defaultParams[5] * 100 );
-	ctrlDeformer.scaleX->setValue( defaultParams[6] * 100 );
-	ctrlDeformer.scaleY->setValue( defaultParams[7] * 100 );	
-	ctrlDeformer.scaleZ->setValue( defaultParams[8] * 100 );
-
-	emit(objectModified());
-}
 
 void StackerPanel::selectModeController()
 {
@@ -462,11 +253,20 @@ void StackerPanel::findPairwiseJoints()
 
 	activeObject()->controller->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
 }
-void StackerPanel::onSolutionButtonClicked()
+
+
+void StackerPanel::setSolutionID(int id)
 {
-	activeOffset->showSolution(panel.hsID->value());
+	int total = activeOffset->solutions.size();
+	panel.totalNumSln->setText(QString("/ %1").arg(total));
+
+	id = (0==total)? 0 : (id % total);
+	panel.solutionID->setValue(id);
+	activeOffset->showSolution(id);
+
 	emit(objectModified());
 }
+
 
 void StackerPanel::setHotRange( double range)
 {
@@ -668,6 +468,9 @@ void StackerPanel::onSuggestButtonClicked()
 	activeScene->suggestions.clear();
 	activeScene->suggestions = activeOffset->getSuggestions();
 	
+	int total = activeOffset->solutions.size();
+	panel.totalNumSln->setText(QString("/ %1").arg(total));
+	panel.solutionID->setValue(0);
 	emit(objectModified());
 }
 
@@ -708,6 +511,18 @@ void StackerPanel::onLoadSuggestionsButtonClicked()
 
 	inF.close();
 }
+
+void StackerPanel::setBBTolerance( double tol )
+{
+	BB_TOLERANCE = tol;
+}
+
+void StackerPanel::setNumExpectedSolutions( int num )
+{
+	NUM_EXPECTED_SOLUTION = num;
+}
+
+
 
 
 
