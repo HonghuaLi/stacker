@@ -25,8 +25,9 @@ enum SelectMode { NONE, MESH, SKELETON_NODE, SKELETON_EDGE,
 #include "QDeformController.h"
 extern QDeformController * defCtrl;
 
-
 #include "EditSuggestion.h"
+
+class SubScene;
 
 class Scene : public QGLViewer{
 
@@ -68,6 +69,9 @@ public:
 	virtual void postSelection(const QPoint& point);
 	QVector<int> selection;
 
+	// SHAPING
+	void resizeEvent ( QResizeEvent * event );
+
 	// STATE
 	ViewMode viewMode;
 	SelectMode selectMode;
@@ -79,9 +83,17 @@ public:
 	void setSelectMode(SelectMode toMode);
 	void setModifyMode(ModifyMode toMode);
 
+	// draw on screen
+	QVector<SubScene*> subScenes;
+	void addSubScene(int scene_width);
+	void resizeSubScenes();
+	void setupSubViewport(int x, int y, int w, int h);
+	void endSubViewport();
+
 	// hack
 	StackerPanel * sp;
 
+	bool isShowStacked;
 	bool isDrawOffset;
 
 // TEXT ON SCREEN
@@ -123,4 +135,5 @@ signals:
 	void objectDiscarded( QString );
 	void selectionVector( QVector<int> );
 	void groupsChanged();
+
 };

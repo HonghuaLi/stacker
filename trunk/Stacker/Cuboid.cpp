@@ -187,6 +187,13 @@ void Cuboid::draw()
 {
 	if (!isDraw) return;
 
+	if(isDraw)
+	{
+		if(isSelected)
+			drawCube(4, Vec4d(1,1,0,0.9));
+		else
+			drawCube(2, Vec4d(0,0,1,0.6));
+	}
 	if(isSelected)
 		drawCube(4, Vec4d(1,1,0,0.9));
 	else

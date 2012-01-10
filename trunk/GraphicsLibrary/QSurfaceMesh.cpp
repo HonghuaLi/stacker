@@ -157,7 +157,7 @@ void QSurfaceMesh::simpleDrawWireframe()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void QSurfaceMesh::simpleDraw()
+void QSurfaceMesh::simpleDraw(bool isColored, bool isDots)
 {
 	// Render mesh regularly (inefficient)
 	Vertex_property<Point>  points   = vertex_property<Point>("v:point");
@@ -169,15 +169,16 @@ void QSurfaceMesh::simpleDraw()
 	Vertex v0, v1, v2;
 
 	// Draw faces
-	glBegin(GL_TRIANGLES);
+	glBegin(isDots ? GL_POINTS: GL_TRIANGLES);
+
 	for(fit = faces_begin(); fit != fend; ++fit){
 		fvit = vertices(fit);
 
 		v0 = fvit; v1 = ++fvit; v2 = ++fvit;
 
-		glColor4dv(vcolors[v0]);glNormal3dv(vnormals[v0]);glVertex3dv(points[v0]);
-		glColor4dv(vcolors[v1]);glNormal3dv(vnormals[v1]);glVertex3dv(points[v1]);
-		glColor4dv(vcolors[v2]);glNormal3dv(vnormals[v2]);glVertex3dv(points[v2]);
+		if(isColored)glColor4dv(vcolors[v0]);glNormal3dv(vnormals[v0]);glVertex3dv(points[v0]);
+		if(isColored)glColor4dv(vcolors[v1]);glNormal3dv(vnormals[v1]);glVertex3dv(points[v1]);
+		if(isColored)glColor4dv(vcolors[v2]);glNormal3dv(vnormals[v2]);glVertex3dv(points[v2]);
 	}
 	glEnd();
 }

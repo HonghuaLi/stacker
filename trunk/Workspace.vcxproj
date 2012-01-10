@@ -205,6 +205,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SubScene.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_TransformationPanel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
@@ -272,6 +276,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_StackerPreview.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_SubScene.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -347,6 +355,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_SubScene.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Template\moc_TransformationPanel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -363,6 +375,7 @@
     <ClCompile Include="GUI\main.cpp" />
     <ClCompile Include="GUI\QMeshDoc.cpp" />
     <ClCompile Include="GUI\Scene.cpp" />
+    <ClCompile Include="GUI\SubScene.cpp" />
     <ClCompile Include="GUI\TransformationPanel.cpp" />
     <ClCompile Include="GUI\Workspace.cpp" />
     <ClCompile Include="MathLibrary\GCDeformation.cpp" />
@@ -382,7 +395,6 @@
     <ClCompile Include="Stacker\ControllerPanel.cpp" />
     <ClCompile Include="Stacker\CoplanarGroup.cpp" />
     <ClCompile Include="Stacker\Cuboid.cpp" />
-    <ClCompile Include="Stacker\CuboidParam.cpp" />
     <ClCompile Include="Stacker\EditSuggestion.cpp" />
     <ClCompile Include="Stacker\GCylinder.cpp" />
     <ClCompile Include="Stacker\Group.cpp" />
@@ -546,6 +558,20 @@
     <ClInclude Include="GraphicsLibrary\Line.h" />
     <ClInclude Include="GraphicsLibrary\Plane.h" />
     <ClInclude Include="GraphicsLibrary\Voxeler.h" />
+    <CustomBuild Include="GUI\SubScene.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL -DQT_OPENGL_LIB "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\Spline" "-I.\GraphicsLibrary" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Utility" "-I.\MathLibrary" "-I.\Stacker" "-I.\Wires" "-I.\Deformer" "-I.\SkeletonExtract" "-I.\SkeletonExtract\Solver\UmfPack_include\AMD" "-I.\SkeletonExtract\Solver\UmfPack_include\UFconfig" "-I.\SkeletonExtract\Solver\UmfPack_include\UMFPACK" "-I.\SkeletonExtract\Solver\SuperLU" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I." "-I."</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_XML_LIB -DQT_SCRIPT_LIB -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DQT_DLL -DQT_OPENGL_LIB "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\Spline" "-I.\GraphicsLibrary" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Utility" "-I.\MathLibrary" "-I.\Stacker" "-I.\Wires" "-I.\Deformer" "-I.\SkeletonExtract" "-I.\SkeletonExtract\Solver\UmfPack_include\AMD" "-I.\SkeletonExtract\Solver\UmfPack_include\UFconfig" "-I.\SkeletonExtract\Solver\UmfPack_include\UMFPACK" "-I.\SkeletonExtract\Solver\SuperLU" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I." "-I."</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Moc%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DQT_DLL -DQT_OPENGL_LIB "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\Spline" "-I.\GraphicsLibrary" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Utility" "-I.\MathLibrary" "-I.\Stacker" "-I.\Wires" "-I.\Deformer" "-I.\SkeletonExtract" "-I.\SkeletonExtract\Solver\UmfPack_include\AMD" "-I.\SkeletonExtract\Solver\UmfPack_include\UFconfig" "-I.\SkeletonExtract\Solver\UmfPack_include\UMFPACK" "-I.\SkeletonExtract\Solver\SuperLU" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I."</Command>
+    </CustomBuild>
     <ClInclude Include="MathLibrary\GCDeformation.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SkeletonExtract\ClosedPolygon.h" />
@@ -612,7 +638,6 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_OPENGL_LIB  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\Spline" "-I.\GraphicsLibrary" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Utility" "-I.\MathLibrary" "-I.\Stacker" "-I.\Wires" "-I.\Deformer" "-I.\SkeletonExtract" "-I.\SkeletonExtract\Solver\UmfPack_include\AMD" "-I.\SkeletonExtract\Solver\UmfPack_include\UFconfig" "-I.\SkeletonExtract\Solver\UmfPack_include\UMFPACK" "-I.\SkeletonExtract\Solver\SuperLU" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I." "Stacker\GCylinder.h" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
-    <ClInclude Include="Stacker\CuboidParam.h" />
     <ClInclude Include="Stacker\EditSuggestion.h" />
     <ClInclude Include="Stacker\Group.h" />
     <CustomBuild Include="Stacker\GroupPanel.h">
@@ -631,7 +656,6 @@
     </CustomBuild>
     <ClInclude Include="Stacker\JointGroup.h" />
     <ClInclude Include="Stacker\Offset.h" />
-    <ClInclude Include="Stacker\PrimativeParam.h" />
     <ClInclude Include="Stacker\Primitive.h" />
     <CustomBuild Include="Stacker\StackerPreview.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
@@ -661,6 +685,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_OPENGL_LIB  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(Configuration)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtScript" "-I." "-I.\libQGLViewer" "-I.\OpenMesh\src" "-I.\OpenNL" "-I.\Eigen" "-I.\GUI" "-I.\Spline" "-I.\GraphicsLibrary" "-I.\GraphicsLibrary\SurfaceMesh" "-I.\Utility" "-I.\MathLibrary" "-I.\Stacker" "-I.\Wires" "-I.\Deformer" "-I.\SkeletonExtract" "-I.\SkeletonExtract\Solver\UmfPack_include\AMD" "-I.\SkeletonExtract\Solver\UmfPack_include\UFconfig" "-I.\SkeletonExtract\Solver\UmfPack_include\UMFPACK" "-I.\SkeletonExtract\Solver\SuperLU" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I." "Stacker\QDeformController.h" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
+    <ClInclude Include="Stacker\ShapeState.h" />
     <ClInclude Include="Stacker\SymmetryGroup.h" />
     <ClInclude Include="Utility\ColorMap.h" />
     <ClInclude Include="Utility\Graph.h" />

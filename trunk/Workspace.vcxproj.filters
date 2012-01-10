@@ -425,6 +425,18 @@
     <ClCompile Include="Stacker\EditSuggestion.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\SubScene.cpp">
+      <Filter>GUI\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SubScene.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_SubScene.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_SubScene.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -598,9 +610,6 @@
     <ClInclude Include="GraphicsLibrary\Voxeler.h">
       <Filter>GraphicsLibrary\Header</Filter>
     </ClInclude>
-    <ClInclude Include="MathLibrary\ShapeDistribution.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\JointGroup.h">
       <Filter>Groups\Header</Filter>
     </ClInclude>
@@ -612,6 +621,9 @@
     </ClInclude>
     <ClInclude Include="Stacker\EditSuggestion.h">
       <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Line.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\ShapeState.h">
       <Filter>Stacker\Header</Filter>
@@ -698,6 +710,9 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\ControllerPanel.h">
       <Filter>Stacker\Tools</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\SubScene.h">
+      <Filter>GUI\Header</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
