@@ -1130,7 +1130,7 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 //			if (stackability > orgStackability + 0.05)
 			{
 				ShapeState state = ctrl->getShapeState();
-				if (isUnique(state, 0.5))
+				if (isUnique(state, 2))
 				{
 					state.deltaStackability = stackability - orgStackability;
 					state.distortion = ctrl->getDistortion();
@@ -1145,6 +1145,7 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 						suggest.direction = Ts[i];
 						suggest.deltaS = state.deltaStackability;
 						suggest.deltaV = state.distortion;
+						suggest.side = HS.side;
 
 						suggestions.push_back(suggest);
 					}
@@ -1302,8 +1303,8 @@ void Offset::improveStackabilityTo( double targetS )
 	Controller *ctrl = activeObject()->controller;
 
 	// Clear
-	candidateSolutions = PQLessEnergy();
-	solutions = PQLessDistortion();
+	candidateSolutions = PQShapeShateLessEnergy();
+	solutions = PQShapeShateLessDistortion();
 	usedCandidateSolutions.clear();
 
 	// The bounding box constraint is hard
@@ -1317,6 +1318,7 @@ void Offset::improveStackabilityTo( double targetS )
 	// Push the current shape as the initial candidate solution
 	ShapeState state = ctrl->getShapeState();
 	state.deltaStackability = getStackability() - orgStackability;
+	state.distortion = ctrl->getDistortion();
 	candidateSolutions.push(state);
 
 //	while(!candidateSolutions.empty())
@@ -1360,7 +1362,7 @@ void Offset::showSolution( int i )
 	int id = i % solutions.size();
 	Controller *ctrl = activeObject()->controller;
 
-	PQLessDistortion solutionsCopy = solutions;
+	PQShapeShateLessDistortion solutionsCopy = solutions;
 	for (int i=0;i<id;i++)
 		solutionsCopy.pop();
 
@@ -1399,7 +1401,7 @@ bool Offset::isUnique( ShapeState state, double threshold )
 	Controller *ctrl = activeObject()->controller;
 
 	// dissimilar to \solutions
-	PQLessDistortion solutionsCopy = solutions;
+	PQShapeShateLessDistortion solutionsCopy = solutions;
 	while(!solutionsCopy.empty())
 	{
 		ShapeState ss = solutionsCopy.top();
@@ -1411,7 +1413,23 @@ bool Offset::isUnique( ShapeState state, double threshold )
 	}
 
 	// dissimilar to used candidate solutions
+	foreach(ShapeState ss, usedCandidateSolutions)
+	{
+		if (ctrl->similarity(ss, state) < threshold)
+			return false;
+	}
 
+	// dissimilar to candidate solutions
+	PQShapeShateLessEnergy candSolutionsCopy = candidateSolutions;
+	while(!candSolutionsCopy.empty())
+	{
+		ShapeState ss = candSolutionsCopy.top();
+
+		if (ctrl->similarity(ss, state) < threshold)
+			return false;
+
+		candSolutionsCopy.pop();
+	}
 
 
 	//std::cout << "Unique: " << result <<std::endl;
@@ -1438,8 +1456,8 @@ Vec2i Offset::centerOfRegion( std::vector< Vec2i >& region )
 QVector<EditSuggestion> Offset::getSuggestions()
 {
 	suggestions.clear();
-	candidateSolutions = PQLessEnergy();
-	solutions = PQLessDistortion();
+	candidateSolutions = PQShapeShateLessEnergy();
+	solutions = PQShapeShateLessDistortion();
 	// The bounding box constraint is hard
 	org_bbmin = activeObject()->bbmin;
 	org_bbmax = activeObject()->bbmax;
@@ -1476,6 +1494,7 @@ void Offset::normalizeSuggestions()
 	}
 
 
+	// Normalize \deltaS and \deltaV respectively
 	double minS = DBL_MAX;
 	double maxS = DBL_MIN;
 	double minV = DBL_MAX;
@@ -1507,6 +1526,9 @@ void Offset::normalizeSuggestions()
 
 	}
 
+
+
+	// Normalize \value
 	double minValue = DBL_MAX;
 	double maxValue = DBL_MIN;
 
@@ -1526,13 +1548,13 @@ void Offset::normalizeSuggestions()
 		suggestions[i].value = zeroRang? 1 : (suggestions[i].value - minValue) / range;
 	}
 
-
 	//Output
 	std::cout << "There are " << suggestions.size() << " suggestions (from offset):\n";
 	for (int i=0;i<suggestions.size();i++)
 	{
-		std::cout << i+1 <<"th: " << "center = " << suggestions[i].center 
-			//<< " direction = " << suggestions[i].direction
+		std::cout << i+1 <<"th: " << "side = " << suggestions[i].side 
+			<< " deltaS = " << suggestions[i].deltaS
+			<< " deltaV = " << suggestions[i].deltaV
 			<< " value = " << suggestions[i].value << std::endl;
 	}
 }

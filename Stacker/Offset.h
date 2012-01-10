@@ -156,6 +156,6 @@ public:
 	Vec3d org_bbmin, org_bbmax;
 	ShapeState currentCandidate;
 	QVector< ShapeState > usedCandidateSolutions;
-	PQLessEnergy candidateSolutions;
-	PQLessDistortion solutions;
+	PQShapeShateLessEnergy candidateSolutions;
+	PQShapeShateLessDistortion solutions;
 };
