@@ -596,8 +596,6 @@ void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, float r, floa
 {
 	glDisable(GL_LIGHTING);
 
-	//glClear(GL_DEPTH_BUFFER_BIT);
-
 	// Set color
 	glColor3f(r, g, b);
 

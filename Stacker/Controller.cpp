@@ -64,7 +64,7 @@ void Controller::draw()
 {
 	foreach(Primitive * prim, primitives)
 	{
-		//prim->drawDebug();
+		prim->drawDebug();
 		prim->draw();
 
 		// Draw proximity debug 

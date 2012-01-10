@@ -99,8 +99,9 @@ public:
 
 	QString id;
 	PrimType primType;
+	bool isDraw;
+
 	bool				isHot;			// Is this hot component?
 	bool				isDirty;		// Has the underlying geometry been updated?
 	bool				isFrozen;		// The seed of propagation
-	bool				isDraw;
 };

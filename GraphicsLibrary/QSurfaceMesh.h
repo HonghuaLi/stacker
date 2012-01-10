@@ -57,7 +57,7 @@ public:
 	void drawFaceNames();
 	void drawFacesUnique(uint offset);
 	void drawDebug();
-	void simpleDraw();
+	void simpleDraw(bool isColored = true, bool isDots = false);
 	void simpleDrawWireframe();
 
 	void setColorVertices(double r = 1.0, double g = 1.0, double b = 1.0, double a = 1.0);

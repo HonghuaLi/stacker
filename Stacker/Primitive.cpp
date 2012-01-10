@@ -27,6 +27,38 @@ void Primitive::drawDebug()
 
 	foreach(std::vector<Vec3d> poly, debugPoly)		SimpleDraw::DrawPoly(poly, 1, 0, 0);
 	foreach(std::vector<Vec3d> poly, debugPoly2)	SimpleDraw::DrawPoly(poly, 1, 0, 0);
+
+	// Outline shape
+	if(isSelected)
+	{
+		glPushAttrib( GL_ALL_ATTRIB_BITS );
+		glEnable( GL_LIGHTING );
+
+		glClearStencil(0);
+		glClear( GL_STENCIL_BUFFER_BIT );
+		glEnable( GL_STENCIL_TEST );
+
+		glStencilFunc( GL_ALWAYS, 1, 0xFFFF );
+		glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
+
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		glColor3f( 0.0f, 0.0f, 0.0f );
+		m_mesh->simpleDraw(true);
+		glDisable( GL_LIGHTING );
+
+		glStencilFunc( GL_NOTEQUAL, 1, 0xFFFF );
+		glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
+
+		glLineWidth( 20.0f );
+		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		glColor3f( 1.0f, 1.0f, 0.0f );
+		m_mesh->simpleDraw(false);
+
+		glPointSize( 10.0f );
+		m_mesh->simpleDraw(false, true);
+
+		glPopAttrib();
+	}
 }
 
 Vec3d Primitive::centerPoint()

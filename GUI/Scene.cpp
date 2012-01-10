@@ -19,6 +19,7 @@ QDeformController * defCtrl;
 #include "ConcentricGroup.h"
 #include "CoplanarGroup.h"
 
+#include "SubScene.h"
 
 Scene::Scene( QWidget *parent)
 {
@@ -44,7 +45,10 @@ Scene::Scene( QWidget *parent)
 	this->setSelectRegionWidth(10);
 	displayMessage(tr("New scene created."));
 
+	isShowStacked = false;
 	isDrawOffset = false;
+
+	sp = NULL;
 
 	// Testing
 	skel = NULL;
@@ -61,7 +65,7 @@ void Scene::init()
 	this->modifyMode = DEFAULT;
 
 	// Background
-	setBackgroundColor(backColor = QColor(255,255,255));
+	setBackgroundColor(backColor = QColor(50,50,60));
 
 	// Lights
 	setupLights();
@@ -99,7 +103,6 @@ void Scene::draw()
 	if(!this->context()->isValid())
 	{
 		printf("");
-
 	}
 
 	glEnable(GL_MULTISAMPLE);
@@ -123,6 +126,42 @@ void Scene::draw()
 	if(!isEmpty() && vboCollection.isEmpty())
 		activeObject()->simpleDraw();
 
+	// Draw stacking
+	if(isShowStacked)
+	{
+		int stackCount = 3;
+
+		double O_max = activeObject()->O_max;
+		double S = activeObject()->stackability;
+
+		Vec3d stackDirection = Vec3d(0., 0., 1.);
+		Vec3d delta = O_max * stackDirection;
+		double theta = activeObject()->theta;
+		double phi = activeObject()->phi;
+		
+		Vec3d shift = activeObject()->translation;
+
+		glPushMatrix();
+		glTranslated(delta[0],delta[1],delta[2]);
+
+		for(int i = 1; i < stackCount; i++)
+		{
+			// Draw object using VBO
+			for (QMap<QString, VBO>::iterator itr = vboCollection.begin(); itr != vboCollection.end(); ++itr)
+				itr->render();
+
+			// Fall back
+			if(vboCollection.isEmpty() && activeObject())
+				activeObject()->simpleDraw();
+
+			glTranslated(delta[0],delta[1],delta[2]);
+			glRotated(theta, 1, 0, 0);
+			glRotated(phi, 0, 0, 1);
+			glTranslated(shift[0], shift[1], shift[2]);
+		}
+
+		glPopMatrix();
+	}
 
 	// Draw groups
 	if (!isEmpty() && activeObject()->controller)
@@ -238,6 +277,12 @@ void Scene::mousePressEvent( QMouseEvent* e )
 
 	if ((e->button() == Qt::RightButton) && (e->modifiers() == Qt::ShiftModifier))
 	{
+		QMenu menu( this );
+
+		QAction* selectControllerAction = menu.addAction("Select controller");
+		QAction* selectCurveAction = menu.addAction("Select curve");
+		menu.addSeparator();
+
 		switch (selectMode){
 			case CONTROLLER:
 			case CONTROLLER_ELEMENT:
@@ -247,8 +292,6 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				}
 
 				Controller * ctrl = activeObject()->controller;
-
-				QMenu menu( this );
 
 				QAction* symmGrp = menu.addAction("Create Symmetry group..");
 				QAction* concentricGrp = menu.addAction("Create Concentric group..");
@@ -280,6 +323,12 @@ void Scene::mousePressEvent( QMouseEvent* e )
 
 					print("New group added.");
 				}
+
+				if(action == selectControllerAction)
+					setSelectMode(CONTROLLER);
+
+				if(action == selectCurveAction)
+					setSelectMode(CONTROLLER_ELEMENT);
 
 				break;
 		}
@@ -343,8 +392,59 @@ void Scene::keyPressEvent( QKeyEvent *e )
 		activeObject()->controller->test();
 	}
 
+	if(e->key() == Qt::Key_I)
+	{
+		addSubScene(Min(300,width() * (1.0/Max(1,subScenes.size()))));
+	}
+
+	if(e->key() == Qt::Key_U)
+	{
+		isShowStacked = !isShowStacked;
+	}
+
 	// Regular behavior
 	QGLViewer::keyPressEvent(e);
+
+	updateGL();
+}
+
+void Scene::addSubScene(int scene_width)
+{
+	int offsetX = 0;
+	int offsetY = height() - scene_width;
+
+	foreach(SubScene * s, subScenes){
+		offsetX += s->width;
+		//offsetY += s->height;
+	}
+
+	subScenes.push_back(new SubScene(this, offsetX, offsetY, scene_width, scene_width));
+
+	resizeSubScenes();
+}
+
+void Scene::resizeEvent( QResizeEvent * event )
+{
+	QGLViewer::resizeEvent(event);
+	resizeSubScenes();
+}
+
+void Scene::resizeSubScenes()
+{
+	int scene_width = Min(300,width() * (1.0/Max(1,subScenes.size())));
+
+	int offsetX = 0;
+	int offsetY = height() - scene_width;
+
+	foreach(SubScene * s, subScenes){
+		s->x = offsetX;
+		s->y = offsetY;
+		s->width = scene_width;
+		s->height = scene_width;
+
+		offsetX += s->width;
+		//offsetY += s->height;
+	}
 }
 
 void Scene::postSelection( const QPoint& point )
@@ -415,6 +515,13 @@ void Scene::postSelection( const QPoint& point )
 		}
 		break;
 	}
+
+	foreach(SubScene * s, subScenes){
+		if(s->contains(Vec2i(point.x(), point.y())))
+		{
+			s->isSelected = ! s->isSelected;
+		}
+	}
 }
 
 void Scene::setViewMode(ViewMode toMode)
@@ -453,30 +560,59 @@ void Scene::postDraw()
 	// Draw offset function
 	if(isDrawOffset && activeObject() && activeObject()->data2D.contains("offset"))
 	{
-		int size = width();
-
-		glViewport(width() - size, size * -0.1,size,size);
-		glScissor(width() - size, size * -0.1,size,size);
-
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glMatrixMode(GL_PROJECTION);glPushMatrix();	glLoadIdentity();
-		glOrtho(-1, 1, -1, 1, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();glLoadIdentity();glMultMatrixd(camera()->orientation().inverse().matrix());
+		setupSubViewport(0,0, 400, 400);
 
 		// Draw graph
 		glTranslated(-0.5, -0.5, 0);
 		SimpleDraw::DrawGraph2D(activeObject()->data2D["offset"]);
 
+		// black line
 		Vec3d p(0, 0, 0); Vec3d q = p + Vec3d(0,0,1.0);
 		SimpleDraw::IdentifyLine(p,q, 0,0,0,false,1.0);
 
-		glMatrixMode(GL_PROJECTION);glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);glPopMatrix();
-
-		glViewport(0,0,width(),height());
-		glScissor(0,0,width(),height());
+		endSubViewport();
 	}
+
+	foreach(SubScene * s, subScenes)
+	{
+		s->draw();
+
+		setupSubViewport(s->x, s->y, s->width, s->height);
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		QSegMesh * mesh = activeObject();
+
+		if(mesh && mesh->isReady){
+			for (int m=0;m < mesh->nbSegments();m++){			
+				QSurfaceMesh* seg = mesh->getSegment(m);
+				seg->simpleDraw();
+			}
+		}
+
+		endSubViewport();
+	}
+}
+
+void Scene::setupSubViewport( int x, int y, int w, int h )
+{
+	glViewport( x, height() - y - h, w, h);
+	glScissor( x, height() - y - h, w, h);
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);glPushMatrix();	glLoadIdentity();
+	glOrtho(-1, 1, -1, 1, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();glLoadIdentity();glMultMatrixd(camera()->orientation().inverse().matrix());
+}
+
+void Scene::endSubViewport()
+{
+	glMatrixMode(GL_PROJECTION);glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);glPopMatrix();
+
+	glViewport(0,0,width(),height());
+	glScissor(0,0,width(),height());
 }
 
 void Scene::print( QString message, long age )
