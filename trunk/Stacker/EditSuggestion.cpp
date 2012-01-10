@@ -18,10 +18,15 @@ EditSuggestion::EditSuggestion()
 
 void EditSuggestion::draw(double scale, Vec3d normal)
 {
-	//std::cout << "center = " << this->center  << "direction = " << this->direction << std::endl;
+	Vec3d pos = center + direction;
+
+	if (value < 0.1)
+	{
+		SimpleDraw::IdentifyLine(center, pos, 0, 0, 0.5, false, 1.0);
+		return;
+	}
 
 	std::vector<Point> arrow, tail;
-	Vec3d pos = center + direction;
 
 	Vec3d v = direction.normalized() * scale * value;
 	Vec3d u = cross(v, normal).normalized() * scale * value;
@@ -58,6 +63,7 @@ void EditSuggestion::draw(double scale, Vec3d normal)
 	foreach(Point p, tail) glVertex3dv(p);
 	glEnd();
 
+	// Center
 	SimpleDraw::DrawSphere(center, 0.02f);
 
 	// Outline

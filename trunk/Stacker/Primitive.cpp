@@ -10,6 +10,7 @@ Primitive::Primitive( QSurfaceMesh* mesh, QString newId )
 	isSelected = false;
 	isFrozen = false;
 	isRotationalSymmetry = false;
+	isDraw = true;
 }
 
 void Primitive::drawDebug()

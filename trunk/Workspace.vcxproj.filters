@@ -350,9 +350,6 @@
     <ClCompile Include="MathLibrary\GCDeformation.cpp">
       <Filter>MathLibrary\Source</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\CuboidParam.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_QDeformController.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -577,12 +574,6 @@
     <ClInclude Include="GeneratedFiles\ui_SpaceExplorer.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\CuboidParam.h">
-      <Filter>Stacker\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Stacker\PrimativeParam.h">
-      <Filter>Stacker\Header</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\Controller.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
@@ -619,10 +610,10 @@
     <ClInclude Include="GraphicsLibrary\Plane.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Line.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\EditSuggestion.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\ShapeState.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
   </ItemGroup>

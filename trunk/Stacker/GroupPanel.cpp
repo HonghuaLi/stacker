@@ -134,7 +134,10 @@ void GroupPanel::saveGroups()
 		
 		if(nb > 0)
 		{
-			outF << qPrintable(groupTypes[SELF_SYMMETRY]) << "\t" << qPrintable(prim->id) << "\t" << nb << std::endl;
+			outF << qPrintable(groupTypes[SELF_SYMMETRY]) << "\t" << qPrintable(prim->id) << "\t" << nb << "\t";
+			foreach(Plane p, prim->symmPlanes)
+				 outF << p.n << "\t";
+			outF << std::endl;
 		}
 
 		if (prim->isRotationalSymmetry)
@@ -188,8 +191,16 @@ void GroupPanel::loadGroups()
 			{
 				inF >> str;
 				QString primId = QString(str.c_str());
-				int nb_fold = 0; inF >> nb_fold;
-				ctrl->getPrimitive(primId)->setSymmetryPlanes(nb_fold);
+				Primitive* prim = ctrl->getPrimitive(primId);
+				int nb_fold = 0; 
+				inF >> nb_fold;
+				for (int i=0;i<nb_fold;i++)
+				{
+					Plane p;
+					p.center = prim->centerPoint();
+					inF >> p.n;
+					prim->symmPlanes.push_back(p);
+				}
 				break;
 			}
 		case SELF_ROT_SYMMETRY:

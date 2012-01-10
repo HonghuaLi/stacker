@@ -22,10 +22,6 @@ public:
 	// Message
 	void showMessage( QString message );
 
-	// Optimization
-	void gradientDescentOptimize();
-
-	double sumEnergy( );
 	Ui::StackerWidget panel;
 	Ui::ControllerDeformerWidget ctrlDeformer;
 	Scene * activeScene;
@@ -38,7 +34,6 @@ public slots:
 	void onOffsetButtonClicked();
 	void onImproveButtonClicked();
 	void onHotspotsButtonClicked();
-	void onSolutionButtonClicked();
 	void onSuggestButtonClicked();
 	void onSaveSuggestionsButtonClicked();
 	void onLoadSuggestionsButtonClicked();
@@ -52,12 +47,13 @@ public slots:
 	void setJointThreshold(double threshold);
 	void setSkeletonJoints(int num);
 	void setStackCount(int num);
+	void setBBTolerance(double tol);
+	void setNumExpectedSolutions(int num);
+	void setSolutionID(int id);
 
 	// Primitives modification
 	void convertGC();
 	void convertCuboid();
-	void updateController();
-	void resetCtrlDeformerPanel();
 	void selectModeController();
 	void selectModeControllerElement();
 

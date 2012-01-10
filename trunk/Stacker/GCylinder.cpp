@@ -24,6 +24,8 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 	{
 		fit();
 		buildCage();
+
+		originalVolume = volume();
 	}
 
 	fixedPoints.clear();
@@ -88,6 +90,8 @@ void GCylinder::deformMesh()
 
 void GCylinder::draw()
 {
+	if(!isDraw) return;
+
 	glDisable(GL_LIGHTING);
 
 	glEnable(GL_BLEND); 
@@ -513,11 +517,6 @@ bool GCylinder::excludePoints( std::vector< Vec3d >& pnts )
 	return true;
 }
 
-void GCylinder::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
-{
-	// deprecated..
-	printf("Primitive::deform() deprecated\n");
-}
 
 void GCylinder::translate( Vec3d &T )
 {
@@ -586,40 +585,6 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	gc->realignCrossSections();
 	deformMesh();
 
-	//// theta = <p, j, p + T>
-	//Vec3d v1 = p - joint;
-	//Vec3d v2 = (p + T) - joint;	
-
-	//
-	//// Rotation matrix
-	//Vec3d rotAxis = cross( v1, v2 );
-	//double theta = DEGREES( acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1)) );
-	//if ( dot( rotAxis, cross( v1.normalized(),v2.normalized() ) ) < 0 )
-	//	theta *= -1;
-
-	//Eigen::Matrix3d R = rotationMatrixAroundAxis(rotAxis, theta);
-
-	//// 1) Rotate with respect to joint (theta)
-	//foreach(GeneralizedCylinder::Circle c, gc->crossSection)
-	//{
-	//	Vec3d newCenter = rotatePointByMatrix( R, c.center - joint ) + joint;
-	//	Vec3d newNormal = rotatePointByMatrix( R, c.n);
-
-	//	gc->frames.point[c.index] = newCenter;
-	//	gc->crossSection[c.index].n = newNormal;
-	//}
-	//
-	//// 2) Scale along direction (joint -> p + T)
-	//double scaleAlong = 1;
-	//if (v1.norm() > 1e-10)
-	//	scaleAlong = v2.norm() / v1.norm();
-
-	//foreach(GeneralizedCylinder::Circle c, gc->crossSection)
-	//	gc->frames.point[c.index] = joint + ((gc->frames.point[c.index] - joint) * scaleAlong);
-
-	//gc->frames.compute();
-	//gc->realignCrossSections();
-	//deformMesh();
 }
 
 void GCylinder::movePoint( Point p, Vec3d T )
@@ -736,4 +701,6 @@ void GCylinder::load( std::ifstream &inF )
 	}
 
 	buildCage();
+
+	originalVolume = volume();
 }

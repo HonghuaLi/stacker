@@ -1,7 +1,6 @@
 #pragma once
 #include <QMap>
 #include "Primitive.h"
-#include "CuboidParam.h"
 #include "Voxeler.h"
 #include "Group.h"
 
@@ -11,12 +10,6 @@ extern double JOINT_THRESHOLD;
 
 class QSegMesh;
 
-struct ShapeState
-{
-	QMap< QString, PrimitiveState > primStates;
-	double stackability;
-	QVector<QString> seeds;
-};
 
 class Controller
 {
@@ -52,10 +45,6 @@ public:
 	std::set< QString > getRidOfRedundancy( std::set< QString > Ids );
 	QVector< Group * > groupsOf( QString id );
 
-	// Deformation
-	void deformShape( PrimitiveParamMap& primParams, bool isPermanent = false );
-	void recoverShape();
-
 
 	uint numPrimitives();
 	int numHotPrimitives();
@@ -88,20 +77,8 @@ public:
 	void setPrimitivesFrozen(bool isFrozen = false);
 	void setPrimitivesAvailable(bool isAvailable = true);
 
-	// Computations
-	struct Stat{
-		// stats that can be easily computed in run time
-		double volumeBB;
-		std::vector< double > volumePrim;
-		std::map< std::pair<int, int>, double > proximity;
-		std::map< std::pair<int, int>, bool > coplanarity;
-
-		// stats that are stored and keep updating by other member functions
-		PrimitiveParamMap params;
-	};
-
-	Stat& getStat();
-	Stat& getOriginalStat();
+	// Distortion
+	double getDistortion();
 
 	QVector<QString> stringIds(QVector<int> numericalIds);
 	int getPrimitiveIdNum(QString stringId);
@@ -115,6 +92,7 @@ public:
 	// Save and load
 	void save(std::ofstream &outF);
 	void load(std::ifstream &inF);
+	double originalVolume();
 	double volume();
 
 	// DEBUG:
@@ -124,8 +102,6 @@ public:
 private:
 	QMap<QString, Primitive*> primitives;
 	QSegMesh* m_mesh;
-	Stat originalStat;
-	Stat currStat;
 
 	void assignIds();
 };

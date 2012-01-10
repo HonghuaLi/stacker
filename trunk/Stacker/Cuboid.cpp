@@ -84,6 +84,8 @@ void Cuboid::fit( bool useAABB, int obb_method )
 	originalBox = currBox;
 	id = m_mesh->objectName();
 
+	originalVolume = volume();
+
 	computeMeshCoordiantes();
 }
 
@@ -183,13 +185,12 @@ std::vector< std::vector<Vec3d> > Cuboid::getBoxFaces(MinOBB3::Box3 &fromBox)
 
 void Cuboid::draw()
 {
-	// Draw center point
-	//SimpleDraw::IdentifyPoint(currBox.Center);
+	if (!isDraw) return;
 
 	if(isSelected)
 		drawCube(4, Vec4d(1,1,0,0.9));
-	//else
-	//	drawCube(2, Vec4d(0,0,1,0.6));
+	else
+		drawCube(2, Vec4d(0,0,1,0.6));
 
 	// Draw axis
 	if(isDrawAxis){
@@ -276,22 +277,7 @@ void Cuboid::rotateAroundAxes( Vec3d &angles )
 	currBox.Axis[2] = E2V(p2);
 }
 
-void Cuboid::deform( PrimitiveParam* params, bool isPermanent /*= false*/ )
-{
-	CuboidParam* cp = (CuboidParam*) params;
 
-	// Deform the OBB
-	translate(cp->getT());
-	rotateAroundAxes(cp->getR());
-	scaleAlongAxis(cp->getS());
-
-	// Apply the deformation 
-	deformMesh();
-
-	// Apply deformation forever...
-	if(isPermanent)
-		originalBox = currBox;
-}
 
 void Cuboid::recoverMesh()
 {
@@ -708,7 +694,7 @@ void Cuboid::movePoint( Point p, Vec3d T )
 		Vec3d coordP = getCoordinatesInBox(currBox, p);
 		Vec3d coordNewP = getCoordinatesInBox(currBox, newP);
 
-		// Scaling along axis that define the normal of the symmetry plane
+		// Scaling along the normal of the symmetry planes
 		Vec3d scales(coordNewP[0]/coordP[0], coordNewP[1]/coordP[1], coordNewP[2]/coordP[2]);
 		
 		for (int i=0;i<3;i++ )
@@ -769,6 +755,8 @@ void Cuboid::load( std::ifstream &inF )
 
 	originalBox = currBox;
 	id = m_mesh->objectName();
+
+	originalVolume = volume();
 
 	computeMeshCoordiantes();
 }
