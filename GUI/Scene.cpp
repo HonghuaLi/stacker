@@ -195,13 +195,7 @@ void Scene::draw()
 	double scaling = 0.05;//pos.norm() / 100.0;
 	pos.normalize();	
 	foreach(EditSuggestion sg, suggestions)
-		sg.draw(scaling, Vec3d(0,0,1));
-
-	//std::cout << "There are " << suggestions.size() << " suggestions (from Scene):\n";
-	//for (int i=0;i<suggestions.size();i++)
-	//{
-	//	std::cout << i+1 <<"th: " << "center = " << suggestions[i].center << " direction = " << suggestions[i].direction << std::endl;
-	//}
+		sg.draw(scaling);
 }
 
 void Scene::drawWithNames()

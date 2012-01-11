@@ -437,6 +437,9 @@
     <ClCompile Include="GeneratedFiles\Template\moc_SubScene.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
+    <ClCompile Include="Stacker\ShapeState.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -622,11 +625,11 @@
     <ClInclude Include="Stacker\EditSuggestion.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Line.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\ShapeState.h">
       <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\ShapeDistribution.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

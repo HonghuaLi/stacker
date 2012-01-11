@@ -97,5 +97,4 @@ private:
 public:
 	std::vector< Vector3 > coordinates;
 	MinOBB3::Box3 originalBox, currBox;
-	Vector3 preT, preS, preR;
 };

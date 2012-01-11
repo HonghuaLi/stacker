@@ -20,6 +20,7 @@ enum STACKING_TYPE
 
 extern int NUM_EXPECTED_SOLUTION;
 extern double BB_TOLERANCE;
+extern double TARGET_STACKABILITY;
 
 
 typedef std::vector< std::vector<double> >	Buffer2d;
@@ -73,7 +74,7 @@ public:
 	void showHotSpots();
 
 	// Improve stackability
-	void improveStackabilityTo(double targetS);
+	void improveStackabilityToTarget();
 	void improveStackability();
 	void applyHeuristics();
 	void applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS );

@@ -63,6 +63,8 @@ StackerPanel::StackerPanel()
 	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
 	connect(panel.stackCount, SIGNAL(valueChanged(int)), this, SLOT(setStackCount(int)) );
 	connect(panel.solutionID, SIGNAL(valueChanged(int)), this, SLOT(setSolutionID(int)));
+	connect(panel.targetS, SIGNAL(valueChanged(double)), this, SLOT(setTargetStackability(double)));
+
 
 	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
 	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
@@ -117,7 +119,7 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-	activeOffset->improveStackabilityTo(panel.targetS->value());
+	activeOffset->improveStackabilityToTarget();
 	emit(objectModified());
 }
 
@@ -520,6 +522,11 @@ void StackerPanel::setBBTolerance( double tol )
 void StackerPanel::setNumExpectedSolutions( int num )
 {
 	NUM_EXPECTED_SOLUTION = num;
+}
+
+void StackerPanel::setTargetStackability( double s )
+{
+	TARGET_STACKABILITY = s;
 }
 
 

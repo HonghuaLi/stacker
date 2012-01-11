@@ -14,6 +14,7 @@
 
 int NUM_EXPECTED_SOLUTION = 1;
 double BB_TOLERANCE = 1.1;
+double TARGET_STACKABILITY = 0.5;
 
 
 // OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
@@ -1025,34 +1026,20 @@ std::vector< Vec3d > Offset::getLocalMoves( HotSpot& HS )
 	// pos
 	Vec3d hotPoint = HS.hotPoint();
 
-	// Local moves
+	// step
 	Vec3d step = (org_bbmax - org_bbmin) / 20;
-	int K = 4;
+	int K = 6;
 
+	// Horizontal moves
 	double min_x = - step[0] * K;
 	double max_x = - min_x;
 	double min_y = - step[1] * K;
 	double max_y = - min_y;
-	double min_z, max_z;
-	if (HS.defineHeight)
-	{// Horizontal moves only
-		min_z = max_z = 0;
-	}
-	//else if ( 1 == HS.side)
-	//{
-	//	min_z = - step[2] * K;
-	//	max_z = 0;
-	//}
-	//else
-	//{
-	//	min_z = 0 ;
-	//	max_z = step[2] * K;
-	//}
-
 
 	for (double x = min_x; x <= max_x; x += step[0]){
 		for (double y = min_y; y <= max_y; y += step[1]){
-			for (double z = min_z; z <= max_z; z += step[2])
+//			for (double z = min_z; z <= max_z; z += step[2])
+			double z = 0;
 			{
 				Vec3d delta(x,y,z);
 				Vec3d pos = hotPoint + delta;
@@ -1068,6 +1055,30 @@ std::vector< Vec3d > Offset::getLocalMoves( HotSpot& HS )
 		}
 	}
 
+	// Vertical moves
+	if (!HS.defineHeight)
+	{
+		double min_z = - step[2] * K;
+		double max_z = - min_z;
+		if (1 == HS.side)
+			max_z = 0;
+		else
+			min_z = 0;
+
+		for (double z = min_z; z <= max_z; z += step[2])
+		{
+			Vec3d delta = Vec3d(0, 0, z);
+			Vec3d pos = hotPoint + delta;
+
+			// check whether \pos is in BB
+			if (RANGE(pos[0], org_bbmin[0], org_bbmax[0])
+				&& RANGE(pos[1], org_bbmin[1], org_bbmax[1])
+				&& RANGE(pos[2], org_bbmin[2], org_bbmax[2]))
+			{
+				result.push_back(delta);
+			}
+		}
+	}
 	return result;
 }
 
@@ -1081,22 +1092,12 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 	Point hotPoint = HS.hotPoint();
 	Point op_hotPoint = opHS.hotPoint();
 
-	// Save the current shape state
-	ShapeState currShapeState = ctrl->getShapeState();
-
 	// Move hot spot side away or closer to each other
 	//std::vector< Vec3d > Ts = getHorizontalMoves(HS);
 	std::vector< Vec3d > Ts = getLocalMoves(HS);
-	
-	if (!HS.defineHeight)
-	{// Move up/down directly
-		Vec3d T(0, 0, 0.1 * objectH);
-		if (1 == HS.side) T *= -1;
-		Ts.push_back( T );
-	}
 
 	//Ts.clear();
-	//Ts.push_back(Vec3d(-0.3, 0.3, 0));
+	//Ts.push_back(Vec3d(0.4, 0, 0));
 
 	// Actually modify the shape to generate hot solutions
 	for (int i=0;i<Ts.size();i++)
@@ -1114,47 +1115,59 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 
 		// fix the hot segments pair
 		ctrl->regroupPair(prim->id, op_prim->id);
-
-
 		// Propagation the deformation
 		prim->isFrozen = true;
 		op_prim->isFrozen = true;
 		ctrl->weakPropagate();
 
-
-		// Check if this is a candidate solution
-
-//		if ( satisfyBBConstraint() )
+		// Check if this is a candidate solution		
+		if ( satisfyBBConstraint() )
 		{
 			double stackability = computeOffsetOfShape();
-//			if (stackability > orgStackability + 0.05)
+
+			ShapeState state = ctrl->getShapeState();
+
+
+			if (stackability > TARGET_STACKABILITY)
 			{
-				ShapeState state = ctrl->getShapeState();
-				if (isUnique(state, 2))
+				if (!isSuggesting)
 				{
-					state.deltaStackability = stackability - orgStackability;
-					state.distortion = ctrl->getDistortion();
-					candidateSolutions.push(state);
-
-					// Suggestion
-					if (isSuggesting)
-					{
-						EditSuggestion suggest;
-
-						suggest.center = hotPoint;
-						suggest.direction = Ts[i];
-						suggest.deltaS = state.deltaStackability;
-						suggest.deltaV = state.distortion;
-						suggest.side = HS.side;
-
-						suggestions.push_back(suggest);
-					}
-				}				
+					solutions.push(state);
+				}
 			}
+			
+			if (isUnique(state, 0))
+			{
+				state.deltaStackability = stackability - orgStackability;
+				state.distortion = ctrl->getDistortion();
+				candidateSolutions.push(state);
+
+				// Suggestion
+				if (isSuggesting)
+				{
+					EditSuggestion suggest;
+
+					suggest.center = hotPoint;
+					suggest.direction = Ts[i];
+					suggest.deltaS = state.deltaStackability;
+					suggest.deltaV = state.distortion;
+					suggest.side = HS.side;
+					suggest.value = state.energy();
+
+
+					std::cout << "deltaS = " << suggest.deltaS << "\t"
+						<< "deltaV = " << suggest.deltaV << "\t"
+						<< "energy = " << suggest.value << std::endl;
+
+					suggestions.push_back(suggest);
+				}
+			}				
+
 		}
 
-		// Restore the initial hot shape state
-		ctrl->setShapeState(currShapeState);
+
+		// Restore the shape state of current candidate
+		ctrl->setShapeState(currentCandidate);
 	}
 }
 
@@ -1262,6 +1275,8 @@ void Offset::applyHeuristics()
 	else
 		applyHeuristicsOnHotspot(upperHS, lowerHS);		
 
+
+
 	if (lowerHS.isRing)
 		applyHeuristicsOnHotRing(lowerHS);
 	else
@@ -1298,7 +1313,7 @@ void Offset::improveStackability()
 	applyHeuristics();
 }
 
-void Offset::improveStackabilityTo( double targetS )
+void Offset::improveStackabilityToTarget()
 {
 	Controller *ctrl = activeObject()->controller;
 
@@ -1310,10 +1325,10 @@ void Offset::improveStackabilityTo( double targetS )
 	// The bounding box constraint is hard
 	org_bbmin = activeObject()->bbmin;
 	org_bbmax = activeObject()->bbmax;
-	org_bbmin[0] *= 1.1;
-	org_bbmin[2] *= 1.1;
-	org_bbmax[0] *= 1.1;
-	org_bbmax[2] *= 1.1;
+	org_bbmin[0] *= BB_TOLERANCE;
+	org_bbmin[2] *= BB_TOLERANCE;
+	org_bbmax[0] *= BB_TOLERANCE;
+	org_bbmax[2] *= BB_TOLERANCE;
 
 	// Push the current shape as the initial candidate solution
 	ShapeState state = ctrl->getShapeState();
@@ -1321,10 +1336,8 @@ void Offset::improveStackabilityTo( double targetS )
 	state.distortion = ctrl->getDistortion();
 	candidateSolutions.push(state);
 
-//	while(!candidateSolutions.empty())
+	while(!candidateSolutions.empty())
 	{
-
-		// Get the first candidate solution
 		currentCandidate = candidateSolutions.top();
 		candidateSolutions.pop();
 		usedCandidateSolutions.push_back(currentCandidate);
@@ -1334,17 +1347,21 @@ void Offset::improveStackabilityTo( double targetS )
 
 		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;
 		std::cout << "#Solutions = " << solutions.size() << std::endl;
+		
+		if (solutions.size() >= NUM_EXPECTED_SOLUTION)
+		{
+			std::cout << NUM_EXPECTED_SOLUTION << " solutions have been found." << std::endl;
+			break;
+		}
+		
 	}
 
-	// Debug: add candidate solutions to solutions
-	while (!candidateSolutions.empty())
-	{
-		solutions.push( candidateSolutions.top() );
-		candidateSolutions.pop();
-	}
-
-
-	// Cluster the solutions to get rid of redundancies
+	//// Debug: add candidate solutions to solutions
+	//while (!candidateSolutions.empty())
+	//{
+	//	solutions.push( candidateSolutions.top() );
+	//	candidateSolutions.pop();
+	//}
 
 	ctrl->setShapeState(state);
 	activeObject()->computeBoundingBox();
@@ -1368,7 +1385,7 @@ void Offset::showSolution( int i )
 
 	ctrl->setShapeState(solutionsCopy.top());
 
-	std::cout << "Showing the " << id << "th solution out of " << solutions.size() <<".\n";
+	//std::cout << "Showing the " << id << "th solution out of " << solutions.size() <<".\n";
 }
 
 bool Offset::satisfyBBConstraint()
@@ -1455,17 +1472,29 @@ Vec2i Offset::centerOfRegion( std::vector< Vec2i >& region )
 
 QVector<EditSuggestion> Offset::getSuggestions()
 {
+	Controller *ctrl = activeObject()->controller;
+	
+	// Clear
 	suggestions.clear();
 	candidateSolutions = PQShapeShateLessEnergy();
 	solutions = PQShapeShateLessDistortion();
+
+	// Current candidate
+	currentCandidate = ctrl->getShapeState();
+	currentCandidate.deltaStackability = getStackability() - orgStackability;
+	currentCandidate.distortion = ctrl->getDistortion();
+
+
 	// The bounding box constraint is hard
 	org_bbmin = activeObject()->bbmin;
 	org_bbmax = activeObject()->bbmax;
-	double scale = 1;
-	org_bbmin[0] *= scale;
-	org_bbmin[1] *= scale;
-	org_bbmax[0] *= scale;
-	org_bbmax[1] *= scale;
+	org_bbmin[0] *= BB_TOLERANCE;
+	org_bbmin[1] *= BB_TOLERANCE;
+	org_bbmax[0] *= BB_TOLERANCE;
+	org_bbmax[1] *= BB_TOLERANCE;
+
+	org_bbmin[2] *= 1.0001;
+	org_bbmax[2] *= 1.0001;
 
 	isSuggesting = true;
 	improveStackability();
@@ -1495,35 +1524,39 @@ void Offset::normalizeSuggestions()
 
 
 	// Normalize \deltaS and \deltaV respectively
-	double minS = DBL_MAX;
-	double maxS = DBL_MIN;
-	double minV = DBL_MAX;
-	double maxV = DBL_MIN;
-
-	foreach(EditSuggestion sg, suggestions)
+	bool computeValue = false;
+	if (computeValue)
 	{
-		double s = sg.deltaS;
-		double v = sg.deltaV;
+		double minS = DBL_MAX;
+		double maxS = DBL_MIN;
+		double minV = DBL_MAX;
+		double maxV = DBL_MIN;
 
-		minS = Min(minS, s);
-		maxS = Max(maxS, s);
-		minV = Min(minV, v);
-		maxV = Max(maxV, v);
-	}
+		foreach(EditSuggestion sg, suggestions)
+		{
+			double s = sg.deltaS;
+			double v = sg.deltaV;
 
-	double rangeS = maxS - minS;
-	double rangeV = maxV - minV;
+			minS = Min(minS, s);
+			maxS = Max(maxS, s);
+			minV = Min(minV, v);
+			maxV = Max(maxV, v);
+		}
 
-	bool zeroRangeS = abs(rangeS) < 1e-10;
-	bool zeroRangeV = abs(rangeV) < 1e-10;
-	for(int i = 0; i < suggestions.size(); i++)
-	{
-		double s = zeroRangeS? 1 : (suggestions[i].deltaS - minS) / rangeS;
-		double v = zeroRangeV? 1 : (suggestions[i].deltaV - minV) / rangeV;
+		double rangeS = maxS - minS;
+		double rangeV = maxV - minV;
 
-		double alpha = 0.7;
-		suggestions[i].value = alpha * s - (1-alpha)*v;
+		bool zeroRangeS = abs(rangeS) < 1e-10;
+		bool zeroRangeV = abs(rangeV) < 1e-10;
+		for(int i = 0; i < suggestions.size(); i++)
+		{
+			double s = zeroRangeS? 1 : (suggestions[i].deltaS - minS) / rangeS;
+			double v = zeroRangeV? 1 : (suggestions[i].deltaV - minV) / rangeV;
 
+			double alpha = 0.7;
+			suggestions[i].value = alpha * s - (1-alpha)*v;
+
+		}
 	}
 
 
@@ -1552,9 +1585,8 @@ void Offset::normalizeSuggestions()
 	std::cout << "There are " << suggestions.size() << " suggestions (from offset):\n";
 	for (int i=0;i<suggestions.size();i++)
 	{
-		std::cout << i+1 <<"th: " << "side = " << suggestions[i].side 
-			<< " deltaS = " << suggestions[i].deltaS
-			<< " deltaV = " << suggestions[i].deltaV
-			<< " value = " << suggestions[i].value << std::endl;
+		std::cout << " deltaS = " << suggestions[i].deltaS 
+			<< "\tdeltaV = " << suggestions[i].deltaV
+			<< "\tvalue = " << suggestions[i].value << std::endl;
 	}
 }
