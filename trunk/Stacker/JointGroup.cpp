@@ -61,7 +61,9 @@ QVector<QString> JointGroup::regroup()
 	Vec3d newPos = frozen->fromCoordinate(coordinates[frozen->id]);
 	Vec3d oldPos = non_frozen->fromCoordinate(coordinates[non_frozen->id]);
 
-	non_frozen->movePoint(oldPos, newPos - oldPos);
+	Vec3d T = newPos - oldPos;
+	non_frozen->movePoint(oldPos, T);
+
 
 //	coordinates[non_frozen->id] = non_frozen->getCoordinate(newPos);
 

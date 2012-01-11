@@ -319,12 +319,12 @@ Vec3d Cuboid::selectedPartPos()
 
 uint Cuboid::detectHotCurve( std::vector< Vec3d > &hotSamples )
 {
-	if ( dot( originalBox.Axis[2], cross( originalBox.Axis[0],  originalBox.Axis[1] ) ) < 0 )
+	if ( dot( currBox.Axis[2], cross( currBox.Axis[0],  currBox.Axis[1] ) ) < 0 )
 		std::cout << "The coordinate frame is not right handed!" << std::endl;
 
 	std::vector< std::vector< double > > projections(3);
 
-	Vec3d &center = originalBox.Center;
+	Vec3d &center = currBox.Center;
 
 	for (int i = 0; i < hotSamples.size(); i++)
 	{
@@ -332,7 +332,7 @@ uint Cuboid::detectHotCurve( std::vector< Vec3d > &hotSamples )
 
 		for (int j = 0; j < 3; j++)
 		{
-			Vec3d &axis = originalBox.Axis[j];
+			Vec3d &axis = currBox.Axis[j];
 			projections[j].push_back( dot( axis, vec ) );
 		}
 
@@ -536,7 +536,8 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 
 	// Rotation matrix
 	Vec3d rotAxis = cross( v1, v2 );
-	double theta = DEGREES( acos(RANGED(-1, dot(v1.normalized(),v2.normalized()), 1)) );
+	double dotProd = dot(v1.normalized(),v2.normalized());
+	double theta = DEGREES( acos(dotProd) );
 	if ( dot( rotAxis, cross( v1.normalized(),v2.normalized() ) ) < 0 )
 		theta *= -1;
 
@@ -556,35 +557,50 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	currBox.Axis[2] = p0 - p3;
 	currBox.normalizeAxis();
 
+
+	//if(rotAxis.norm() < 10e-3) 
+	//	int a = 1;
 	// Scale the box only along one axis
-	uint selected_axis = -1;
-	double largest_abs_dot = 0;
+	uint axisID = 0;
+	double maxDot = 0;
+	v2.normalize();
 	for (int i = 0; i < 3; i++)
 	{
-		double abs_dot = abs( dot( currBox.Axis[i], v2 ) );
-		if (abs_dot > largest_abs_dot)
+		Vec3d axis = currBox.Axis[i];
+		double abs_dot = abs( dot( axis, v2 ) );
+		if (abs_dot > maxDot)
 		{
-			selected_axis = i;
-			largest_abs_dot = abs_dot;
+			axisID = i;
+			maxDot = abs_dot;
 		}
 	}
 
-	double alpha = - oldJointCoords[selected_axis];
-	double beta = pCoords[selected_axis];
+	double alpha = - oldJointCoords[axisID];
+	double beta = pCoords[axisID];
 	double sum = alpha + beta;
 	alpha /= sum;
 	beta /= sum;
 
-	currBox.Center = joint * beta + q * alpha;
-	currBox.Extent[selected_axis] *= scale;
+	Vec3d newJointCoords = getCoordinatesInBox(currBox, joint);
+	Vec3d qCoords = getCoordinatesInBox(currBox, q);
+
+	Vec3d projJointCoords(0, 0, 0);
+	Vec3d projQCoords(0, 0, 0);
+	projJointCoords[axisID] = newJointCoords[axisID];
+	projQCoords[axisID] = qCoords[axisID];
+	Vec3d projJoint = getPositionInBox(currBox, projJointCoords);
+	Vec3d projQ = getPositionInBox(currBox, projQCoords);
+	
+	currBox.Center = projJoint * beta + projQ * alpha;
+	currBox.Extent[axisID] *= scale;
 }
 
 std::vector <Vec3d> Cuboid::majorAxis()
 {
 	std::vector<Vec3d> result;
-	result.push_back(originalBox.Axis[0]);
-	result.push_back(originalBox.Axis[1]);
-	result.push_back(originalBox.Axis[2]);
+	result.push_back(currBox.Axis[0]);
+	result.push_back(currBox.Axis[1]);
+	result.push_back(currBox.Axis[2]);
 	return result;
 }
 

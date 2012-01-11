@@ -14,19 +14,16 @@ struct PrimitiveState
 };
 
 
-struct ShapeState
+class ShapeState
 {
+public:
 	QMap< QString, PrimitiveState > primStates;
 	double deltaStackability;
 	double distortion;
 
 	QVector<ShapeState> history;
 
-	double energy()
-	{
-		double alpha = 0.7;
-		return  deltaStackability * alpha - distortion * (1-alpha);
-	}
+	double energy();
 
 	// 
 	QVector<QString> seeds;
@@ -34,18 +31,12 @@ struct ShapeState
 
 struct lessDistortion
 {
-	bool operator () (ShapeState a, ShapeState b)
-	{
-		return a.distortion < b.distortion;
-	}
+	bool operator () (ShapeState a, ShapeState b);
 };
 
 struct lessEnergy
 {
-	bool operator () (ShapeState a, ShapeState b)
-	{
-		return a.energy() < b.energy();
-	}
+	bool operator () (ShapeState a, ShapeState b);
 };
 
 typedef std::priority_queue< ShapeState, QVector<ShapeState>, lessEnergy >		PQShapeShateLessEnergy;

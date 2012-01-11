@@ -7,7 +7,7 @@ public:
 	EditSuggestion();
 	EditSuggestion( Point Center, Vec3d Direction, double Value);
 
-	void draw(double scale, Vec3d normal);
+	void draw(double scale);
 	QSurfaceMesh getGeometry();
 
 	Point center;

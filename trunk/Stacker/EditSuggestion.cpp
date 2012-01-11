@@ -16,7 +16,7 @@ EditSuggestion::EditSuggestion()
 	this->value = 0;
 }
 
-void EditSuggestion::draw(double scale, Vec3d normal)
+void EditSuggestion::draw(double scale)
 {
 	Vec3d pos = center + direction;
 
@@ -28,6 +28,7 @@ void EditSuggestion::draw(double scale, Vec3d normal)
 
 	std::vector<Point> arrow, tail;
 
+	Vec3d normal = direction[2]? Vec3d(1,0,0) : Vec3d(0, 0, 1);
 	Vec3d v = direction.normalized() * scale * value;
 	Vec3d u = cross(v, normal).normalized() * scale * value;
 

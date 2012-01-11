@@ -155,8 +155,8 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 
 		Cuboid * cuboid = (Cuboid*)oldPrimitive;
 
-		double extent = cuboid->originalBox.Extent[cuboidAxis];
-		Vec3d axis = cuboid->originalBox.Axis[cuboidAxis];
+		double extent = cuboid->currBox.Extent[cuboidAxis];
+		Vec3d axis = cuboid->currBox.Axis[cuboidAxis];
 		Vec3d center = cuboid->centerPoint();
 
 		Line line(center + (axis * extent), center + (-axis * extent));
@@ -459,7 +459,20 @@ QVector<ShapeState> Controller::strongPropagate()
 		if (semi_frozen.isEmpty())
 		{
 			// Weak propagation is done
-			results.push_back(getShapeState());
+			ShapeState newState = getShapeState();
+
+			// Check if unique
+			bool isUnique = true;
+			foreach(ShapeState res, results){
+				if(similarity(res, newState) < 0)
+				{
+					isUnique = false;
+					break;
+				}
+			}
+
+			// if unique, add to \results
+			results.push_back(newState);
 		}
 		else
 		{
@@ -483,7 +496,7 @@ QVector<ShapeState> Controller::strongPropagate()
 	}
 
 	// set the shape as the first result
-	setShapeState(results[0]);
+	//setShapeState(results[0]);
  
 	return results;
 }
@@ -726,6 +739,7 @@ double Controller::getDistortion()
 	// Total volume difference
 	double orgV = originalVolume();
 	double D1 = abs(volume() - orgV) /orgV;
+	D.push_back(D1);
 
 	// Total Energy
 	return Sum(D);

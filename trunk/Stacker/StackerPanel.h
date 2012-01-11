@@ -50,6 +50,7 @@ public slots:
 	void setBBTolerance(double tol);
 	void setNumExpectedSolutions(int num);
 	void setSolutionID(int id);
+	void setTargetStackability(double s);
 
 	// Primitives modification
 	void convertGC();
