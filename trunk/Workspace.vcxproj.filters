@@ -628,7 +628,7 @@
     <ClInclude Include="Stacker\ShapeState.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
-    <ClInclude Include="MathLibrary\ShapeDistribution.h">
+    <ClInclude Include="GraphicsLibrary\Line.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
