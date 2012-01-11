@@ -1018,7 +1018,6 @@ std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 	return Ts;
 }
 
-
 std::vector< Vec3d > Offset::getLocalMoves( HotSpot& HS )
 {
 	std::vector< Vec3d > result;
@@ -1126,6 +1125,10 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 			double stackability = computeOffsetOfShape();
 
 			ShapeState state = ctrl->getShapeState();
+			state.history = currentCandidate.history;
+			state.history.push_back(state);
+			state.deltaStackability = stackability - orgStackability;
+			state.distortion = ctrl->getDistortion();
 
 
 			if (stackability > TARGET_STACKABILITY)
@@ -1133,13 +1136,12 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 				if (!isSuggesting)
 				{
 					solutions.push(state);
+					continue;
 				}
 			}
 			
 			if (isUnique(state, 0))
 			{
-				state.deltaStackability = stackability - orgStackability;
-				state.distortion = ctrl->getDistortion();
 				candidateSolutions.push(state);
 
 				// Suggestion
@@ -1153,11 +1155,6 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 					suggest.deltaV = state.distortion;
 					suggest.side = HS.side;
 					suggest.value = state.energy();
-
-
-					std::cout << "deltaS = " << suggest.deltaS << "\t"
-						<< "deltaV = " << suggest.deltaV << "\t"
-						<< "energy = " << suggest.value << std::endl;
 
 					suggestions.push_back(suggest);
 				}
@@ -1334,6 +1331,7 @@ void Offset::improveStackabilityToTarget()
 	ShapeState state = ctrl->getShapeState();
 	state.deltaStackability = getStackability() - orgStackability;
 	state.distortion = ctrl->getDistortion();
+	state.history.push_back(state);
 	candidateSolutions.push(state);
 
 	while(!candidateSolutions.empty())
