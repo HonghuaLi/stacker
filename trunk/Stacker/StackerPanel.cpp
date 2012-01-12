@@ -13,6 +13,7 @@
 #include "Macros.h"
 #include "GCylinder.h"
 #include <QFileDialog>
+#include "global.h"
 
 StackerPanel::StackerPanel()
 {
@@ -50,8 +51,6 @@ StackerPanel::StackerPanel()
 	connect(panel.loadSuggestionsButton, SIGNAL(clicked()), SLOT(onLoadSuggestionsButtonClicked()));
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(panel.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
-	connect(panel.radioController, SIGNAL(clicked()), SLOT(selectModeController()));
-	connect(panel.radioControllerElement, SIGNAL(clicked()), SLOT(selectModeControllerElement()));
 
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 
@@ -63,23 +62,13 @@ StackerPanel::StackerPanel()
 	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
 	connect(panel.stackCount, SIGNAL(valueChanged(int)), this, SLOT(setStackCount(int)) );
 	connect(panel.solutionID, SIGNAL(valueChanged(int)), this, SLOT(setSolutionID(int)));
+	connect(panel.suggestionID, SIGNAL(valueChanged(int)), this, SLOT(setSuggestionID(int)));
 	connect(panel.targetS, SIGNAL(valueChanged(double)), this, SLOT(setTargetStackability(double)));
-
+	connect(panel.normalzieMesh, SIGNAL(clicked()), this, SLOT(onNomalizeMeshChecked()));
+	connect(panel.moveCenterToOrigin, SIGNAL(clicked()), this, SLOT(onMoveCenterToOriginChecked()));
 
 	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
 	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
-
-	// Connect controller deformer
-	/*connect(ctrlDeformer.transX, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.transY, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.transZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.rotX, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.rotY, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.rotZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.scaleX, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.scaleY, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.scaleZ, SIGNAL(valueChanged(int)), SLOT(updateController()));
-	connect(ctrlDeformer.resetButton, SIGNAL(clicked()), SLOT(resetCtrlDeformerPanel()));*/
 	
 	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
 
@@ -120,6 +109,11 @@ void StackerPanel::onImproveButtonClicked()
 	}
 
 	activeOffset->improveStackabilityToTarget();
+
+	int total = activeOffset->solutions.size();
+	panel.numSolution->setText(QString("/ %1").arg(total));
+	panel.suggestionID->setValue(0);
+
 	emit(objectModified());
 }
 
@@ -219,21 +213,6 @@ void StackerPanel::convertCuboid()
 }
 
 
-void StackerPanel::selectModeController()
-{
-	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
-	
-	activeScene->setSelectMode(CONTROLLER);
-}
-
-
-void StackerPanel::selectModeControllerElement()
-{
-	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
-
-	activeScene->setSelectMode(CONTROLLER_ELEMENT);
-}
-
 
 void StackerPanel::findJoints()
 {
@@ -260,7 +239,7 @@ void StackerPanel::findPairwiseJoints()
 void StackerPanel::setSolutionID(int id)
 {
 	int total = activeOffset->solutions.size();
-	panel.totalNumSln->setText(QString("/ %1").arg(total));
+	panel.numSolution->setText(QString("/ %1").arg(total));
 
 	id = (0==total)? 0 : (id % total);
 	panel.solutionID->setValue(id);
@@ -269,10 +248,21 @@ void StackerPanel::setSolutionID(int id)
 	emit(objectModified());
 }
 
+void StackerPanel::setSuggestionID(int id)
+{
+	int total = activeOffset->suggestSolutions.size();
+	panel.numSuggestion->setText(QString("/ %1").arg(total));
+
+	id = (0==total)? 0 : (id % total);
+	panel.suggestionID->setValue(id);
+	activeOffset->showSuggestion(id);
+
+	emit(objectModified());
+}
 
 void StackerPanel::setHotRange( double range)
 {
-	activeOffset->HOT_RANGE = range;
+	HOT_RANGE = range;
 }
 
 void StackerPanel::outputForPaper()
@@ -317,10 +307,10 @@ void StackerPanel::outputForPaper()
 	data["upperStuck"] = "upperStuck.dat";
 	data["lowerStuck"] = "lowerStuck.dat";
 
-	activeOffset->HOT_RANGE = 0.95;
+	HOT_RANGE = 0.95;
 	activeOffset->detectHotspots();
 	while (activeOffset->upperHotSpots.empty()){
-		activeOffset->HOT_RANGE -= 0.05;
+		HOT_RANGE -= 0.05;
 		activeOffset->detectHotspots();
 	}
 
@@ -470,9 +460,9 @@ void StackerPanel::onSuggestButtonClicked()
 	activeScene->suggestions.clear();
 	activeScene->suggestions = activeOffset->getSuggestions();
 	
-	int total = activeOffset->solutions.size();
-	panel.totalNumSln->setText(QString("/ %1").arg(total));
-	panel.solutionID->setValue(0);
+	int total = activeOffset->suggestSolutions.size();
+	panel.numSuggestion->setText(QString("/ %1").arg(total));
+	panel.suggestionID->setValue(0);
 	emit(objectModified());
 }
 
@@ -529,7 +519,12 @@ void StackerPanel::setTargetStackability( double s )
 	TARGET_STACKABILITY = s;
 }
 
+void StackerPanel::onNomalizeMeshChecked( )
+{
+	NORMALIZE_MESH = panel.normalzieMesh->isChecked();
+}
 
-
-
-
+void StackerPanel::onMoveCenterToOriginChecked()
+{
+	MOVE_CENTER_TO_ORIGIN = panel.moveCenterToOrigin->isChecked();
+}

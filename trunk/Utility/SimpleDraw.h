@@ -16,9 +16,9 @@ public:
 	static void IdentifyConnectedPoints2(StdVector<Vec3d> & points, float r = 0.4f, float g = 1.0, float b = 0.2f );
 
 	// LINES
-	static void IdentifyLine(const Vec3d& p1, const Vec3d& p2, bool showPoints = true);
+	static void IdentifyLine(const Vec3d& p1, const Vec3d& p2, bool showPoints);
+	static void IdentifyLine( const Vec3d & p1, const Vec3d & p2, Vec4d c = Vec4d(1,0,0,1), bool showVec3ds = true, float lineWidth = 3.0f );
 	static void IdentifyLineRed(const Vec3d& p1, const Vec3d& p2, bool showPoints = true);
-	static void IdentifyLine(const Vec3d& p1, const Vec3d& p2, float r, float g, float b, bool showPoints = true, float lineWidth = 3.0f);
 	//static void IdentifyLines(StdVector<Line> & lines, float lineWidth = 1.0, float r = 1.0, float g = 0.6f, float b = 0);
 
 	static void IdentifyCurve( StdVector<Vec3d> & points, float r, float g, float b, float a, float lineWidth);

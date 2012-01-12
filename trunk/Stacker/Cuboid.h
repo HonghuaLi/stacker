@@ -69,7 +69,7 @@ public:
 	// Selecting
 	virtual Vec3d selectedPartPos();
 	virtual void setSelectedPartId( Vec3d normal );
-
+	virtual Point getSelectedCurveCenter();
 
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
@@ -77,7 +77,7 @@ public:
 
 	// Save and load
 	virtual void save(std::ofstream &outF);
-	virtual void load(std::ifstream &inF);
+	virtual void load(std::ifstream &inF, double scaleFactor);
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);

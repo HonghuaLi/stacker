@@ -7,6 +7,7 @@
 #include <set>
 #include <map>
 #include "SimpleDraw.h"
+#include "global.h"
 
 QSegMesh::QSegMesh()
 {
@@ -244,15 +245,13 @@ void QSegMesh::saveObj( QString fileName )
 
 	uint faceOffset = 1;
 
-	double s = this->scaleFactor;
-
 	for (uint i = 0; i < nbSegments(); i++)
 	{
 		std::vector<Point> segPoints = segment[i]->clonePoints();
 		std::vector<uint> segFaces = segment[i]->cloneTriangleIndices();
 
 		foreach(Point p, segPoints)
-			fprintf(outF, "v %f %f %f\n", p.x() * s, p.y() * s, p.z() * s);
+			fprintf(outF, "v %f %f %f\n", p.x(), p.y(), p.z());
 		fprintf(outF,"# %u vertices\n\n\n", segPoints.size()); // info
 
 		fprintf(outF,"g %s\n", qPrintable(segment[i]->objectName()));
@@ -337,6 +336,8 @@ void QSegMesh::computeBoundingBox()
 
 void QSegMesh::moveCenterToOrigin()
 {
+	if (!MOVE_CENTER_TO_ORIGIN) return;
+
 	for (int i = 0; i < nbSegments();i++)
 	{
 		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
@@ -542,6 +543,8 @@ void QSegMesh::setVertexColor( uint vid, const Color& newColor )
 
 void QSegMesh::normalize()
 {
+	if (!NORMALIZE_MESH) return;
+
 	for (uint i = 0; i < nbSegments();i++)
 	{
 		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
@@ -620,20 +623,20 @@ void QSegMesh::drawAABB()
 	P[6] = P[2] + Z;
 	P[7] = P[3] + Z;
 
-	SimpleDraw::IdentifyLine(P[0], P[1], 0, 1, 1, false);
-	SimpleDraw::IdentifyLine(P[1], P[2], 0, 1, 1, false);
-	SimpleDraw::IdentifyLine(P[2], P[3], 0, 1, 1, false);
-	SimpleDraw::IdentifyLine(P[3], P[0], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[0], P[1], Color(0, 1, 1,1), false);
+	SimpleDraw::IdentifyLine(P[1], P[2], Color(0, 1, 1,1), false);
+	SimpleDraw::IdentifyLine(P[2], P[3], Color(0, 1, 1,1), false);
+	SimpleDraw::IdentifyLine(P[3], P[0], Color(0, 1, 1,1), false);
 
-	SimpleDraw::IdentifyLine(P[4], P[5], 0, 1, 1, false);
-	SimpleDraw::IdentifyLine(P[5], P[6], 0, 1, 1, false);
-	SimpleDraw::IdentifyLine(P[6], P[7], 0, 1, 1, false);
-	SimpleDraw::IdentifyLine(P[7], P[4], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[4], P[5], Color(0, 1, 1,1), false);
+	SimpleDraw::IdentifyLine(P[5], P[6], Color(0, 1, 1,1), false);
+	SimpleDraw::IdentifyLine(P[6], P[7], Color(0, 1, 1,1), false);
+	SimpleDraw::IdentifyLine(P[7], P[4], Color(0, 1, 1,1), false);
 
-	SimpleDraw::IdentifyLine(P[0], P[4], 0, 1, 1, false);
-	SimpleDraw::IdentifyLine(P[1], P[5], 0, 1, 1, false);
-	SimpleDraw::IdentifyLine(P[2], P[6], 0, 1, 1, false);
-	SimpleDraw::IdentifyLine(P[3], P[7], 0, 1, 1, false);
+	SimpleDraw::IdentifyLine(P[0], P[4], Color(0, 1, 1,1), false);
+	SimpleDraw::IdentifyLine(P[1], P[5], Color(0, 1, 1,1), false);
+	SimpleDraw::IdentifyLine(P[2], P[6], Color(0, 1, 1,1), false);
+	SimpleDraw::IdentifyLine(P[3], P[7], Color(0, 1, 1,1), false);
 }
 
 QSurfaceMesh * QSegMesh::flattenMesh()

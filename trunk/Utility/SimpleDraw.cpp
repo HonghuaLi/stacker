@@ -591,13 +591,12 @@ void SimpleDraw::DrawArrowDoubleDirected( const Vec3d & pos, const Vec3d & norma
 
 	glEnable(GL_LIGHTING);
 }*/
-
-void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, float r, float g, float b, bool showVec3ds /*= true*/, float lineWidth /*= 3.0f*/ )
+void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, Vec4d c, bool showVec3ds /*= true*/, float lineWidth /*= 3.0f*/ )
 {
 	glDisable(GL_LIGHTING);
 
 	// Set color
-	glColor3f(r, g, b);
+	glColor4dv(c);
 
 	glLineWidth(lineWidth);
 	glBegin(GL_LINES);
@@ -627,11 +626,6 @@ void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, float r, floa
 	glEnable(GL_LIGHTING);
 }
 
-void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, bool showVec3ds /*= true*/ )
-{
-	// Blue line
-	IdentifyLine(p1, p2, 0.2f, 0.2f, 1.0, showVec3ds);
-}
 
 void SimpleDraw::IdentifyPoint( const Vec3d & p, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/, float pointSize /*= 10.0*/ )
 {
@@ -755,7 +749,7 @@ void SimpleDraw::IdentifyConnectedPoints2( StdVector<Vec3d > & points, float r /
 void SimpleDraw::IdentifyLineRed( const Vec3d & p1, const Vec3d & p2, bool showVec3ds /*= true*/ )
 {
 	// Red line
-	IdentifyLine(p1, p2, 1.0, 0.2f, 0.2f, showVec3ds);
+	IdentifyLine(p1, p2, Vec4d(1.0, 0.2, 0.2, 1), showVec3ds);
 }
 
 void SimpleDraw::IdentifyArrow( const Vec3d  & start, const Vec3d  & end, float lineWidth /*= 2.0*/, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/ )
