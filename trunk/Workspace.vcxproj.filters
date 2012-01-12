@@ -440,7 +440,7 @@
     <ClCompile Include="Stacker\ShapeState.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
-    <ClCompile Include="global.cpp">
+    <ClCompile Include="GUI\global.cpp">
       <Filter>GUI\Source</Filter>
     </ClCompile>
   </ItemGroup>
