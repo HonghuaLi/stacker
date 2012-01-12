@@ -1125,17 +1125,19 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 			state.deltaStackability = stackability - orgStackability;
 			state.distortion = ctrl->getDistortion();
 
+			EditSuggestion suggest;
+			suggest.center = hotPoint;
+			suggest.direction = Ts[i];
+			suggest.deltaS = state.deltaStackability;
+			suggest.deltaV = state.distortion;
+			suggest.side = HS.side;
+			suggest.value = state.energy();
+
+			state.trajectory = currentCandidate.trajectory;
+			state.trajectory.push_back(suggest);
+
 			if (isSuggesting)
 			{
-				EditSuggestion suggest;
-
-				suggest.center = hotPoint;
-				suggest.direction = Ts[i];
-				suggest.deltaS = state.deltaStackability;
-				suggest.deltaV = state.distortion;
-				suggest.side = HS.side;
-				suggest.value = state.energy();
-
 				suggestions.push_back(suggest);
 				suggestSolutions.push(state);
 			}
@@ -1253,11 +1255,10 @@ void Offset::applyHeuristics()
 	HotSpot& upperHS = upperHotSpots[selectedID];
 	HotSpot& lowerHS = lowerHotSpots[selectedID];
 
-	//if (upperHS.isRing)
-	//	applyHeuristicsOnHotRing(upperHS);
-	//else
-	//	applyHeuristicsOnHotspot(upperHS, lowerHS);		
-
+	if (upperHS.isRing)
+		applyHeuristicsOnHotRing(upperHS);
+	else
+		applyHeuristicsOnHotspot(upperHS, lowerHS);		
 
 
 	if (lowerHS.isRing)
@@ -1384,8 +1385,10 @@ void Offset::showSolution( int i )
 	for (int i=0;i<id;i++)
 		solutionsCopy.pop();
 
-	ctrl->setShapeState(solutionsCopy.top());
+	ShapeState sln = solutionsCopy.top();
+	ctrl->setShapeState(sln);
 
+	std::cout << "Histrory length: " << sln.history.size() << std::endl; 
 	//std::cout << "Showing the " << id << "th solution out of " << solutions.size() <<".\n";
 }
 

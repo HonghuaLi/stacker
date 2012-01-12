@@ -4,6 +4,7 @@
 #include <QVector>
 #include <QString>
 #include <queue>
+#include "EditSuggestion.h"
 
 
 
@@ -21,7 +22,9 @@ public:
 	double deltaStackability;
 	double distortion;
 
+	// N history states have a N-1 long trajectory
 	QVector<ShapeState> history;
+	QVector<EditSuggestion> trajectory;
 
 	double energy();
 
