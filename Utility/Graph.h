@@ -65,7 +65,10 @@ private:
 		if(source == lastStart)
 			return;
 		else
+		{
 			lastStart = source;
+			previous.clear();
+		}
 
 		for (typename adjacency_map_t::iterator vertex_iter = adjacency_map.begin();
 			vertex_iter != adjacency_map.end();
@@ -115,14 +118,14 @@ private:
 		typename std::map<vertex_t, vertex_t>::iterator prev;
 		vertex_t vertex = target;
 
-		if(previous.size())
-			path.push_front(vertex);
+		path.push_front(vertex);
 
 		while((prev = previous.find(vertex)) != previous.end())
 		{
 			vertex = prev->second;
 			path.push_front(vertex);
 		}
+
 		return path;
 	}
 
@@ -153,7 +156,7 @@ public:
 
 	Graph()
 	{
-		lastStart = std::numeric_limits<vertex_t>::min();
+		lastStart = std::numeric_limits<vertex_t>::max();
 	}
 
 	Graph(const Graph& from)

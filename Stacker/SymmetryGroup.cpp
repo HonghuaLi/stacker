@@ -54,7 +54,7 @@ void SymmetryGroup::draw()
 	Group::draw();
 
 	glColor4d(1,1,1,0.5);
-	symmetryPlane.draw();
+	symmetryPlane.draw(0.1);
 }
 
 QVector<QString> SymmetryGroup::regroup()

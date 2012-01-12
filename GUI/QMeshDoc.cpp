@@ -1,3 +1,4 @@
+#include "global.h"
 #include "QMeshDoc.h"
 #include <QFileDialog>
 
@@ -16,7 +17,7 @@ QMeshDoc::~QMeshDoc()
 
 void QMeshDoc::importObject()
 {
-	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", "", "Mesh Files (*.obj *.off *.stl)"); 
+	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", DEFAULT_FILE_PATH, "Mesh Files (*.obj *.off *.stl)"); 
 
 	// Get object name from file path
 	QFileInfo fInfo (fileName);
@@ -44,6 +45,8 @@ void QMeshDoc::importObject()
 
 	emit(objectImported(newMesh));
 	emit(printMessage(newObjId+" has been imported."));
+
+	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
 
 QSegMesh * QMeshDoc::getObject( QString objectId )
@@ -70,7 +73,7 @@ void QMeshDoc::exportObject(QSegMesh * mesh)
 		return;
 	}
 
-	QString fileName = QFileDialog::getSaveFileName(0, "Export Mesh", "", "Mesh Files (*.obj *.off *.stl)"); 
+	QString fileName = QFileDialog::getSaveFileName(0, "Export Mesh", DEFAULT_FILE_PATH, "Mesh Files (*.obj *.off *.stl)"); 
 
 	// Based on file extension
 	QString ext = fileName.right(3).toLower();
@@ -81,4 +84,6 @@ void QMeshDoc::exportObject(QSegMesh * mesh)
 	}
 
 	emit(printMessage(mesh->objectName() + " has been exported."));
+
+	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }

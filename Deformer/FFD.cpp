@@ -31,6 +31,8 @@ void FFD::bbFit( Vec3i res )
 
 	Vec3d start_corner(-width/2, -length/2, -height/2);
 
+	start_corner += mesh->center;
+
 	// indexing
 	int i = 0;
 
@@ -68,8 +70,6 @@ void FFD::bbFit( Vec3i res )
 	for (vit = mesh->vertices_begin(); vit != vend; ++vit){
 		meshVerticesLocal.push_back( getLocalCoordinates(mesh_points[vit]) );
 	}
-
-	printf("blah");
 }
 
 void FFD::apply()
@@ -83,6 +83,73 @@ void FFD::apply()
 
 		mesh_points[vit] = getWorldCoordinate( deformVertexLocal(meshVerticesLocal[vidx]) );
 	}	
+}
+
+void FFD::fixed( Vec3i res, Vec3d location, double spacing, StdMap<int,Point> pnts )
+{
+	int Nx = Max(2, res.x());
+	int Ny = Max(2, res.y());
+	int Nz = Max(2, res.z());
+
+	this->resolution = Vec3i(Nx, Ny, Nz);
+
+	width = length = height = spacing;
+
+	double dx = width / (Nx-1);
+	double dy = length / (Ny-1);
+	double dz = height / (Nz-1);
+
+	Vec3d start_corner(-width/2, -length/2, -height/2);
+
+	start_corner += location;
+
+	// indexing
+	int i = 0;
+
+	// Nx x Ny x Nz
+	pointsGridIdx = StdVector<StdVector<StdVector < int > > > 
+		(Nx, StdVector< StdVector < int > >(Ny, StdVector < int >(Nz))); 
+
+	for(int z = 0; z < Nz; z++){
+		for(int y = 0; y < Ny; y++){
+			for(int x = 0; x < Nx; x++){
+				// Grid indexing
+				pointsGridIdx[x][y][z] = i;
+
+				// Control point position
+				Vec3d p = start_corner + Vec3d(dx * x, dy * y, dz * z);
+
+				// Add it
+				points.push_back(new QControlPoint(p, i++, Vec3i(x,y,z)));
+			}
+		}	
+	}
+
+	// Setup local coordinate
+	mP = start_corner; // this is the origin of our local frame
+	mS = spacing * Vec3d(1,0,0);
+	mT = spacing * Vec3d(0,1,0);
+	mU = spacing * Vec3d(0,0,1);
+
+	// Get copy of original mesh vertices in local coordinates
+	for(StdMap<int,Point>::iterator it = pnts.begin(); it != pnts.end(); it++)
+	{
+		int vid = it->first;
+		Point pos = it->second;
+		fixedPointsLocal[vid] = getLocalCoordinates(pos);
+	}
+}
+
+StdMap<int,Point> FFD::applyFixed()
+{
+	StdMap<int,Point> deformed;
+
+	for(StdMap<int,Point>::iterator it = fixedPointsLocal.begin(); it != fixedPointsLocal.end(); it++)
+	{
+		deformed[it->first] = getWorldCoordinate( deformVertexLocal(it->second) );
+	}
+
+	return deformed;
 }
 
 Vec3d FFD::deformVertexLocal( const Vec3d & localPoint )

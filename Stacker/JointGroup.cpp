@@ -30,8 +30,11 @@ void JointGroup::draw()
 	Primitive * a = getPrimitive(nodes.values().first());
 	Primitive * b = getPrimitive(nodes.values().last());
 
-	SimpleDraw::IdentifyPoint( a->fromCoordinate(coordinates[a->id]), 1,0,1, 5 );
-	SimpleDraw::IdentifyPoint( b->fromCoordinate(coordinates[b->id]), 0,1,0, 8 );
+	if(isDraw)
+	{
+		SimpleDraw::IdentifyPoint( a->fromCoordinate(coordinates[a->id]), 1,0,1, 5 );
+		SimpleDraw::IdentifyPoint( b->fromCoordinate(coordinates[b->id]), 0,1,0, 8 );
+	}
 }
 
 QVector<QString> JointGroup::regroup()

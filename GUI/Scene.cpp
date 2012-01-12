@@ -21,6 +21,7 @@ QDeformController * defCtrl;
 
 #include "SubScene.h"
 
+
 Scene::Scene( QWidget *parent)
 {
 	activeMesh = NULL;
@@ -29,6 +30,7 @@ Scene::Scene( QWidget *parent)
 	setManipulatedFrame(activeFrame);
 
 	activeDeformer = NULL;
+	activeVoxelDeformer = NULL;
 
 	// GLViewer options
 	setGridIsDrawn();
@@ -127,7 +129,7 @@ void Scene::draw()
 		activeObject()->simpleDraw();
 
 	// Draw stacking
-	if(isShowStacked)
+	if(!isEmpty() && isShowStacked)
 	{
 		int stackCount = 3;
 
@@ -174,8 +176,9 @@ void Scene::draw()
 		}
 	}
 
-	// Deformer
+	// Deformers
 	if(activeDeformer) activeDeformer->draw();
+	if(activeVoxelDeformer) activeVoxelDeformer->draw();
 
 	// Wires
 	foreach(Wire w, activeWires)
@@ -201,6 +204,11 @@ void Scene::draw()
 void Scene::drawWithNames()
 {
 	if(activeDeformer) activeDeformer->drawNames();
+	if(activeVoxelDeformer) 
+	{
+		activeVoxelDeformer->drawNames();
+		return;
+	}
 
 	// Draw the controllers if exist
 	if (!isEmpty() && activeObject()->controller)
@@ -372,7 +380,7 @@ void Scene::keyPressEvent( QKeyEvent *e )
 {
 	if(e->key() == Qt::Key_R)
 	{
-		updateVBOs();		
+		updateActiveObject();
 	}
 
 	if(e->key() == Qt::Key_W)
@@ -388,11 +396,6 @@ void Scene::keyPressEvent( QKeyEvent *e )
 	if(e->key() == Qt::Key_P)
 	{
 		this->setRenderMode(RENDER_POINT);
-	}
-
-	if(e->key() == Qt::Key_L)
-	{
-		activeObject()->controller->test();
 	}
 
 	if(e->key() == Qt::Key_I)
@@ -471,14 +474,22 @@ void Scene::postSelection( const QPoint& point )
 	}
 
 	// FFD and such deformer
-	if(activeDeformer) 
-	{
+	if(activeDeformer){
 		activeDeformer->postSelection(selected);
 
 		if(selected >= 0)
 			setManipulatedFrame( activeDeformer->getQControlPoint(selected) );
 		else
 			setManipulatedFrame( activeFrame );
+	}
+
+	if(activeVoxelDeformer){
+		if(selected >= 0)
+			setManipulatedFrame( activeVoxelDeformer->getQControlPoint(selected) );
+		else
+			setManipulatedFrame( activeFrame );
+
+		activeVoxelDeformer->select(selected);
 	}
 
 	// Selection mode cases
@@ -576,24 +587,40 @@ void Scene::postDraw()
 		endSubViewport();
 	}
 
-	foreach(SubScene * s, subScenes)
+	if(activeObject() && activeObject()->isReady && activeObject()->controller)
 	{
-		s->draw();
+		Controller *ctrl = activeObject()->controller;
 
-		setupSubViewport(s->x, s->y, s->width, s->height);
+		ShapeState oldState = ctrl->getShapeState();
 
-		glClear(GL_DEPTH_BUFFER_BIT);
+		PQShapeShateLessEnergy solutionsCopy = sp->activeOffset->suggestSolutions;
+		
+		for (int i = 0; i < Min(subScenes.size(), solutionsCopy.size()); i++)
+		{
+			SubScene * s = subScenes[i];
 
-		QSegMesh * mesh = activeObject();
+			s->draw();
 
-		if(mesh && mesh->isReady){
-			for (int m=0;m < mesh->nbSegments();m++){			
-				QSurfaceMesh* seg = mesh->getSegment(m);
-				seg->simpleDraw();
-			}
+			s->caption = QString::number(i);
+
+			// BEGIN
+			setupSubViewport(s->x, s->y, s->width, s->height);
+			glClear(GL_DEPTH_BUFFER_BIT);
+
+			ShapeState sln = solutionsCopy.top();
+			solutionsCopy.pop();
+
+			ctrl->setShapeState(sln);
+
+			// Draw shape in current state
+			activeObject()->simpleDraw();
+
+			// END
+			endSubViewport();
 		}
 
-		endSubViewport();
+		// Restore state;
+		ctrl->setShapeState(oldState);
 	}
 }
 
@@ -651,6 +678,15 @@ void Scene::setActiveWires( QVector<Wire> newWires )
 void Scene::setActiveDeformer( QFFD * newFFD )
 {
 	activeDeformer = newFFD;
+	updateGL();
+}
+
+void Scene::setActiveVoxelDeformer( VoxelDeformer * newFFD )
+{
+	activeVoxelDeformer = newFFD;
+
+	this->connect(activeVoxelDeformer, SIGNAL(meshDeformed()), sp, SLOT(updateActiveObject()));
+
 	updateGL();
 }
 

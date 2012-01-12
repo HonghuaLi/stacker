@@ -2,6 +2,7 @@
 #include "IO.h"
 
 #include "SimpleDraw.h"
+#include <QMap>
 
 QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 {
@@ -304,6 +305,12 @@ Point QSurfaceMesh::getVertexPos( const Vertex v )
 {
 	Vertex_property<Point> points = vertex_property<Point>("v:point");
 	return points[v];
+}
+
+void QSurfaceMesh::setVertexPos( const Vertex v, Point newPos)
+{
+	Vertex_property<Point> points = vertex_property<Point>("v:point");
+	points[v] = newPos;
 }
 
 Surface_mesh::Vertex QSurfaceMesh::getVertex( uint v_id )
@@ -761,5 +768,46 @@ void QSurfaceMesh::rotateAroundUp( double theta )
 	for(vit = vertices_begin(); vit != vend; ++vit)
 	{
 		points[vit] = ROTATE_VEC(points[vit], theta, upVec);
+	}
+}
+
+void QSurfaceMesh::push( Vec3d from, Vec3d to, double falloff )
+{
+	Vec3d delta = to - from;
+
+	Vertex closest = Vertex(closestVertex(from));
+
+	Point closeP = getVertexPos(closest);
+
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+
+	// Collect rings
+	std::vector<Vertex> area;
+	resetVistedVertices(-1);
+	collectEnoughRings(closest, n_vertices() * 0.20, area);
+	
+	// Compute weights:
+	QMap<Vertex, double> weights;
+	double maxDist = -1;
+
+	// Compute distances, and maximum
+	foreach(Vertex v, area)
+	{
+		double dist = (points[v] - from).norm();
+		weights[v] = dist;
+		maxDist = Max(maxDist, dist);
+	}
+
+	double sigma = 0.6 / sqrt(2 * M_PI);
+
+	// Move vertices with weight
+	foreach(Vertex v, area)
+	{
+		// Normalize
+		weights[v] /= maxDist;
+
+		// Move vertices:
+		points[v] += delta * gaussianFunction(weights[v], 0, sigma);
 	}
 }

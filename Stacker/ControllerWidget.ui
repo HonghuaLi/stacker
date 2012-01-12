@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>201</width>
-    <height>104</height>
+    <height>127</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,6 +54,16 @@ font: italic;
         <property name="icon">
          <iconset resource="../Workspace.qrc">
           <normaloff>:/Workspace/Resources/icons/remove.png</normaloff>:/Workspace/Resources/icons/remove.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QCheckBox" name="showPrimitives">
+        <property name="text">
+         <string>Show primitives</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

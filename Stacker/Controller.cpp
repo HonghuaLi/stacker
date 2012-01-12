@@ -112,6 +112,9 @@ void Controller::select(QString id)
 		return;
 	}
 
+	if(!primitives.contains(id))
+		return;
+
 	// Toggle selection of primitive
 	primitives[id]->isSelected = !primitives[id]->isSelected;
 }

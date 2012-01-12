@@ -54,6 +54,8 @@ void QFFD::draw()
 
 void QFFD::drawNames()
 {
+	glPointSize(20);
+
 	foreach(QControlPoint * cp, this->ffd()->points)
 	{
 		glPushName(cp->idx);

@@ -655,12 +655,15 @@ void SimpleDraw::IdentifyPoint2( Vec3d  p )
 	IdentifyPoint(p, 0.2f, 1.0f, 0.2f, 12.0f);
 }
 
-void SimpleDraw::IdentifyPoints( StdVector<Vec3d > & points, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/, float pointSize /*= 10.0*/ )
+void SimpleDraw::IdentifyPoints( StdVector<Vec3d > & points, Vec4d c, float pointSize)
 {
 	glDisable(GL_LIGHTING);
 
+	glEnable(GL_BLEND); 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	// Colored dot
-	glColor3f(r, g, b);
+	glColor4dv(c);
 	glPointSize(pointSize);
 	glBegin(GL_POINTS);
 	for(unsigned int i = 0; i < points.size(); i++)
@@ -669,7 +672,7 @@ void SimpleDraw::IdentifyPoints( StdVector<Vec3d > & points, float r /*= 1.0*/, 
 
 	// White Border
 	glPointSize(pointSize + 2);
-	glColor3f(1, 1, 1);
+	glColor4d(1, 1, 1, c[3]);
 
 	glBegin(GL_POINTS);
 	for(unsigned int i = 0; i < points.size(); i++)

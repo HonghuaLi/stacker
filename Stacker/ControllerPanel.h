@@ -18,6 +18,7 @@ public slots:
 	void save();
 	void load();
 	void clear();
+	void togglePrimDisplay(int state);
 
 private:
 	Controller * controller();

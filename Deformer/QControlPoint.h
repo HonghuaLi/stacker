@@ -25,7 +25,7 @@ public:
 
 		connect(this, SIGNAL(manipulated()), SLOT(updatePosition()));
 	}
-
+	
 public slots:
 	void updatePosition() {	
 		pos.x() = this->position().x;
