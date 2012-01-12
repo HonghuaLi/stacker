@@ -190,14 +190,10 @@ void Cuboid::draw()
 	if(isDraw)
 	{
 		if(isSelected)
-			drawCube(4, Vec4d(1,1,0,0.9));
+			drawCube(2, Vec4d(1,1,0,0.2));
 		else
-			drawCube(2, Vec4d(0,0,1,0.6));
+			drawCube(1, Vec4d(0,0,1,0.4));
 	}
-	if(isSelected)
-		drawCube(4, Vec4d(1,1,0,0.9));
-	else
-		drawCube(2, Vec4d(0,0,1,0.6));
 
 	// Draw axis
 	if(isDrawAxis){

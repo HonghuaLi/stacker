@@ -7,6 +7,7 @@ Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size, bool verbose /*= f
 	this->mesh = src_mesh;
 	this->voxelSize = voxel_size;
 	this->isVerbose = verbose;
+	this->isReadyDraw = false;
 
 	if(mesh == NULL)
 		return;
@@ -29,28 +30,30 @@ Voxeler::Voxeler( QSurfaceMesh * src_mesh, double voxel_size, bool verbose /*= f
 					Voxel v(x,y,z);
 
 					if(isVoxelIntersects(v, f) && !kd.has(x,y,z)){
-						kd.insert3(v.x, v.y, v.z, 1);
+						kd.insert3(v.x, v.y, v.z, voxels.size());
 						voxels.push_back( v );
 					}
 				}
 			}
 		}
 	}
+	
+	if(isVerbose) printf(".voxel count = %d.\n", (int)voxels.size());
 
+	// Inner / outer computation
+	//fillInsideOut(innerVoxels, outerVoxels);
+	
+	if(isVerbose) printf("done.");
+}
+
+void Voxeler::update()
+{
 	// Compute bounds
 	computeBounds();
 
 	// Setup visualization
 	setupDraw();
-
-	if(isVerbose) printf(".voxel count = %d.\n", (int)voxels.size());
-
-	// Inner / outer computation
-	//fillInsideOut(innerVoxels, outerVoxels);
-
-	if(isVerbose) printf("done.");
 }
-
 
 void Voxeler::computeBounds()
 {
@@ -119,6 +122,9 @@ bool Voxeler::isVoxelIntersects( const Voxel& v, QSurfaceMesh::Face f )
 
 void Voxeler::draw()
 {
+	if(!isReadyDraw)
+		update();
+
 	glEnable(GL_LIGHTING);
 	glShadeModel(GL_FLAT);
 
@@ -165,18 +171,40 @@ void Voxeler::setupDraw()
 {
 	double s = voxelSize * 0.5;
 	int n = (int)voxels.size();
-
-	std::vector<Vec3d> c1(n), c2(n), c3(n), c4(n);
-	std::vector<Vec3d> bc1(n), bc2(n), bc3(n), bc4(n);
+	
+	std::vector< std::vector<Vec3d> > corner(n, std::vector<Vec3d>(8));
 
 	// Find corners
-	for(int i = 0; i < (int)voxels.size(); i++)
+	for(int i = 0; i < n; i++)
 	{
 		Vec3d c = voxels[i];	c *= voxelSize;
-		c1[i] = Vec3d(s, s, s) + c; c2[i] = Vec3d(-s, s, s) + c;
-		c3[i] = Vec3d(-s, -s, s) + c; c4[i] = Vec3d(s, -s, s) + c;
-		bc1[i] = Vec3d(s, s, -s) + c; bc2[i] = Vec3d(-s, s, -s) + c;
-		bc3[i] = Vec3d(-s, -s, -s) + c; bc4[i] = Vec3d(s, -s, -s) + c;
+		corner[i][0] = Vec3d(s, s, s) + c;		corner[i][1] = Vec3d(-s, s, s) + c;
+		corner[i][2] = Vec3d(-s, -s, s) + c;	corner[i][3] = Vec3d(s, -s, s) + c;
+		corner[i][4] = Vec3d(s, s, -s) + c;		corner[i][5] = Vec3d(-s, s, -s) + c;
+		corner[i][6] = Vec3d(-s, -s, -s) + c;	corner[i][7] = Vec3d(s, -s, -s) + c;
+	}
+
+	// Save corners
+	corners.clear();
+	cornerIndices.clear();
+	cornerCorrespond.resize(n*8);
+
+	for(int i = 0; i < n; i++)
+	{
+		std::vector<int> p(8, 0);
+
+		for(int j = 0; j < 8; j++)
+		{
+			if(!corner_kd.has(corner[i][j])){
+				p[j] = corners.size();
+				corners.push_back(corner[i][j]);
+				corner_kd.insert3(corner[i][j][0], corner[i][j][1], corner[i][j][2], p[j]);
+			}else p[j] = corner_kd.getData(&corner[i][j][0]);
+
+			cornerCorrespond[p[j]] = i; // will belong to last one
+		}
+
+		cornerIndices.push_back(p);
 	}
 
 	d1 = glGenLists(1);
@@ -187,14 +215,14 @@ void Voxeler::setupDraw()
 	for(int i = 0; i < (int)voxels.size(); i++)
 	{
 		// top, left, right, bottom
-		gln(0,0,1); glv(c1[i]); glv(c2[i]); glv(c3[i]); glv(c4[i]);
-		gln(0,1,0); glv(c1[i]); glv(c2[i]); glv(bc2[i]); glv(bc1[i]);
-		gln(0,-1,0); glv(c3[i]); glv(c4[i]); glv(bc4[i]); glv(bc3[i]);
-		gln(0,0,-1); glv(bc1[i]); glv(bc2[i]); glv(bc3[i]); glv(bc4[i]);
+		gln(0,0,1); glv(corner[i][0]); glv(corner[i][1]); glv(corner[i][2]); glv(corner[i][3]);
+		gln(0,1,0); glv(corner[i][0]); glv(corner[i][1]); glv(corner[i][5]); glv(corner[i][4]);
+		gln(0,-1,0); glv(corner[i][2]); glv(corner[i][3]); glv(corner[i][7]); glv(corner[i][6]);
+		gln(0,0,-1); glv(corner[i][4]); glv(corner[i][5]); glv(corner[i][6]); glv(corner[i][7]);
 
 		// front, back
-		gln(1,0,0); glv(c1[i]); glv(c4[i]); glv(bc4[i]); glv(bc1[i]);
-		gln(-1,0,0); glv(c2[i]); glv(c3[i]); glv(bc3[i]); glv(bc2[i]);
+		gln(1,0,0); glv(corner[i][0]); glv(corner[i][3]); glv(corner[i][7]); glv(corner[i][4]);
+		gln(-1,0,0); glv(corner[i][1]); glv(corner[i][2]); glv(corner[i][6]); glv(corner[i][5]);
 	}
 	glEnd();
 	glEndList();
@@ -206,15 +234,17 @@ void Voxeler::setupDraw()
 	glBegin(GL_LINES);
 	for(int i = 0; i < (int)voxels.size(); i++)
 	{
-		glv(c1[i]);glv(bc1[i]);glv(c2[i]);glv(bc2[i]);
-		glv(c3[i]);glv(bc3[i]);glv(c4[i]);glv(bc4[i]);
-		glv(c1[i]);glv(c2[i]);glv(c3[i]);glv(c4[i]);
-		glv(c1[i]);glv(c4[i]);glv(c2[i]);glv(c3[i]);
-		glv(bc1[i]);glv(bc2[i]);glv(bc3[i]);glv(bc4[i]);
-		glv(bc1[i]);glv(bc4[i]);glv(bc2[i]);glv(bc3[i]);
+		glv(corner[i][0]);glv(corner[i][4]);glv(corner[i][1]);glv(corner[i][5]);
+		glv(corner[i][2]);glv(corner[i][6]);glv(corner[i][3]);glv(corner[i][7]);
+		glv(corner[i][0]);glv(corner[i][1]);glv(corner[i][2]);glv(corner[i][3]);
+		glv(corner[i][0]);glv(corner[i][3]);glv(corner[i][1]);glv(corner[i][2]);
+		glv(corner[i][4]);glv(corner[i][5]);glv(corner[i][6]);glv(corner[i][7]);
+		glv(corner[i][4]);glv(corner[i][7]);glv(corner[i][5]);glv(corner[i][6]);
 	}
 	glEnd();
 	glEndList();
+
+	isReadyDraw = true;
 }
 
 void Voxeler::drawVoxels( const std::vector< Voxel > & voxels, double voxel_size )
@@ -338,4 +368,111 @@ std::vector<Voxel> Voxeler::Intersects(Voxeler * other)
 	}
 
 	return intersection;
+}
+
+std::map<int, Voxel> Voxeler::around(Point p)
+{
+	std::map<int, Voxel> result;
+
+	int x = p.x() / voxelSize;
+	int y = p.y() / voxelSize;
+	int z = p.z() / voxelSize;
+
+	for(int i = -1; i <= 1; i += 1){
+		for(int j = -1; j <= 1; j += 1){
+			for(int k = -1; k <= 1; k += 1){
+				Voxel v(x + i, y + j, z + k);
+
+				Vec3d vpos(v.x, v.y, v.z);
+
+				if(kd.has(v.x, v.y, v.z)){
+					result[kd.getData(&vpos[0])] = v;
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+void Voxeler::grow()
+{
+	int N = (int)voxels.size();
+
+	for(int i = 0; i < N; i++)
+	{
+		Voxel curVoxel = voxels[i];
+
+		for(int x = -1; x <= 1; x += 1){
+			for(int y = -1; y <= 1; y++){
+				for(int z = -1; z <= 1; z++){
+					Voxel v(curVoxel.x + x, curVoxel.y + y, curVoxel.z + z);
+
+					if(!kd.has(v.x,v.y,v.z))
+					{
+						kd.insert3(v.x, v.y, v.z, voxels.size());
+						voxels.push_back( v );
+					}
+				}
+			}
+		}
+	}
+
+	printf("\nVoxler grown from (%d) to (%d).\n", N, (int)voxels.size());
+
+	isReadyDraw = false;
+}
+
+std::vector< Point > Voxeler::getCorners( int vid )
+{
+	std::vector< Point > result;
+
+	for(int i = 0; i < 8; i++)
+		result.push_back(corners[cornerIndices[vid][i]]);
+
+	return result;
+}
+
+int Voxeler::getClosestVoxel( Vec3d point )
+{
+	return cornerCorrespond[ corner_kd.getData(&point[0]) ];
+}
+
+int Voxeler::getEnclosingVoxel( Vec3d point )
+{
+	int N = (int)voxels.size();
+
+	double s = voxelSize * 0.5;
+
+	double minDist = DBL_MAX;
+	int closestVoxel = -1;
+
+	for(int i = 0; i < N; i++)
+	{
+		Voxel curVoxel = voxels[i];
+
+		Point voxelCenter(curVoxel.x * s, curVoxel.y * s, curVoxel.z * s);
+
+		double curDist = (voxelCenter - point).norm();
+
+		if(curDist < minDist){
+			closestVoxel = i;
+			minDist = curDist;
+		}
+	}
+
+	return closestVoxel;
+}
+
+int Voxeler::getVoxelIndex( Voxel v )
+{
+	for(int i = 0; i < voxels.size(); i++)
+	{
+		Voxel w = voxels[i];
+
+		if(w.x == v.x && w.y == v.y && w.z == v.z)
+			return i;
+	}
+
+	return -1;
 }

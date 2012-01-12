@@ -13,6 +13,7 @@
 #include "Macros.h"
 #include "GCylinder.h"
 #include <QFileDialog>
+#include <QDesktopWidget>
 #include "global.h"
 
 StackerPanel::StackerPanel()
@@ -40,6 +41,9 @@ StackerPanel::StackerPanel()
 	hiddenDock->setFloating(true);
 	hiddenDock->setWindowOpacity(1.0);
 
+	int x = qApp->desktop()->availableGeometry().width();
+	hiddenDock->move(QPoint(x - hiddenDock->width(),0));
+	
 	activeOffset = new Offset(hidden_viewer);
 
 	// Buttons

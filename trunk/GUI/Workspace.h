@@ -10,6 +10,7 @@
 #include "StackerPanel.h"
 #include "WiresPanel.h"
 #include "DeformerPanel.h"
+#include "QVoxelDeformerPanel.h"
 #include "TransformationPanel.h"
 #include "GroupPanel.h"
 #include "ControllerPanel.h"
@@ -31,6 +32,7 @@ private:
 	StackerPanel * sp;
 	WiresPanel * wp;
 	DeformerPanel * dp;
+	QVoxelDeformerPanel * vdp;
 	TransformationPanel * tp;
 	GroupPanel * gp;
 	ControllerPanel * cp;

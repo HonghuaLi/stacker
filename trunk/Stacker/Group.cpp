@@ -71,8 +71,6 @@ void Group::draw()
 
 void Group::drawDebug()
 {
-	glClear(GL_DEPTH_BUFFER_BIT);
-
 	foreach(Point p, debugPoints) SimpleDraw::IdentifyPoint(p, 1,1,1, 20);
 
 	for(int i = 0; i < debugLines.size(); i++)

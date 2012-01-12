@@ -13,6 +13,7 @@ using namespace qglviewer;
 #include "VBO.h"
 #include "Wire.h"
 #include "QFFD.h"
+#include "VoxelDeformer.h"
 
 class Offset;
 class StackerPanel;
@@ -114,6 +115,7 @@ private:
 	ManipulatedFrame * activeFrame;
 	QVector<Wire> activeWires;
 	QFFD * activeDeformer;
+	VoxelDeformer * activeVoxelDeformer;
 	QSegMesh * activeMesh;
 public:
 	QSegMesh * activeObject();
@@ -123,6 +125,7 @@ public slots:
 	void setActiveObject(QSegMesh* newMesh);
 	void setActiveWires( QVector<Wire> );
 	void setActiveDeformer( QFFD * );
+	void setActiveVoxelDeformer( VoxelDeformer * );
 	void updateActiveObject();
 	void exportActiveObject();
 	void toggleCameraProjection();

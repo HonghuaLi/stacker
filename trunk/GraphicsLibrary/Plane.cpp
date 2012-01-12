@@ -163,7 +163,7 @@ void Plane::draw(double extent)
 	glGetFloatv(GL_CURRENT_COLOR, color);
 
 	// Draw Borders
-	glColor3f(color[0]*0.8, color[1]*0.8, color[2]*0.8);
+	glColor4f(color[0]*0.8, color[1]*0.8, color[2]*0.8, 0.5);
 	glLineWidth(2.0);
 	glBegin(GL_LINE_STRIP);
 	glVertex3dv(p1);
@@ -180,7 +180,7 @@ void Plane::draw(double extent)
 	glVertex3dv(center);
 	glEnd();
 	glPointSize(8.0);
-	glColor3f(1, 1, 1);
+	glColor4f(1, 1, 1, 0.5);
 	glBegin(GL_POINTS);
 	glVertex3dv(center);
 	glEnd();
@@ -188,11 +188,11 @@ void Plane::draw(double extent)
 	// Draw Normal
 	glBegin(GL_LINES);
 	glVertex3dv(center);
-	glVertex3dv(center + (n * 0.1 * extent));
+	glVertex3dv(center + (n * 0.2 * extent));
 	glEnd();
 
 	// Draw Transparent Fills
-	glColor4f(color[0], color[1], color[2], 0.15f);
+	glColor4f(color[0], color[1], color[2], 0.05f);
 	glBegin(GL_QUADS);
 	glVertex3dv(p1);
 	glVertex3dv(p2);

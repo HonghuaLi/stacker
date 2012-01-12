@@ -23,6 +23,7 @@ public:
 	std::vector<uint> vertexIndicesAroundFace( uint f_id );	
 	Point getVertexPos( uint v_id );
 	Point getVertexPos( const Vertex v );
+	void setVertexPos( const Vertex v, Point newPos);
 	Vertex getVertex( uint v_id);
 	Face getFace( uint f_id);
 
@@ -69,6 +70,7 @@ public:
 	void resetVistedVertices(uint toState = false); // for entire mesh
 
 	void addNoise(double delta);
+	void push( Vec3d from, Vec3d to, double falloff );
 
 	// Load the mesh from file
 	void read(const std::string& filename);
@@ -96,7 +98,6 @@ public:
 	Vec3d getBaryFace( Face f, double U, double V );
 	void fillTrianglesList();
 	std::vector<unsigned int> cloneTriangleIndices();
-
 	std::vector<unsigned int> triangles, edges;
 
 	QString id;

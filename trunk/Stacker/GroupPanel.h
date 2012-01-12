@@ -26,6 +26,7 @@ public slots:
 	void saveGroups();
 	void loadGroups();
 	void clearGroups();
+	void toggleGroupDisplay(int state);
 
 signals:
 

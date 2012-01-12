@@ -1,3 +1,4 @@
+#include "global.h"
 #include "GroupPanel.h"
 #include <fstream>
 #include <QFileDialog>
@@ -16,6 +17,7 @@ GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 	connect(groupWidget.saveGroupsButton, SIGNAL(clicked()), SLOT(saveGroups()));
 	connect(groupWidget.loadGroupsButton, SIGNAL(clicked()), SLOT(loadGroups()));
 	connect(groupWidget.clearButton, SIGNAL(clicked()), SLOT(clearGroups()));
+	connect(groupWidget.showGroups, SIGNAL(stateChanged (int)), SLOT(toggleGroupDisplay(int)));
 
 	// Strings to show in tree, ordered as in group type enum
 	groupTypes.push_back("SYMMETRY");
@@ -30,6 +32,21 @@ void GroupPanel::setActiveScene( Scene * newScene )
 {
 	this->activeScene = newScene;
 	updateWidget();
+}
+
+void GroupPanel::toggleGroupDisplay(int state)
+{
+	if(!activeScene || !activeScene->activeObject() || !activeScene->activeObject()->controller)
+		return;
+
+	Controller * ctrl = activeScene->activeObject()->controller;
+
+	foreach(Group* group, ctrl->groups)
+	{
+		group->isDraw = state;
+	}
+
+	activeScene->updateGL();
 }
 
 void GroupPanel::updateWidget()
@@ -53,6 +70,8 @@ void GroupPanel::updateWidget()
 			item->setText(0, QString("segment:%1").arg(node));
 		}
 	}
+
+	activeScene->updateGL();
 }
 
 QString GroupPanel::getItemId(QTreeWidgetItem* item)
@@ -118,7 +137,7 @@ void GroupPanel::saveGroups()
 		return;
 	}
 
-	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", "", "Group File (*.grp)"); 
+	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", DEFAULT_FILE_PATH, "Group File (*.grp)"); 
 	std::ofstream outF(qPrintable(fileName), std::ios::out);
 
 	foreach(Group* group, ctrl->groups)
@@ -148,6 +167,10 @@ void GroupPanel::saveGroups()
 
 	outF.close();
 	std::cout << "Groups have been saved.\n";
+
+	activeScene->updateGL();
+
+	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
 
 void GroupPanel::loadGroups()
@@ -159,7 +182,7 @@ void GroupPanel::loadGroups()
 		return;
 	}
 
-	QString fileName = QFileDialog::getOpenFileName(0, "Import Groups", "", "Group File (*.grp)"); 
+	QString fileName = QFileDialog::getOpenFileName(0, "Import Groups", DEFAULT_FILE_PATH, "Group File (*.grp)"); 
 	std::ifstream inF(qPrintable(fileName), std::ios::in);
 
 	if (!inF) return;
@@ -221,6 +244,8 @@ void GroupPanel::loadGroups()
 
 	std::cout << "Groups have been loaded.\n";
 	updateWidget();
+
+	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
 
 void GroupPanel::clearGroups()

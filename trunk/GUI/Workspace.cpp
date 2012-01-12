@@ -18,6 +18,9 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	dp = new DeformerPanel();
 	ui.rightDockWidget->layout()->addWidget(dp);
 
+	vdp = new QVoxelDeformerPanel();
+	ui.rightDockWidget->layout()->addWidget(vdp);
+
 	tp = new TransformationPanel();
 	ui.rightDockWidget->layout()->addWidget(tp);
 
@@ -75,6 +78,9 @@ void Workspace::addNewScene()
 	// Deformation
 	connect(newScene, SIGNAL(gotFocus(Scene*)), dp, SLOT(setActiveScene(Scene*)));
 	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *)));
+	
+	connect(newScene, SIGNAL(gotFocus(Scene*)), vdp, SLOT(setActiveScene(Scene*)));
+	connect(vdp, SIGNAL(deformerCreated(VoxelDeformer *)), newScene, SLOT(setActiveVoxelDeformer(VoxelDeformer *)));
 
 	// Object transformation
 	connect(newScene, SIGNAL(gotFocus(Scene*)), tp, SLOT(setActiveScene(Scene*)));

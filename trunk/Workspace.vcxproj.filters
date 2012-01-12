@@ -206,15 +206,6 @@
     <ClCompile Include="GeneratedFiles\Template\moc_QFFD.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_QControlPoint.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QControlPoint.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Template\moc_QControlPoint.cpp">
-      <Filter>Generated Files\Template</Filter>
-    </ClCompile>
     <ClCompile Include="MathLibrary\BoundingBox.cpp">
       <Filter>MathLibrary\Source</Filter>
     </ClCompile>
@@ -437,11 +428,44 @@
     <ClCompile Include="GeneratedFiles\Template\moc_SubScene.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\ShapeState.cpp">
-      <Filter>Stacker\Source</Filter>
+    <ClCompile Include="Deformer\VoxelDeformer.cpp">
+      <Filter>Deformer</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QControlPoint.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QControlPoint.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_QControlPoint.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="Deformer\QVoxelDeformerPanel.cpp">
+      <Filter>Deformer</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QVoxelDeformerPanel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QVoxelDeformerPanel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_QVoxelDeformerPanel.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_VoxelDeformer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_VoxelDeformer.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Template\moc_VoxelDeformer.cpp">
+      <Filter>Generated Files\Template</Filter>
     </ClCompile>
     <ClCompile Include="GUI\global.cpp">
       <Filter>GUI\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\ShapeState.cpp">
+      <Filter>Stacker\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -631,7 +655,10 @@
     <ClInclude Include="Stacker\ShapeState.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
-    <ClInclude Include="MathLibrary\ShapeDistribution.h">
+    <ClInclude Include="GeneratedFiles\ui_QVoxelDeformerWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Line.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="GUI\global.h">
@@ -722,6 +749,15 @@
     </CustomBuild>
     <CustomBuild Include="GUI\SubScene.h">
       <Filter>GUI\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Deformer\QVoxelDeformerPanel.h">
+      <Filter>Deformer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Deformer\QVoxelDeformerWidget.ui">
+      <Filter>Deformer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Deformer\VoxelDeformer.h">
+      <Filter>Deformer</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

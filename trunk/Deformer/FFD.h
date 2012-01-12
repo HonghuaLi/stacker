@@ -20,11 +20,17 @@ public:
 	void bbFit(Vec3i res);
 
 	void apply();
+
 	Vec3d deformVertexLocal( const Vec3d & localPoint );
 	Vec3d getWorldCoordinate(const Vec3d & pLocal);
 	Vec3d getLocalCoordinates( const Vec3d & p );
 	Vec3d mP, mS, mT, mU;	// the local frame coordinates
 	StdVector<Vec3d> meshVerticesLocal;
+
+	// Manually setup FFD
+	void fixed( Vec3i res, Vec3d location, double spacing, StdMap<int,Point> pnts );
+	StdMap<int,Point> applyFixed();
+	StdMap<int,Point> fixedPointsLocal;
 
 	// Debug
 	StdVector<Vec3d> dbPoints;

@@ -1,3 +1,5 @@
+#include "global.h"
+
 #include "ControllerPanel.h"
 #include <fstream>
 #include <QFileDialog>
@@ -11,6 +13,7 @@ ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 	connect(controllerWidget.loadButton, SIGNAL(clicked()), SLOT(load()));
 	connect(controllerWidget.removeButton, SIGNAL(clicked()), SLOT(removeSelected()));
 	connect(controllerWidget.clearButton, SIGNAL(clicked()), SLOT(clear()));
+	connect(controllerWidget.showPrimitives, SIGNAL(stateChanged (int)), SLOT(togglePrimDisplay(int)));
 
 	this->activeScene = NULL;
 }
@@ -24,12 +27,14 @@ void ControllerPanel::save()
 {
 	if(!controller())	return;
 
-	QString fileName = QFileDialog::getSaveFileName(0, "Export Controller", "", "Controller File (*.ctrl)"); 
+	QString fileName = QFileDialog::getSaveFileName(0, "Export Controller", DEFAULT_FILE_PATH, "Controller File (*.ctrl)"); 
 	std::ofstream outF(qPrintable(fileName), std::ios::out);
 
 	controller()->save(outF);
 
 	outF.close();
+
+	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
 
 void ControllerPanel::load()
@@ -40,12 +45,14 @@ void ControllerPanel::load()
 
 	this->clear();
 
-	QString fileName = QFileDialog::getOpenFileName(0, "Load Controller", "", "Controller File (*.ctrl)"); 
+	QString fileName = QFileDialog::getOpenFileName(0, "Load Controller", DEFAULT_FILE_PATH, "Controller File (*.ctrl)"); 
 	std::ifstream inF(qPrintable(fileName), std::ios::in);
 
 	controller()->load(inF);
 
 	inF.close();
+
+	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
 
 void ControllerPanel::removeSelected()
@@ -72,4 +79,16 @@ Controller * ControllerPanel::controller()
 		return NULL;
 
 	return activeScene->activeObject()->controller;
+}
+
+void ControllerPanel::togglePrimDisplay(int state)
+{
+	if(!controller())	return;
+
+	foreach(Primitive* prim, controller()->getPrimitives())
+	{
+		prim->isDraw = state;
+	}
+
+	activeScene->updateGL();
 }
