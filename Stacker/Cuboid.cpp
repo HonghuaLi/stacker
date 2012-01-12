@@ -765,7 +765,8 @@ void Cuboid::save( std::ofstream &outF )
 		<< this->isUsedAABB << "\t";
 }
 
-void Cuboid::load( std::ifstream &inF )
+
+void Cuboid::load( std::ifstream &inF, double scaleFactor )
 {
 	inF >> this->currBox.Center
 		>> this->currBox.Axis[0] 
@@ -776,10 +777,36 @@ void Cuboid::load( std::ifstream &inF )
 		>> this->currBox.Extent[2]
 		>> this->isUsedAABB;
 
+	// Scaling
+	Point center = currBox.Center;
+	std::vector< Point > p(3);
+	for (int i=0;i<3;i++)
+	{
+		p[i] = center + currBox.Axis[i] * currBox.Extent[i];
+		p[i] *= scaleFactor;
+	}
+	center *= scaleFactor;
+
+	currBox.Center = center;
+	for (int i=0;i<3;i++ )
+	{
+		Vec3d vec = p[i] - center;
+		currBox.Axis[i] = vec.normalized();
+		currBox.Extent[i] = vec.norm();
+	}
+
+
 	originalBox = currBox;
 	id = m_mesh->objectName();
 
 	originalVolume = volume();
 
 	computeMeshCoordiantes();
+}
+
+Point Cuboid::getSelectedCurveCenter()
+{
+	int id = selectedPartId % 2;
+
+	return currBox.Center + currBox.Axis[id] * currBox.Extent[id];
 }

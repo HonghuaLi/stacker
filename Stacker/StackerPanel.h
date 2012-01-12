@@ -50,13 +50,15 @@ public slots:
 	void setBBTolerance(double tol);
 	void setNumExpectedSolutions(int num);
 	void setSolutionID(int id);
+	void setSuggestionID(int id);
 	void setTargetStackability(double s);
+
+	void onNomalizeMeshChecked();
+	void onMoveCenterToOriginChecked();
 
 	// Primitives modification
 	void convertGC();
 	void convertCuboid();
-	void selectModeController();
-	void selectModeControllerElement();
 
 	// Joints
 	void findJoints();

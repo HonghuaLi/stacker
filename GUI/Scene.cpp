@@ -229,6 +229,9 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 
 	setGridIsDrawn(false);
 
+	// Clear
+	suggestions.clear();
+
 	emit(objectInserted());
 }
 
@@ -294,6 +297,8 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				QAction* self1foldSymm = menu.addAction("Create 1-fold Self-Symmetry..");
 				QAction* self2foldSymm = menu.addAction("Create 2-fold Self-Symmetry..");
 				QAction* selfRotSymm = menu.addAction("Create Rotational Self-Symmetry..");
+				menu.addSeparator();
+				QAction* addFixedPoint = menu.addAction("Add fixed Point");
 
 				QAction* action = menu.exec(e->globalPos()); // show menu
 
@@ -304,10 +309,19 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				if(action == concentricGrp) newGroup = new ConcentricGroup(ctrl, CONCENTRIC);
 				if(action == coplanGrp)		newGroup = new CoplanarGroup(ctrl, COPLANNAR);
 
-				if(action == self1foldSymm) ctrl->getPrimitive(selection[0])->setSymmetryPlanes(1);
-				if(action == self2foldSymm) ctrl->getPrimitive(selection[0])->setSymmetryPlanes(2);
-				if(action == selfRotSymm)	ctrl->getPrimitive(selection[0])->isRotationalSymmetry = true;
+				if(action == self1foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(1);
+				if(action == self2foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(2);
+				if(action == selfRotSymm)	ctrl->getSelectedPrimitive()->isRotationalSymmetry = true;
 
+				if(action == selectControllerAction)	setSelectMode(CONTROLLER);
+				if(action == selectCurveAction)			setSelectMode(CONTROLLER_ELEMENT);
+
+				if(action == addFixedPoint)	
+				{
+					Primitive * prim = ctrl->getSelectedPrimitive();
+					Point pos = prim->getSelectedCurveCenter();
+					prim->addFixedPoint(pos);
+				}
 
 				if(newGroup)
 				{
@@ -318,11 +332,6 @@ void Scene::mousePressEvent( QMouseEvent* e )
 					print("New group added.");
 				}
 
-				if(action == selectControllerAction)
-					setSelectMode(CONTROLLER);
-
-				if(action == selectCurveAction)
-					setSelectMode(CONTROLLER_ELEMENT);
 
 				break;
 		}
@@ -562,7 +571,7 @@ void Scene::postDraw()
 
 		// black line
 		Vec3d p(0, 0, 0); Vec3d q = p + Vec3d(0,0,1.0);
-		SimpleDraw::IdentifyLine(p,q, 0,0,0,false,1.0);
+		SimpleDraw::IdentifyLine(p,q, Color(0,0,0,1), false, 1.0);
 
 		endSubViewport();
 	}

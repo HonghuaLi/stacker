@@ -29,6 +29,7 @@ public:
 	// Hot curves
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect );
+	virtual Point getSelectedCurveCenter();
 
 	// Reshaping
 	virtual void translate( Vec3d &T );
@@ -65,7 +66,7 @@ public:
 	
 	// Save and load
 	virtual void save(std::ofstream &outF);
-	virtual void load(std::ifstream &inF);
+	virtual void load(std::ifstream &inF, double scaleFactor);
 
 	void buildCage();
 

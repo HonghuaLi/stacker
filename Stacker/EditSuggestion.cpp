@@ -20,17 +20,18 @@ void EditSuggestion::draw(double scale)
 {
 	Vec3d pos = center + direction;
 
-	if (value < 0.1)
+	double value3 = value * value * value;
+	if (value3 < 0.1)
 	{
-		SimpleDraw::IdentifyLine(center, pos, 0, 0, 0.5, false, 1.0);
+		SimpleDraw::IdentifyLine(center, pos, Color(0, 0, 0.5, 0.5), false, 1.0);
 		return;
 	}
 
 	std::vector<Point> arrow, tail;
 
 	Vec3d normal = direction[2]? Vec3d(1,0,0) : Vec3d(0, 0, 1);
-	Vec3d v = direction.normalized() * scale * value;
-	Vec3d u = cross(v, normal).normalized() * scale * value;
+	Vec3d v = direction.normalized() * scale * value3;
+	Vec3d u = cross(v, normal).normalized() * scale * value3;
 
 	arrow.push_back(pos);
 	arrow.push_back(pos + u - v);

@@ -677,7 +677,8 @@ void GCylinder::save( std::ofstream &outF )
 	}
 }
 
-void GCylinder::load( std::ifstream &inF )
+
+void GCylinder::load( std::ifstream &inF, double scaleFactor )
 {
 	inF >> this->isFitted;
 	inF >> this->cageScale;
@@ -690,6 +691,7 @@ void GCylinder::load( std::ifstream &inF )
 	{
 		Point p(0,0,0);
 		inF >> p;
+		p *= scaleFactor;
 		originalSpine.push_back(p);
 	}
 
@@ -697,10 +699,18 @@ void GCylinder::load( std::ifstream &inF )
 
 	for(int i = 0; i < skeletonJoints; i++)
 	{
-		inF >> gc->crossSection[i].radius;
+		double radius;
+		inF >> radius;
+		radius *= scaleFactor;
+		gc->crossSection[i].radius = radius;
 	}
 
 	buildCage();
 
 	originalVolume = volume();
+}
+
+Point GCylinder::getSelectedCurveCenter()
+{
+	return gc->frames.point[selectedPartId];
 }

@@ -47,7 +47,9 @@ void QFFD::draw()
 
 	for(StdVector< Pair<Vec3d,Vec3d> >::iterator db_line = ffd()->dbLines.begin(); 
 		db_line != ffd()->dbLines.end(); db_line++ )
+	{
 		SimpleDraw::IdentifyLine(db_line->first, db_line->second);
+	}
 }
 
 void QFFD::drawNames()

@@ -12,11 +12,6 @@
 #define DEPTH_EDGE_THRESHOLD 0.1
 
 
-int NUM_EXPECTED_SOLUTION = 1;
-double BB_TOLERANCE = 1.1;
-double TARGET_STACKABILITY = 0.5;
-
-
 // OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
 // OpenGL coordinates are mainly used in this class
 
@@ -27,9 +22,6 @@ double TARGET_STACKABILITY = 0.5;
 Offset::Offset( HiddenViewer *viewer )
 {
 	activeViewer = viewer;
-
-	HOT_RANGE = 0.95;
-
 	isSuggesting = false;
 }
 
@@ -1030,27 +1022,30 @@ std::vector< Vec3d > Offset::getLocalMoves( HotSpot& HS )
 	int K = 6;
 
 	// Horizontal moves
-	double min_x = - step[0] * K;
-	double max_x = - min_x;
-	double min_y = - step[1] * K;
-	double max_y = - min_y;
+	if (HS.defineHeight)
+	{
+		double min_x = - step[0] * K;
+		double max_x = - min_x;
+		double min_y = - step[1] * K;
+		double max_y = - min_y;
 
-	for (double x = min_x; x <= max_x; x += step[0]){
-		for (double y = min_y; y <= max_y; y += step[1]){
-//			for (double z = min_z; z <= max_z; z += step[2])
-			double z = 0;
-			{
-				Vec3d delta(x,y,z);
-				Vec3d pos = hotPoint + delta;
-
-				// check whether \pos is in BB
-				if (RANGE(pos[0], org_bbmin[0], org_bbmax[0])
-				 && RANGE(pos[1], org_bbmin[1], org_bbmax[1])
-				 && RANGE(pos[2], org_bbmin[2], org_bbmax[2]))
+		for (double x = min_x; x <= max_x; x += step[0]){
+			for (double y = min_y; y <= max_y; y += step[1]){
+	//			for (double z = min_z; z <= max_z; z += step[2])
+				double z = 0;
 				{
-					result.push_back(delta);
-				}
-			}			
+					Vec3d delta(x,y,z);
+					Vec3d pos = hotPoint + delta;
+
+					// check whether \pos is in BB
+					if (RANGE(pos[0], org_bbmin[0], org_bbmax[0])
+					 && RANGE(pos[1], org_bbmin[1], org_bbmax[1])
+					 && RANGE(pos[2], org_bbmin[2], org_bbmax[2]))
+					{
+						result.push_back(delta);
+					}
+				}			
+			}
 		}
 	}
 
@@ -1130,38 +1125,29 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 			state.deltaStackability = stackability - orgStackability;
 			state.distortion = ctrl->getDistortion();
 
-
-			if (stackability > TARGET_STACKABILITY)
+			if (isSuggesting)
 			{
-				if (!isSuggesting)
-				{
-					solutions.push(state);
-					continue;
-				}
+				EditSuggestion suggest;
+
+				suggest.center = hotPoint;
+				suggest.direction = Ts[i];
+				suggest.deltaS = state.deltaStackability;
+				suggest.deltaV = state.distortion;
+				suggest.side = HS.side;
+				suggest.value = state.energy();
+
+				suggestions.push_back(suggest);
+				suggestSolutions.push(state);
 			}
-			
-			if (isUnique(state, 0))
+			else
 			{
-				candidateSolutions.push(state);
-
-				// Suggestion
-				if (isSuggesting)
-				{
-					EditSuggestion suggest;
-
-					suggest.center = hotPoint;
-					suggest.direction = Ts[i];
-					suggest.deltaS = state.deltaStackability;
-					suggest.deltaV = state.distortion;
-					suggest.side = HS.side;
-					suggest.value = state.energy();
-
-					suggestions.push_back(suggest);
-				}
-			}				
+				if (stackability > TARGET_STACKABILITY)
+					solutions.push(state);
+				else if (isUnique(state, 0))
+					candidateSolutions.push(state);
+			}		
 
 		}
-
 
 		// Restore the shape state of current candidate
 		ctrl->setShapeState(currentCandidate);
@@ -1267,10 +1253,10 @@ void Offset::applyHeuristics()
 	HotSpot& upperHS = upperHotSpots[selectedID];
 	HotSpot& lowerHS = lowerHotSpots[selectedID];
 
-	if (upperHS.isRing)
-		applyHeuristicsOnHotRing(upperHS);
-	else
-		applyHeuristicsOnHotspot(upperHS, lowerHS);		
+	//if (upperHS.isRing)
+	//	applyHeuristicsOnHotRing(upperHS);
+	//else
+	//	applyHeuristicsOnHotspot(upperHS, lowerHS);		
 
 
 
@@ -1365,6 +1351,23 @@ void Offset::improveStackabilityToTarget()
 	activeObject()->computeBoundingBox();
 }
 
+void Offset::showSuggestion( int i )
+{
+	if (suggestSolutions.empty())
+	{
+		std::cout << "There is no suggestion.\n";
+		return;
+	}
+
+	int id = i % suggestSolutions.size();
+
+	PQShapeShateLessEnergy suggestSolutionsCopy = suggestSolutions;
+	for (int i=0;i<id;i++)
+		suggestSolutionsCopy.pop();
+
+	Controller *ctrl = activeObject()->controller;
+	ctrl->setShapeState(suggestSolutionsCopy.top());
+}
 
 void Offset::showSolution( int i )
 {
@@ -1474,7 +1477,7 @@ QVector<EditSuggestion> Offset::getSuggestions()
 	
 	// Clear
 	suggestions.clear();
-	candidateSolutions = PQShapeShateLessEnergy();
+	suggestSolutions = PQShapeShateLessEnergy();
 	solutions = PQShapeShateLessDistortion();
 
 	// Current candidate
@@ -1497,13 +1500,6 @@ QVector<EditSuggestion> Offset::getSuggestions()
 	isSuggesting = true;
 	improveStackability();
 	isSuggesting = false;
-
-	// Debug: add candidate solutions to solutions
-	while (!candidateSolutions.empty())
-	{
-		solutions.push( candidateSolutions.top() );
-		candidateSolutions.pop();
-	}
 
 	normalizeSuggestions();
 	return suggestions;

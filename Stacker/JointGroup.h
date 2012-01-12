@@ -22,7 +22,7 @@ public:
 
 	QVector<QString> regroup();
 
-	QMap<QString, std::vector<double>> coordinates;
+	Point getJoint();
 
-	Point m_joint;
+	QMap<QString, std::vector<double>> coordinates;
 };

@@ -9,6 +9,7 @@
 #include <functional>
 
 #include "EditSuggestion.h"
+#include "global.h"
 
 class HiddenViewer;
 
@@ -18,9 +19,7 @@ enum STACKING_TYPE
 };
 
 
-extern int NUM_EXPECTED_SOLUTION;
-extern double BB_TOLERANCE;
-extern double TARGET_STACKABILITY;
+
 
 
 typedef std::vector< std::vector<double> >	Buffer2d;
@@ -122,8 +121,11 @@ public:
 	void setPixelColor( Buffer2d& image, Vec2i pos, double color );
 	static QRgb jetColor( double val, double min, double max );
 	void visualizeRegions( std::vector< std::vector<Vec2i> >& regions, QString filename );
+	
+	// Show results
 	void showSolution( int i );
-	double HOT_RANGE;
+	void showSuggestion( int i );
+	
 
 public:
 	HiddenViewer * activeViewer;
@@ -151,6 +153,7 @@ public:
 	// Suggestion
 	bool isSuggesting;
 	QVector<EditSuggestion> suggestions;
+	PQShapeShateLessEnergy suggestSolutions;
 
 	// Beat Searching
 	double orgStackability;

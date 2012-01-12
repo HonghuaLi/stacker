@@ -617,6 +617,10 @@ void Controller::load( std::ifstream &inF )
 {
 	primitives.clear();
 
+	double scaleFactor = 1/m_mesh->scaleFactor;
+
+	std::cout << "Scaling = " << scaleFactor << std::endl;
+
 	while(!inF.eof())
 	{
 		std::string strType, strId;
@@ -636,7 +640,7 @@ void Controller::load( std::ifstream &inF )
 			case GC: primitives[primId] = new GCylinder(m_mesh->getSegment(primId), primId, false); break;
 		}
 
-		primitives[primId]->load(inF);
+		primitives[primId]->load(inF, scaleFactor);
 	}
 }
 

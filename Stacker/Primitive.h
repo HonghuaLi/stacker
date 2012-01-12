@@ -29,6 +29,7 @@ public:
 	virtual uint detectHotCurve( Vec3d hotSample );
 	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples ) = 0;
 	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect ) = 0;
+	virtual Point getSelectedCurveCenter() = 0;
 
 	// Reshaping
 	virtual void translate( Vec3d &T ) = 0;
@@ -89,7 +90,7 @@ public:
 
 	// Save and load
 	virtual void save(std::ofstream &outF) = 0;
-	virtual void load(std::ifstream &inF) = 0;
+	virtual void load(std::ifstream &inF, double scaleFactor) = 0;
 
 	// Rotation
 	Eigen::Matrix3d rotationMatrixAroundAxis(Vec3d u, double theta);

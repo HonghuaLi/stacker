@@ -440,6 +440,9 @@
     <ClCompile Include="Stacker\ShapeState.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
+    <ClCompile Include="global.cpp">
+      <Filter>GUI\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
@@ -628,8 +631,11 @@
     <ClInclude Include="Stacker\ShapeState.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsLibrary\Line.h">
+    <ClInclude Include="MathLibrary\ShapeDistribution.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\global.h">
+      <Filter>GUI\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
