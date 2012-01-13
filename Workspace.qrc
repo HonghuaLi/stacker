@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Workspace">
+    <file>Resources/icons/joints.png</file>
+    <file>Resources/icons/cuboid.png</file>
+    <file>Resources/icons/gc.png</file>
     <file>Resources/icons/remove.png</file>
     <file>Resources/icons/newScene.png</file>
     <file>Resources/icons/export.png</file>

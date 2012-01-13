@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>350</width>
-    <height>615</height>
+    <height>617</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -288,7 +288,11 @@
          <item row="3" column="6" colspan="2">
           <widget class="QPushButton" name="convertToGC">
            <property name="text">
-            <string>Convert to GC</string>
+            <string>GC</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../Workspace.qrc">
+             <normaloff>:/Workspace/Resources/icons/gc.png</normaloff>:/Workspace/Resources/icons/gc.png</iconset>
            </property>
           </widget>
          </item>
@@ -324,7 +328,11 @@
          <item row="10" column="6" colspan="2">
           <widget class="QPushButton" name="convertToCuboid">
            <property name="text">
-            <string>Convert to Cuboid</string>
+            <string>Cuboid</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../Workspace.qrc">
+             <normaloff>:/Workspace/Resources/icons/cuboid.png</normaloff>:/Workspace/Resources/icons/cuboid.png</iconset>
            </property>
           </widget>
          </item>
@@ -355,6 +363,10 @@
           <widget class="QPushButton" name="findJointsButton">
            <property name="text">
             <string>Find Joints</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../Workspace.qrc">
+             <normaloff>:/Workspace/Resources/icons/joints.png</normaloff>:/Workspace/Resources/icons/joints.png</iconset>
            </property>
           </widget>
          </item>
@@ -617,6 +629,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../Workspace.qrc"/>
+ </resources>
  <connections/>
 </ui>
