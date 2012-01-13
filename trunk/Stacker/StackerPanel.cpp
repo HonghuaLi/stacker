@@ -310,7 +310,7 @@ void StackerPanel::outputForPaper()
 	for(int y = 0; y < h ; y++){
 		for(int x = 0; x < w ; x++){
 			double c = Max(0, activeOffset->offset[y][x]);
-			vertices.push_back(QString("v %1 %2 %3").arg(x * q).arg(y * q).arg(c / activeOffset->O_max));
+			vertices.push_back(QString("v %1 %2 %3").arg(x * q).arg(y * q).arg(c));
 
 			if(y < h - 2 && x < w - 2){
 				int col = x, row = y;
