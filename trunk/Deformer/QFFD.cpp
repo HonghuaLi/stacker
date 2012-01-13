@@ -128,5 +128,5 @@ void QFFD::updateMesh()
 {
 	ffd()->apply();
 
-	emit(meshDeformed(m_mesh->objectName()));
+	emit(meshDeformed());
 }

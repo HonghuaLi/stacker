@@ -82,7 +82,7 @@ void FFD::apply()
 		int vidx = ((Surface_mesh::Vertex)vit).idx();
 
 		mesh_points[vit] = getWorldCoordinate( deformVertexLocal(meshVerticesLocal[vidx]) );
-	}	
+	}
 }
 
 void FFD::fixed( Vec3i res, Vec3d location, double spacing, StdMap<int,Point> pnts )
