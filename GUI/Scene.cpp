@@ -102,11 +102,6 @@ void Scene::setupLights()
 
 void Scene::draw()
 {
-	if(!this->context()->isValid())
-	{
-		printf("");
-	}
-
 	glEnable(GL_MULTISAMPLE);
 	glEnable (GL_LINE_SMOOTH);
 	glEnable (GL_BLEND);
@@ -174,7 +169,7 @@ void Scene::draw()
 		}
 	}
 
-	// Deformers
+	// deformer
 	if(activeDeformer) activeDeformer->draw();
 	if(activeVoxelDeformer) activeVoxelDeformer->draw();
 
@@ -202,15 +197,11 @@ void Scene::draw()
 void Scene::drawWithNames()
 {
 	if(activeDeformer) activeDeformer->drawNames();
-	if(activeVoxelDeformer) 
-	{
-		activeVoxelDeformer->drawNames();
-		return;
-	}
+	if(activeVoxelDeformer) activeVoxelDeformer->drawNames();
 
 	// Draw the controllers if exist
-	if (!isEmpty() && activeObject()->controller)
-	{
+	if (!isEmpty() && activeObject()->controller && 
+		(selectMode == CONTROLLER || selectMode ==CONTROLLER_ELEMENT)){
 		bool isDrawParts = false;
 
 		if(this->selectMode == CONTROLLER_ELEMENT)
@@ -286,13 +277,15 @@ void Scene::mousePressEvent( QMouseEvent* e )
 		QAction* selectCurveAction = menu.addAction("Select curve");
 		menu.addSeparator();
 
-		switch (selectMode){
+		QAction* action = NULL;
+
+		/*switch (selectMode){
 			case CONTROLLER:
 			case CONTROLLER_ELEMENT:
 				if(selection.isEmpty()){
 					print("Please select some controllers.");
 					break;
-				}
+				}*/
 
 				Controller * ctrl = activeObject()->controller;
 
@@ -306,7 +299,19 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				menu.addSeparator();
 				QAction* addFixedPoint = menu.addAction("Add fixed Point");
 
-				QAction* action = menu.exec(e->globalPos()); // show menu
+				// == Deformer stuff ===
+				menu.addSeparator();
+				QAction* selectFFD = menu.addAction("FFD");
+				QAction* selectVoxelDeformer = menu.addAction("Voxel Deformer");
+				// == end deformer ===
+
+				action = menu.exec(e->globalPos()); // show menu
+
+				// Selections
+				if(action == selectControllerAction)	setSelectMode(CONTROLLER);
+				if(action == selectCurveAction)			setSelectMode(CONTROLLER_ELEMENT);
+				if(action == selectFFD)					setSelectMode(FFD_DEFORMER);
+				if(action == selectVoxelDeformer)		setSelectMode(VOXEL_DEFORMER);
 
 				Group* newGroup = NULL;
 
@@ -318,9 +323,6 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				if(action == self1foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(1);
 				if(action == self2foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(2);
 				if(action == selfRotSymm)	ctrl->getSelectedPrimitive()->isRotationalSymmetry = true;
-
-				if(action == selectControllerAction)	setSelectMode(CONTROLLER);
-				if(action == selectCurveAction)			setSelectMode(CONTROLLER_ELEMENT);
 
 				if(action == addFixedPoint)	
 				{
@@ -338,9 +340,8 @@ void Scene::mousePressEvent( QMouseEvent* e )
 					print("New group added.");
 				}
 
-
-				break;
-		}
+				/*break;
+		}*/
 	}
 }
 
@@ -471,8 +472,8 @@ void Scene::postSelection( const QPoint& point )
 			selection.push_back(selected); // to start from 0
 	}
 
-	// FFD and such deformer
-	if(activeDeformer){
+	// FFD and such deformers
+	if(activeDeformer && selectMode == FFD_DEFORMER){
 		activeDeformer->postSelection(selected);
 
 		if(selected >= 0)
@@ -481,7 +482,7 @@ void Scene::postSelection( const QPoint& point )
 			setManipulatedFrame( activeFrame );
 	}
 
-	if(activeVoxelDeformer){
+	if(activeVoxelDeformer && selectMode == VOXEL_DEFORMER){
 		if(selected >= 0)
 			setManipulatedFrame( activeVoxelDeformer->getQControlPoint(selected) );
 		else
@@ -612,8 +613,9 @@ void Scene::postDraw()
 			endSubViewport();
 		}
 
-		// Restore state;
-		ctrl->setShapeState(oldState);
+		// Restore state
+		if(solutionsCopy.size())
+			ctrl->setShapeState(oldState);
 	}
 
 	// To avoid aliasing in text
@@ -680,15 +682,18 @@ void Scene::setActiveDeformer( QFFD * newFFD )
 {
 	activeDeformer = newFFD;
 	updateGL();
+	this->setSelectMode(FFD_DEFORMER);
+
+	this->connect(newFFD, SIGNAL(meshDeformed()), sp, SLOT(updateActiveObject()));
 }
 
 void Scene::setActiveVoxelDeformer( VoxelDeformer * newFFD )
 {
 	activeVoxelDeformer = newFFD;
+	updateGL();
+	this->setSelectMode(VOXEL_DEFORMER);
 
 	this->connect(activeVoxelDeformer, SIGNAL(meshDeformed()), sp, SLOT(updateActiveObject()));
-
-	updateGL();
 }
 
 QSegMesh * Scene::activeObject()

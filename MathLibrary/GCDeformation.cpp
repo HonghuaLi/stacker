@@ -16,10 +16,12 @@ GCDeformation::GCDeformation( QSurfaceMesh * forShape, QSurfaceMesh * usingCage 
 
 	// For all points in shape, compute coordinates
 	std::vector<Point> shapePoints = shape->clonePoints();
-
+	
 	#pragma omp parallel for
 	for (int i = 0; i < (int)shapePoints.size(); i++)
 	{
+		int numRetry = 0;
+
 		GreenCoordiante gc = computeCoordinates( shapePoints[i]);
 		
 		// Numerical issue, solved by adding small noise to point
@@ -27,6 +29,11 @@ GCDeformation::GCDeformation( QSurfaceMesh * forShape, QSurfaceMesh * usingCage 
 			double t = 1e-6;
 			Point q = shapePoints[i] + Vec3d(uniform(0,t), uniform(0,t), uniform(0,t));
 			gc = computeCoordinates(q);
+
+			numRetry++;
+
+			if(numRetry > 10)
+				break;
 		}
 
 		coords[i].coord_v = gc.coord_v;
