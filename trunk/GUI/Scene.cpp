@@ -67,7 +67,7 @@ void Scene::init()
 	this->modifyMode = DEFAULT;
 
 	// Background
-	setBackgroundColor(backColor = QColor(50,50,60));
+	setBackgroundColor(backColor = QColor(226,226,226));
 
 	// Lights
 	setupLights();
@@ -148,13 +148,11 @@ void Scene::draw()
 
 		for(int i = 1; i < stackCount; i++)
 		{
-			// Draw object using VBO
-			for (QMap<QString, VBO>::iterator itr = vboCollection.begin(); itr != vboCollection.end(); ++itr)
-				itr->render();
-
-			// Fall back
-			if(vboCollection.isEmpty() && activeObject())
-				activeObject()->simpleDraw();
+			glColor4dv(Color(0.45,0.72,0.43,0.8));
+			
+			glEnable(GL_CULL_FACE);
+			activeObject()->simpleDraw(false);
+			glDisable(GL_CULL_FACE);
 
 			glTranslated(delta[0],delta[1],delta[2]);
 			glRotated(theta, 1, 0, 0);
@@ -555,12 +553,6 @@ void Scene::setModifyMode(ModifyMode toMode)
 
 void Scene::postDraw()
 {
-	QGLViewer::postDraw();
-
-	bool currGLcontext = isValid();
-
-	//SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
-
 	// Textual log messages
 	for(int i = 0; i < osdMessages.size(); i++){
 		int margin = 20; //px
@@ -613,7 +605,8 @@ void Scene::postDraw()
 			ctrl->setShapeState(sln);
 
 			// Draw shape in current state
-			activeObject()->simpleDraw();
+			glColor3dv(Color(0.96, 0.71, 0.30, 1));
+			activeObject()->simpleDraw(false);
 
 			// END
 			endSubViewport();
@@ -622,6 +615,14 @@ void Scene::postDraw()
 		// Restore state;
 		ctrl->setShapeState(oldState);
 	}
+
+	// To avoid aliasing in text
+	for (int i = 0; i < subScenes.size(); i++)
+		subScenes[i]->postDraw();
+
+	QGLViewer::postDraw();
+
+	//SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 }
 
 void Scene::setupSubViewport( int x, int y, int w, int h )

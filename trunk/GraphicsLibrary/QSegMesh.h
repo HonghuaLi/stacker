@@ -35,7 +35,7 @@ public:
 	uint segmentIdOfVertex( uint vid );
 
 	// Draw
-	void simpleDraw();
+	void simpleDraw(bool isColored = true, bool isDots = false);
 	void drawFacesUnique();
 	void drawDebug();
 	void drawAABB();

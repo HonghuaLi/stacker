@@ -23,7 +23,7 @@ void EditSuggestion::draw(double scale)
 	double value3 = value * value * value;
 	if (value3 < 0.1)
 	{
-		SimpleDraw::IdentifyLine(center, pos, Color(0, 0, 0.5, 0.5), false, 1.0);
+		SimpleDraw::IdentifyLine(center, pos, Color(0.1, 0.1, 0.6, 0.2), false, 1.0);
 		return;
 	}
 

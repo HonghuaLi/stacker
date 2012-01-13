@@ -52,12 +52,18 @@ void SubScene::draw()
 		c = selectedColor;
 
 	drawFrame(c);
-
-	glColor4dv(Vec4d(1,1,1,0.8));
-	activeScene->renderText(x + 5,y+15, caption);
 }
 
 bool SubScene::contains( Vec2i pixel )
 {
 	return RANGE(pixel.x(), x, x + width) && RANGE(pixel.y(), y, y + height);
+}
+
+void SubScene::postDraw()
+{
+	glColor4dv(Vec4d(0,0,0,0.4));
+	activeScene->renderText(x + 6, y + 16, caption);
+
+	glColor4dv(Vec4d(1,1,1,1));
+	activeScene->renderText(x + 5, y + 15, caption);
 }

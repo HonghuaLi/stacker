@@ -395,14 +395,13 @@ std::vector<QSurfaceMesh*> QSegMesh::getSegments()
 	return segment;
 }
 
-
-void QSegMesh::simpleDraw()
+void QSegMesh::simpleDraw( bool isColored /*= true*/, bool isDots /*= false*/ )
 {
 	// Render mesh regularly (inefficient)
 	for (int i = 0;i < segment.size(); i++)
 	{
 		if (segment[i]->isVisible)
-			segment[i]->simpleDraw();
+			segment[i]->simpleDraw(isColored, isDots);
 	}
 }
 

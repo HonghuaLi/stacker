@@ -21,6 +21,7 @@ public:
 
 	void drawFrame(Vec4d color = Vec4d(0,0,0,1));
 	void draw();
+	void postDraw();
 
 	void select();
 

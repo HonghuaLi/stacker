@@ -190,9 +190,9 @@ void Cuboid::draw()
 	if(isDraw)
 	{
 		if(isSelected)
-			drawCube(2, Vec4d(1,1,0,0.2));
+			drawCube(3, Vec4d(1,1,0,0.2));
 		else
-			drawCube(1, Vec4d(0,0,1,0.4));
+			drawCube(2, Vec4d(0,0,1,0.4));
 	}
 
 	// Draw axis
@@ -204,7 +204,7 @@ void Cuboid::draw()
 
 	for (int i=0;i<symmPlanes.size();i++)
 	{
-		symmPlanes[i].draw();
+		symmPlanes[i].draw(0.1);
 	}
 
 }

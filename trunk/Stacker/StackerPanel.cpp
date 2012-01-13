@@ -301,6 +301,36 @@ void StackerPanel::outputForPaper()
 	data["O_max"] = QString::number(activeOffset->O_max);
 	data["Stackability"] = QString::number(activeOffset->getStackability());
 
+	// Save visualized 3D offset function:
+	int w = activeOffset->offset.front().size();
+	int h = activeOffset->offset.size();
+	double q = 1.0 / Max(w,h);
+	QStringList vertices, faces;
+
+	for(int y = 0; y < h ; y++){
+		for(int x = 0; x < w ; x++){
+			double c = Max(0, activeOffset->offset[y][x]);
+			vertices.push_back(QString("v %1 %2 %3").arg(x * q).arg(y * q).arg(c / activeOffset->O_max));
+
+			if(y < h - 2 && x < w - 2){
+				int col = x, row = y;
+				int v1 = col + ((row) * w);
+				int v2 = v1 + 1;
+				int v3 = col + ((row + 1) * w);
+				int v4 = v3 + 1;
+				faces.push_back(QString("f %1 %2 %3 %4").arg(1+v1).arg(1+v2).arg(1+v4).arg(1+v3));
+			}
+		}
+	}
+
+	// Output
+	std::ofstream outF(qPrintable(exportDir + "/offset_surface.obj"), std::ios::out);
+	foreach(QString vertexLine, vertices) outF << qPrintable(vertexLine)  << std::endl;
+	outF << "# num vertices " << vertices.size()  << "\n\n";
+	foreach(QString faceLine, faces) outF << qPrintable(faceLine)  << std::endl;
+	outF << "# num faces " << faces.size()  << "\n";
+	outF.close();
+
 
 	// 2) Save meshes stacked
 	data["stackPreview"] = "stackPreview.obj";
