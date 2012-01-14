@@ -2,7 +2,7 @@
 
 
 bool NORMALIZE_MESH = true;
-bool MOVE_CENTER_TO_ORIGIN = false;
+bool MOVE_CENTER_TO_ORIGIN = true;
 
 int NUM_EXPECTED_SOLUTION = 10;
 double BB_TOLERANCE = 1.1;
