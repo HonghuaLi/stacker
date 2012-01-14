@@ -5,7 +5,7 @@
 StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
 {
 	// Default size of the preview window
-	this->resize(200,200);
+//	this->resize(350,200);
 
 	// No active scene when initializing
 	this->activeScene = NULL;
