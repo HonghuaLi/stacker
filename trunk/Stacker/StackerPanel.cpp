@@ -30,8 +30,8 @@ StackerPanel::StackerPanel()
 	stacker_preview = new StackerPreview(this);
 	QDockWidget * previewDock = new QDockWidget("Preview");
 	previewDock->setWidget (stacker_preview);
-	layout->addWidget(previewDock, row++, 0,1,3);
-	stacker_preview->setMinimumHeight(150);
+	layout->addWidget(previewDock, row++, 0,1,6);
+	stacker_preview->setMinimumHeight(350);
 
 	// Offset function calculator
 	hidden_viewer = new HiddenViewer();
