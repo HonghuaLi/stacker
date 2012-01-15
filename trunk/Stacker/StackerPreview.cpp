@@ -164,6 +164,7 @@ void StackerPreview::updateActiveObject()
 		camera()->setUpVector(Vec(0,0,1));
 		camera()->setPosition(Vec(pos));
 		camera()->lookAt(Vec(center));
+		camera()->setSceneRadius(activeObject()->radius * (stackCount + 1));
 		camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
 	}
 	

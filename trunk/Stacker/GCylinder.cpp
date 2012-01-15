@@ -609,7 +609,7 @@ void GCylinder::movePoint( Point p, Vec3d T )
 
 		//double s = r2 / r1;
 		
-		double s = (T[0] > 0)? 0.1 : -0.1;
+		double s = (T[0] > 0)? 0.4 : -0.4;
 		this->scaleCurve(c->index, s );
 	}
 	// If there are no fixed points

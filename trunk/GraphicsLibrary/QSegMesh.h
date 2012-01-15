@@ -64,6 +64,7 @@ public:
 
 	// Properties
 	bool isReady;
+	bool isDrawAABB;
 	Point bbmin, bbmax, center;
 	Scalar radius;
 	Scalar scaleFactor;

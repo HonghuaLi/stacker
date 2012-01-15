@@ -334,7 +334,7 @@ void StackerPanel::outputForPaper()
 
 	// 2) Save meshes stacked
 	data["stackPreview"] = "stackPreview.obj";
-	stacker_preview->saveStackObj(exportDir + "/" + data["stackPreview"], 3, 1.0);
+	stacker_preview->saveStackObj(exportDir + "/" + data["stackPreview"], panel.stackCount->value(), 1.0);
 
 
 	// 3) Save stuck points / region
@@ -389,6 +389,8 @@ void StackerPanel::searchDirection()
 	
 	std::vector<Vec3d> samples;
 
+	std::cout<< panel.searchAxis->value() << "\n";
+
 	if(panel.searchAlongAxis->isChecked())
 	{
 		deltaPhi = M_PI;
@@ -415,9 +417,9 @@ void StackerPanel::searchDirection()
 		for(int i = 0; i < samples.size(); i++){
 			switch(panel.searchAxis->value())
 			{
-			case 0: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(1,0,0)); break;
+			case 0: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(0,0,1)); break;
 			case 1: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(0,1,0)); break;
-			case 2: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(0,0,1)); break;
+			case 2: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(1,0,0)); break;
 			}
 
 			activeObject()->getSegment(0)->debug_points.push_back(samples[i]);

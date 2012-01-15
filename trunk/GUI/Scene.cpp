@@ -611,11 +611,9 @@ void Scene::postDraw()
 
 			// END
 			endSubViewport();
-		}
-
-		// Restore state
-		if(solutionsCopy.size())
+		
 			ctrl->setShapeState(oldState);
+		}
 	}
 
 	// To avoid aliasing in text

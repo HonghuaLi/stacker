@@ -88,6 +88,7 @@ void Offset::computeEnvelopeOfShape( int direction, Vec3d pos, Vec3d upVector /*
 	activeViewer->camera()->setUpVector(Vec(upVector));
 	Vec delta(1, 1, 1);
 	delta *= activeObject()->radius * 0.25;
+	activeViewer->camera()->setSceneRadius(activeObject()->radius * 3);
 	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin) - delta, Vec(activeObject()->bbmax) + delta);
 	activeViewer->camera()->setPosition(activeViewer->camera()->position() + Vec(horizontalShift));
 
@@ -1169,17 +1170,8 @@ void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
 
 	// Translations
 	std::vector< Vec3d > Ts;
-	double s = 0.15;
-	Ts.push_back(Vec3d(1,0,0)*s);
-	Ts.push_back(Vec3d(-1,0,0)*s);
-	//Vec3d proj_c = unprojectedCoordinatesOf(center.x(), center.y(), HS.side);
-	//Vec3d proj_p = unprojectedCoordinatesOf(p.x(), p.y(),  HS.side);
-	//double step = 0.5 * activeObject()->radius;
-	//Vec3d T = proj_p - proj_c;
-	//T[2] = 0; 
-	//T .normalize();
-	//Ts.push_back(T * step);
-	//Ts.push_back(-T * step);
+	Ts.push_back(Vec3d(1,0,0));
+	Ts.push_back(Vec3d(-1,0,0));
 
 	// Save the initial hot shape state
 	ShapeState initialHotShapeState = ctrl->getShapeState();
@@ -1200,7 +1192,7 @@ void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
 		ctrl->weakPropagate();
 
 		// Check if this is a candidate solution
-
+		
 //		if ( satisfyBBConstraint() )
 		{
 			double stackability = computeOffsetOfShape();
@@ -1209,9 +1201,34 @@ void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
 				ShapeState state = ctrl->getShapeState();
 //				if (isUnique(state, 0))
 				{
+					state.distortion = 0;
 					state.deltaStackability = stackability - orgStackability;
-					candidateSolutions.push(state);
-				}				
+
+					EditSuggestion suggest;
+					suggest.center = hotPoint;
+
+					Vec3d t = hotPoint;
+					t[2] = 0;
+					if (Ts[i].x() < 0) t *= -1;
+					t.normalize();
+					t *= 0.15;
+
+					suggest.direction = t;
+					suggest.deltaS = state.deltaStackability;
+					suggest.deltaV = state.distortion;
+					suggest.side = HS.side;
+					suggest.value = state.energy();
+
+					state.trajectory = currentCandidate.trajectory;
+					state.trajectory.push_back(suggest);
+
+					if (isSuggesting)
+					{
+						suggestions.push_back(suggest);
+						suggestSolutions.push(state);
+					}
+				}			
+
 			}
 		}
 		
