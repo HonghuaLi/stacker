@@ -12,6 +12,7 @@
 QSegMesh::QSegMesh()
 {
 	isReady = false;
+	isDrawAABB = true;
 	controller = NULL;
 	upVec = Vec3d(0,0,1);
 }
@@ -423,7 +424,8 @@ void QSegMesh::drawDebug()
 	for (int i=0;i<segment.size();i++)
 		segment[i]->drawDebug();
 
-	//drawAABB();
+	if(isDrawAABB)
+		drawAABB();
 }
 
 void QSegMesh::setObjectName( const QString &name )
