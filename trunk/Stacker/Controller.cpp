@@ -15,6 +15,11 @@ Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 {
 	m_mesh = mesh;
 
+	// BB
+	m_mesh->computeBoundingBox();
+	original_bbmin = m_mesh->bbmin;
+	original_bbmax = m_mesh->bbmax;
+
 	// Fit
 	fitOBBs(useAABB);
 
@@ -743,10 +748,22 @@ double Controller::getDistortion()
 	// Distortion terms
 	std::vector< double > D; 	
 
-	// Total volume difference
+	// Change of the total volume of primitives
 	double orgV = originalVolume();
 	double D1 = abs(volume() - orgV) /orgV;
 	D.push_back(D1);
+
+	// Change of BB along 3 main axes
+	Vec3d bbmin, bbmax;
+	m_mesh->computeBoundingBox();
+	bbmin = m_mesh->bbmin;
+	bbmax = m_mesh->bbmax;
+	double D2 = 0;
+	Vec3d orgSize = original_bbmax - original_bbmin;
+	Vec3d currSize = bbmax - bbmin;
+	Vec3d delta = currSize - orgSize;
+	for (int i=0;i<3;i++)
+		D2 += abs(delta[i]);
 
 	// Total Energy
 	return Sum(D);
