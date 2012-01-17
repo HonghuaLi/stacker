@@ -78,6 +78,7 @@ public:
 	void setPrimitivesAvailable(bool isAvailable = true);
 
 	// Distortion
+	Vec3d original_bbmin, original_bbmax;
 	double getDistortion();
 
 	QVector<QString> stringIds(QVector<int> numericalIds);

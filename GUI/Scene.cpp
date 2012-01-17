@@ -67,7 +67,8 @@ void Scene::init()
 	this->modifyMode = DEFAULT;
 
 	// Background
-	setBackgroundColor(backColor = QColor(226,226,226));
+//	setBackgroundColor(backColor = QColor(226,226,226));
+	setBackgroundColor(backColor = QColor(255,255,255)); // white
 
 	// Lights
 	setupLights();
