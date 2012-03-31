@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Scene.h"
+#include "GUI/Scene.h"
 
 enum HVMode { HV_NONE, HV_DEPTH, HV_FACEUNIQUE };
 

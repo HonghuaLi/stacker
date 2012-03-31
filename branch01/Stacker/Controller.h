@@ -1,7 +1,7 @@
 #pragma once
 #include <QMap>
 #include "Primitive.h"
-#include "Voxeler.h"
+#include "GraphicsLibrary/Voxel/Voxeler.h"
 #include "Group.h"
 
 class EditSuggestion;

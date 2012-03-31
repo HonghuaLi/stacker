@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ui_StackerWidget.h"
-#include "ui_SpaceExplorer.h"
-#include "Scene.h"
+#include "GUI/Scene.h"
 #include "StackerPreview.h"
 #include "HiddenViewer.h"
 #include "Offset.h"
@@ -23,7 +22,6 @@ public:
 	void showMessage( QString message );
 
 	Ui::StackerWidget panel;
-	Ui::ControllerDeformerWidget ctrlDeformer;
 	Scene * activeScene;
 	StackerPreview * stacker_preview;
 	HiddenViewer * hidden_viewer;

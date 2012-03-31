@@ -1,13 +1,12 @@
 #include "SimpleDraw.h"
 #include "Macros.h"
-#include <GL/GLU.h>
+#include <GL/glu.h>
 
 // Bad includes.. needed for rotations for now
-#include "QGLViewer/qglviewer.h"
-#include "QGLViewer/quaternion.h"
+#include "GUI/Viewer/libQGLViewer/QGLViewer/qglviewer.h"
 #include "ColorMap.h"
 
-void SimpleDraw::DrawBox(const Vec3d& center, float width, float length, float height, float r, float g, float b)
+void SimpleDraw::DrawBox(const Vec3d& center, float width, float length, float height, float r, float g, float b, float lineWidth)
 {
 	glDisable(GL_LIGHTING);
 
@@ -26,7 +25,7 @@ void SimpleDraw::DrawBox(const Vec3d& center, float width, float length, float h
 	bc3 = Vec3d (-width, -length, -height) + center;
 	bc4 = Vec3d (width, -length, -height) + center;
 
-	glLineWidth(1.0f);
+	glLineWidth(lineWidth);
 
 	glBegin(GL_LINES);
 	glVertex3dv(c1);glVertex3dv(bc1);
@@ -499,6 +498,24 @@ void SimpleDraw::DrawSphere( const Vec3d & center, float radius /*= 1.0f*/ )
 	glPopMatrix();
 }
 
+void SimpleDraw::DrawSpheres( StdVector<Vec3d> & centers, float radius /*= 1.0*/ )
+{
+	GLUquadricObj *quadObj = gluNewQuadric();
+
+	gluQuadricDrawStyle(quadObj, GLU_FILL);
+	gluQuadricNormals(quadObj, GLU_SMOOTH);
+
+	for(int i = 0; i < (int)centers.size(); i++)
+	{
+		glPushMatrix();
+		glTranslatef(centers[i].x(), centers[i].y(), centers[i].z());
+		gluSphere(quadObj, radius, 16, 16);
+		glPopMatrix();
+	}
+
+	gluDeleteQuadric(quadObj);
+}
+
 void SimpleDraw::DrawCylinder( const Vec3d & center, const Vec3d & direction /*= Vec3d (0,0,1)*/,
 							  float height, float radius /*= 1.0f*/, float radius2 /*= -1*/ )
 {
@@ -627,6 +644,47 @@ void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, Vec4d c, bool
 	glEnable(GL_LIGHTING);
 }
 
+void SimpleDraw::IdentifyLines( const StdVector<Vec3d> & p1, const StdVector<Vec3d> & p2, Vec4d c /*= Vec4d(1,0,0,1)*/, bool showVec3ds /*= true*/, float lineWidth /*= 3.0f */ )
+{
+	glDisable(GL_LIGHTING);
+
+	// Set color
+	glColor4dv(c);
+
+	glLineWidth(lineWidth);
+	glBegin(GL_LINES);
+	for(int i = 0; i < (int)p1.size(); i++){
+		glVertex3dv(p1[i]);
+		glVertex3dv(p2[i]);
+	}
+	glEnd();
+
+	if(showVec3ds)
+	{
+		// Draw colored end points
+		glPointSize(lineWidth * 5);
+		glBegin(GL_POINTS);
+		for(int i = 0; i < (int)p1.size(); i++){
+			glVertex3dv(p1[i]);
+			glVertex3dv(p2[i]);
+		}
+		glEnd();
+
+		// White border end points
+		glPointSize((lineWidth * 5) + 2);
+		glColor3f(1, 1, 1);
+
+		glBegin(GL_POINTS);
+		for(int i = 0; i < (int)p1.size(); i++){
+			glVertex3dv(p1[i]);
+			glVertex3dv(p2[i]);
+		}
+		glEnd();
+	}
+
+	glEnable(GL_LIGHTING);
+}
+
 
 void SimpleDraw::IdentifyPoint( const Vec3d & p, float r /*= 1.0*/, float g /*= 0.2f*/, float b /*= 0.2f*/, float pointSize /*= 10.0*/ )
 {
@@ -656,7 +714,7 @@ void SimpleDraw::IdentifyPoint2( Vec3d  p )
 	IdentifyPoint(p, 0.2f, 1.0f, 0.2f, 12.0f);
 }
 
-void SimpleDraw::IdentifyPoints( StdVector<Vec3d > & points, Vec4d c, float pointSize)
+void SimpleDraw::IdentifyPoints(const StdVector<Vec3d > & points, Vec4d c, float pointSize)
 {
 	glDisable(GL_LIGHTING);
 
@@ -912,7 +970,7 @@ void SimpleDraw::DrawGraph2D( const StdVector< StdVector <double> > & data, doub
 
 	// Find actual data max
 	double actualMax = DBL_MIN;
-	for(int i = 0; i < data.size(); i++)
+	for(int i = 0; i < (int)data.size(); i++)
 		actualMax = Max(actualMax, MaxElement(data[i]));
 
 	uchar rgb[3];	
@@ -951,4 +1009,38 @@ void SimpleDraw::DrawGraph2D( const StdVector< StdVector <double> > & data, doub
 	glEnd();
 
 	glEnable(GL_LIGHTING);
+}
+
+void SimpleDraw::DrawCircle( const Vec3d& center, double radius, const Vec4d& c, const Vec3d& n, float lineWidth )
+{
+	Vec3d startV(0,0,0);
+
+	// Find orthogonal start vector
+	if ((abs(n.y()) >= 0.9f * abs(n.x())) && 
+		abs(n.z()) >= 0.9f * abs(n.x())) startV = Vec3d(0.0f, -n.z(), n.y());
+	else if ( abs(n.x()) >= 0.9f * abs(n.y()) && 
+		abs(n.z()) >= 0.9f * abs(n.y()) ) startV = Vec3d(-n.z(), 0.0f, n.x());
+	else startV = Vec3d(-n.y(), n.x(), 0.0f);
+
+	int segCount = 20;
+	double theta = 2.0 * M_PI / segCount;
+
+	glDisable(GL_LIGHTING);
+	glLineWidth(lineWidth);
+	glColor4dv(c);
+
+	glBegin(GL_LINE_LOOP);
+	for(int i = 0; i < segCount; i++){
+		glVertex3dv(center + startV * radius );
+		ROTATE_VEC(startV, theta, n);
+	}
+	glEnd();
+
+	glEnable(GL_LIGHTING);
+}
+
+void SimpleDraw::DrawCircles( const StdVector<Vec3d>& centers, const StdVector<double>& radius, const Vec4d& c, const Vec3d& normal, float lineWidth )
+{
+	for(int i = 0; i < (int) centers.size(); i++)
+		DrawCircle(centers[i], radius[i], c, normal, lineWidth);
 }

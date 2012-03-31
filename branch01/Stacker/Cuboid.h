@@ -1,6 +1,6 @@
 #pragma once
 #include "Primitive.h"
-#include "MinOBB3.h"
+#include "MathLibrary/Bounding/MinOBB3.h"
 #include <Eigen/Dense>
 
 //		  7-----------6                     Y

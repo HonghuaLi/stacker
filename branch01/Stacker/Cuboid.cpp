@@ -4,8 +4,8 @@
 #include <Eigen/Geometry>
 using namespace Eigen;
 
-#include "OBB.h"
-#include "OBB2.h"
+#include "MathLibrary/Bounding/OBB.h"
+#include "MathLibrary/Bounding/OBB2.h"
 
 Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
 {

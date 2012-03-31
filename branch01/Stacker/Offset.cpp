@@ -11,6 +11,7 @@
 #define BIG_NUMBER 10
 #define DEPTH_EDGE_THRESHOLD 0.1
 
+QVector<EditSuggestion> suggestions;
 
 // OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
 // OpenGL coordinates are mainly used in this class
@@ -253,17 +254,20 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 
 	// Update the stackability in QSegMesh
 	O_max = minO_max;
-	activeObject()->O_max = O_max;
-	activeObject()->stackability = 1 - O_max/objectH;
-	activeObject()->theta = DEGREES(bestPosAngle);
-	activeObject()->phi = DEGREES(bestUVAngle);
-	activeObject()->translation = Vec3d(bestShift[0], -bestShift[1], 0);
+	activeObject()->val["O_max"]		= O_max;
+	activeObject()->val["stackability"] = 1 - O_max/objectH;
+	activeObject()->val["theta"]		= DEGREES(bestPosAngle);
+	activeObject()->val["phi"]			= DEGREES(bestUVAngle);
+
+	activeObject()->val["tranX"]		= bestShift[0];
+	activeObject()->val["tranY"]		= -bestShift[1];
+	activeObject()->val["tranZ"]		= 0;
 
 	// Save offset as image
 	//saveAsImage(offset, O_max, "offset function.png");
 	activeObject()->data2D["offset"] = offset;
 
-	return activeObject()->stackability;
+	return activeObject()->val["stackability"];
 }
 
 void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
@@ -397,9 +401,11 @@ Offset::HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> 
 			}
 		}
 
+		Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
+
 		HS.side = direction;
 		HS.hotSamples = subHotSamples[HS.segmentID];
-		HS.isRing = activeObject()->controller->getPrimitive(HS.segmentID)->isRotationalSymmetry;
+		HS.isRing = ctrl->getPrimitive(HS.segmentID)->isRotationalSymmetry;
 	}
 
 	return HS;
@@ -1079,7 +1085,8 @@ std::vector< Vec3d > Offset::getLocalMoves( HotSpot& HS )
 
 void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 {
-	Controller *ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
+
 	Primitive* prim = ctrl->getPrimitive(HS.segmentID);
 	Primitive* op_prim = ctrl->getPrimitive(opHS.segmentID);
 
@@ -1159,7 +1166,8 @@ void Offset::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS )
 
 void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
 {
-	Controller *ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
+
 	Primitive* prim = ctrl->getPrimitive(HS.segmentID);
 
 	// The hot region	
@@ -1242,8 +1250,8 @@ void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
 
 void Offset::applyHeuristics()
 {
-	Controller *ctrl = activeObject()->controller;
-	
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
+
 	// Set only hot segments visible
 	//ctrl->setSegmentsVisible(false);
 	//foreach (QString segmentID, hotSegments)
@@ -1286,7 +1294,7 @@ void Offset::applyHeuristics()
 
 void Offset::improveStackability()
 {
-	Controller *ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
 	// improve the stackability of current shape in three steps
 	//=========================================================================================
@@ -1316,7 +1324,7 @@ void Offset::improveStackability()
 
 void Offset::improveStackabilityToTarget()
 {
-	Controller *ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
 	// Clear
 	candidateSolutions = PQShapeShateLessEnergy();
@@ -1382,8 +1390,9 @@ void Offset::showSuggestion( int i )
 	PQShapeShateLessEnergy suggestSolutionsCopy = suggestSolutions;
 	for (int i=0;i<id;i++)
 		suggestSolutionsCopy.pop();
+	
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
-	Controller *ctrl = activeObject()->controller;
 	ctrl->setShapeState(suggestSolutionsCopy.top());
 }
 
@@ -1396,7 +1405,7 @@ void Offset::showSolution( int i )
 	}
 
 	int id = i % solutions.size();
-	Controller *ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
 	PQShapeShateLessDistortion solutionsCopy = solutions;
 	for (int i=0;i<id;i++)
@@ -1436,7 +1445,7 @@ bool Offset::satisfyBBConstraint()
 
 bool Offset::isUnique( ShapeState state, double threshold )
 {
-	Controller *ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
 	// dissimilar to \solutions
 	PQShapeShateLessDistortion solutionsCopy = solutions;
@@ -1493,8 +1502,8 @@ Vec2i Offset::centerOfRegion( std::vector< Vec2i >& region )
 
 QVector<EditSuggestion> Offset::getSuggestions()
 {
-	Controller *ctrl = activeObject()->controller;
-	
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
+
 	// Clear
 	suggestions.clear();
 	suggestSolutions = PQShapeShateLessEnergy();

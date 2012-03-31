@@ -3,8 +3,8 @@
 #include "Primitive.h"
 #include "GeneralizedCylinder.h"
 #include "Skeleton.h"
-#include "GCDeformation.h"
-#include "QGLViewer/manipulatedFrame.h"
+#include "MathLibrary/Coordiantes/GCDeformation.h"
+#include "GUI/Viewer/libQGLViewer/QGLViewer/manipulatedFrame.h"
 
 extern int skeletonJoints;
 

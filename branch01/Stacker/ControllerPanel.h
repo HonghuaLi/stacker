@@ -1,7 +1,9 @@
 #pragma once
 
 #include "ui_ControllerWidget.h"
-#include "Scene.h"
+#include "GUI/Scene.h"
+
+class Controller;
 
 class ControllerPanel : public QWidget{
 	Q_OBJECT

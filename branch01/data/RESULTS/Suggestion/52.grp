@@ -1,3 +1,0 @@
-SYMMETRY	2	leg2	leg1	
-JOINT	2	beam	leg2	-0.455 0 0.14
-JOINT	2	beam	leg1	0.455 0 0.14

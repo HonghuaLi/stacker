@@ -1,15 +1,16 @@
 #pragma once
 
 #include "ColorMap.h"
-#include "QSegMesh.h"
+#include "GraphicsLibrary/Mesh/QSegMesh.h"
 #include "Controller.h"
 #include <QColor>
 #include <QRect>
 #include <QQueue>
 #include <functional>
+#include "GUI/global.h"
 
 #include "EditSuggestion.h"
-#include "global.h"
+extern QVector<EditSuggestion> suggestions;
 
 class HiddenViewer;
 
@@ -17,9 +18,6 @@ enum STACKING_TYPE
 {
 	STRAIGHT_LINE, ROT_AROUND_AXIS, ROT_FREE_FORM
 };
-
-
-
 
 
 typedef std::vector< std::vector<double> >	Buffer2d;

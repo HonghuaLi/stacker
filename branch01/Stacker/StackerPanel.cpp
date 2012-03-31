@@ -1,7 +1,7 @@
 #include "StackerPanel.h"
 #include "Controller.h"
 #include "Cuboid.h"
-#include "ConvexHull3.h"
+#include "MathLibrary/Bounding/ConvexHull3.h"
 #include <QDockWidget>
 #include <QVBoxLayout>
 #include "Vector.h"
@@ -14,7 +14,7 @@
 #include "GCylinder.h"
 #include <QFileDialog>
 #include <QDesktopWidget>
-#include "global.h"
+#include "GUI/global.h"
 
 StackerPanel::StackerPanel()
 {
@@ -107,7 +107,9 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-	if (!activeObject()->controller)	{
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
+
+	if (!ctrl)	{
 		showMessage("There is no controller built.");
 		return;
 	}
@@ -154,9 +156,10 @@ void StackerPanel::updateActiveObject()
 	stacker_preview->stackCount = panel.stackCount->value();
 	stacker_preview->updateActiveObject();
 
-	if (activeScene && activeObject() && activeObject()->controller == NULL)
+	// Create a controller if non-exists
+	if (activeScene && activeObject() && !activeObject()->ptr["controller"])
 	{
-		activeObject()->controller = new Controller(activeObject(), panel.useAABB->isChecked());
+		activeObject()->ptr["controller"] = new Controller(activeObject(), panel.useAABB->isChecked());
 		activeScene->setSelectMode(CONTROLLER);
 		showMessage("Controller is built for " + activeObject()->objectName());
 	}
@@ -186,7 +189,7 @@ void StackerPanel::setConvexHullPrecision( int p )
 		return;
 	}
 
-	activeObject()->controller = new Controller(activeObject(), panel.useAABB->isChecked());
+	activeObject()->ptr["controller"] = new Controller(activeObject(), panel.useAABB->isChecked());
 
 	activeScene->setSelectMode(CONTROLLER);
 
@@ -195,9 +198,9 @@ void StackerPanel::setConvexHullPrecision( int p )
 
 void StackerPanel::convertGC()
 {
-	if(!activeObject() || !activeObject()->controller) return;
+	if(!activeObject() || !activeObject()->ptr["controller"]) return;
 
-	Controller* ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 
 	foreach(Primitive * prim, ctrl->getPrimitives())
 	{
@@ -208,9 +211,9 @@ void StackerPanel::convertGC()
 
 void StackerPanel::convertCuboid()
 {
-	if(!activeObject() || !activeObject()->controller) return;
+	if(!activeObject() || !activeObject()->ptr["controller"]) return;
 
-	Controller* ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 
 	foreach(Primitive * prim, ctrl->getPrimitives())
 		if(prim->isSelected) ctrl->convertToCuboid(prim->id, panel.useAABB->isChecked(), panel.cuboidMethod->currentIndex());
@@ -220,23 +223,23 @@ void StackerPanel::convertCuboid()
 
 void StackerPanel::findJoints()
 {
-	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
+	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
 	
-	activeObject()->controller->findJoints();
+	((Controller *)activeScene->activeObject()->ptr["controller"])->findJoints();
 }
 
 void StackerPanel::findPairwiseJoints()
 {
-	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
+	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
 
 	if (activeScene->selection.size() < 2) return;
 
-	Controller* ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 
 	int selID1 = activeScene->selection[0];
 	int selID2 = activeScene->selection[1];
 
-	activeObject()->controller->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
+	((Controller *)activeScene->activeObject()->ptr["controller"])->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
 }
 
 
@@ -493,8 +496,8 @@ void StackerPanel::setStackCount( int num )
 
 void StackerPanel::onSuggestButtonClicked()
 {
-	activeScene->suggestions.clear();
-	activeScene->suggestions = activeOffset->getSuggestions();
+	suggestions.clear();
+	suggestions = activeOffset->getSuggestions();
 	
 	int total = activeOffset->suggestSolutions.size();
 	panel.numSuggestion->setText(QString("/ %1").arg(total));
@@ -506,7 +509,7 @@ void StackerPanel::onSaveSuggestionsButtonClicked()
 {
 	if(!activeScene || !activeObject())	return;
 
-	QVector< EditSuggestion > &suggestions = activeScene->suggestions;
+	QVector< EditSuggestion > &suggestions = suggestions;
 	if (suggestions.empty()) return;
 
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", "", "Group File (*.sgt)"); 
@@ -529,12 +532,12 @@ void StackerPanel::onLoadSuggestionsButtonClicked()
 
 	int num;
 	inF >> num;
-	activeScene->suggestions.clear();
+	suggestions.clear();
 	for (int i=0; i<num; i++)
 	{
 		EditSuggestion sgt;
 		inF >> sgt.center >> sgt.direction >> sgt.value;
-		activeScene->suggestions.push_back(sgt);
+		suggestions.push_back(sgt);
 	}
 
 	inF.close();

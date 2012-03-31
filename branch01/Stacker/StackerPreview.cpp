@@ -69,13 +69,18 @@ void StackerPreview::draw()
 	// Update VBO is needed
 	updateVBOs();
 
-	double O_max = activeObject()->O_max;
-	double S = activeObject()->stackability;
+	double O_max = activeObject()->val["O_max"];
+	double S = activeObject()->val["stackability"];
 
 	Vec3d delta = O_max * stackDirection;
-	double theta = activeObject()->theta;
-	double phi = activeObject()->phi;
-	Vec3d shift = activeObject()->translation;
+	double theta = activeObject()->val["theta"];
+	double phi = activeObject()->val["phi"];
+
+	double tranX = activeObject()->val["tranX"];
+	double tranY = activeObject()->val["tranY"];
+	double tranZ = activeObject()->val["tranZ"];
+
+	Vec3d shift (tranX, tranY, tranZ);
 
 	glPushMatrix();
 
@@ -106,13 +111,18 @@ void StackerPreview::postDraw()
 
 	if(activeObject())
 	{
-		QString message = QString("O_max = %1; S = %2").arg(activeObject()->O_max).arg(activeObject()->stackability);
+		QString message = QString("O_max = %1; S = %2").arg(activeObject()->val["O_max"]).arg(activeObject()->val["stackability"]);
 		renderText(0, this->height()- 10, message);
 
-		QString message2 = QString("Theta = %1; Phi = %2").arg(activeObject()->theta).arg(activeObject()->phi);
+		QString message2 = QString("Theta = %1; Phi = %2").arg(activeObject()->val["theta"]).arg(activeObject()->val["phi"]);
 		renderText(0, this->height()- 30, message2);
 
-		QString message3 = QString("Shift = %1,%2,%3").arg(activeObject()->translation[0]).arg(activeObject()->translation[1]).arg(activeObject()->translation[2]);
+		double tranX = activeObject()->val["tranX"];
+		double tranY = activeObject()->val["tranY"];
+		double tranZ = activeObject()->val["tranZ"];
+		Vec3d shift (tranX, tranY, tranZ);
+
+		QString message3 = QString("Shift = %1,%2,%3").arg(shift[0]).arg(shift[1]).arg(shift[2]);
 		renderText(0, this->height()- 50, message3);
 	}
 }
@@ -156,7 +166,7 @@ void StackerPreview::updateActiveObject()
 	{
 		Vec3d bbmin = activeObject()->bbmin;
 		Vec3d bbmax = activeObject()->bbmax;
-		bbmax[2] += (stackCount-1) * activeObject()->O_max;
+		bbmax[2] += (stackCount-1) * activeObject()->val["O_max"];
 
 		Vec3d center = (bbmax + bbmin) / 2;
 		Vec3d pos(1, 1, center[2]);
@@ -213,8 +223,8 @@ void StackerPreview::setRenderMode( RENDER_MODE toMode )
 void StackerPreview::saveStackObj( QString fileName, int numStack, double scaleFactor)
 {
 	int stackCount = numStack;
-	double O_max = activeObject()->O_max;
-	double S = activeObject()->stackability;
+	double O_max = activeObject()->val["O_max"];
+	double S = activeObject()->val["stackability"];
 
 	Vec3d delta = O_max * stackDirection;
 
@@ -228,7 +238,7 @@ void StackerPreview::saveStackObj( QString fileName, int numStack, double scaleF
 	QString singleFileName = fileName;
 	singleFileName.replace(".obj", "_single.obj");
 
-	double phi =  activeObject()->phi;
+	double phi =  activeObject()->val["phi"];
 
 	for(int i = 0; i < stackCount; i++)
 	{

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "QSurfaceMesh.h"
-#include "Plane.h"
+#include "GraphicsLibrary/Mesh/QSurfaceMesh.h"
+#include "GraphicsLibrary/Basic/Plane.h"
 #include <QVector>
 #include <Eigen/Dense>
 #include "ShapeState.h"

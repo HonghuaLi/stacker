@@ -1,13 +1,13 @@
-#include "global.h"
+#include "GUI/global.h"
 #include "GroupPanel.h"
 #include <fstream>
 #include <QFileDialog>
 
+#include "Controller.h"
 #include "SymmetryGroup.h"
 #include "JointGroup.h"
 #include "ConcentricGroup.h"
 #include "CoplanarGroup.h"
-
 
 GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 {
@@ -36,10 +36,10 @@ void GroupPanel::setActiveScene( Scene * newScene )
 
 void GroupPanel::toggleGroupDisplay(int state)
 {
-	if(!activeScene || !activeScene->activeObject() || !activeScene->activeObject()->controller)
+	if(!activeScene || !activeScene->activeObject() || !(Controller *)activeScene->activeObject()->ptr["controller"])
 		return;
 
-	Controller * ctrl = activeScene->activeObject()->controller;
+	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 
 	foreach(Group* group, ctrl->groups)
 	{
@@ -53,10 +53,10 @@ void GroupPanel::updateWidget()
 {
 	groupWidget.groupTree->clear();
 
-	if(!activeScene || !activeScene->activeObject() || !activeScene->activeObject()->controller)
+	if(!activeScene || !activeScene->activeObject() || !(Controller *)activeScene->activeObject()->ptr["controller"])
 		return;
 
-	Controller * ctrl = activeScene->activeObject()->controller;
+	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 
 	foreach(Group* group, ctrl->groups)
 	{
@@ -86,7 +86,7 @@ void GroupPanel::removeSelectedItem()
 	QList<QTreeWidgetItem*> selectedItems = groupWidget.groupTree->selectedItems();
 	if(selectedItems.isEmpty()) return;
 	
-	Controller * ctrl = activeScene->activeObject()->controller;
+	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 
 	foreach(QTreeWidgetItem* item, selectedItems)
 	{
@@ -124,7 +124,7 @@ void GroupPanel::removeSelectedItem()
 
 void GroupPanel::saveGroups()
 {
-	Controller * ctrl = activeScene->activeObject()->controller;
+	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 	if (ctrl == NULL) 
 	{
 		std::cout << "There is no controller.\n";
@@ -175,7 +175,7 @@ void GroupPanel::saveGroups()
 
 void GroupPanel::loadGroups()
 {
-	Controller * ctrl = activeScene->activeObject()->controller;
+	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 	if (ctrl == NULL) 
 	{
 		std::cout << "There is no controller.\n";
@@ -250,7 +250,7 @@ void GroupPanel::loadGroups()
 
 void GroupPanel::clearGroups()
 {
-	Controller * ctrl = activeScene->activeObject()->controller;
+	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 	ctrl->groups.clear();
 
 	// Clear self symmetry

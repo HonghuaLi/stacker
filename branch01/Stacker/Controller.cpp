@@ -1,5 +1,5 @@
 #include "Controller.h"
-#include "QSegMesh.h"
+#include "GraphicsLibrary/Mesh/QSegMesh.h"
 #include "Cuboid.h"
 #include "GCylinder.h"
 #include "Primitive.h"
