@@ -6,7 +6,7 @@
 #include <Eigen/Dense>
 #include "ShapeState.h"
 
-enum PrimType{ CUBOID, GC, WIRE};
+enum PrimType{ CUBOID, GCYLINDER, WIRE};
 
 
 class Primitive

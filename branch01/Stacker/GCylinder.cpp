@@ -32,7 +32,7 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 
 	isFitted = doFit;
 
-	primType = GC;
+    primType = GCYLINDER;
 }
 
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId) : Primitive(segment, newId)
@@ -43,7 +43,7 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId) : Primitive(segment,
 	skeletonJoints = 0;
 	deltaScale = 0;
 	isFitted = false;
-	primType = GC;
+    primType = GCYLINDER;
 }
 
 void GCylinder::fit()

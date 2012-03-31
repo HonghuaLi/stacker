@@ -350,7 +350,7 @@ ShapeState Controller::getShapeState()
 	return state;
 }
 
-void Controller::setShapeState( ShapeState &shapeState )
+void Controller::setShapeState(const ShapeState &shapeState )
 {
 	foreach(Primitive * prim, primitives)
 	{
@@ -645,7 +645,7 @@ void Controller::load( std::ifstream &inF )
 		switch(primType)
 		{
 			case CUBOID: primitives[primId] = new Cuboid(m_mesh->getSegment(primId), primId); break;
-			case GC: primitives[primId] = new GCylinder(m_mesh->getSegment(primId), primId, false); break;
+            case GCYLINDER: primitives[primId] = new GCylinder(m_mesh->getSegment(primId), primId, false); break;
 		}
 
 		primitives[primId]->load(inF, scaleFactor);

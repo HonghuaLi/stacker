@@ -379,7 +379,7 @@ void ConvexHull3::draw()
 {
 	if (!isReady) return;
 
-	std::vector<std::vector<Vector3>> tris;
+    std::vector<std::vector<Vector3> > tris;
 	for (int i=0;i<3*mNumSimplices;)
 	{
 		std::vector<Vector3> tri;
@@ -401,9 +401,9 @@ ConvexHull3::TriFace::TriFace (int v0, int v1, int v2)
 	V[0] = v0;
 	V[1] = v1;
 	V[2] = v2;
-	Adj[0] = nullptr;
-	Adj[1] = nullptr;
-	Adj[2] = nullptr;
+    Adj[0] = 0;
+    Adj[1] = 0;
+    Adj[2] = 0;
 }
 
 int ConvexHull3::TriFace::GetSign( int id , std::vector<Vector3> &pnts, Real epsilon )
@@ -436,12 +436,12 @@ void ConvexHull3::TriFace::AttachTo (TriFace* adj0, TriFace* adj1,
 
 int ConvexHull3::TriFace::DetachFrom (int adjIndex, TriFace* adj)
 {
-	Adj[adjIndex] = nullptr;
+    Adj[adjIndex] = 0;
 	for (int i = 0; i < 3; ++i)
 	{
 		if (adj->Adj[i] == this)
 		{
-			adj->Adj[i] = nullptr;
+            adj->Adj[i] = 0;
 			return i;
 		}
 	}

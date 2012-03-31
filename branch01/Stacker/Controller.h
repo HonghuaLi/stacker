@@ -55,7 +55,7 @@ public:
 
 	// Shape state
 	ShapeState getShapeState();
-	void setShapeState( ShapeState &shapeState );
+    void setShapeState( const ShapeState &shapeState );
 
 	// Similarity between two shape state
 	double similarity(ShapeState state1, ShapeState state2);

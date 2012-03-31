@@ -31,7 +31,7 @@ public:
 
 	// Auxiliary
 	QMap<QString, double> property;
-	QMap<QString, QVector<double>> properties;
+    QMap<QString, QVector<double> > properties;
 	QMap<QString, int> property_int;
 	QMap<QString, bool> property_bool;
 };
