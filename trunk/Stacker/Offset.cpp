@@ -63,8 +63,8 @@ void Offset::computeEnvelope(int direction)
 			depth[y][x] = zU;
 
 			if (zU == 1.0)
-				// Why are the signs reversed???
-				envelope[y][x] = (direction == 1) ? BIG_NUMBER : -BIG_NUMBER;
+				// the background pixels are always at the farthest place from the camera
+				envelope[y][x] = (direction == 1) ? -BIG_NUMBER : BIG_NUMBER;
 			else
 				envelope[y][x] = zCamera - direction * ( zU * zFar + (1-zU) * zNear );
 		}
@@ -143,7 +143,7 @@ void Offset::computeOffset()
 		for (int x = 0; x < w; x++)
 		{
 			// Two envelopes are horizontally flipped
-			if (upperEnvelope[y][x]== BIG_NUMBER | lowerEnvelope[y][(w-1)-x] == -BIG_NUMBER)
+			if (upperEnvelope[y][x]== -BIG_NUMBER | lowerEnvelope[y][(w-1)-x] == BIG_NUMBER)
 				offset[y][x] = 0.0; 
 			else
 				offset[y][x] = upperEnvelope[y][x] - lowerEnvelope[y][(w-1)-x];
