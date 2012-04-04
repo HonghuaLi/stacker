@@ -63,7 +63,8 @@ void Offset::computeEnvelope(int direction)
 			depth[y][x] = zU;
 
 			if (zU == 1.0)
-				envelope[y][x] = (direction == 1) ? -BIG_NUMBER : BIG_NUMBER;
+				// Why are the signs reversed???
+				envelope[y][x] = (direction == 1) ? BIG_NUMBER : -BIG_NUMBER;
 			else
 				envelope[y][x] = zCamera - direction * ( zU * zFar + (1-zU) * zNear );
 		}
@@ -137,6 +138,7 @@ void Offset::computeOffset()
 	int w = upperEnvelope[0].size();
 
 	#pragma omp parallel for
+	//this will cause problem for previewer to update the stacked shapes in the very beginning
 	for (int y = 0; y < h; y++){
 		for (int x = 0; x < w; x++)
 		{
@@ -260,7 +262,7 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 	activeObject()->translation = Vec3d(bestShift[0], -bestShift[1], 0);
 
 	// Save offset as image
-	//saveAsImage(offset, O_max, "offset function.png");
+	saveAsImage(offset, O_max, "offset function.png");
 	activeObject()->data2D["offset"] = offset;
 
 	return activeObject()->stackability;

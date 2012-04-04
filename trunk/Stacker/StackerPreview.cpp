@@ -66,7 +66,7 @@ void StackerPreview::draw()
 
 	if (!activeScene || activeScene->isEmpty()) return;
 
-	// Update VBO is needed
+	// Update VBO if needed
 	updateVBOs();
 
 	double O_max = activeObject()->O_max;
