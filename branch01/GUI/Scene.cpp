@@ -129,31 +129,29 @@ void Scene::draw()
 
 		Vec3d stackDirection = Vec3d(0., 0., 1.);
 		Vec3d delta = O_max * stackDirection;
-		double theta = activeObject()->val["theta"];
-		double phi = activeObject()->val["phi"];
+		//double theta = activeObject()->val["theta"];
+		//double phi = activeObject()->val["phi"];
 
-		double tranX = activeObject()->val["tranX"];
-		double tranY = activeObject()->val["tranY"];
-		double tranZ = activeObject()->val["tranZ"];
-
-		Vec3d shift (tranX, tranY, tranZ);
+		//double tranX = activeObject()->val["tranX"];
+		//double tranY = activeObject()->val["tranY"];
+		//double tranZ = activeObject()->val["tranZ"];
+		//Vec3d shift (tranX, tranY, tranZ);
 
 		glPushMatrix();
+		glColor4dv(Color(0.45,0.72,0.43,0.8));
+
+		// The one on the top
 		glTranslated(delta[0],delta[1],delta[2]);
+		glEnable(GL_CULL_FACE);
+		activeObject()->simpleDraw(false);
+		glDisable(GL_CULL_FACE);
 
-		for(int i = 1; i < stackCount; i++)
-		{
-			glColor4dv(Color(0.45,0.72,0.43,0.8));
-
-			glEnable(GL_CULL_FACE);
-			activeObject()->simpleDraw(false);
-			glDisable(GL_CULL_FACE);
-
-			glTranslated(delta[0],delta[1],delta[2]);
-			glRotated(theta, 1, 0, 0);
-			glRotated(phi, 0, 0, 1);
-			glTranslated(shift[0], shift[1], shift[2]);
-		}
+		// The one on the bottom
+		delta *= -2;
+		glTranslated(delta[0],delta[1],delta[2]);
+		glEnable(GL_CULL_FACE);
+		activeObject()->simpleDraw(false);
+		glDisable(GL_CULL_FACE);
 
 		glPopMatrix();
 	}
@@ -447,6 +445,7 @@ void Scene::resizeSubScenes()
 		//offsetY += s->height;
 	}
 }
+
 void Scene::postSelection( const QPoint& point )
 {
 	// Regular behavior
