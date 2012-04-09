@@ -4,10 +4,9 @@
 
 MinOBB3::MinOBB3( std::vector<Vector3> &points )
 {
-	// Compute minOBB
-	isReady = false;
 	computeMinOBB(points);
 }
+
 
 MinOBB3::MinOBB3( QSurfaceMesh * mesh )
 {
@@ -34,7 +33,8 @@ MinOBB3::MinOBB3( QSurfaceMesh * mesh )
 
 	double enlarge_scale = 1.0/100;
 	double noise_scale = enlarge_scale / 2 * radius;
-	for (int i=0;i<(int)pnts.size();i++){
+	for (int i=0;i<(int)pnts.size();i++)
+	{
 		pnts[i] -= center;
 
 		// Enlarge the shape a bit
@@ -42,7 +42,6 @@ MinOBB3::MinOBB3( QSurfaceMesh * mesh )
 
 		// Add noise
 		pnts[i] += Vector3(uniform()-0.5,uniform()-0.5,uniform()-0.5) * noise_scale;
-
 		pnts[i] += center;
 	}
 
@@ -51,14 +50,15 @@ MinOBB3::MinOBB3( QSurfaceMesh * mesh )
 	//foreach(Vector3 p, pnts) mesh->debug_points2.push_back(p);
 
 	// Compute minOBB
-	isReady = false;
 	computeMinOBB(pnts);
 }
 
 
 void MinOBB3::computeMinOBB( std::vector<Vector3> &points )
 {
-    // Get the convex hull of the points.
+ 	isReady = false;
+
+   // Get the convex hull of the points.
     ConvexHull3 kHull(points);
  
     int hullQuantity = kHull.getNumSimplices();

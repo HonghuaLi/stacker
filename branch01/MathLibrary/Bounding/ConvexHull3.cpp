@@ -3,22 +3,10 @@
 #include "ConvexHull3.h"
 #include "Macros.h"
 
-int CH_PRECISION;
 
 ConvexHull3::ConvexHull3( std::vector<Vector3> pnts )
 {
-	mPnts = pnts;
-	isReady = false;
-	epsilon = Epsilon_LOW;
-
-	while(!computeCH())
-	{
-		CH_PRECISION++;
-		printf("INFO: ConvexHull precision changed to : %d \n", CH_PRECISION);
-
-		// rest
-		mPnts = pnts;
-	}
+	computeCH(pnts);
 }
 
 ConvexHull3::ConvexHull3( Surface_mesh * mesh )
@@ -27,19 +15,28 @@ ConvexHull3::ConvexHull3( Surface_mesh * mesh )
 	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
 
+	std::vector<Vector3> pnts;
 	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
-		mPnts.push_back(points[vit]);
-
-	std::vector<Vector3> copyPnts = mPnts;
-
-	isReady = false;
+		pnts.push_back(points[vit]);
 
 	// Compute CH
+	computeCH(pnts);
+}
+
+void ConvexHull3::computeCH( std::vector<Vector3> &pnts )
+{
+	// Parameters
+	isReady = false;
+	precision = 5;
+	epsilon = Epsilon_LOW;
+	
+	// Compute CH
+	mPnts = pnts; // Copy points
 	while(!computeCH())
 	{
-		CH_PRECISION++;
-		printf("INFO: ConvexHull precision changed to : %d \n", CH_PRECISION);
-		mPnts = copyPnts;
+		precision++;
+		printf("INFO: ConvexHull precision changed to : %d \n", precision);				
+		mPnts = pnts;// reset
 	}
 }
 
@@ -54,7 +51,7 @@ bool ConvexHull3::computeCH()
 	int i2 = mExtreme[2];
 	int i3 = mExtreme[3];
 
-	epsilon = (mPnts[i0]-mPnts[i1]).norm() / (Real)pow(10.0, CH_PRECISION);
+	epsilon = (mPnts[i0]-mPnts[i1]).norm() / (Real)pow(10.0, precision);
 
 
 	TriFace* tri0;
