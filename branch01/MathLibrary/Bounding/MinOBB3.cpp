@@ -9,7 +9,7 @@ MinOBB3::MinOBB3( std::vector<Vector3> &points )
 	computeMinOBB(points);
 }
 
-MinOBB3::MinOBB3( Surface_mesh * mesh )
+MinOBB3::MinOBB3( QSurfaceMesh * mesh )
 {
 	// Get points
 	std::vector<Vec3d> pnts;	
@@ -20,6 +20,35 @@ MinOBB3::MinOBB3( Surface_mesh * mesh )
 	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
 		pnts.push_back(points[vit]);
 
+
+	// Add noise to reduce precision problems in CH
+	// Get the AABB first
+	Vector3 bbmin = Vector3( DBL_MAX-1, DBL_MAX-1, DBL_MAX-1);
+	Vector3 bbmax = -bbmin;
+	for (int i=0;i<(int)pnts.size();i++)	{
+		bbmin.minimize(pnts[i]);
+		bbmax.maximize(pnts[i]);
+	}
+	double radius = (bbmax - bbmin).norm() * 0.5f;
+	Vector3 center = (bbmin + bbmax) * 0.5f;
+
+	double enlarge_scale = 1.0/100;
+	double noise_scale = enlarge_scale / 2 * radius;
+	for (int i=0;i<(int)pnts.size();i++){
+		pnts[i] -= center;
+
+		// Enlarge the shape a bit
+		pnts[i] *= (1 + enlarge_scale);
+
+		// Add noise
+		pnts[i] += Vector3(uniform()-0.5,uniform()-0.5,uniform()-0.5) * noise_scale;
+
+		pnts[i] += center;
+	}
+
+	// DEBUG noise:
+	//mesh->debug_points2.clear();
+	//foreach(Vector3 p, pnts) mesh->debug_points2.push_back(p);
 
 	// Compute minOBB
 	isReady = false;
@@ -32,7 +61,6 @@ void MinOBB3::computeMinOBB( std::vector<Vector3> &points )
     // Get the convex hull of the points.
     ConvexHull3 kHull(points);
  
-
     int hullQuantity = kHull.getNumSimplices();
     std::vector<int> hullIndices = kHull.getIndices();
     Real volume, minVolume = MAX_REAL;

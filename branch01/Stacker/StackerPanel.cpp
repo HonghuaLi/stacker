@@ -14,7 +14,7 @@
 #include "GCylinder.h"
 #include <QFileDialog>
 #include <QDesktopWidget>
-#include "GUI/global.h"
+#include "StackerGlobal.h"
 
 StackerPanel::StackerPanel()
 {
@@ -46,58 +46,43 @@ StackerPanel::StackerPanel()
 	
 	activeOffset = new Offset(hidden_viewer);
 
-	// Buttons
-	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
-	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
+	// Scene manager
+	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
+	connect(panel.stackCount, SIGNAL(valueChanged(int)), this, SLOT(setStackCount(int)) );
+	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
+
+	// Hotspot
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
-	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
-	connect(panel.saveSuggestionsButton, SIGNAL(clicked()), SLOT(onSaveSuggestionsButtonClicked()));
-	connect(panel.loadSuggestionsButton, SIGNAL(clicked()), SLOT(onLoadSuggestionsButtonClicked()));
+
+	// Primitives
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(panel.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
 
-	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-
-	// Parameters
-	connect(panel.chPrecision, SIGNAL(valueChanged (int)), this, SLOT(setConvexHullPrecision(int)));
-	CH_PRECISION = panel.chPrecision->value();
-	connect(panel.hotRange, SIGNAL(valueChanged (double)), this, SLOT(setHotRange(double)));
-	connect(panel.jointsThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
-	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
-	connect(panel.stackCount, SIGNAL(valueChanged(int)), this, SLOT(setStackCount(int)) );
-	connect(panel.solutionID, SIGNAL(valueChanged(int)), this, SLOT(setSolutionID(int)));
-	connect(panel.suggestionID, SIGNAL(valueChanged(int)), this, SLOT(setSuggestionID(int)));
-	connect(panel.targetS, SIGNAL(valueChanged(double)), this, SLOT(setTargetStackability(double)));
-	connect(panel.normalzieMesh, SIGNAL(clicked()), this, SLOT(onNomalizeMeshChecked()));
-	connect(panel.moveCenterToOrigin, SIGNAL(clicked()), this, SLOT(onMoveCenterToOriginChecked()));
-
-	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
-	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
-	
-	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
-
-	// Joints between primitives
+	// Joints
 	connect(panel.findJointsButton, SIGNAL(clicked()), SLOT(findJoints()));
 	connect(panel.findPairwiseJointsButton, SIGNAL(clicked()), SLOT(findPairwiseJoints()));
-
-	// Paper stuff
-	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
+	connect(panel.jointsThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
+	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
 
 	// Stacking direction
 	connect(panel.searchDirectionButton, SIGNAL(clicked()), SLOT(searchDirection()));
+
+	// Solution
+	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
+	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
+	connect(panel.targetS, SIGNAL(valueChanged(double)), this, SLOT(setTargetStackability(double)));
+	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
+	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
+	connect(panel.solutionID, SIGNAL(valueChanged(int)), this, SLOT(setSolutionID(int)));
+	connect(panel.suggestionID, SIGNAL(valueChanged(int)), this, SLOT(setSuggestionID(int)));
+	connect(panel.saveSuggestionsButton, SIGNAL(clicked()), SLOT(onSaveSuggestionsButtonClicked()));
+	connect(panel.loadSuggestionsButton, SIGNAL(clicked()), SLOT(onLoadSuggestionsButtonClicked()));
+		
+	// Paper stuff
+	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
+
 }
 
-void StackerPanel::onOffsetButtonClicked()
-{
-	if (!activeScene || activeScene->isEmpty())
-	{
-		emit(printMessage("There is no valid object."));
-		return;
-	}
-
-	// compute offset
-	activeOffset->computeOffsetOfShape();
-}
 
 
 void StackerPanel::onImproveButtonClicked()
@@ -180,22 +165,6 @@ void StackerPanel::showMessage( QString message )
 	emit(printMessage(message));
 }
 
-void StackerPanel::setConvexHullPrecision( int p )
-{
-	CH_PRECISION = p;
-
-	if (!activeScene || activeScene->isEmpty()){
-		emit(printMessage("There is no valid object."));
-		return;
-	}
-
-	activeObject()->ptr["controller"] = new Controller(activeObject(), panel.useAABB->isChecked());
-
-	activeScene->setSelectMode(CONTROLLER);
-
-	showMessage("Controller is built for " + activeObject()->objectName());
-}
-
 void StackerPanel::convertGC()
 {
 	if(!activeObject() || !activeObject()->ptr["controller"]) return;
@@ -265,11 +234,6 @@ void StackerPanel::setSuggestionID(int id)
 	activeOffset->showSuggestion(id);
 
 	emit(objectModified());
-}
-
-void StackerPanel::setHotRange( double range)
-{
-	HOT_RANGE = range;
 }
 
 void StackerPanel::outputForPaper()
@@ -343,14 +307,6 @@ void StackerPanel::outputForPaper()
 	// 3) Save stuck points / region
 	data["upperStuck"] = "upperStuck.dat";
 	data["lowerStuck"] = "lowerStuck.dat";
-
-	HOT_RANGE = 0.95;
-	activeOffset->detectHotspots();
-	while (activeOffset->upperHotSpots.empty()){
-		HOT_RANGE -= 0.05;
-		activeOffset->detectHotspots();
-	}
-
 	activeOffset->detectHotspots();
 	double sampleSize = 1.0; // % 5
 	activeOffset->saveHotSpots(exportDir + "/" + data["upperStuck"], 1, sampleSize);
@@ -556,14 +512,4 @@ void StackerPanel::setNumExpectedSolutions( int num )
 void StackerPanel::setTargetStackability( double s )
 {
 	TARGET_STACKABILITY = s;
-}
-
-void StackerPanel::onNomalizeMeshChecked( )
-{
-	NORMALIZE_MESH = panel.normalzieMesh->isChecked();
-}
-
-void StackerPanel::onMoveCenterToOriginChecked()
-{
-	MOVE_CENTER_TO_ORIGIN = panel.moveCenterToOrigin->isChecked();
 }

@@ -142,7 +142,7 @@ void Offset::computeOffset()
 		for (int x = 0; x < w; x++)
 		{
 			// Two envelopes are horizontally flipped
-			if (upperEnvelope[y][x]== BIG_NUMBER | lowerEnvelope[y][(w-1)-x] == -BIG_NUMBER)
+			if (upperEnvelope[y][x]== -BIG_NUMBER | lowerEnvelope[y][(w-1)-x] == BIG_NUMBER)
 				offset[y][x] = 0.0; 
 			else
 				offset[y][x] = upperEnvelope[y][x] - lowerEnvelope[y][(w-1)-x];
@@ -325,6 +325,8 @@ Offset::HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> 
 	// Draw Faces Unique
 	activeViewer->setMode(HV_FACEUNIQUE);
 	activeViewer->updateGL(); 
+	activeViewer->setMode(HV_FACEUNIQUE);
+	activeViewer->updateGL(); 
 
 	GLubyte* colormap = (GLubyte*)activeViewer->readBuffer(GL_RGBA, GL_UNSIGNED_BYTE);
 
@@ -420,7 +422,12 @@ void Offset::detectHotspots( )
 	computeOffsetOfShape();
 
 	// Detect hot regions
-	hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
+	hotRegions.clear();
+	double hot_cap = 1.0;
+	while (hotRegions.empty()){
+		hot_cap -= 0.05; // increase the cap
+		hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * hot_cap));
+	}
 	//visualizeRegions(hotRegions, "hot regions of shape.png");
 
 	// The max offset of hot regions
@@ -440,10 +447,10 @@ void Offset::detectHotspots( )
 	{
 		computeOffsetOfRegion(hotRegions[i]);
 
-		// Detect zoomed in hot region
+		// Detect zoomed (in) hot region 
 		std::vector< std::vector<Vec2i> > zoomedHRs
-			=  getRegions(offset, std::bind2nd(std::greater<double>(), O_max * HOT_RANGE));
-		if (zoomedHRs.size() == 0){
+			=  getRegions(offset, std::bind2nd(std::greater<double>(), O_max * hot_cap));
+		if (zoomedHRs.empty()){
 			std::cout << "There is no hot region in the zoomed-in view.\n";
 			continue;
 		}
@@ -459,13 +466,11 @@ void Offset::detectHotspots( )
 			int dx = c.x() - center.x();
 			int dy = c.y() - center.y();
 			int dis = dx * dx + dy * dy;
-			if (dis < minDis)
-			{
+			if (dis < minDis){
 				minDis = dis;
 				closestID = j;
 			}
 		}
-
 		std::vector<Vec2i> &zoomedHR = zoomedHRs[closestID];
 
 		// Detect hot spots from both directions
@@ -1301,20 +1306,7 @@ void Offset::improveStackability()
 	// Step 1: Detect hot spots
 	computeOffsetOfShape();
 	orgStackability = getStackability();
-
-	HOT_RANGE = 0.95;
 	detectHotspots();
-	while (upperHotSpots.empty())
-	{
-		HOT_RANGE -= 0.05;
-		detectHotspots();
-
-		if (HOT_RANGE < 0.8)
-		{
-			std::cout << "Hot spots detection failed.\n";
-			return;
-		}
-	}
 
 	//=========================================================================================
 	// Step 2: Apply heuristics on hot spots and propagate deformations

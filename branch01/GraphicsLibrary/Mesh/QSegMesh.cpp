@@ -343,7 +343,6 @@ void QSegMesh::computeBoundingBox()
 
 void QSegMesh::moveCenterToOrigin()
 {
-	if (!MOVE_CENTER_TO_ORIGIN) return;
 
 	for (int i = 0; i < (int)nbSegments();i++)
 	{
@@ -552,7 +551,6 @@ void QSegMesh::setVertexColor( uint vid, const Color& newColor )
 
 void QSegMesh::normalize()
 {
-	if (!NORMALIZE_MESH) return;
 
 	for (uint i = 0; i < nbSegments();i++)
 	{

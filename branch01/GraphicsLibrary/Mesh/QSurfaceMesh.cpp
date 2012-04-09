@@ -131,9 +131,9 @@ void QSurfaceMesh::drawDebug()
 	}
 
 	// Debug points
-	foreach(Point p, debug_points)	SimpleDraw::IdentifyPoint(p, 1,0,0);
-	foreach(Point p, debug_points2)	SimpleDraw::IdentifyPoint(p, 0,1,0);
-	foreach(Point p, debug_points3)	SimpleDraw::IdentifyPoint(p, 0,0,1);
+	SimpleDraw::IdentifyPoints(debug_points, Vec4d(1,0,0,1));
+	SimpleDraw::IdentifyPoints(debug_points2, Vec4d(0,1,0,1));
+	SimpleDraw::IdentifyPoints(debug_points3, Vec4d(0,0,1,1));
 
 	// Debug lines
 	foreach(std::vector<Point> line, debug_lines) SimpleDraw::IdentifyConnectedPoints(line, 1.0,0,0);

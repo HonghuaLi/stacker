@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "GraphicsLibrary/Mesh/SurfaceMesh/Vector.h"
+#include "GraphicsLibrary/Mesh/QSurfaceMesh.h"
 #include <vector>
 #include "ConvexHull3.h"
 #include "MinOBB2.h"
@@ -46,7 +46,7 @@ public:
 
 public:
     MinOBB3(std::vector<Vector3> &points);
-	MinOBB3(Surface_mesh * mesh);
+	MinOBB3(QSurfaceMesh * mesh);
 
 	void computeMinOBB( std::vector<Vector3> &points );
 	void GenerateComplementBasis (Vector3& u, Vector3& v, const Vector3& w);
@@ -69,6 +69,7 @@ private:
 
 public:
 	Box3 mMinBox;
+	Surface_mesh * mesh;
 	bool isReady;
 };
 

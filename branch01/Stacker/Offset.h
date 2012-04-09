@@ -7,7 +7,7 @@
 #include <QRect>
 #include <QQueue>
 #include <functional>
-#include "GUI/global.h"
+#include "StackerGlobal.h"
 
 #include "EditSuggestion.h"
 extern QVector<EditSuggestion> suggestions;
