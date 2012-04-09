@@ -42,6 +42,9 @@ public:
 	virtual void draw();
 	virtual void drawWithNames();
 	virtual void postDraw();
+	void drawObject();
+	void drawStacking();
+	void drawGroups();
 
 	// VBO
 	QMap<QString, VBO> vboCollection;

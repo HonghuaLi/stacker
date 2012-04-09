@@ -89,19 +89,32 @@ void Scene::setupLights()
 
 void Scene::draw()
 {
+	// Background color
+	this->setBackgroundColor(backColor);
+
+	// No object to draw
+	if (isEmpty()) return;
+
+	// Anti aliasing 
 	glEnable(GL_MULTISAMPLE);
 	glEnable (GL_LINE_SMOOTH);
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
-	// Background color
-	this->setBackgroundColor(backColor);
-
-	// DEBUG
-	if (!isEmpty())	activeObject()->drawDebug();
+	
+	// Start drawing
+	drawObject(); // Draw the object	
+	activeObject()->drawDebug(); // DEBUG	
+	if(isShowStacked) 
+		drawStacking(); // Draw stacking	
+	drawGroups(); // Draw groups
 	//if(defCtrl) defCtrl->draw();
+}
 
+
+void Scene::drawObject()
+{
 	// Update VBO if needed
 	updateVBOs();
 
@@ -111,78 +124,72 @@ void Scene::draw()
 		i->render();
 
 	// Fall back
-	if(!isEmpty() && vboCollection.isEmpty())
+	if(vboCollection.isEmpty())
+	{
+		//	std::cout << "Render mesh regularly, VBO is not supported." << std::endl;
 		activeObject()->simpleDraw();
+	}
+}
 
-	// point cloud
-	if(!isEmpty() && activeObject()->nbFaces() == 0)
-		SimpleDraw::IdentifyPoints(activeObject()->getSegment(0)->clonePoints(), Vec4d(1,1,1,1), 1.0f);
+void Scene::drawStacking()
+{
+	int stackCount = 3;
 
-	// == Stacker ==
-	// Draw stacking
-	if(!isEmpty() && isShowStacked)
-	{
-		int stackCount = 3;
+	double O_max = activeObject()->val["O_max"];
+	double S = activeObject()->val["stackability"];
 
-		double O_max = activeObject()->val["O_max"];
-		double S = activeObject()->val["stackability"];
+	Vec3d stackDirection = Vec3d(0., 0., 1.);
+	Vec3d delta = O_max * stackDirection;
+	//double theta = activeObject()->val["theta"];
+	//double phi = activeObject()->val["phi"];
 
-		Vec3d stackDirection = Vec3d(0., 0., 1.);
-		Vec3d delta = O_max * stackDirection;
-		//double theta = activeObject()->val["theta"];
-		//double phi = activeObject()->val["phi"];
+	//double tranX = activeObject()->val["tranX"];
+	//double tranY = activeObject()->val["tranY"];
+	//double tranZ = activeObject()->val["tranZ"];
+	//Vec3d shift (tranX, tranY, tranZ);
 
-		//double tranX = activeObject()->val["tranX"];
-		//double tranY = activeObject()->val["tranY"];
-		//double tranZ = activeObject()->val["tranZ"];
-		//Vec3d shift (tranX, tranY, tranZ);
+	glPushMatrix();
 
-		glPushMatrix();
-		glColor4dv(Color(0.45,0.72,0.43,0.8));
+	glColor4dv(Color(0.45,0.72,0.43,0.8));
 
-		// The one on the top
-		glTranslated(delta[0],delta[1],delta[2]);
-		glEnable(GL_CULL_FACE);
-		activeObject()->simpleDraw(false);
-		glDisable(GL_CULL_FACE);
+	// Top
+	glTranslated(delta[0],delta[1],delta[2]);
+	drawObject();
 
-		// The one on the bottom
-		delta *= -2;
-		glTranslated(delta[0],delta[1],delta[2]);
-		glEnable(GL_CULL_FACE);
-		activeObject()->simpleDraw(false);
-		glDisable(GL_CULL_FACE);
+	// Bottom
+	delta *= -2;
+	glTranslated(delta[0],delta[1],delta[2]);
+	drawObject();
 
-		glPopMatrix();
+	glPopMatrix();
+}
+
+void Scene::drawGroups()
+{
+	Controller * ctrl = ((Controller *)activeObject()->ptr["controller"]);
+	if (ctrl){
+		foreach(Group* g, ctrl->groups)
+			g->draw();
 	}
 
-	// Draw groups
-	if (!isEmpty())
-	{
-		Controller * ctrl = ((Controller *)activeObject()->ptr["controller"]);
-		if (ctrl){
-			foreach(Group* g, ctrl->groups)
-				g->draw();
-		}
+	// deformer
+	if(activeDeformer) activeDeformer->draw();
+	if(activeVoxelDeformer) activeVoxelDeformer->draw();
 
-		// deformer
-		if(activeDeformer) activeDeformer->draw();
-		if(activeVoxelDeformer) activeVoxelDeformer->draw();
+	// Draw the controllers if exist
+	if (ctrl) ctrl->draw();
 
-		// Draw the controllers if exist
-		if (ctrl) ctrl->draw();
+	// DEBUG
+	activeObject()->drawDebug();
 
-		// DEBUG
-		activeObject()->drawDebug();
+	// Suggestions
+	Vec p = camera()->position();
+	Vec3d pos(p.x, p.y, p.z);
+	double scaling = 0.05;//pos.norm() / 100.0;
+	pos.normalize();	
+	foreach(EditSuggestion sg, suggestions)
+		sg.draw(scaling);
 
-		// Suggestions
-		Vec p = camera()->position();
-		Vec3d pos(p.x, p.y, p.z);
-		double scaling = 0.05;//pos.norm() / 100.0;
-		pos.normalize();	
-		foreach(EditSuggestion sg, suggestions)
-			sg.draw(scaling);
-	}
 }
 
 void Scene::drawWithNames()
@@ -201,6 +208,22 @@ void Scene::drawWithNames()
 
 		((Controller *)activeObject()->ptr["controller"])->drawNames(isDrawParts);
 	}
+}
+
+void Scene::postDraw()
+{
+	// Textual log messages
+	for(int i = 0; i < osdMessages.size(); i++){
+		int margin = 20; //px
+		int x = margin;
+		int y = (i * QFont().pointSize() * 1.5f) + margin;
+
+		qglColor(Qt::white);
+		renderText(x, y, osdMessages.at(i));
+	}
+
+	QGLViewer::postDraw();
+	//SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 }
 
 void Scene::setActiveObject(QSegMesh* newMesh)
@@ -546,22 +569,6 @@ void Scene::setSelectMode(SelectMode toMode)
 void Scene::setModifyMode(ModifyMode toMode)
 {
 	modifyMode = toMode;
-}
-
-void Scene::postDraw()
-{
-	// Textual log messages
-	for(int i = 0; i < osdMessages.size(); i++){
-		int margin = 20; //px
-		int x = margin;
-		int y = (i * QFont().pointSize() * 1.5f) + margin;
-
-		qglColor(Qt::white);
-		renderText(x, y, osdMessages.at(i));
-	}
-
-	QGLViewer::postDraw();
-	//SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 }
 
 void Scene::setupSubViewport( int x, int y, int w, int h )
