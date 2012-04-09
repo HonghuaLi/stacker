@@ -320,6 +320,12 @@
     <ClInclude Include="Stacker\StackerGlobal.h">
       <Filter>Stacker</Filter>
     </ClInclude>
+    <ClInclude Include="Stacker\Numeric.h">
+      <Filter>Stacker</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\HotSpot.h">
+      <Filter>Stacker</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="GUI\QMeshDoc.h">
@@ -718,6 +724,12 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\StackerGlobal.cpp">
+      <Filter>Stacker</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Numeric.cpp">
+      <Filter>Stacker</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\HotSpot.cpp">
       <Filter>Stacker</Filter>
     </ClCompile>
   </ItemGroup>

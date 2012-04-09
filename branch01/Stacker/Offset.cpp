@@ -3,9 +3,8 @@
 #include "ColorMap.h"
 #include "SimpleDraw.h"
 #include <QFile>
-
 #include <numeric>
-#include <stack>
+
 
 #define ZERO_TOLERANCE 0.001
 #define BIG_NUMBER 10
@@ -13,24 +12,42 @@
 
 QVector<EditSuggestion> suggestions;
 
-// OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
-// OpenGL coordinates are mainly used in this class
-
-// Camera path
-// <-1, 1> + 2 = <1, 3> : The top and bottom setting for the entire shape
-// <-1, 1> + 3 = <2, 4> : The top and bottom setting for the zoomed in region
-
+// Constructor
 Offset::Offset( HiddenViewer *viewer )
 {
 	activeViewer = viewer;
 	isSuggesting = false;
 }
 
+// Shortener
 QSegMesh* Offset::activeObject()
 {
 	return activeViewer->activeObject();
 }
 
+void Offset::clear()
+{
+	lowerEnvelope.clear();
+	upperEnvelope.clear();
+	offset.clear();
+
+	lowerDepth.clear();
+	upperDepth.clear();
+
+	hotRegions.clear();
+	hotPoints.clear();
+	upperHotSpots.clear();
+	lowerHotSpots.clear();
+	hotSegments.clear();
+}
+
+//***********************  Envelopes and Offset ************************//
+// OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
+// OpenGL coordinates are mainly used in this class
+
+// Camera paths
+// <-1, 1> + 2 = <1, 3> : The top and bottom setting for the entire shape
+// <-1, 1> + 3 = <2, 4> : The top and bottom setting for the zoomed in region
 void Offset::computeEnvelope(int direction)
 {
 	// Switcher
@@ -316,8 +333,8 @@ double Offset::getStackability()
 }
 
 
-
-Offset::HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion)
+//*********************** Hot spots ********************************//
+HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion)
 {
 	// Restore the camera according to the direction
 	activeViewer->camera()->playPath( direction + 3 );
@@ -426,7 +443,7 @@ void Offset::detectHotspots( )
 	double hot_cap = 1.0;
 	while (hotRegions.empty()){
 		hot_cap -= 0.05; // increase the cap
-		hotRegions = getRegions(offset, std::bind2nd(std::greater<double>(), O_max * hot_cap));
+		hotRegions = getRegionsGreaterThan(offset, O_max * hot_cap);
 	}
 	//visualizeRegions(hotRegions, "hot regions of shape.png");
 
@@ -449,7 +466,7 @@ void Offset::detectHotspots( )
 
 		// Detect zoomed (in) hot region 
 		std::vector< std::vector<Vec2i> > zoomedHRs
-			=  getRegions(offset, std::bind2nd(std::greater<double>(), O_max * hot_cap));
+			=  getRegionsGreaterThan(offset, O_max * hot_cap);
 		if (zoomedHRs.empty()){
 			std::cout << "There is no hot region in the zoomed-in view.\n";
 			continue;
@@ -549,48 +566,6 @@ std::set<QString> Offset::getHotSegment()
 	return hs;
 }
 
-
-template< typename T >
-std::vector< std::vector < T > > Offset::createImage( int w, int h, T intial )
-{
-	return std::vector< std::vector < T > > ( h, std::vector<T>( w, intial ) );
-}
-
-void Offset::saveAsImage( Buffer2d& image, double maxV, QString fileName )
-{
-	int h = image.size();
-	int w = image[0].size();
-	QImage Output(w, h, QImage::Format_ARGB32);
-	
-	// \p y is flipped, since OpenGL has origin at the left bottom conner, while Qt at left top conner
-	for(int y = 0; y < h; y++){
-		for(int x = 0; x < w; x++)	{
-			Output.setPixel(x, (h-1)-y, jetColor( Max(0., image[y][x] / maxV), 0., 1.));			
-		}
-	}
-
-	Output.save(fileName);
-}
-
-void Offset::saveAsData( Buffer2d& image, double maxV, QString fileName )
-{
-	int h = image.size();
-	int w = image[0].size();
-
-	QFile file(fileName); 
-	file.open(QIODevice::WriteOnly | QIODevice::Text);
-
-	// \p y is flipped, since OpenGL has origin at the left bottom conner, while Qt at left top conner
-	for(int y = 0; y < h; y++){
-		for(int x = 0; x < w; x++)	{
-			file.write(qPrintable(QString::number(image[y][x]) + "\t"));
-		}
-		file.write("\n");
-	}
-
-	file.close();
-}
-
 void Offset::saveHotSpots( QString filename, int direction, double percent)
 {
 	std::vector< HotSpot > curHotSpot = upperHotSpots;
@@ -614,253 +589,9 @@ void Offset::saveHotSpots( QString filename, int direction, double percent)
 	file.close();
 }
 
-void Offset::saveAsImage( Buffer2d& image, QString fileName )
-{
-	int h = image.size();
-	int w = image[0].size();
-	QImage Output(w, h, QImage::Format_ARGB32);
-
-	QRgb red = QColor::fromRgb(255, 0, 0).rgba();
-	QRgb blue = QColor::fromRgb(0, 0, 255).rgba();
-
-	for(int y = 0; y < h; y++){
-		for(int x = 0; x < w; x++)	{
-			QRgb color = image[y][x] ? red : blue;
-			Output.setPixel(x, (h-1)-y, color);			
-		}
-	}
-
-	Output.save(fileName);
-}
 
 
-double Offset::getMaxValue( Buffer2d& image )
-{
-	int h = image.size();
-
-	std::vector< double > row_max;
-	for (int y = 0; y < h; y++)
-		row_max.push_back(MaxElement(image[y]));
-
-	return MaxElement(row_max);
-}
-
-double Offset::getMinValue( Buffer2d& image )
-{
-	int h = image.size();
-
-	std::vector< double > row_min;
-	for (int y = 0; y < h; y++)
-		row_min.push_back(MinElement(image[y]));
-
-	return MinElement(row_min);
-}
-
-double Offset::maxValueInRegion( Buffer2d& image,  std::vector< Vec2i >& region )
-{
-	double result = 0;
-	for (int i=0;i<region.size();i++)
-	{
-		int x = region[i].x();
-		int y = region[i].y();
-
-		if (image[y][x] > result)
-			result = image[y][x];
-	}
-
-	return result;
-}
-
-template< typename PREDICATE >
-std::vector< Vec2i > 
-	Offset::getRegion( Buffer2d& image, 
-			std::vector< std::vector < bool > >& mask, 	Vec2i seed, PREDICATE predicate )
-{
-	std::vector< Vec2i > region;
-
-	int w = image[0].size();
-	int h = image.size();		
-	
-	std::stack<Vec2i> activePnts;
-	activePnts.push(seed);
-	mask[seed.y()][seed.x()] = true;
-
-	while (!activePnts.empty())
-	{
-		// Add the top point to region
-		Vec2i currP = activePnts.top();
-		region.push_back(currP);
-		activePnts.pop();
-
-		// Push all the neighbors to the stack
-		int min_x = RANGED(0, currP.x()-1 ,w-1);
-		int max_x = RANGED(0, currP.x()+1, w-1);
-		int min_y = RANGED(0, currP.y()-1 ,h-1);
-		int max_y = RANGED(0, currP.y()+1, h-1);
-
-		for (int y = min_y; y <= max_y; y++)
-			for (int x = min_x; x <= max_x; x++)
-			{
-				if (!mask[y][x] && predicate(image[y][x]))
-				{
-					activePnts.push( Vec2i(x, y) );
-					mask[y][x] = true;
-				}
-			}
-	}
-
-	return region;
-}
-
-
-template< typename PREDICATE >
-std::vector< std::vector< Vec2i > >
-	Offset::getRegions( Buffer2d& image, PREDICATE predicate )
-{
-	std::vector< std::vector< Vec2i > > regions;
-
-	int w = image[0].size();
-	int h = image.size();
-
-	std::vector< std::vector< bool > > mask = createImage(w, h, false);
-
-	for(int y = 0; y < h; y++){
-		for(int x = 0; x < w; x++)	{
-			if (!mask[y][x] && predicate(image[y][x]))
-			{
-				//saveAsImage(mask, "mask1.png");
-				regions.push_back(getRegion(image, mask, Vec2i(x, y), predicate));
-				//saveAsImage(mask, "mask2.png");
-			}
-
-			mask[y][x] = true;
-		}
-	}
-
-	return regions;
-}
-
-void Offset::clear()
-{
-	lowerEnvelope.clear();
-	upperEnvelope.clear();
-	offset.clear();
-
-	lowerDepth.clear();
-	upperDepth.clear();
-
-	hotRegions.clear();
-	hotPoints.clear();
-	upperHotSpots.clear();
-	lowerHotSpots.clear();
-	hotSegments.clear();
-}
-
-std::vector< double > Offset::getValuesInRegion( Buffer2d& image, 
-												 std::vector< Vec2i >& region, bool xFlipped /*= false*/ )
-{
-	std::vector< double > values;
-
-	int w = image[0].size();
-	uint x, y;
-	for (int i = 0; i < region.size(); i++)
-	{
-		x = region[i].x();
-		y = region[i].y();
-		if(xFlipped) x = (w-1) - x;
-
-		values.push_back(image[y][x]);
-	}
-
-	return values;
-}
-
-void Offset::BBofRegion( std::vector< Vec2i >& region, Vec2i &bbmin, Vec2i &bbmax )
-{
-	uint minX, maxX, minY, maxY;
-	minX = maxX = region[0].x();
-	minY = maxY = region[0].y();
-	for (int i=1; i<region.size(); i++)
-	{
-		uint x = region[i].x();
-		uint y = region[i].y();
-
-		if (x < minX) minX = x;
-		if (x > maxX) maxX = x;
-		if (y < minY) minY = y;
-		if (y > maxY) maxY = y;
-	}
-
-	bbmin = Vec2i(minX, minY);
-	bbmax = Vec2i(maxX, maxY);
-}
-
-
-std::vector< Vec2i > Offset::deltaVectorsToKRing( int deltaX, int deltaY, int K )
-{
-	std::vector< Vec2i > Vecs;
-
-	int leftX = - deltaX * K;
-	int rightX = -leftX;
-	int topY = - deltaY * K;
-	int bottomY = -topY;
-
-	// top and bottom lines
-	for (int x = leftX; x <= rightX; x += deltaX)
-	{
-		Vecs.push_back( Vec2i(x, topY) );
-		Vecs.push_back( Vec2i(x, bottomY) );
-	}
-
-	// left and right lines
-	for (int y = topY + deltaY; y <= bottomY - deltaY; y+= deltaY)
-	{
-		Vecs.push_back( Vec2i(leftX, y) );
-		Vecs.push_back( Vec2i(rightX, y) );
-	}
-
-	return Vecs;
-}
-
-
-std::vector< Vec2i > Offset::shiftRegionInBB( std::vector< Vec2i >& region, Vec2i delta, Vec2i bbmin, Vec2i bbmax )
-{
-	std::vector< Vec2i > toRegion;
-
-	for (int i = 0; i < region.size(); i++)
-	{
-		Vec2i p = region[i] + delta;
-		if ( RANGE( p.x(), bbmin.x(), bbmax.x() ) && RANGE( p.y(), bbmin.y(), bbmax.y() ) )
-			toRegion.push_back( p );
-		else
-		{// Out of BB
-			toRegion.clear();
-			break;
-		}			
-	}
-
-	return toRegion;
-}
-
-Vec2i Offset::sizeofRegion( std::vector< Vec2i >& region )
-{
-	uint minX, maxX, minY, maxY;
-	minX = maxX = region[0].x();
-	minY = maxY = region[0].y();
-	for (int i=1; i<region.size(); i++)
-	{
-		uint x = region[i].x();
-		uint y = region[i].y();
-
-		if (x < minX) minX = x;
-		if (x > maxX) maxX = x;
-		if (y < minY) minY = y;
-		if (y > maxY) maxY = y;
-	}
-
-	return Vec2i( maxX - minX + 1, maxY - minY + 1 );
-}
-
+// (un)Projection
 Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int direction )
 {
 	// Restore the camera according to the direction
@@ -894,54 +625,8 @@ Vec2i Offset::projectedCoordinatesOf( Vec3d point, int pathID )
 	return Vec2i(p[0], (h-1)-p[1]);
 }
 
-void Offset::setRegionColor( Buffer2d& image, std::vector< Vec2i >& region, double color )
-{
-	uint w = image[0].size();
-	uint h = image.size();
 
-	for (int i = 0; i < region.size(); i++)
-	{
-		uint x = RANGED(0, region[i].x(), w-1);
-		uint y = RANGED(0, region[i].y(), h-1);
-
-		image[y][x] = color;
-	}
-}
-
-void Offset::setPixelColor( Buffer2d& image, Vec2i pos, double color )
-{
-	uint w = image[0].size();
-	uint h = image.size();
-
-	uint x = RANGED(0, pos.x(), w-1);
-	uint y = RANGED(0, pos.y(), h-1);
-
-	image[y][x] = color;
-}
-
-QRgb Offset::jetColor( double val, double min, double max )
-{
-	uchar rgb[3];	
-
-	ColorMap::jetColorMap(rgb, val, min, max);
-	
-	return QColor::fromRgb(rgb[0],rgb[1],rgb[2]).rgba();
-}
-
-void Offset::visualizeRegions( std::vector< std::vector<Vec2i> >& regions, QString filename )
-{
-	int w = activeViewer->width();
-	int h = activeViewer->height();
-	std::vector< std::vector< double > > debugImg = createImage(w, h, 0.0);
-	double step = 1.0 / regions.size();
-	for (int i=0;i<regions.size();i++)
-	{
-		setRegionColor(debugImg, regions[i], step * (i+1));
-	}
-	saveAsImage(debugImg, 1.0, filename);
-}
-
-
+//*************************** Improve stackability *************************//
 std::vector< Vec3d > Offset::getHorizontalMoves( HotSpot& HS )
 {
 	std::vector< Vec3d > Ts;
@@ -1252,7 +937,6 @@ void Offset::applyHeuristicsOnHotRing( HotSpot& HS )
 
 }
 
-
 void Offset::applyHeuristics()
 {
 	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
@@ -1369,47 +1053,6 @@ void Offset::improveStackabilityToTarget()
 	activeObject()->computeBoundingBox();
 }
 
-void Offset::showSuggestion( int i )
-{
-	if (suggestSolutions.empty())
-	{
-		std::cout << "There is no suggestion.\n";
-		return;
-	}
-
-	int id = i % suggestSolutions.size();
-
-	PQShapeShateLessEnergy suggestSolutionsCopy = suggestSolutions;
-	for (int i=0;i<id;i++)
-		suggestSolutionsCopy.pop();
-	
-	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
-
-	ctrl->setShapeState(suggestSolutionsCopy.top());
-}
-
-void Offset::showSolution( int i )
-{
-	if (solutions.empty())
-	{
-		std::cout << "There is no solution.\n";
-		return;
-	}
-
-	int id = i % solutions.size();
-	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
-
-	PQShapeShateLessDistortion solutionsCopy = solutions;
-	for (int i=0;i<id;i++)
-		solutionsCopy.pop();
-
-	ShapeState sln = solutionsCopy.top();
-	ctrl->setShapeState(sln);
-
-	std::cout << "Histrory length: " << sln.history.size() << std::endl; 
-	//std::cout << "Showing the " << id << "th solution out of " << solutions.size() <<".\n";
-}
-
 bool Offset::satisfyBBConstraint()
 {
 	bool result = true;
@@ -1476,22 +1119,31 @@ bool Offset::isUnique( ShapeState state, double threshold )
 	return true;
 }
 
-Vec2i Offset::centerOfRegion( std::vector< Vec2i >& region )
+void Offset::showSolution( int i )
 {
-	Vec2i center(0, 0);
-
-	if (!region.empty())
+	if (solutions.empty())
 	{
-		for (int i=0;i<region.size();i++)
-			center += region[i];
-
-		center /= region.size();
+		std::cout << "There is no solution.\n";
+		return;
 	}
 
-	return center;
+	int id = i % solutions.size();
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
+
+	PQShapeShateLessDistortion solutionsCopy = solutions;
+	for (int i=0;i<id;i++)
+		solutionsCopy.pop();
+
+	ShapeState sln = solutionsCopy.top();
+	ctrl->setShapeState(sln);
+
+	std::cout << "Histrory length: " << sln.history.size() << std::endl; 
+	//std::cout << "Showing the " << id << "th solution out of " << solutions.size() <<".\n";
 }
 
 
+
+// Suggestions
 QVector<EditSuggestion> Offset::getSuggestions()
 {
 	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
@@ -1604,4 +1256,23 @@ void Offset::normalizeSuggestions()
 			<< "\tdeltaV = " << suggestions[i].deltaV
 			<< "\tvalue = " << suggestions[i].value << std::endl;
 	}
+}
+
+void Offset::showSuggestion( int i )
+{
+	if (suggestSolutions.empty())
+	{
+		std::cout << "There is no suggestion.\n";
+		return;
+	}
+
+	int id = i % suggestSolutions.size();
+
+	PQShapeShateLessEnergy suggestSolutionsCopy = suggestSolutions;
+	for (int i=0;i<id;i++)
+		suggestSolutionsCopy.pop();
+
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
+
+	ctrl->setShapeState(suggestSolutionsCopy.top());
 }
