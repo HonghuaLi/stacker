@@ -20,7 +20,6 @@ public:
 	void assignVertexArray();
 	void assignFaceArray();
 
-	std::vector<uint> vertexIndicesAroundFace( uint f_id );	
 	Point getVertexPos( uint v_id );
 	Point getVertexPos( const Vertex v );
 	void setVertexPos( const Vertex v, Point newPos);
@@ -29,6 +28,7 @@ public:
 
 	std::set<uint> faceIndicesAroundVertex(const Vertex& v);
 	std::set<uint> vertexIndicesAroundVertex(const Vertex& v);
+	std::vector<uint> vertexIndicesAroundFace( uint f_id );	
 
 	void computeBoundingBox();
 	void moveCenterToOrigin();

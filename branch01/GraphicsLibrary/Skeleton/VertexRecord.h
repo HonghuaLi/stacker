@@ -24,8 +24,8 @@ public:
 
 	std::map<uint, double> boundaryLength;
 
-	uint vIndex;
-	uint minIndex;
+	int vIndex;
+	int minIndex;
 	double minError;
 	bool center;
 	double err;
