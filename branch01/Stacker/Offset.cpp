@@ -547,8 +547,10 @@ void Offset::showHotSpots()
 		QString sid = i->first;
 		QSurfaceMesh* segment = activeObject()->getSegment(sid);
 
-		segment->setColorVertices(Color(1, 0, 0, 1)); // red
+		// Hot segment in red
+		//segment->setColorVertices(Color(1, 0, 0, 1)); 
 
+		// Hot spots as red points
 		for (std::vector< Vec3d >::iterator pit = i->second.begin(); pit != i->second.end(); pit++)
 		{
 			segment->debug_points.push_back(*pit);

@@ -115,9 +115,10 @@ void StackerPanel::onHotspotsButtonClicked()
 		return;
 
 	activeOffset->detectHotspots();
-	activeOffset->showHotSpots();
-	//emit(objectModified());
 	showMessage("Hot spots are detected.");
+
+	activeOffset->showHotSpots();
+	if(VBO::isVBOSupported()) emit(objectModified()); 
 }
 
 void StackerPanel::setActiveScene( Scene * scene )

@@ -115,18 +115,14 @@ void Scene::draw()
 
 void Scene::drawObject()
 {
-	// Update VBO if needed
-	updateVBOs();
-
-	// Draw objects using VBO
-	QMap<QString, VBO>::iterator i;
-	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
-		i->render();
-
-	// Fall back
-	if(vboCollection.isEmpty())
-	{
-		//	std::cout << "Render mesh regularly, VBO is not supported." << std::endl;
+	if (VBO::isVBOSupported()){
+		updateVBOs();
+		QMap<QString, VBO>::iterator i;
+		for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
+			i->render();
+	} 
+	else{// Fall back
+		std::cout << "VBO is not supported." << std::endl;
 		activeObject()->simpleDraw();
 	}
 }
@@ -154,12 +150,12 @@ void Scene::drawStacking()
 
 	// Top
 	glTranslated(delta[0],delta[1],delta[2]);
-	drawObject();
+	activeObject()->simpleDraw(false);
 
 	// Bottom
 	delta *= -2;
 	glTranslated(delta[0],delta[1],delta[2]);
-	drawObject();
+	activeObject()->simpleDraw(false);
 
 	glPopMatrix();
 }
