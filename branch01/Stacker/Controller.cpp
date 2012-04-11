@@ -173,6 +173,7 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 
 		gc->createGC(spinePoints);
 		gc->buildCage();
+		gc->computeMeshCoordiantes();
 	}
 
 	delete oldPrimitive;

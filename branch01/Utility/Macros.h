@@ -154,6 +154,9 @@ void inline RotateFromTo(VECTYPE from, VECTYPE to, VECTYPE & point, VECTYPE pivo
 	point += pivot;
 }
 
+#define V2E(vec) (Eigen::Vector3d(vec[0], vec[1], vec[2]))
+#define E2V(vec) (Vec3d(vec[0], vec[1], vec[2]))
+
 // Array operations
 #include <algorithm>
 #define MaxElement(v) (*max_element(v.begin(), v.end()))

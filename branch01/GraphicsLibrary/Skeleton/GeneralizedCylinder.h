@@ -8,6 +8,7 @@ private:
 	QSurfaceMesh * src_mesh;
 
 public:
+	GeneralizedCylinder(){ src_mesh = NULL; }
 	GeneralizedCylinder( std::vector<Point> spinePoints, QSurfaceMesh * mesh, bool computeRadius = true );
 	QSurfaceMesh geometry;
 	RMF frames;

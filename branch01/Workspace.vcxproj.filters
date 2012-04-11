@@ -99,11 +99,14 @@
     <Filter Include="Math\Deformer\FFD">
       <UniqueIdentifier>{9e7c3977-9315-487b-ab21-a64ac6b5ac38}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Math\Coordiantes">
-      <UniqueIdentifier>{e61ffc4f-9246-4ef1-bba0-706e94addb14}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GraphicsLibrary\Skeleton">
       <UniqueIdentifier>{db51175a-cfaf-4bc6-9c4b-82f916e0a23c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Deformer\GreenCoordiantes">
+      <UniqueIdentifier>{e61ffc4f-9246-4ef1-bba0-706e94addb14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Deformer\SkeletonDeform">
+      <UniqueIdentifier>{0929f05a-ee7e-483d-86d4-30c3d6273d3b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -288,7 +291,7 @@
       <Filter>Math\Bounding</Filter>
     </ClInclude>
     <ClInclude Include="MathLibrary\Coordiantes\GCDeformation.h">
-      <Filter>Math\Coordiantes</Filter>
+      <Filter>Math\Deformer\GreenCoordiantes</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Skeleton\GeneralizedCylinder.h">
       <Filter>GraphicsLibrary\Skeleton</Filter>
@@ -325,6 +328,12 @@
     </ClInclude>
     <ClInclude Include="Stacker\HotSpot.h">
       <Filter>Stacker</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\Deformer\Skinning.h">
+      <Filter>Math\Deformer\SkeletonDeform</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\Deformer\DualQuat.h">
+      <Filter>Math\Deformer\SkeletonDeform</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -697,7 +706,7 @@
       <Filter>Math\Deformer\VoxelDeformer</Filter>
     </ClCompile>
     <ClCompile Include="MathLibrary\Coordiantes\GCDeformation.cpp">
-      <Filter>Math\Coordiantes</Filter>
+      <Filter>Math\Deformer\GreenCoordiantes</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\Skeleton\GeneralizedCylinder.cpp">
       <Filter>GraphicsLibrary\Skeleton</Filter>
@@ -731,6 +740,9 @@
     </ClCompile>
     <ClCompile Include="Stacker\HotSpot.cpp">
       <Filter>Stacker</Filter>
+    </ClCompile>
+    <ClCompile Include="MathLibrary\Deformer\Skinning.cpp">
+      <Filter>Math\Deformer\SkeletonDeform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

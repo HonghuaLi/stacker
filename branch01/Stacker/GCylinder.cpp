@@ -20,10 +20,13 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 		m_mesh->assignVertexArray();
 	}
 
+	deformer = SKINNING;
+
 	if(doFit)
 	{
 		fit();
 		buildCage();
+		computeMeshCoordiantes();
 
 		originalVolume = volume();
 	}
@@ -79,13 +82,19 @@ void GCylinder::createGC( std::vector<Point> spinePoints, bool computeRadius )
 
 void GCylinder::computeMeshCoordiantes()
 {
-	gcd = new GCDeformation(m_mesh, cage);
+	if(deformer == GREEN_COORDIANTES)
+		gcd = new GCDeformation(m_mesh, cage);
+
+	if(deformer == SKINNING)
+		skinner = new Skinning(m_mesh, gc);
 }
 
 void GCylinder::deformMesh()
 {
 	updateCage();
-	gcd->deform();
+
+	if(deformer == GREEN_COORDIANTES) gcd->deform();
+	if(deformer == SKINNING) skinner->deform();
 }
 
 void GCylinder::draw()
@@ -145,6 +154,7 @@ void GCylinder::draw()
 
 	//gc->draw();
 	//skel->draw(true);
+
 	if(cage) 
 	{
 		//cage->simpleDrawWireframe();
@@ -241,8 +251,6 @@ void GCylinder::buildCage()
 	cage->setColorVertices(0.8,0.8,1,0.3); // transparent cage
 	cage->update_face_normals();
 	cage->update_vertex_normals();
-
-	computeMeshCoordiantes();
 }
 
 void GCylinder::updateCage()

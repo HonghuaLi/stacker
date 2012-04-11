@@ -95,8 +95,6 @@ public:
 	// Rotation
 	Eigen::Matrix3d rotationMatrixAroundAxis(Vec3d u, double theta);
 	Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );
-	Eigen::Vector3d V2E(Vec3d &vec);
-	Vec3d E2V(Eigen::Vector3d &vec);
 
 	QString id;
 	PrimType primType;
