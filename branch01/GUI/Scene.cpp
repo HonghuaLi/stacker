@@ -10,6 +10,8 @@
 #include "Stacker/SymmetryGroup.h"
 #include "Stacker/ConcentricGroup.h"
 #include "Stacker/CoplanarGroup.h"
+#include "Stacker/StackabilityImprover.h"
+
 
 Scene::Scene( QWidget * parent, const QGLWidget * shareWidget, Qt::WFlags flags) : QGLViewer(parent, shareWidget, flags)
 {

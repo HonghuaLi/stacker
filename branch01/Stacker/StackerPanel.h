@@ -4,9 +4,12 @@
 #include "GUI/Scene.h"
 #include "StackerPreview.h"
 #include "HiddenViewer.h"
-#include "Offset.h"
 #include "Controller.h"
 #include "QDeformController.h"
+
+// Forward declaration
+class Offset;
+class StackabilityImprover;
 
 class StackerPanel : public QWidget
 {
@@ -25,7 +28,10 @@ public:
 	Scene * activeScene;
 	StackerPreview * stacker_preview;
 	HiddenViewer * hidden_viewer;
+
+	// Core components
 	Offset * activeOffset;
+	StackabilityImprover * improver;
 
 public slots:
 	// Scene management

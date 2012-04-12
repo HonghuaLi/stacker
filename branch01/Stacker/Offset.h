@@ -4,12 +4,10 @@
 #include "Controller.h"
 #include <QQueue>
 #include "StackerGlobal.h"
-#include "EditSuggestion.h"
 #include "HotSpot.h"
 #include "Numeric.h"
 
-
-extern QVector<EditSuggestion> suggestions;
+#define ZERO_TOLERANCE 0.001
 
 class HiddenViewer;
 
@@ -31,7 +29,7 @@ public:
 	void clear();
 	QSegMesh* activeObject();
 	
-	// Compute offset function and stackability (1 - O_max/objectH)
+	// Compute offset function and stackability
 	void computeEnvelope(int direction);
 	void computeEnvelopeOfShape(int direction);
 	void computeEnvelopeOfShape(int direction, Vec3d pos, Vec3d upVector = Vec3d(0,1,0), Vec3d horizontalShift = Vec3d(0,0,0));
@@ -48,29 +46,14 @@ public:
 	void showHotSpots();
 	void saveHotSpots( QString filename, int direction = 1, double percent = 1.0 );
 
-	// Improve stackability
-	void improveStackabilityToTarget();
-	void improveStackability();
-	void applyHeuristics();
-	void applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS );
-	void applyHeuristicsOnHotRing( HotSpot& HS );
-	std::vector< Vec3d > getHorizontalMoves( HotSpot& HS );
-	std::vector< Vec3d > getLocalMoves( HotSpot& HS );
-	bool satisfyBBConstraint();
-	bool isUnique( ShapeState state, double threshold );
 
-	// Suggestions
-	QVector<EditSuggestion> getSuggestions();
-	void normalizeSuggestions();
 
 	// Utilities 
 	Vec3d unprojectedCoordinatesOf( uint x, uint y, int direction);
 	Vec2i projectedCoordinatesOf( Vec3d point, int pathID );
 
 	
-	// Show results
-	void showSolution( int i );
-	void showSuggestion( int i );
+
 	
 
 public:
@@ -95,17 +78,4 @@ public:
 	std::vector< HotSpot >  upperHotSpots;
 	std::vector< HotSpot >  lowerHotSpots;
 	std::set< QString> hotSegments;
-
-	// Suggestion
-	bool isSuggesting;
-	QVector<EditSuggestion> suggestions;
-	PQShapeShateLessEnergy suggestSolutions;
-
-	// Beat Searching
-	double orgStackability;
-	Vec3d org_bbmin, org_bbmax;
-	ShapeState currentCandidate;
-	QVector< ShapeState > usedCandidateSolutions;
-	PQShapeShateLessEnergy candidateSolutions;
-	PQShapeShateLessDistortion solutions;
 };

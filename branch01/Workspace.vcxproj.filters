@@ -335,6 +335,9 @@
     <ClInclude Include="MathLibrary\Deformer\DualQuat.h">
       <Filter>Math\Deformer\SkeletonDeform</Filter>
     </ClInclude>
+    <ClInclude Include="Stacker\StackabilityImprover.h">
+      <Filter>Stacker</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="GUI\QMeshDoc.h">
@@ -743,6 +746,9 @@
     </ClCompile>
     <ClCompile Include="MathLibrary\Deformer\Skinning.cpp">
       <Filter>Math\Deformer\SkeletonDeform</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackabilityImprover.cpp">
+      <Filter>Stacker</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

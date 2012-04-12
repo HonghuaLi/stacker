@@ -300,6 +300,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -Dqh_QHpointer -DQT_DLL  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I.\GraphicsLibrary\Mesh\SurfaceMesh" "-I.\Utility" "-I.\Stacker" "-I.\GraphicsLibrary\Skeleton" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UMFPACK" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\AMD" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UFconfig" "-I$(NOINHERIT)\." "-I." "-I." "-I." "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
+    <ClInclude Include="Stacker\StackabilityImprover.h" />
     <ClInclude Include="Stacker\StackerGlobal.h" />
     <ClInclude Include="Stacker\SymmetryGroup.h" />
     <ClInclude Include="Utility\ColorMap.h" />
@@ -547,6 +548,7 @@
     <ClCompile Include="Stacker\Primitive.cpp" />
     <ClCompile Include="Stacker\QDeformController.cpp" />
     <ClCompile Include="Stacker\ShapeState.cpp" />
+    <ClCompile Include="Stacker\StackabilityImprover.cpp" />
     <ClCompile Include="Stacker\StackerGlobal.cpp" />
     <ClCompile Include="Stacker\StackerPanel.cpp" />
     <ClCompile Include="Stacker\StackerPreview.cpp" />

@@ -16,6 +16,8 @@
 #include <QDesktopWidget>
 #include "StackerGlobal.h"
 #include "Numeric.h"
+#include "StackabilityImprover.h"
+
 
 StackerPanel::StackerPanel()
 {
@@ -34,18 +36,19 @@ StackerPanel::StackerPanel()
 	layout->addWidget(previewDock, row++, 0,1,6);
 	stacker_preview->setMinimumHeight(350);
 
-	// Offset function calculator
+	// Add a stacking hidden viewer widget for offset calculator
 	hidden_viewer = new HiddenViewer();
 	QDockWidget * hiddenDock = new QDockWidget("Hidden");
 	hiddenDock->setWidget (hidden_viewer);
 	layout->addWidget(hiddenDock, row++, 0,1,3);
 	hiddenDock->setFloating(true);
 	hiddenDock->setWindowOpacity(1.0);
-
 	int x = qApp->desktop()->availableGeometry().width();
-	hiddenDock->move(QPoint(x - hiddenDock->width(),0));
+	hiddenDock->move(QPoint(x - hiddenDock->width(),0)); //Move the hidden dock to the top right conner
 	
+	// Offset function calculator
 	activeOffset = new Offset(hidden_viewer);
+	improver = new StackabilityImprover(activeOffset);
 
 	// Scene manager
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
@@ -100,9 +103,9 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-	activeOffset->improveStackabilityToTarget();
+	improver->improveStackabilityToTarget();
 
-	int total = activeOffset->solutions.size();
+	int total = improver->solutions.size();
 	panel.numSolution->setText(QString("/ %1").arg(total));
 	panel.suggestionID->setValue(0);
 
@@ -216,24 +219,24 @@ void StackerPanel::findPairwiseJoints()
 
 void StackerPanel::setSolutionID(int id)
 {
-	int total = activeOffset->solutions.size();
+	int total = improver->solutions.size();
 	panel.numSolution->setText(QString("/ %1").arg(total));
 
 	id = (0==total)? 0 : (id % total);
 	panel.solutionID->setValue(id);
-	activeOffset->showSolution(id);
+	improver->showSolution(id);
 
 	emit(objectModified());
 }
 
 void StackerPanel::setSuggestionID(int id)
 {
-	int total = activeOffset->suggestSolutions.size();
+	int total = improver->suggestSolutions.size();
 	panel.numSuggestion->setText(QString("/ %1").arg(total));
 
 	id = (0==total)? 0 : (id % total);
 	panel.suggestionID->setValue(id);
-	activeOffset->showSuggestion(id);
+	improver->showSuggestion(id);
 
 	emit(objectModified());
 }
@@ -455,9 +458,9 @@ void StackerPanel::setStackCount( int num )
 void StackerPanel::onSuggestButtonClicked()
 {
 	suggestions.clear();
-	suggestions = activeOffset->getSuggestions();
+	suggestions = improver->getSuggestions();
 	
-	int total = activeOffset->suggestSolutions.size();
+	int total = improver->suggestSolutions.size();
 	panel.numSuggestion->setText(QString("/ %1").arg(total));
 	panel.suggestionID->setValue(0);
 	emit(objectModified());
