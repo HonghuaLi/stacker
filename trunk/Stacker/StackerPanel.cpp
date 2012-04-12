@@ -152,12 +152,17 @@ void StackerPanel::updateActiveObject()
 	// Create a controller if non-exists
 	if (activeScene && activeObject() && !activeObject()->ptr["controller"])
 	{
-		activeObject()->ptr["controller"] = new Controller(activeObject(), panel.useAABB->isChecked());
-		activeScene->setSelectMode(CONTROLLER);
-		showMessage("Controller is built for " + activeObject()->objectName());
+		updateController();
 	}
 
 	//std::cout << "objectH = " << activeOffset->objectH << std::endl;
+}
+
+void StackerPanel::updateController()
+{
+	activeObject()->ptr["controller"] = new Controller(activeObject(), panel.useAABB->isChecked());
+	activeScene->setSelectMode(CONTROLLER);
+	showMessage("Controller is built for " + activeObject()->objectName());
 }
 
 QSegMesh* StackerPanel::activeObject()
@@ -184,6 +189,8 @@ void StackerPanel::convertGC()
 		if(prim->isSelected)
 			ctrl->convertToGC(prim->id, !panel.basicFitGC->isChecked(), panel.convertGcAxis->value());
 	}
+
+	emit(objectModified());
 }
 
 void StackerPanel::convertCuboid()
@@ -194,9 +201,9 @@ void StackerPanel::convertCuboid()
 
 	foreach(Primitive * prim, ctrl->getPrimitives())
 		if(prim->isSelected) ctrl->convertToCuboid(prim->id, panel.useAABB->isChecked(), panel.cuboidMethod->currentIndex());
+
+	emit(objectModified());
 }
-
-
 
 void StackerPanel::findJoints()
 {
@@ -389,7 +396,7 @@ void StackerPanel::searchDirection()
 			case 2: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(1,0,0)); break;
 			}
 
-			activeObject()->getSegment(0)->debug_points.push_back(samples[i]);
+			//activeObject()->getSegment(0)->debug_points.push_back(samples[i]);
 		}
 	}
 	
@@ -443,6 +450,12 @@ void StackerPanel::searchDirection()
 	printf("Time (%d ms).", timing.elapsed());
 
 	activeObject()->rotateUp(samples[bestIndex]);
+
+	// Recompute normals and bounding box
+	activeObject()->build_up();
+
+	// Update controller
+	updateController();
 
 	emit(objectModified());
 }

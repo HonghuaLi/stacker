@@ -79,6 +79,8 @@ void Workspace::addNewScene()
 	// Object transformation
 	connect(newScene, SIGNAL(gotFocus(Scene*)), tp, SLOT(setActiveScene(Scene*)));
 	connect(tp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
+	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
+	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateController()));
 
 	// Object info panel
 	connect(newScene, SIGNAL(gotFocus(Scene*)), mi, SLOT(setActiveScene(Scene*)));
@@ -89,6 +91,9 @@ void Workspace::addNewScene()
 	connect(newScene, SIGNAL(sceneClosed(Scene*)), sp, SLOT(setActiveScene(Scene*)));
 	connect(sp, SIGNAL(printMessage(QString)), newScene, SLOT(print(QString)));
 	connect(sp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
+
+	// Controllers panel
+	connect(newScene, SIGNAL(gotFocus(Scene*)), cp, SLOT(setActiveScene(Scene*)));
 
 	// Deformation
 	connect(newScene, SIGNAL(gotFocus(Scene*)), dp, SLOT(setActiveScene(Scene*)));

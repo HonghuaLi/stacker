@@ -154,6 +154,12 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 {
 	Primitive * oldPrimitive = primitives[primitiveId];
 
+	if(oldPrimitive->primType != CUBOID)
+	{
+		convertToCuboid(primitiveId);
+		oldPrimitive = primitives[primitiveId];
+	}
+
 	// Convert to generalized cylinder
 	primitives[primitiveId] = new GCylinder(primitives[primitiveId]->getMesh(), primitiveId, isUsingSkeleton);
 	

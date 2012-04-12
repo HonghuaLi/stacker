@@ -37,6 +37,7 @@ public slots:
 	// Scene management
 	void setActiveScene( Scene * );
 	void updateActiveObject();
+	void updateController();
 
 	// Buttons
 	void onHotspotsButtonClicked();
@@ -70,4 +71,5 @@ public slots:
 signals:
 	void printMessage( QString );
 	void objectModified();
+
 };

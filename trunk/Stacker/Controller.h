@@ -28,7 +28,7 @@ public:
 	void fitPrimitives();
 	void fitOBBs(bool useAABB = true);	
 	void convertToGC( QString primitiveId, bool isUsingSkeleton = true, int cuboidAxis = 0 );
-	void convertToCuboid( QString primitiveId, bool useAABB, int fit_method);
+	void convertToCuboid( QString primitiveId, bool useAABB = true, int fit_method = 0);
 
 	// Joints
 	void findJoints();
