@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Group.h"
-#include "Plane.h"
+#include "GraphicsLibrary/Basic/Plane.h"
 
 class CoplanarGroup : public Group{
 

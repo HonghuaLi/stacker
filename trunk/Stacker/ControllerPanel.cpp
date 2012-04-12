@@ -1,5 +1,6 @@
-#include "global.h"
+#include "GUI/global.h"
 
+#include "Controller.h"
 #include "ControllerPanel.h"
 #include <fstream>
 #include <QFileDialog>
@@ -41,7 +42,7 @@ void ControllerPanel::load()
 {
 	if(!activeScene || !activeScene->activeObject())	return;
 
-	activeScene->activeObject()->controller = new Controller(activeScene->activeObject());
+	activeScene->activeObject()->ptr["controller"] = new Controller(activeScene->activeObject());
 
 	this->clear();
 
@@ -70,15 +71,16 @@ void ControllerPanel::clear()
 	if(!controller())	return;
 
 	//delete controller();
-	activeScene->activeObject()->controller->clearPrimitives();
+	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
+	ctrl->clearPrimitives();
 }
 
 Controller * ControllerPanel::controller()
 {
-	if(!activeScene || !activeScene->activeObject() || !activeScene->activeObject()->controller)
+	if(!activeScene || !activeScene->activeObject() || (Controller *)activeScene->activeObject()->ptr["controller"])
 		return NULL;
 
-	return activeScene->activeObject()->controller;
+	return (Controller *)activeScene->activeObject()->ptr["controller"];
 }
 
 void ControllerPanel::togglePrimDisplay(int state)

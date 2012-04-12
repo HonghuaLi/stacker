@@ -4,7 +4,7 @@
 #include <QSet>
 #include <QVector>
 #include <QString>
-#include "QSurfaceMesh.h"
+#include "GraphicsLibrary/Mesh/QSurfaceMesh.h"
 #include "Primitive.h"
 
 class Controller;

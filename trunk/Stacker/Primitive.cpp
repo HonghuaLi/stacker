@@ -154,13 +154,3 @@ Vec3d Primitive::rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p )
 	Eigen::Vector3d rp = R * V2E(p);
 	return E2V(rp);
 }
-
-Eigen::Vector3d Primitive::V2E( Vec3d &vec )
-{
-	return Eigen::Vector3d(vec[0], vec[1], vec[2]);
-}
-
-Vec3d Primitive::E2V( Eigen::Vector3d &vec )
-{
-	return Vec3d(vec[0], vec[1], vec[2]);
-}

@@ -1,36 +1,24 @@
+#include "global.h"
 #include <QFileInfo>
 #include "Workspace.h"
 #include "Scene.h"
-#include "SimpleDraw.h"
-#include "Controller.h"
-
-// Debugging codes
-#include "SkeletonExtract.h"
-SkeletonExtract * skelExt;
-Skeleton * skel;
-
-#include "GeneralizedCylinder.h"
-GeneralizedCylinder * gc;
-
-#include "QDeformController.h"
-QDeformController * defCtrl;
-
-#include "SymmetryGroup.h"
-#include "ConcentricGroup.h"
-#include "CoplanarGroup.h"
-
 #include "SubScene.h"
+#include "Utility/SimpleDraw.h"
+
+// Stacker stuff
+#include "QDeformController.h"
+#include "Stacker/SymmetryGroup.h"
+#include "Stacker/ConcentricGroup.h"
+#include "Stacker/CoplanarGroup.h"
+#include "Stacker/StackabilityImprover.h"
 
 
-Scene::Scene( QWidget *parent)
+Scene::Scene( QWidget * parent, const QGLWidget * shareWidget, Qt::WFlags flags) : QGLViewer(parent, shareWidget, flags)
 {
 	activeMesh = NULL;
 
 	activeFrame = new ManipulatedFrame();
 	setManipulatedFrame(activeFrame);
-
-	activeDeformer = NULL;
-	activeVoxelDeformer = NULL;
 
 	// GLViewer options
 	setGridIsDrawn();
@@ -45,30 +33,30 @@ Scene::Scene( QWidget *parent)
 	// Mouse selection window
 	this->setSelectRegionHeight(10);
 	this->setSelectRegionWidth(10);
-	displayMessage(tr("New scene created."));
 
+	// Take focus
+	this->setFocus();
+	emit(gotFocus(this));
+
+	// Stacker stuff
+	sp = NULL;
+	activeDeformer = NULL;
+	activeVoxelDeformer = NULL;
 	isShowStacked = false;
 	isDrawOffset = false;
 
-	sp = NULL;
-
-	// Testing
-	skel = NULL;
-	skelExt = NULL;
-	gc = NULL;
-	defCtrl = NULL;
+	displayMessage(tr("New scene created."));
 }
 
 void Scene::init()
 {
 	// Options
 	this->viewMode = VIEW;
-	this->selectMode = NONE;
+	this->selectMode = SELECT_NONE;
 	this->modifyMode = DEFAULT;
 
 	// Background
-//	setBackgroundColor(backColor = QColor(226,226,226));
-	setBackgroundColor(backColor = QColor(255,255,255)); // white
+	setBackgroundColor(backColor = QColor(50,50,60));
 
 	// Lights
 	setupLights();
@@ -103,88 +91,94 @@ void Scene::setupLights()
 
 void Scene::draw()
 {
+	// Background color
+	this->setBackgroundColor(backColor);
+
+	// No object to draw
+	if (isEmpty()) return;
+
+	// Anti aliasing 
 	glEnable(GL_MULTISAMPLE);
 	glEnable (GL_LINE_SMOOTH);
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
-	// Background color
-	this->setBackgroundColor(backColor);
+	
+	// Start drawing
+	drawObject(); // Draw the object	
+	activeObject()->drawDebug(); // DEBUG	
+	if(isShowStacked) 
+		drawStacking(); // Draw stacking	
+	drawGroups(); // Draw groups
+	//if(defCtrl) defCtrl->draw();
+}
 
-	// Update VBO if needed
-	updateVBOs();
 
-	// Draw objects using VBO
-	QMap<QString, VBO>::iterator i;
-	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
-		i->render();
-
-	// Fall back
-	if(!isEmpty() && vboCollection.isEmpty())
+void Scene::drawObject()
+{
+	if (VBO::isVBOSupported()){
+		updateVBOs();
+		QMap<QString, VBO>::iterator i;
+		for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
+			i->render();
+	} 
+	else{// Fall back
+		std::cout << "VBO is not supported." << std::endl;
 		activeObject()->simpleDraw();
-
-	// Draw stacking
-	if(!isEmpty() && isShowStacked)
-	{
-		int stackCount = 3;
-
-		double O_max = activeObject()->O_max;
-		double S = activeObject()->stackability;
-
-		Vec3d stackDirection = Vec3d(0., 0., 1.);
-		Vec3d delta = O_max * stackDirection;
-		double theta = activeObject()->theta;
-		double phi = activeObject()->phi;
-		
-		Vec3d shift = activeObject()->translation;
-
-		glPushMatrix();
-		glTranslated(delta[0],delta[1],delta[2]);
-
-		for(int i = 1; i < stackCount; i++)
-		{
-			glColor4dv(Color(0.45,0.72,0.43,0.8));
-			
-			glEnable(GL_CULL_FACE);
-			activeObject()->simpleDraw(false);
-			glDisable(GL_CULL_FACE);
-
-			glTranslated(delta[0],delta[1],delta[2]);
-			glRotated(theta, 1, 0, 0);
-			glRotated(phi, 0, 0, 1);
-			glTranslated(shift[0], shift[1], shift[2]);
-		}
-
-		glPopMatrix();
 	}
+}
 
-	// Draw groups
-	if (!isEmpty() && activeObject()->controller)
-	{
-		Controller * ctrl = activeObject()->controller;
+void Scene::drawStacking()
+{
+	int stackCount = 3;
 
+	double O_max = activeObject()->val["O_max"];
+	double S = activeObject()->val["stackability"];
+
+	Vec3d stackDirection = Vec3d(0., 0., 1.);
+	Vec3d delta = O_max * stackDirection;
+	//double theta = activeObject()->val["theta"];
+	//double phi = activeObject()->val["phi"];
+
+	//double tranX = activeObject()->val["tranX"];
+	//double tranY = activeObject()->val["tranY"];
+	//double tranZ = activeObject()->val["tranZ"];
+	//Vec3d shift (tranX, tranY, tranZ);
+
+	glPushMatrix();
+
+	glColor4dv(Color(0.45,0.72,0.43,0.8));
+
+	// Top
+	glTranslated(delta[0],delta[1],delta[2]);
+	activeObject()->simpleDraw(false);
+
+	// Bottom
+	delta *= -2;
+	glTranslated(delta[0],delta[1],delta[2]);
+	activeObject()->simpleDraw(false);
+
+	glPopMatrix();
+}
+
+void Scene::drawGroups()
+{
+	Controller * ctrl = ((Controller *)activeObject()->ptr["controller"]);
+	if (ctrl){
 		foreach(Group* g, ctrl->groups)
-		{
 			g->draw();
-		}
 	}
 
 	// deformer
 	if(activeDeformer) activeDeformer->draw();
 	if(activeVoxelDeformer) activeVoxelDeformer->draw();
 
-	// Wires
-	foreach(Wire w, activeWires)
-		w.draw();
-
 	// Draw the controllers if exist
-	if (!isEmpty() && activeObject()->controller)
-		activeObject()->controller->draw();
+	if (ctrl) ctrl->draw();
 
 	// DEBUG
-	if (!isEmpty())	activeObject()->drawDebug();
-	//if(defCtrl) defCtrl->draw();
+	activeObject()->drawDebug();
 
 	// Suggestions
 	Vec p = camera()->position();
@@ -193,6 +187,7 @@ void Scene::draw()
 	pos.normalize();	
 	foreach(EditSuggestion sg, suggestions)
 		sg.draw(scaling);
+
 }
 
 void Scene::drawWithNames()
@@ -201,36 +196,55 @@ void Scene::drawWithNames()
 	if(activeVoxelDeformer) activeVoxelDeformer->drawNames();
 
 	// Draw the controllers if exist
-	if (!isEmpty() && activeObject()->controller && 
-		(selectMode == CONTROLLER || selectMode ==CONTROLLER_ELEMENT)){
+	if (!isEmpty() && activeObject()->ptr["controller"] && 
+		(selectMode == CONTROLLER || selectMode ==CONTROLLER_ELEMENT))
+	{
 		bool isDrawParts = false;
 
 		if(this->selectMode == CONTROLLER_ELEMENT)
 			isDrawParts = true;
 
-		activeObject()->controller->drawNames(isDrawParts);
+		((Controller *)activeObject()->ptr["controller"])->drawNames(isDrawParts);
 	}
+}
+
+void Scene::postDraw()
+{
+	// Textual log messages
+	for(int i = 0; i < osdMessages.size(); i++){
+		int margin = 20; //px
+		int x = margin;
+		int y = (i * QFont().pointSize() * 1.5f) + margin;
+
+		qglColor(Qt::white);
+		renderText(x, y, osdMessages.at(i));
+	}
+
+	QGLViewer::postDraw();
+	//SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 }
 
 void Scene::setActiveObject(QSegMesh* newMesh)
 {
-	if (!this->hasFocus()) return;
-
+	//if (!this->hasFocus()) return;
 	activeMesh = newMesh;
+
+	activeMesh->ptr["controller"] = NULL;
 
 	// Change title of scene
 	setWindowTitle(activeMesh->objectName());
 
 	// Set camera
+	resetView();
+
+	emit(gotFocus(this));
+	emit(objectInserted());
+}
+
+void Scene::resetView()
+{
 	camera()->setSceneRadius(activeMesh->radius);
 	camera()->showEntireScene();
-
-	setGridIsDrawn(false);
-
-	// Clear
-	suggestions.clear();
-
-	emit(objectInserted());
 }
 
 void Scene::updateVBOs()
@@ -240,7 +254,7 @@ void Scene::updateVBOs()
 	if(mesh && mesh->isReady)
 	{
 		// Create VBO for each segment if needed
-		for (int i=0;i<mesh->nbSegments();i++)
+		for (int i=0;i<(int)mesh->nbSegments();i++)
 		{			
 			QSurfaceMesh* seg = mesh->getSegment(i);
 			QString objId = seg->objectName();
@@ -288,7 +302,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 					break;
 				}*/
 
-				Controller * ctrl = activeObject()->controller;
+				Controller * ctrl = (Controller *)activeObject()->ptr["controller"];
 
 				QAction* symmGrp = menu.addAction("Create Symmetry group..");
 				QAction* concentricGrp = menu.addAction("Create Concentric group..");
@@ -492,20 +506,22 @@ void Scene::postSelection( const QPoint& point )
 		activeVoxelDeformer->select(selected);
 	}
 
+	Controller * ctrl = ((Controller *)activeObject()->ptr["controller"]);
+
 	// Selection mode cases
 	switch (selectMode)
 	{
 	case CONTROLLER:
-		if (!isEmpty() && activeObject()->controller)
-			activeObject()->controller->select(selected);
+		if (!isEmpty() && ctrl)
+			ctrl->select(selected);
 		break;
 
 	case CONTROLLER_ELEMENT:
-		if (!isEmpty() && activeObject()->controller)
+		if (!isEmpty() && ctrl)
 		{
-			if(activeObject()->controller->selectPrimitivePart(selected))
+			if(ctrl->selectPrimitivePart(selected))
 			{
-				defCtrl = new QDeformController(activeObject()->controller);
+				defCtrl = new QDeformController(ctrl);
 
 				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
@@ -514,7 +530,7 @@ void Scene::postSelection( const QPoint& point )
 
 				setManipulatedFrame( defCtrl->getFrame() );
 
-				Vec3d q = activeObject()->controller->getPrimPartPos();
+				Vec3d q = ctrl->getPrimPartPos();
 				Vec p(q.x(), q.y(), q.z());
 
 				manipulatedFrame()->setPosition(p);
@@ -551,79 +567,6 @@ void Scene::setSelectMode(SelectMode toMode)
 void Scene::setModifyMode(ModifyMode toMode)
 {
 	modifyMode = toMode;
-}
-
-void Scene::postDraw()
-{
-	// Textual log messages
-	for(int i = 0; i < osdMessages.size(); i++){
-		int margin = 20; //px
-		int x = margin;
-		int y = (i * QFont().pointSize() * 1.5f) + margin;
-
-		qglColor(Qt::white);
-		renderText(x, y, osdMessages.at(i));
-	}
-
-	// Draw offset function
-	if(isDrawOffset && activeObject() && activeObject()->data2D.contains("offset"))
-	{
-		setupSubViewport(0,0, 400, 400);
-
-		// Draw graph
-		glTranslated(-0.5, -0.5, 0);
-		SimpleDraw::DrawGraph2D(activeObject()->data2D["offset"]);
-
-		// black line
-		Vec3d p(0, 0, 0); Vec3d q = p + Vec3d(0,0,1.0);
-		SimpleDraw::IdentifyLine(p,q, Color(0,0,0,1), false, 1.0);
-
-		endSubViewport();
-	}
-
-	if(activeObject() && activeObject()->isReady && activeObject()->controller)
-	{
-		Controller *ctrl = activeObject()->controller;
-
-		ShapeState oldState = ctrl->getShapeState();
-
-		PQShapeShateLessEnergy solutionsCopy = sp->activeOffset->suggestSolutions;
-		
-		for (int i = 0; i < Min(subScenes.size(), solutionsCopy.size()); i++)
-		{
-			SubScene * s = subScenes[i];
-
-			s->draw();
-
-			s->caption = QString::number(i);
-
-			// BEGIN
-			setupSubViewport(s->x, s->y, s->width, s->height);
-			glClear(GL_DEPTH_BUFFER_BIT);
-
-			ShapeState sln = solutionsCopy.top();
-			solutionsCopy.pop();
-
-			ctrl->setShapeState(sln);
-
-			// Draw shape in current state
-			glColor3dv(Color(0.96, 0.71, 0.30, 1));
-			activeObject()->simpleDraw(false);
-
-			// END
-			endSubViewport();
-		
-			ctrl->setShapeState(oldState);
-		}
-	}
-
-	// To avoid aliasing in text
-	for (int i = 0; i < subScenes.size(); i++)
-		subScenes[i]->postDraw();
-
-	QGLViewer::postDraw();
-
-	//SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 }
 
 void Scene::setupSubViewport( int x, int y, int w, int h )
@@ -664,35 +607,25 @@ void Scene::dequeueLastMessage()
 
 void Scene::focusInEvent( QFocusEvent * event )
 {
+	//print(QString("got! (%1)").arg(event->reason()));
 	emit(gotFocus(this));
+}
+
+void Scene::focusOutEvent( QFocusEvent * event )
+{
+	if(event->reason() != Qt::PopupFocusReason)
+		emit(lostFocus(this));
 }
 
 void Scene::closeEvent( QCloseEvent * event )
 {
-	emit(sceneClosed(NULL));
-}
+	// Alert others
+	this->activeMesh = NULL;
+	emit(objectInserted());
 
-void Scene::setActiveWires( QVector<Wire> newWires )
-{
-	activeWires = newWires;
-}
+	emit(sceneClosed(this));
 
-void Scene::setActiveDeformer( QFFD * newFFD )
-{
-	activeDeformer = newFFD;
-	updateGL();
-	this->setSelectMode(FFD_DEFORMER);
-
-	this->connect(newFFD, SIGNAL(meshDeformed()), sp, SLOT(updateActiveObject()));
-}
-
-void Scene::setActiveVoxelDeformer( VoxelDeformer * newFFD )
-{
-	activeVoxelDeformer = newFFD;
-	updateGL();
-	this->setSelectMode(VOXEL_DEFORMER);
-
-	this->connect(activeVoxelDeformer, SIGNAL(meshDeformed()), sp, SLOT(updateActiveObject()));
+	event->accept();
 }
 
 QSegMesh * Scene::activeObject()
@@ -732,4 +665,22 @@ void Scene::toggleCameraProjection()
 		camera()->setType(Camera::PERSPECTIVE);
 
 	updateGL();
+}
+
+void Scene::setActiveDeformer( QFFD * newFFD )
+{
+	activeDeformer = newFFD;
+	updateGL();
+	this->setSelectMode(FFD_DEFORMER);
+
+	this->connect(newFFD, SIGNAL(meshDeformed()), sp, SLOT(updateActiveObject()));
+}
+
+void Scene::setActiveVoxelDeformer( VoxelDeformer * newFFD )
+{
+	activeVoxelDeformer = newFFD;
+	updateGL();
+	this->setSelectMode(VOXEL_DEFORMER);
+
+	this->connect(activeVoxelDeformer, SIGNAL(meshDeformed()), sp, SLOT(updateActiveObject()));
 }

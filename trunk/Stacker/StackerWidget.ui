@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>350</width>
-    <height>617</height>
+    <height>564</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -385,47 +385,6 @@
         </layout>
        </widget>
       </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QCheckBox" name="normalzieMesh">
-        <property name="text">
-         <string>Nomalize Mesh</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" colspan="2">
-       <widget class="QCheckBox" name="moveCenterToOrigin">
-        <property name="text">
-         <string>Move to Origin</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="QLineEdit" name="outputFileName">
-        <property name="text">
-         <string>result_0</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5">
-       <widget class="QPushButton" name="outputButton">
-        <property name="text">
-         <string>Output</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="6">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
       <item row="13" column="4">
        <widget class="QPushButton" name="saveSuggestionsButton">
         <property name="text">
@@ -499,13 +458,6 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="4">
-       <widget class="QPushButton" name="offsetButton">
-        <property name="text">
-         <string>Offset</string>
-        </property>
-       </widget>
-      </item>
       <item row="7" column="0">
        <widget class="QLabel" name="targetStackLabel">
         <property name="text">
@@ -525,7 +477,7 @@
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>1.100000000000000</double>
+         <double>1.400000000000000</double>
         </property>
        </widget>
       </item>
@@ -538,7 +490,7 @@
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>0.700000000000000</double>
+         <double>0.300000000000000</double>
         </property>
        </widget>
       </item>
@@ -546,13 +498,6 @@
        <widget class="QLabel" name="label_16">
         <property name="text">
          <string>BB toleren</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="5">
-       <widget class="QPushButton" name="hotspotsButton">
-        <property name="text">
-         <string>Hot SP</string>
         </property>
        </widget>
       </item>
@@ -570,43 +515,38 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="3">
-       <widget class="QDoubleSpinBox" name="hotRange">
-        <property name="prefix">
-         <string/>
-        </property>
-        <property name="decimals">
-         <number>4</number>
-        </property>
-        <property name="maximum">
-         <double>1.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.050000000000000</double>
-        </property>
-        <property name="value">
-         <double>0.900000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QLabel" name="label_2">
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Hot range</string>
+         <string>Output for paper</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="chPrecision">
-        <property name="value">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="chPrecisionLabel">
+      <item row="0" column="2" colspan="2">
+       <widget class="QLineEdit" name="outputFileName">
         <property name="text">
-         <string>CH prec</string>
+         <string>result_0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4" colspan="2">
+       <widget class="QPushButton" name="outputButton">
+        <property name="text">
+         <string>Output</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="6">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4" colspan="2">
+       <widget class="QPushButton" name="hotspotsButton">
+        <property name="text">
+         <string>Hot Spots</string>
         </property>
        </widget>
       </item>

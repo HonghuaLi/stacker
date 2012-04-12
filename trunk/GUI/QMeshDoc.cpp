@@ -1,12 +1,12 @@
 #include "global.h"
 #include "QMeshDoc.h"
 #include <QFileDialog>
+#include "Workspace.h"
 
-QMeshDoc::QMeshDoc()
+QMeshDoc::QMeshDoc( QObject * parent ) : QObject(parent)
 {
 	global_id = 0;
 }
-
 
 QMeshDoc::~QMeshDoc()
 {
@@ -14,9 +14,12 @@ QMeshDoc::~QMeshDoc()
 		delete all_objects.value(id);
 }
 
-
 void QMeshDoc::importObject()
 {
+	Workspace * workspace = (Workspace *) parent();
+
+	if(workspace->activeScene == NULL) return;
+
 	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", DEFAULT_FILE_PATH, "Mesh Files (*.obj *.off *.stl)"); 
 
 	// Get object name from file path
@@ -43,9 +46,11 @@ void QMeshDoc::importObject()
 	// Set global ID for the mesh and all its segments
 	newMesh->setObjectName(newObjId);
 
-	emit(objectImported(newMesh));
-	emit(printMessage(newObjId+" has been imported."));
-
+	// Focus active scene
+	workspace->activeScene->setFocus();
+	workspace->activeScene->print(newObjId + " has been imported.");
+	workspace->activeScene->setActiveObject(newMesh);
+	
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
 

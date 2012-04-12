@@ -2,6 +2,7 @@
 
 // Standard C++
 #include <stdio.h>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include "limits.h"
@@ -9,13 +10,14 @@
 #include <time.h>
 #include <string>
 #include <numeric>
+#include <math.h>
 
 // GL extensions
 #ifdef _WIN32
 	#include <GL/GLee.h>
 #else
-	#include <GL/glew.h>
-	#define GLEE_ARB_vertex_buffer_object GLEW_ARB_vertex_buffer_object
+        #include <GL/glew.h>
+        #define GLEE_ARB_vertex_buffer_object GLEW_ARB_vertex_buffer_object
 #endif
 
 // Constants
@@ -66,6 +68,9 @@ typedef StdVector < StdVector< float > > Vector2Df;
 #define AROUND(x, target, threshold) ( (abs(x) - abs(target) < threshold) ? 1 : 0)
 #define RADIANS(deg)    ((deg)/180.0 * M_PI)
 #define DEGREES(rad)    ((rad)/M_PI * 180.0)
+#ifndef M_PI
+#    define M_PI 3.14159265358979323846
+#endif
 
 // Basic STL converters
 template <typename T> static inline StdVector<T> SET_TO_VECTOR(StdSet<T> fromSet){
@@ -115,7 +120,7 @@ unsigned inline int fact(unsigned int n){
 }
 
 double inline gaussianFunction(double x, double mu = 0.0, double sigma = 1.0){
-	double a = 1.0 / (sigma * sqrt(2 * M_PI));
+	//double a = 1.0 / (sigma * sqrt(2 * M_PI));
 	double b = mu;
 	double c = sigma;
 
@@ -148,6 +153,9 @@ void inline RotateFromTo(VECTYPE from, VECTYPE to, VECTYPE & point, VECTYPE pivo
 	point = ROTATE_VEC(point, theta, axis);
 	point += pivot;
 }
+
+#define V2E(vec) (Eigen::Vector3d(vec[0], vec[1], vec[2]))
+#define E2V(vec) (Vec3d(vec[0], vec[1], vec[2]))
 
 // Array operations
 #include <algorithm>

@@ -3,10 +3,13 @@
 #include "Primitive.h"
 #include "GeneralizedCylinder.h"
 #include "Skeleton.h"
-#include "GCDeformation.h"
-#include "QGLViewer/manipulatedFrame.h"
+#include "MathLibrary/Coordiantes/GCDeformation.h"
+#include "GUI/Viewer/libQGLViewer/QGLViewer/manipulatedFrame.h"
+#include "MathLibrary/Deformer/Skinning.h"
 
 extern int skeletonJoints;
+
+enum DEFORMER { GREEN_COORDIANTES, SKINNING };
 
 class GCylinder : public QObject, public Primitive
 {
@@ -84,10 +87,13 @@ private:
 	QSurfaceMesh * cage;
 	void updateCage();
 	GCDeformation * gcd;
+	Skinning * skinner;
 
 	double 	deltaScale;
 	double cageScale;
 	int cageSides;
+
+	DEFORMER deformer;
 
 	bool isFitted;
 	std::vector<Point> originalSpine;

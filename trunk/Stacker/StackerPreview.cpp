@@ -60,6 +60,10 @@ void StackerPreview::draw()
 {
 	// Anti aliasing 
 	glEnable(GL_MULTISAMPLE);
+	glEnable (GL_LINE_SMOOTH);
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
 	// Background
 	setBackgroundColor(backColor);
@@ -69,15 +73,22 @@ void StackerPreview::draw()
 	// Update VBO if needed
 	updateVBOs();
 
-	double O_max = activeObject()->O_max;
-	double S = activeObject()->stackability;
+	double O_max = activeObject()->val["O_max"];
+	double S = activeObject()->val["stackability"];
 
 	Vec3d delta = O_max * stackDirection;
-	double theta = activeObject()->theta;
-	double phi = activeObject()->phi;
-	Vec3d shift = activeObject()->translation;
+	double theta = activeObject()->val["theta"];
+	double phi = activeObject()->val["phi"];
+
+	double tranX = activeObject()->val["tranX"];
+	double tranY = activeObject()->val["tranY"];
+	double tranZ = activeObject()->val["tranZ"];
+
+	Vec3d shift (tranX, tranY, tranZ);
 
 	glPushMatrix();
+	Vec3d initPos = - delta * (stackCount-1) / 2.0;
+	glTranslated(initPos[0],initPos[1],initPos[2]);
 
 	for(int i = 0; i < stackCount; i++)
 	{
@@ -87,7 +98,10 @@ void StackerPreview::draw()
 
 		// Fall back
 		if(vboCollection.isEmpty() && activeObject())
+		{
+//			std::cout << "Render mesh regularly, VBO is not supported." << std::endl;
 			activeObject()->simpleDraw();
+		}
 
 		glTranslated(delta[0],delta[1],delta[2]);
 		glRotated(theta, 1, 0, 0);
@@ -106,15 +120,21 @@ void StackerPreview::postDraw()
 
 	if(activeObject())
 	{
-		QString message = QString("O_max = %1; S = %2").arg(activeObject()->O_max).arg(activeObject()->stackability);
+		QString message = QString("O_max = %1; S = %2").arg(activeObject()->val["O_max"]).arg(activeObject()->val["stackability"]);
 		renderText(0, this->height()- 10, message);
 
-		QString message2 = QString("Theta = %1; Phi = %2").arg(activeObject()->theta).arg(activeObject()->phi);
+		QString message2 = QString("Theta = %1; Phi = %2").arg(activeObject()->val["theta"]).arg(activeObject()->val["phi"]);
 		renderText(0, this->height()- 30, message2);
 
-		QString message3 = QString("Shift = %1,%2,%3").arg(activeObject()->translation[0]).arg(activeObject()->translation[1]).arg(activeObject()->translation[2]);
+		double tranX = activeObject()->val["tranX"];
+		double tranY = activeObject()->val["tranY"];
+		double tranZ = activeObject()->val["tranZ"];
+		Vec3d shift (tranX, tranY, tranZ);
+
+		QString message3 = QString("Shift = %1,%2,%3").arg(shift[0]).arg(shift[1]).arg(shift[2]);
 		renderText(0, this->height()- 50, message3);
 	}
+
 }
 
 void StackerPreview::setActiveScene( Scene * toScene )
@@ -131,12 +151,12 @@ void StackerPreview::updateVBOs()
 	if(mesh && mesh->isReady)
 	{
 		// Create VBO for each segment if needed
-		for (int i=0;i<mesh->nbSegments();i++)
+		for (int i=0;i<(int)mesh->nbSegments();i++)
 		{			
 			QSurfaceMesh* seg = mesh->getSegment(i);
 			QString objId = seg->objectName();
 
-			if (VBO::isVBOSupported() && vboCollection.find(objId) == vboCollection.end())
+			if (VBO::isVBOSupported() && !vboCollection.contains(objId))
 			{
 				Surface_mesh::Vertex_property<Point>  points   = seg->vertex_property<Point>("v:point");
 				Surface_mesh::Vertex_property<Point>  vnormals = seg->vertex_property<Point>("v:normal");
@@ -156,18 +176,16 @@ void StackerPreview::updateActiveObject()
 	{
 		Vec3d bbmin = activeObject()->bbmin;
 		Vec3d bbmax = activeObject()->bbmax;
-		bbmax[2] += (stackCount-1) * activeObject()->O_max;
+		double O_max = activeObject()->val["O_max"];
+		double delta = (stackCount-1) * O_max / 2;
+		bbmin[2] -= delta;
+		bbmax[2] += delta;
 
-		Vec3d center = (bbmax + bbmin) / 2;
-		Vec3d pos(1, 1, center[2]);
-
-		camera()->setUpVector(Vec(0,0,1));
-		camera()->setPosition(Vec(pos));
-		camera()->lookAt(Vec(center));
-		camera()->setSceneRadius(activeObject()->radius * (stackCount + 1));
+		double radius = (bbmax - bbmin).norm()/2;
+		camera()->setSceneRadius(radius);
 		camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
 	}
-	
+
 	vboCollection.clear();
 	updateGL();
 }
@@ -213,8 +231,8 @@ void StackerPreview::setRenderMode( RENDER_MODE toMode )
 void StackerPreview::saveStackObj( QString fileName, int numStack, double scaleFactor)
 {
 	int stackCount = numStack;
-	double O_max = activeObject()->O_max;
-	double S = activeObject()->stackability;
+	double O_max = activeObject()->val["O_max"];
+	double S = activeObject()->val["stackability"];
 
 	Vec3d delta = O_max * stackDirection;
 
@@ -228,7 +246,7 @@ void StackerPreview::saveStackObj( QString fileName, int numStack, double scaleF
 	QString singleFileName = fileName;
 	singleFileName.replace(".obj", "_single.obj");
 
-	double phi =  activeObject()->phi;
+	double phi =  activeObject()->val["phi"];
 
 	for(int i = 0; i < stackCount; i++)
 	{

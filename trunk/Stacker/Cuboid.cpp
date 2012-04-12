@@ -4,8 +4,8 @@
 #include <Eigen/Geometry>
 using namespace Eigen;
 
-#include "OBB.h"
-#include "OBB2.h"
+#include "MathLibrary/Bounding/OBB.h"
+#include "MathLibrary/Bounding/OBB2.h"
 
 Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
 {
@@ -124,7 +124,7 @@ Vec3d Cuboid::getCoordinatesInBox( MinOBB3::Box3 &box, Vec3d &p )
 		dot(local_p, box.Axis[2]) / box.Extent[2]);
 }
 
-Vec3d Cuboid::getPositionInBox( MinOBB3::Box3 &box, Vec3d &coord )
+Vec3d Cuboid::getPositionInBox( const MinOBB3::Box3 &box, const Vec3d &coord )
 {
 	Vec3d local_p = box.Extent[0] * coord[0] * box.Axis[0]
 	+ box.Extent[1] * coord[1] * box.Axis[1]
@@ -324,11 +324,11 @@ uint Cuboid::detectHotCurve( std::vector< Vec3d > &hotSamples )
 
 	for (int i = 0; i < hotSamples.size(); i++)
 	{
-		Vec3d &vec = hotSamples[i] - center;
+        Vec3d vec = hotSamples[i] - center;
 
 		for (int j = 0; j < 3; j++)
 		{
-			Vec3d &axis = currBox.Axis[j];
+            Vec3d axis = currBox.Axis[j];
 			projections[j].push_back( dot( axis, vec ) );
 		}
 
