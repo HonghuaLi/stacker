@@ -378,10 +378,9 @@ bool StackabilityImprover::satisfyBBConstraint()
 	Vec3d currBB = activeObject()->bbmax - activeObject()->bbmin;
 
 	Vec3d diff = preBB - currBB;
-	if ( diff[0] < 0 || diff[1] < 0 )
-		result = false;
 
-	if( abs(diff[2]) > 0.1 )
+	// Current BB is within expanded BB (tolerenced)
+	if ( diff[0] < 0 || diff[1] < 0 || diff[2] < 0 )
 		result = false;
 
 	// debug
@@ -389,7 +388,6 @@ bool StackabilityImprover::satisfyBBConstraint()
 	//	<<"The preBB size: (" << preBB <<")\n";	
 	//std::cout << "The currBB size:(" << currBB <<")\n";
 	//std::cout << "BB-satisfying: " << result <<std::endl;
-
 
 	return result;
 }
@@ -603,13 +601,9 @@ void StackabilityImprover::improveStackabilityToTarget()
 	usedCandidateSolutions.clear();
 
 	// The bounding box constraint is hard
-	org_bbmin = activeObject()->bbmin;
-	org_bbmax = activeObject()->bbmax;
-	org_bbmin[0] *= BB_TOLERANCE;
-	org_bbmin[2] *= BB_TOLERANCE;
-	org_bbmax[0] *= BB_TOLERANCE;
-	org_bbmax[2] *= BB_TOLERANCE;
-
+	org_bbmin = activeObject()->bbmin * BB_TOLERANCE;
+	org_bbmax = activeObject()->bbmax * BB_TOLERANCE;
+	
 	// Push the current shape as the initial candidate solution
 	ShapeState state = ctrl->getShapeState();
 	state.deltaStackability = activeOffset->getStackability() - orgStackability;

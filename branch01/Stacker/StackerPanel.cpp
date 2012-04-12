@@ -85,9 +85,12 @@ StackerPanel::StackerPanel()
 	// Paper stuff
 	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
 
+	// Default values
+	panel.numExpectedSolutions->setValue(NUM_EXPECTED_SOLUTION);
+	panel.BBTolerance->setValue(BB_TOLERANCE);
+	panel.targetS->setValue(TARGET_STACKABILITY);
+	panel.hidderViewerSize->setValue(HIDDEN_VIEWER_SIZE);
 }
-
-
 
 void StackerPanel::onImproveButtonClicked()
 {
