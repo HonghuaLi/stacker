@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ui_GroupWidget.h"
-#include "Scene.h"
+#include "GUI/Scene.h"
 
 class GroupPanel : public QWidget{
 	Q_OBJECT

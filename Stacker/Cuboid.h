@@ -1,6 +1,6 @@
 #pragma once
 #include "Primitive.h"
-#include "MinOBB3.h"
+#include "MathLibrary/Bounding/MinOBB3.h"
 #include <Eigen/Dense>
 
 //		  7-----------6                     Y
@@ -81,7 +81,7 @@ public:
 
 private:
 	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);
-	Vector3 getPositionInBox(MinOBB3::Box3 &box, Vector3 &coord);	
+    Vector3 getPositionInBox(const MinOBB3::Box3 &box, const Vector3 &coord);
 
 	std::vector<Vector3> getBoxConners(MinOBB3::Box3 &box);
 	std::vector< std::vector<Vector3> > getBoxFaces(MinOBB3::Box3 &fromBox);

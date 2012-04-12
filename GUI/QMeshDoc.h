@@ -2,15 +2,14 @@
 
 #include <QObject>
 #include <QMap>
-#include "QSegMesh.h"
-
+#include "GraphicsLibrary/Mesh/QSegMesh.h"
 
 class QMeshDoc : public QObject
 {
 	Q_OBJECT
 
 public:
-	QMeshDoc();
+	QMeshDoc(QObject * parent);
 	~QMeshDoc();
 
 	// Objects

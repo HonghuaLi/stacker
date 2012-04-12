@@ -1,12 +1,12 @@
 #pragma once
 
-#include "QSurfaceMesh.h"
-#include "Plane.h"
+#include "GraphicsLibrary/Mesh/QSurfaceMesh.h"
+#include "GraphicsLibrary/Basic/Plane.h"
 #include <QVector>
 #include <Eigen/Dense>
 #include "ShapeState.h"
 
-enum PrimType{ CUBOID, GC, WIRE};
+enum PrimType{ CUBOID, GCYLINDER, WIRE};
 
 
 class Primitive
@@ -95,8 +95,6 @@ public:
 	// Rotation
 	Eigen::Matrix3d rotationMatrixAroundAxis(Vec3d u, double theta);
 	Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );
-	Eigen::Vector3d V2E(Vec3d &vec);
-	Vec3d E2V(Eigen::Vector3d &vec);
 
 	QString id;
 	PrimType primType;

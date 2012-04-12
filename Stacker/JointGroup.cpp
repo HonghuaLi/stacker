@@ -1,8 +1,7 @@
 #include "JointGroup.h"
 #include "SimpleDraw.h"
-#include "Voxeler.h"
+#include "GraphicsLibrary/Voxel/Voxeler.h"
 #include "Controller.h"
-
 
 void JointGroup::process( QVector< QString > segments, Vec3d joint )
 {

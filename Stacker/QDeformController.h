@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Controller.h"
-#include "QGLViewer/qglviewer.h"
+#include "GUI/Viewer/libQGLViewer/QGLViewer/qglviewer.h"
 
 class QDeformController: public QObject{
 	Q_OBJECT

@@ -24,5 +24,5 @@ public:
 
 	Point getJoint();
 
-	QMap<QString, std::vector<double>> coordinates;
+    QMap<QString, std::vector<double> > coordinates;
 };

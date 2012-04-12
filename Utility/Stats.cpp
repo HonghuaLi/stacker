@@ -1,7 +1,5 @@
 #include "Stats.h"
 
-#include "isa_headers.h"
-
 Stats::Stats( QString stat_label )
 {
 	this->label = stat_label;

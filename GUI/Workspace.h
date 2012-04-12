@@ -6,14 +6,16 @@
 #include <QMdiSubWindow>
 
 #include "QMeshDoc.h"
-#include "Scene.h"
-#include "StackerPanel.h"
-#include "WiresPanel.h"
-#include "DeformerPanel.h"
-#include "QVoxelDeformerPanel.h"
-#include "TransformationPanel.h"
-#include "GroupPanel.h"
-#include "ControllerPanel.h"
+#include "GUI/Scene.h"
+#include "GUI/Tools/TransformationPanel.h"
+#include "GUI/Tools/MeshInfoPanel.h"
+
+// Stacker widgets
+#include "Stacker/StackerPanel.h"
+#include "Stacker/GroupPanel.h"
+#include "Stacker/ControllerPanel.h"
+#include "MathLibrary/Deformer/DeformerPanel.h"
+#include "MathLibrary/Deformer/QVoxelDeformerPanel.h"
 
 class Workspace : public QMainWindow
 {
@@ -23,22 +25,25 @@ public:
 	Workspace(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~Workspace();
 
+	Ui::WorkspaceClass ui;
+	Scene * activeScene;
+
 public slots:
 	void addNewScene();
 	void setActiveScene(Scene* scene);
+	void disconnectScene(Scene* scene);
+	void sceneClosed(Scene* scene);
 
 private:
-	Ui::WorkspaceClass ui;
-	StackerPanel * sp;
-	WiresPanel * wp;
-	DeformerPanel * dp;
-	QVoxelDeformerPanel * vdp;
+	MeshInfoPanel * mi;
 	TransformationPanel * tp;
-	GroupPanel * gp;
-	ControllerPanel * cp;
+	
+	// Stacker widgets
+	StackerPanel		* sp;
+	GroupPanel			* gp;
+	ControllerPanel		* cp;
+	DeformerPanel		* dp;
+	QVoxelDeformerPanel * vdp;
 
-	Scene * activeScene;
-
-	QMeshDoc * mDoc;
 	int sceneCount;
 };

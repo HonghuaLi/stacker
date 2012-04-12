@@ -1,13 +1,15 @@
 #pragma once
 
 #include "ui_StackerWidget.h"
-#include "ui_SpaceExplorer.h"
-#include "Scene.h"
+#include "GUI/Scene.h"
 #include "StackerPreview.h"
 #include "HiddenViewer.h"
-#include "Offset.h"
 #include "Controller.h"
 #include "QDeformController.h"
+
+// Forward declaration
+class Offset;
+class StackabilityImprover;
 
 class StackerPanel : public QWidget
 {
@@ -23,38 +25,27 @@ public:
 	void showMessage( QString message );
 
 	Ui::StackerWidget panel;
-	Ui::ControllerDeformerWidget ctrlDeformer;
 	Scene * activeScene;
 	StackerPreview * stacker_preview;
 	HiddenViewer * hidden_viewer;
+
+	// Core components
 	Offset * activeOffset;
+	StackabilityImprover * improver;
 
 public slots:
-	// Buttons
-	void onOffsetButtonClicked();
-	void onImproveButtonClicked();
-	void onHotspotsButtonClicked();
-	void onSuggestButtonClicked();
-	void onSaveSuggestionsButtonClicked();
-	void onLoadSuggestionsButtonClicked();
-
-	// Others
+	// Scene management
 	void setActiveScene( Scene * );
 	void updateActiveObject();
 
-	void setConvexHullPrecision(int p);
-	void setHotRange(double range);
-	void setJointThreshold(double threshold);
-	void setSkeletonJoints(int num);
-	void setStackCount(int num);
-	void setBBTolerance(double tol);
-	void setNumExpectedSolutions(int num);
-	void setSolutionID(int id);
-	void setSuggestionID(int id);
-	void setTargetStackability(double s);
-
-	void onNomalizeMeshChecked();
-	void onMoveCenterToOriginChecked();
+	// Buttons
+	void onHotspotsButtonClicked();
+	void onImproveButtonClicked();
+	void onSuggestButtonClicked();
+	void onSaveSuggestionsButtonClicked();
+	void onLoadSuggestionsButtonClicked();
+	void searchDirection();
+	void outputForPaper();
 
 	// Primitives modification
 	void convertGC();
@@ -63,10 +54,18 @@ public slots:
 	// Joints
 	void findJoints();
 	void findPairwiseJoints();
+	void setJointThreshold(double threshold);
+	void setSkeletonJoints(int num);
 
-	void searchDirection();
+	// Parameters
+	void setStackCount(int num);
 
-	void outputForPaper();
+	// Solutions
+	void setTargetStackability(double s);
+	void setBBTolerance(double tol);
+	void setNumExpectedSolutions(int num);
+	void setSolutionID(int id);
+	void setSuggestionID(int id);
 
 signals:
 	void printMessage( QString );

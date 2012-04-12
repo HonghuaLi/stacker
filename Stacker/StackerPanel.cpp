@@ -1,7 +1,7 @@
 #include "StackerPanel.h"
 #include "Controller.h"
 #include "Cuboid.h"
-#include "ConvexHull3.h"
+#include "MathLibrary/Bounding/ConvexHull3.h"
 #include <QDockWidget>
 #include <QVBoxLayout>
 #include "Vector.h"
@@ -14,7 +14,10 @@
 #include "GCylinder.h"
 #include <QFileDialog>
 #include <QDesktopWidget>
-#include "global.h"
+#include "StackerGlobal.h"
+#include "Numeric.h"
+#include "StackabilityImprover.h"
+
 
 StackerPanel::StackerPanel()
 {
@@ -33,72 +36,61 @@ StackerPanel::StackerPanel()
 	layout->addWidget(previewDock, row++, 0,1,6);
 	stacker_preview->setMinimumHeight(350);
 
-	// Offset function calculator
+	// Add a stacking hidden viewer widget for offset calculator
 	hidden_viewer = new HiddenViewer();
 	QDockWidget * hiddenDock = new QDockWidget("Hidden");
 	hiddenDock->setWidget (hidden_viewer);
 	layout->addWidget(hiddenDock, row++, 0,1,3);
 	hiddenDock->setFloating(true);
 	hiddenDock->setWindowOpacity(1.0);
-
 	int x = qApp->desktop()->availableGeometry().width();
-	hiddenDock->move(QPoint(x - hiddenDock->width(),0));
+	hiddenDock->move(QPoint(x - hiddenDock->width(),0)); //Move the hidden dock to the top right conner
 	
+	// Offset function calculator
 	activeOffset = new Offset(hidden_viewer);
+	improver = new StackabilityImprover(activeOffset);
 
-	// Buttons
-	connect(panel.offsetButton, SIGNAL(clicked()), SLOT(onOffsetButtonClicked()));
-	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
+	// Scene manager
+	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
+	connect(panel.stackCount, SIGNAL(valueChanged(int)), this, SLOT(setStackCount(int)) );
+	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
+
+	// Hotspot
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
-	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
-	connect(panel.saveSuggestionsButton, SIGNAL(clicked()), SLOT(onSaveSuggestionsButtonClicked()));
-	connect(panel.loadSuggestionsButton, SIGNAL(clicked()), SLOT(onLoadSuggestionsButtonClicked()));
+
+	// Primitives
 	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(panel.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
 
-	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-
-	// Parameters
-	connect(panel.chPrecision, SIGNAL(valueChanged (int)), this, SLOT(setConvexHullPrecision(int)));
-	CH_PRECISION = panel.chPrecision->value();
-	connect(panel.hotRange, SIGNAL(valueChanged (double)), this, SLOT(setHotRange(double)));
-	connect(panel.jointsThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
-	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
-	connect(panel.stackCount, SIGNAL(valueChanged(int)), this, SLOT(setStackCount(int)) );
-	connect(panel.solutionID, SIGNAL(valueChanged(int)), this, SLOT(setSolutionID(int)));
-	connect(panel.suggestionID, SIGNAL(valueChanged(int)), this, SLOT(setSuggestionID(int)));
-	connect(panel.targetS, SIGNAL(valueChanged(double)), this, SLOT(setTargetStackability(double)));
-	connect(panel.normalzieMesh, SIGNAL(clicked()), this, SLOT(onNomalizeMeshChecked()));
-	connect(panel.moveCenterToOrigin, SIGNAL(clicked()), this, SLOT(onMoveCenterToOriginChecked()));
-
-	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
-	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
-	
-	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
-
-	// Joints between primitives
+	// Joints
 	connect(panel.findJointsButton, SIGNAL(clicked()), SLOT(findJoints()));
 	connect(panel.findPairwiseJointsButton, SIGNAL(clicked()), SLOT(findPairwiseJoints()));
-
-	// Paper stuff
-	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
+	connect(panel.jointsThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
+	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
 
 	// Stacking direction
 	connect(panel.searchDirectionButton, SIGNAL(clicked()), SLOT(searchDirection()));
+
+	// Solution
+	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
+	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
+	connect(panel.targetS, SIGNAL(valueChanged(double)), this, SLOT(setTargetStackability(double)));
+	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
+	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
+	connect(panel.solutionID, SIGNAL(valueChanged(int)), this, SLOT(setSolutionID(int)));
+	connect(panel.suggestionID, SIGNAL(valueChanged(int)), this, SLOT(setSuggestionID(int)));
+	connect(panel.saveSuggestionsButton, SIGNAL(clicked()), SLOT(onSaveSuggestionsButtonClicked()));
+	connect(panel.loadSuggestionsButton, SIGNAL(clicked()), SLOT(onLoadSuggestionsButtonClicked()));
+		
+	// Paper stuff
+	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
+
+	// Default values
+	panel.numExpectedSolutions->setValue(NUM_EXPECTED_SOLUTION);
+	panel.BBTolerance->setValue(BB_TOLERANCE);
+	panel.targetS->setValue(TARGET_STACKABILITY);
+	panel.hidderViewerSize->setValue(HIDDEN_VIEWER_SIZE);
 }
-
-void StackerPanel::onOffsetButtonClicked()
-{
-	if (!activeScene || activeScene->isEmpty())
-	{
-		emit(printMessage("There is no valid object."));
-		return;
-	}
-
-	// compute offset
-	activeOffset->computeOffsetOfShape();
-}
-
 
 void StackerPanel::onImproveButtonClicked()
 {
@@ -107,14 +99,16 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-	if (!activeObject()->controller)	{
+	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
+
+	if (!ctrl)	{
 		showMessage("There is no controller built.");
 		return;
 	}
 
-	activeOffset->improveStackabilityToTarget();
+	improver->improveStackabilityToTarget();
 
-	int total = activeOffset->solutions.size();
+	int total = improver->solutions.size();
 	panel.numSolution->setText(QString("/ %1").arg(total));
 	panel.suggestionID->setValue(0);
 
@@ -127,9 +121,10 @@ void StackerPanel::onHotspotsButtonClicked()
 		return;
 
 	activeOffset->detectHotspots();
-	activeOffset->showHotSpots();
-	//emit(objectModified());
 	showMessage("Hot spots are detected.");
+
+	activeOffset->showHotSpots();
+	if(VBO::isVBOSupported()) emit(objectModified()); 
 }
 
 void StackerPanel::setActiveScene( Scene * scene )
@@ -154,9 +149,10 @@ void StackerPanel::updateActiveObject()
 	stacker_preview->stackCount = panel.stackCount->value();
 	stacker_preview->updateActiveObject();
 
-	if (activeScene && activeObject() && activeObject()->controller == NULL)
+	// Create a controller if non-exists
+	if (activeScene && activeObject() && !activeObject()->ptr["controller"])
 	{
-		activeObject()->controller = new Controller(activeObject(), panel.useAABB->isChecked());
+		activeObject()->ptr["controller"] = new Controller(activeObject(), panel.useAABB->isChecked());
 		activeScene->setSelectMode(CONTROLLER);
 		showMessage("Controller is built for " + activeObject()->objectName());
 	}
@@ -177,27 +173,11 @@ void StackerPanel::showMessage( QString message )
 	emit(printMessage(message));
 }
 
-void StackerPanel::setConvexHullPrecision( int p )
-{
-	CH_PRECISION = p;
-
-	if (!activeScene || activeScene->isEmpty()){
-		emit(printMessage("There is no valid object."));
-		return;
-	}
-
-	activeObject()->controller = new Controller(activeObject(), panel.useAABB->isChecked());
-
-	activeScene->setSelectMode(CONTROLLER);
-
-	showMessage("Controller is built for " + activeObject()->objectName());
-}
-
 void StackerPanel::convertGC()
 {
-	if(!activeObject() || !activeObject()->controller) return;
+	if(!activeObject() || !activeObject()->ptr["controller"]) return;
 
-	Controller* ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 
 	foreach(Primitive * prim, ctrl->getPrimitives())
 	{
@@ -208,9 +188,9 @@ void StackerPanel::convertGC()
 
 void StackerPanel::convertCuboid()
 {
-	if(!activeObject() || !activeObject()->controller) return;
+	if(!activeObject() || !activeObject()->ptr["controller"]) return;
 
-	Controller* ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 
 	foreach(Primitive * prim, ctrl->getPrimitives())
 		if(prim->isSelected) ctrl->convertToCuboid(prim->id, panel.useAABB->isChecked(), panel.cuboidMethod->currentIndex());
@@ -220,53 +200,48 @@ void StackerPanel::convertCuboid()
 
 void StackerPanel::findJoints()
 {
-	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
+	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
 	
-	activeObject()->controller->findJoints();
+	((Controller *)activeScene->activeObject()->ptr["controller"])->findJoints();
 }
 
 void StackerPanel::findPairwiseJoints()
 {
-	if(!activeScene || !activeObject() || !activeObject()->controller)	return;
+	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
 
 	if (activeScene->selection.size() < 2) return;
 
-	Controller* ctrl = activeObject()->controller;
+	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 
 	int selID1 = activeScene->selection[0];
 	int selID2 = activeScene->selection[1];
 
-	activeObject()->controller->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
+	((Controller *)activeScene->activeObject()->ptr["controller"])->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
 }
 
 
 void StackerPanel::setSolutionID(int id)
 {
-	int total = activeOffset->solutions.size();
+	int total = improver->solutions.size();
 	panel.numSolution->setText(QString("/ %1").arg(total));
 
 	id = (0==total)? 0 : (id % total);
 	panel.solutionID->setValue(id);
-	activeOffset->showSolution(id);
+	improver->showSolution(id);
 
 	emit(objectModified());
 }
 
 void StackerPanel::setSuggestionID(int id)
 {
-	int total = activeOffset->suggestSolutions.size();
+	int total = improver->suggestSolutions.size();
 	panel.numSuggestion->setText(QString("/ %1").arg(total));
 
 	id = (0==total)? 0 : (id % total);
 	panel.suggestionID->setValue(id);
-	activeOffset->showSuggestion(id);
+	improver->showSuggestion(id);
 
 	emit(objectModified());
-}
-
-void StackerPanel::setHotRange( double range)
-{
-	HOT_RANGE = range;
 }
 
 void StackerPanel::outputForPaper()
@@ -290,14 +265,14 @@ void StackerPanel::outputForPaper()
 	
 
 	// 1) Save envelopes + offset function (both image + values)
-	double maxUE = Offset::getMaxValue(activeOffset->upperEnvelope);
-	double minLE = Offset::getMinValue(activeOffset->lowerEnvelope);
+	double maxUE = getMaxValue(activeOffset->upperEnvelope);
+	double minLE = getMinValue(activeOffset->lowerEnvelope);
 
-	Offset::saveAsImage(activeOffset->upperEnvelope, maxUE, exportDir + "/" + data["upperEnvelope"]);
-	Offset::saveAsImage(activeOffset->lowerEnvelope, minLE, exportDir + "/" + data["lowerEnvelope"]);
+	saveAsImage(activeOffset->upperEnvelope, maxUE, exportDir + "/" + data["upperEnvelope"]);
+	saveAsImage(activeOffset->lowerEnvelope, minLE, exportDir + "/" + data["lowerEnvelope"]);
 
-	Offset::saveAsImage(activeOffset->offset, activeOffset->O_max, exportDir + "/" + data["offsetImg"]);
-	Offset::saveAsData(activeOffset->offset, 1.0, exportDir + "/" + data["offsetData"]);
+	saveAsImage(activeOffset->offset, activeOffset->O_max, exportDir + "/" + data["offsetImg"]);
+	saveAsData(activeOffset->offset, 1.0, exportDir + "/" + data["offsetData"]);
 	data["O_max"] = QString::number(activeOffset->O_max);
 	data["Stackability"] = QString::number(activeOffset->getStackability());
 
@@ -340,14 +315,6 @@ void StackerPanel::outputForPaper()
 	// 3) Save stuck points / region
 	data["upperStuck"] = "upperStuck.dat";
 	data["lowerStuck"] = "lowerStuck.dat";
-
-	HOT_RANGE = 0.95;
-	activeOffset->detectHotspots();
-	while (activeOffset->upperHotSpots.empty()){
-		HOT_RANGE -= 0.05;
-		activeOffset->detectHotspots();
-	}
-
 	activeOffset->detectHotspots();
 	double sampleSize = 1.0; // % 5
 	activeOffset->saveHotSpots(exportDir + "/" + data["upperStuck"], 1, sampleSize);
@@ -493,10 +460,10 @@ void StackerPanel::setStackCount( int num )
 
 void StackerPanel::onSuggestButtonClicked()
 {
-	activeScene->suggestions.clear();
-	activeScene->suggestions = activeOffset->getSuggestions();
+	suggestions.clear();
+	suggestions = improver->getSuggestions();
 	
-	int total = activeOffset->suggestSolutions.size();
+	int total = improver->suggestSolutions.size();
 	panel.numSuggestion->setText(QString("/ %1").arg(total));
 	panel.suggestionID->setValue(0);
 	emit(objectModified());
@@ -506,7 +473,7 @@ void StackerPanel::onSaveSuggestionsButtonClicked()
 {
 	if(!activeScene || !activeObject())	return;
 
-	QVector< EditSuggestion > &suggestions = activeScene->suggestions;
+	QVector< EditSuggestion > &suggestions = suggestions;
 	if (suggestions.empty()) return;
 
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", "", "Group File (*.sgt)"); 
@@ -529,12 +496,12 @@ void StackerPanel::onLoadSuggestionsButtonClicked()
 
 	int num;
 	inF >> num;
-	activeScene->suggestions.clear();
+	suggestions.clear();
 	for (int i=0; i<num; i++)
 	{
 		EditSuggestion sgt;
 		inF >> sgt.center >> sgt.direction >> sgt.value;
-		activeScene->suggestions.push_back(sgt);
+		suggestions.push_back(sgt);
 	}
 
 	inF.close();
@@ -553,14 +520,4 @@ void StackerPanel::setNumExpectedSolutions( int num )
 void StackerPanel::setTargetStackability( double s )
 {
 	TARGET_STACKABILITY = s;
-}
-
-void StackerPanel::onNomalizeMeshChecked( )
-{
-	NORMALIZE_MESH = panel.normalzieMesh->isChecked();
-}
-
-void StackerPanel::onMoveCenterToOriginChecked()
-{
-	MOVE_CENTER_TO_ORIGIN = panel.moveCenterToOrigin->isChecked();
 }
