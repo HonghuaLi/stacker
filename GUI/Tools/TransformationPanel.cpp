@@ -54,6 +54,9 @@ void TransformationPanel::applyRotation()
 	//rotWidget.yAngle->setValue(0);
 	//rotWidget.zAngle->setValue(0);
 
+	// Build up
+	activeObject()->build_up();
+
 	// Tell blah to update
 	emit(objectModified());
 }
