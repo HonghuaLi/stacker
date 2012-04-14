@@ -339,5 +339,24 @@ void saveAsImage( Buffer2d& image, QString fileName )
 	Output.save(fileName);
 }
 
+bool isRing( std::vector< Vec2i > &pixels )
+{
+	// compute bounding box
+	Vec2i bbmin = Vec2i( INT_MAX, INT_MAX);
+	Vec2i bbmax = Vec2i( -INT_MAX, -INT_MAX);
+
+	foreach( Vec2i p, pixels )
+	{
+		bbmin.minimize(p);
+		bbmax.maximize(p);
+	}
+
+	// The occupying percentage
+	Vec2i diff = bbmax - bbmin;
+	double percentage = (double)pixels.size()/(double)(diff.x() * diff.y());
+
+	return percentage < 0.3;
+}
+
 
 

@@ -105,13 +105,36 @@ void Scene::draw()
 	glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
 	
-	// Start drawing
-	drawObject(); // Draw the object	
-	activeObject()->drawDebug(); // DEBUG	
+	// The main object
+	drawObject(); 
+
+	// Draw debug geometries
+	activeObject()->drawDebug();
+
+	// Draw stacking with 3 objects
 	if(isShowStacked) 
-		drawStacking(); // Draw stacking	
-	drawGroups(); // Draw groups
+		drawStacking();
+
+	// Draw groups of relationship between segments
+	drawGroups(); 
+
 	//if(defCtrl) defCtrl->draw();
+
+	// deformer
+	if(activeDeformer) activeDeformer->draw();
+	if(activeVoxelDeformer) activeVoxelDeformer->draw();
+
+	// Draw the controllers if exist
+	Controller * ctrl = ((Controller *)activeObject()->ptr["controller"]);
+	if (ctrl) ctrl->draw();
+
+	// Suggestions
+	Vec p = camera()->position();
+	Vec3d pos(p.x, p.y, p.z);
+	double scaling = 0.05;//pos.norm() / 100.0;
+	pos.normalize();	
+	foreach(EditingSuggestion sg, suggestions)
+		sg.draw(scaling);
 }
 
 
@@ -169,25 +192,6 @@ void Scene::drawGroups()
 		foreach(Group* g, ctrl->groups)
 			g->draw();
 	}
-
-	// deformer
-	if(activeDeformer) activeDeformer->draw();
-	if(activeVoxelDeformer) activeVoxelDeformer->draw();
-
-	// Draw the controllers if exist
-	if (ctrl) ctrl->draw();
-
-	// DEBUG
-	activeObject()->drawDebug();
-
-	// Suggestions
-	Vec p = camera()->position();
-	Vec3d pos(p.x, p.y, p.z);
-	double scaling = 0.05;//pos.norm() / 100.0;
-	pos.normalize();	
-	foreach(EditSuggestion sg, suggestions)
-		sg.draw(scaling);
-
 }
 
 void Scene::drawWithNames()

@@ -38,13 +38,14 @@ void Offset::clear()
 	hotSegments.clear();
 }
 
-//***********************  Envelopes and Offset ************************//
 // OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
 // OpenGL coordinates are mainly used in this class
 
 // Camera paths
 // <-1, 1> + 2 = <1, 3> : The top and bottom setting for the entire shape
 // <-1, 1> + 3 = <2, 4> : The top and bottom setting for the zoomed in region
+
+// == Envelope
 void Offset::computeEnvelope(int direction)
 {
 	// Switcher
@@ -144,6 +145,8 @@ void Offset::computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax )
 	computeEnvelope(direction);
 }
 
+
+// == Offset
 void Offset::computeOffset()
 {
 	offset = upperEnvelope; 
@@ -163,7 +166,6 @@ void Offset::computeOffset()
 		}
 	}
 }
-
 
 double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int rotDensity /*= 1*/ )
 {
@@ -330,7 +332,7 @@ double Offset::getStackability()
 }
 
 
-//*********************** Hot spots ********************************//
+// == Hot spots
 HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion)
 {
 	// Restore the camera according to the direction
@@ -356,8 +358,9 @@ HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegi
 	uint sid, fid, fid_local;
 	uint x, y;
 
-	QMap< QString,  int > subHotRegionSize;
-	QMap< QString,  std::vector< Vec3d > > subHotSamples;
+	QMap< QString, int > subHotRegionSize;
+	QMap< QString, std::vector< Vec2i > > subHotPixels;
+	QMap< QString, std::vector< Vec3d > > subHotSamples;
 
 //	QImage debugImg(w, h, QImage::Format_ARGB32);
 	
@@ -387,11 +390,14 @@ HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegi
 
 		activeObject()->global2local_fid(fid, sid, fid_local);
 
-		// Store informations
+		// Store information for subHotRegion
 		QString segmentID = activeObject()->getSegment(sid)->objectName();
 		Vec3d hotPoint(hotP.x, hotP.y, hotP.z);
 		subHotRegionSize[segmentID]++;
+		subHotPixels[segmentID].push_back(hotPixel);
 		subHotSamples[segmentID].push_back(hotPoint);
+
+		// All hot points in 3D
 		hotPoints[segmentID].push_back(hotPoint);
 
 		// debuging
@@ -421,7 +427,9 @@ HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegi
 
 		HS.side = direction;
 		HS.hotSamples = subHotSamples[HS.segmentID];
-		HS.isRing = ctrl->getPrimitive(HS.segmentID)->isRotationalSymmetry;
+		HS.isRing = isRing(subHotPixels[HS.segmentID]);
+
+		std::cout << "isRing = " << HS.isRing << std::endl;
 	}
 
 	return HS;
@@ -590,7 +598,7 @@ void Offset::saveHotSpots( QString filename, int direction, double percent)
 
 
 
-// (un)Projection
+// ==(un)Projection
 Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int direction )
 {
 	// Restore the camera according to the direction
