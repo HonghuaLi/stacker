@@ -108,6 +108,12 @@
     <Filter Include="Math\Deformer\SkeletonDeform">
       <UniqueIdentifier>{0929f05a-ee7e-483d-86d4-30c3d6273d3b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Stacker\Source">
+      <UniqueIdentifier>{ed258eba-61fb-4585-a08b-ee676d5c284c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stacker\Header">
+      <UniqueIdentifier>{9456baa9-2d48-418e-9afa-459f873b466f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GUI\global.h">
@@ -221,17 +227,8 @@
     <ClInclude Include="GeneratedFiles\ui_ControllerWidget.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\EditSuggestion.h">
-      <Filter>Stacker</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_GroupWidget.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Stacker\Offset.h">
-      <Filter>Stacker</Filter>
-    </ClInclude>
-    <ClInclude Include="Stacker\ShapeState.h">
-      <Filter>Stacker</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
       <Filter>Generated Files</Filter>
@@ -320,23 +317,32 @@
     <ClInclude Include="GraphicsLibrary\Skeleton\ClosedPolygon.h">
       <Filter>GraphicsLibrary\Skeleton</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\StackerGlobal.h">
-      <Filter>Stacker</Filter>
-    </ClInclude>
-    <ClInclude Include="Stacker\Numeric.h">
-      <Filter>Stacker</Filter>
-    </ClInclude>
-    <ClInclude Include="Stacker\HotSpot.h">
-      <Filter>Stacker</Filter>
-    </ClInclude>
     <ClInclude Include="MathLibrary\Deformer\Skinning.h">
       <Filter>Math\Deformer\SkeletonDeform</Filter>
     </ClInclude>
     <ClInclude Include="MathLibrary\Deformer\DualQuat.h">
       <Filter>Math\Deformer\SkeletonDeform</Filter>
     </ClInclude>
+    <ClInclude Include="Stacker\HotSpot.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Numeric.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Offset.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\ShapeState.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
     <ClInclude Include="Stacker\StackabilityImprover.h">
-      <Filter>Stacker</Filter>
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\StackerGlobal.h">
+      <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\EditingSuggestion.h">
+      <Filter>Stacker\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -372,15 +378,6 @@
     </CustomBuild>
     <CustomBuild Include="GUI\Tools\MeshInfoPanel.h">
       <Filter>GUI\Tools</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Stacker\HiddenViewer.h">
-      <Filter>Stacker</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Stacker\StackerPanel.h">
-      <Filter>Stacker</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Stacker\StackerPreview.h">
-      <Filter>Stacker</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\ControllerPanel.h">
       <Filter>Stacker\StackerTools</Filter>
@@ -426,6 +423,15 @@
     </CustomBuild>
     <CustomBuild Include="GUI\SubScene.h">
       <Filter>GUI\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\HiddenViewer.h">
+      <Filter>Stacker\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerPanel.h">
+      <Filter>Stacker\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerPreview.h">
+      <Filter>Stacker\Header</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -561,9 +567,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ControllerPanel.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\EditSuggestion.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_GCylinder.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -576,17 +579,11 @@
     <ClCompile Include="GeneratedFiles\Release\moc_GroupPanel.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\HiddenViewer.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_HiddenViewer.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_HiddenViewer.cpp">
       <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\Offset.cpp">
-      <Filter>Stacker</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_QDeformController.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -594,20 +591,11 @@
     <ClCompile Include="GeneratedFiles\Release\moc_QDeformController.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\ShapeState.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\StackerPanel.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_StackerPanel.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_StackerPanel.cpp">
       <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\StackerPreview.cpp">
-      <Filter>Stacker</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_StackerPreview.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -735,20 +723,38 @@
     <ClCompile Include="GeneratedFiles\Release\moc_SubScene.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\StackerGlobal.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\Numeric.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\HotSpot.cpp">
-      <Filter>Stacker</Filter>
-    </ClCompile>
     <ClCompile Include="MathLibrary\Deformer\Skinning.cpp">
       <Filter>Math\Deformer\SkeletonDeform</Filter>
     </ClCompile>
+    <ClCompile Include="Stacker\StackerPreview.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\HiddenViewer.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\HotSpot.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Numeric.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Offset.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\ShapeState.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
     <ClCompile Include="Stacker\StackabilityImprover.cpp">
-      <Filter>Stacker</Filter>
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackerGlobal.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackerPanel.cpp">
+      <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\EditingSuggestion.cpp">
+      <Filter>Stacker\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

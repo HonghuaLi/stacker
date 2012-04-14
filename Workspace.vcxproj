@@ -232,7 +232,7 @@
     </CustomBuild>
     <ClInclude Include="Stacker\CoplanarGroup.h" />
     <ClInclude Include="Stacker\Cuboid.h" />
-    <ClInclude Include="Stacker\EditSuggestion.h" />
+    <ClInclude Include="Stacker\EditingSuggestion.h" />
     <CustomBuild Include="Stacker\GCylinder.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing GCylinder.h...</Message>
@@ -536,7 +536,7 @@
     <ClCompile Include="Stacker\ControllerPanel.cpp" />
     <ClCompile Include="Stacker\CoplanarGroup.cpp" />
     <ClCompile Include="Stacker\Cuboid.cpp" />
-    <ClCompile Include="Stacker\EditSuggestion.cpp" />
+    <ClCompile Include="Stacker\EditingSuggestion.cpp" />
     <ClCompile Include="Stacker\GCylinder.cpp" />
     <ClCompile Include="Stacker\Group.cpp" />
     <ClCompile Include="Stacker\GroupPanel.cpp" />

@@ -1,7 +1,7 @@
 #include "StackabilityImprover.h"
 #include "Offset.h"
 
-QVector<EditSuggestion> suggestions;
+QVector<EditingSuggestion> suggestions;
 
 StackabilityImprover::StackabilityImprover( Offset *offset )
 {
@@ -14,86 +14,7 @@ QSegMesh* StackabilityImprover::activeObject()
 	return activeOffset->activeObject();
 }
 
-//*************************** Improve stackability *************************//
-std::vector< Vec3d > StackabilityImprover::getHorizontalMoves( HotSpot& HS )
-{
-	std::vector< Vec3d > Ts;
-
-	// The hot region	
-	std::vector< Vec2i > &hotRegion = activeOffset->hotRegions[HS.hotRegionID];
-
-	// Recompute the envelopes using hot segments only
-	activeOffset->computeOffsetOfShape();
-
-	// Switchers
-	bool isUpper = (HS.side == 1);
-	bool x_flipped = isUpper;
-	std::vector< std::vector<double> > &op_envelope = isUpper ? activeOffset->lowerEnvelope : activeOffset->upperEnvelope;
-
-	// Project BB to 2D buffer
-	//std::vector< std::vector< double > > BBImg = createImage( offset[0].size(), offset.size(), 0. );
-	Vec2i bbmin = activeOffset->projectedCoordinatesOf(org_bbmin, 3);
-	Vec2i bbmax = activeOffset->projectedCoordinatesOf(org_bbmax, 3);
-	//setPixelColor(BBImg, bbmin, 1.0);
-	//setPixelColor(BBImg, bbmax, 0.5);
-	//saveAsImage(BBImg, 1.0, "BB projection.png");
-
-	// Opposite envelope at current position
-	std::vector< double > curr_op_env = getValuesInRegion(op_envelope, hotRegion, x_flipped);
-	double threshold = isUpper? MaxElement(curr_op_env) : MinElement( curr_op_env );
-
-	//============ debug code
-	std::vector< std::vector< double > > debugImg = createImage( activeOffset->offset[0].size(), activeOffset->offset.size(), 0. );
-	setRegionColor(debugImg, hotRegion, 1.0);
-	//============ end of debug code
-
-	// The size of the hot region
-	Vec2i size = sizeofRegion(hotRegion);
-	int step = Max(size.x(), size.y());
-	step *= 2;
-
-	// Search for optional locations in 1-K rings
-	int K = 4;
-	for (uint k = 1; k < K; k++)
-	{
-		std::vector< Vec2i > deltas = deltaVectorsToKRing(step, step, k);
-		for (int j = 0; j < deltas.size(); j++ )
-		{
-			std::vector< Vec2i > shiftedRegion = shiftRegionInBB(hotRegion, deltas[j], bbmin, bbmax);
-			if (shiftedRegion.empty())  
-			{
-				std::cout << "Out of BB" << std::endl;
-				continue; // 
-			}
-
-			//============ debug code
-			setRegionColor(debugImg, shiftedRegion, 1.0 - k * 0.1 );
-			//============ end of debug code
-
-			std::vector< double > new_op_env = getValuesInRegion(op_envelope, shiftedRegion, x_flipped);
-			double newValue = isUpper? MinElement( new_op_env ) : MaxElement( new_op_env );
-			bool isBetter = isUpper? (newValue > threshold + ZERO_TOLERANCE) : (newValue < threshold - ZERO_TOLERANCE);
-
-			if (isBetter)
-			{
-				// Get the 3D translation
-				Vec2i a = hotRegion[0];
-				Vec2i b = shiftedRegion[0];
-				Vec3d proj_a = activeOffset->unprojectedCoordinatesOf(a.x(), a.y(), HS.side);
-				Vec3d proj_b = activeOffset->unprojectedCoordinatesOf(b.x(), b.y(), HS.side);
-				Vec3d T = proj_b - proj_a;
-				// Force the translation to be horizontal
-				T[2] = 0;
-
-				Ts.push_back(T);
-			}
-		}
-	}
-
-	saveAsImage(debugImg, 1.0, "K Ring Neighbors.png");
-
-	return Ts;
-}
+// Improve
 
 std::vector< Vec3d > StackabilityImprover::getLocalMoves( HotSpot& HS )
 {
@@ -103,7 +24,7 @@ std::vector< Vec3d > StackabilityImprover::getLocalMoves( HotSpot& HS )
 	Vec3d hotPoint = HS.hotPoint();
 
 	// step
-	Vec3d step = (org_bbmax - org_bbmin) / 20;
+	Vec3d step = (constraint_bbmax - constraint_bbmin) / 20;
 	int K = 6;
 
 	// Horizontal moves
@@ -123,9 +44,9 @@ std::vector< Vec3d > StackabilityImprover::getLocalMoves( HotSpot& HS )
 					Vec3d pos = hotPoint + delta;
 
 					// check whether \pos is in BB
-					if (RANGE(pos[0], org_bbmin[0], org_bbmax[0])
-						&& RANGE(pos[1], org_bbmin[1], org_bbmax[1])
-						&& RANGE(pos[2], org_bbmin[2], org_bbmax[2]))
+					if (RANGE(pos[0], constraint_bbmin[0], constraint_bbmax[0])
+						&& RANGE(pos[1], constraint_bbmin[1], constraint_bbmax[1])
+						&& RANGE(pos[2], constraint_bbmin[2], constraint_bbmax[2]))
 					{
 						result.push_back(delta);
 					}
@@ -150,9 +71,9 @@ std::vector< Vec3d > StackabilityImprover::getLocalMoves( HotSpot& HS )
 			Vec3d pos = hotPoint + delta;
 
 			// check whether \pos is in BB
-			if (RANGE(pos[0], org_bbmin[0], org_bbmax[0])
-				&& RANGE(pos[1], org_bbmin[1], org_bbmax[1])
-				&& RANGE(pos[2], org_bbmin[2], org_bbmax[2]))
+			if (RANGE(pos[0], constraint_bbmin[0], constraint_bbmax[0])
+				&& RANGE(pos[1], constraint_bbmin[1], constraint_bbmax[1])
+				&& RANGE(pos[2], constraint_bbmin[2], constraint_bbmax[2]))
 			{
 				result.push_back(delta);
 			}
@@ -211,7 +132,7 @@ void StackabilityImprover::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS 
 			state.deltaStackability = stackability - orgStackability;
 			state.distortion = ctrl->getDistortion();
 
-			EditSuggestion suggest;
+			EditingSuggestion suggest;
 			suggest.center = hotPoint;
 			suggest.direction = Ts[i];
 			suggest.deltaS = state.deltaStackability;
@@ -290,7 +211,7 @@ void StackabilityImprover::applyHeuristicsOnHotRing( HotSpot& HS )
 					state.distortion = 0;
 					state.deltaStackability = stackability - orgStackability;
 
-					EditSuggestion suggest;
+					EditingSuggestion suggest;
 					suggest.center = hotPoint;
 
 					Vec3d t = hotPoint;
@@ -329,33 +250,11 @@ void StackabilityImprover::applyHeuristics()
 {
 	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
-	// Set only hot segments visible
-	//ctrl->setSegmentsVisible(false);
-	//foreach (QString segmentID, hotSegments)
-	//	activeObject()->getSegment(segmentID)->isVisible = true;
-
-
 	// After getting rid of redundancy caused by symmetries, hopefully only one pair of hot spots remains
-	// For now, only apply heuristics on the hot region that has maximum offset
-	int selectedID = -1;
-	for (int i=0;activeOffset->upperHotSpots.size();i++)
-	{
-		int rid = activeOffset->upperHotSpots[i].hotRegionID;
-		if (activeOffset->maxOffsetInHotRegions[rid] == activeOffset->O_max)
-		{
-			selectedID = i;
-			break;
-		}
-	}
-
-	if (-1 == selectedID)
-	{
-		std::cout << "There is no hot region containing O_max.\n";
-		return;
-	}
-
-	HotSpot& upperHS = activeOffset->upperHotSpots[selectedID];
-	HotSpot& lowerHS = activeOffset->lowerHotSpots[selectedID];
+	// For now, apply heuristics on the first hot region
+	int hsid = 0;
+	HotSpot& upperHS = activeOffset->upperHotSpots[hsid];
+	HotSpot& lowerHS = activeOffset->lowerHotSpots[hsid];
 
 	if (upperHS.isRing)
 		applyHeuristicsOnHotRing(upperHS);
@@ -373,13 +272,13 @@ bool StackabilityImprover::satisfyBBConstraint()
 {
 	bool result = true;
 
-	Vec3d preBB = org_bbmax - org_bbmin;
+	Vec3d preBB = constraint_bbmax - constraint_bbmin;
 	activeObject()->computeBoundingBox();
 	Vec3d currBB = activeObject()->bbmax - activeObject()->bbmin;
 
 	Vec3d diff = preBB - currBB;
 
-	// Current BB is within expanded BB (tolerenced)
+	// Current BB is within expanded BB (with tolerence)
 	if ( diff[0] < 0 || diff[1] < 0 || diff[2] < 0 )
 		result = false;
 
@@ -457,7 +356,7 @@ void StackabilityImprover::showSolution( int i )
 
 
 // Suggestions
-QVector<EditSuggestion> StackabilityImprover::getSuggestions()
+QVector<EditingSuggestion> StackabilityImprover::getSuggestions()
 {
 	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
@@ -473,15 +372,8 @@ QVector<EditSuggestion> StackabilityImprover::getSuggestions()
 
 
 	// The bounding box constraint is hard
-	org_bbmin = activeObject()->bbmin;
-	org_bbmax = activeObject()->bbmax;
-	org_bbmin[0] *= BB_TOLERANCE;
-	org_bbmin[1] *= BB_TOLERANCE;
-	org_bbmax[0] *= BB_TOLERANCE;
-	org_bbmax[1] *= BB_TOLERANCE;
-
-	org_bbmin[2] *= 1.0001;
-	org_bbmax[2] *= 1.0001;
+	constraint_bbmin = activeObject()->bbmin * BB_TOLERANCE;
+	constraint_bbmax = activeObject()->bbmax * BB_TOLERANCE;
 
 	isSuggesting = true;
 	improveStackability();
@@ -512,7 +404,7 @@ void StackabilityImprover::normalizeSuggestions()
 		double minV = DBL_MAX;
 		double maxV = DBL_MIN;
 
-		foreach(EditSuggestion sg, suggestions)
+		foreach(EditingSuggestion sg, suggestions)
 		{
 			double s = sg.deltaS;
 			double v = sg.deltaV;
@@ -545,7 +437,7 @@ void StackabilityImprover::normalizeSuggestions()
 	double minValue = DBL_MAX;
 	double maxValue = DBL_MIN;
 
-	foreach(EditSuggestion sg, suggestions)
+	foreach(EditingSuggestion sg, suggestions)
 	{
 		double s = sg.value;
 
@@ -601,8 +493,8 @@ void StackabilityImprover::improveStackabilityToTarget()
 	usedCandidateSolutions.clear();
 
 	// The bounding box constraint is hard
-	org_bbmin = activeObject()->bbmin * BB_TOLERANCE;
-	org_bbmax = activeObject()->bbmax * BB_TOLERANCE;
+	constraint_bbmin = activeObject()->bbmin * BB_TOLERANCE;
+	constraint_bbmax = activeObject()->bbmax * BB_TOLERANCE;
 	
 	// Push the current shape as the initial candidate solution
 	ShapeState state = ctrl->getShapeState();
@@ -642,6 +534,7 @@ void StackabilityImprover::improveStackabilityToTarget()
 	activeObject()->computeBoundingBox();
 }
 
+// Try local moves of hot spots to improve stackability
 void StackabilityImprover::improveStackability()
 {
 	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];

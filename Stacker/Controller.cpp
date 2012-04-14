@@ -9,7 +9,7 @@
 #include "JointGroup.h"
 double JOINT_THRESHOLD = 0.035;
 
-#include "EditSuggestion.h"
+#include "EditingSuggestion.h"
 
 Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 {

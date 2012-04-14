@@ -4,7 +4,7 @@
 #include "GraphicsLibrary/Voxel/Voxeler.h"
 #include "Group.h"
 
-class EditSuggestion;
+class EditingSuggestion;
 
 extern double JOINT_THRESHOLD;
 
