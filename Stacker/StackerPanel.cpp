@@ -34,7 +34,7 @@ StackerPanel::StackerPanel()
 	QDockWidget * previewDock = new QDockWidget("Preview");
 	previewDock->setWidget (stacker_preview);
 	layout->addWidget(previewDock, row++, 0,1,6);
-	stacker_preview->setMinimumHeight(350);
+	stacker_preview->setMinimumHeight(50);
 
 	// Add a stacking hidden viewer widget for offset calculator
 	hidden_viewer = new HiddenViewer();
@@ -486,14 +486,14 @@ void StackerPanel::onSaveSuggestionsButtonClicked()
 {
 	if(!activeScene || !activeObject())	return;
 
-	QVector< EditingSuggestion > &suggestions = suggestions;
+	QVector< EditSuggestion > &suggestions = suggestions;
 	if (suggestions.empty()) return;
 
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", "", "Group File (*.sgt)"); 
 	std::ofstream outF(qPrintable(fileName), std::ios::out);
 
 	outF << suggestions.size() << std::endl;
-	foreach(EditingSuggestion sgt, suggestions)
+	foreach(EditSuggestion sgt, suggestions)
 	{
 		outF << sgt.center << '\t' << sgt.direction << '\t' << sgt.value << std::endl;
 	}
@@ -512,7 +512,7 @@ void StackerPanel::onLoadSuggestionsButtonClicked()
 	suggestions.clear();
 	for (int i=0; i<num; i++)
 	{
-		EditingSuggestion sgt;
+		EditSuggestion sgt;
 		inF >> sgt.center >> sgt.direction >> sgt.value;
 		suggestions.push_back(sgt);
 	}

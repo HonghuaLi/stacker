@@ -50,18 +50,15 @@ void Skinning::computeWeights()
 			}
 		}
 
-
 		// If at end or outside GC
-		if(minIdx == -1)
-		{
+		if(minIdx == -1){
 			minDis = DBL_MAX;
 
 			for(int j = 0; j < (int)origGC.crossSection.size(); j++)
 			{
 				double dist = (origGC.crossSection[j].center - v).norm();
 
-				if(dist < minDis)
-				{
+				if(dist < minDis){
 					minDis = dist;
 					minIdx = j;
 				}
@@ -97,15 +94,15 @@ void Skinning::deform()
 		Vec3d n1(orig_c.normal()), n2(c.normal());
 		Vector3d axis = V2E(cross(n1, n2).normalized());
 
-		if(axis.norm() > 0)
-		{
+		// Rotation
+		if(axis.norm() > 0){
 			double angle = acos(dot(n1, n2));
-
 			SPR[i] = AngleAxisd(angle, axis).toRotationMatrix();
-			SPT[i] = V2E(c.center) - SPR[i] * V2E(orig_c.center);
 		}
-	}
 
+		// Translation
+		SPT[i] = V2E(c.center) - SPR[i] * V2E(orig_c.center);
+	}
 
 	// Blending
 	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");

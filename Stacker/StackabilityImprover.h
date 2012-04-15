@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Offset.h"
-#include "EditingSuggestion.h"
-extern QVector<EditingSuggestion> suggestions;
+#include "EditSuggestion.h"
+extern QVector<EditSuggestion> suggestions;
 
 class StackabilityImprover
 {
@@ -26,7 +26,7 @@ public:
 	std::vector< Vec3d > getLocalMoves( HotSpot& HS );
 
 	// Suggestions
-	QVector<EditingSuggestion> getSuggestions();
+	QVector<EditSuggestion> getSuggestions();
 	void normalizeSuggestions();
 
 	// Show results
@@ -37,7 +37,7 @@ public:
 public:
 	// Suggestion
 	bool isSuggesting;
-	QVector<EditingSuggestion> suggestions;
+	QVector<EditSuggestion> suggestions;
 	PQShapeShateLessEnergy suggestSolutions;
 
 	// Beam Searching

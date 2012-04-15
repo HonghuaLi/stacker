@@ -14,7 +14,6 @@
 //								       f4/  |f3
 //	                                    Z
 
-
 class Cuboid : public Primitive
 {
 public:
@@ -41,7 +40,7 @@ public:
 	virtual void translate( Vec3d &T );
 	virtual void moveCurveCenter( int cid, Vec3d T);
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
-	virtual bool excludePoints( std::vector< Vec3d >& pnts );
+	virtual bool excludePoints( std::vector< Vec3d > pnts );
 	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts );
 	virtual void movePoint(Point p, Vec3d T);
 	virtual void scaleCurve(int cid, double s);
@@ -80,21 +79,34 @@ public:
 	virtual void load(std::ifstream &inF, double scaleFactor);
 
 private:
-	Vector3 getCoordinatesInBox(MinOBB3::Box3 &box, Vector3 &p);
-    Vector3 getPositionInBox(const MinOBB3::Box3 &box, const Vector3 &coord);
+	QSurfaceMesh getBoxGeometry( MinOBB3::Box3 &box, bool isUniform = false );
+	Vector3 getCoordinatesInUniformBox(MinOBB3::Box3 &box, Vector3 &p);
+    Vector3 getPositionInUniformBox(const MinOBB3::Box3 &box, const Vector3 &coord);
+	std::vector<Vec3d> getUniformBoxConners( MinOBB3::Box3 &box );
+
+	Vector3 getPositionInBox( MinOBB3::Box3 &box, int vidx );
 
 	std::vector<Vector3> getBoxConners(MinOBB3::Box3 &box);
 	std::vector< std::vector<Vector3> > getBoxFaces(MinOBB3::Box3 &fromBox);
-	Vec3d faceCenterOfBox( MinOBB3::Box3 &box, uint fid );
+	Vector3 faceCenterOfUniformBox( MinOBB3::Box3 &box, uint fid );
 
 	void drawCube(double lineWidth, Vec4d color, bool isOpaque = false);
 
-	
 	// Debug
 	bool isDrawAxis;
 	bool isUsedAABB;
 
 public:
-	std::vector< Vector3 > coordinates;
+	std::vector< std::vector<double> > coordinates;
+
 	MinOBB3::Box3 originalBox, currBox;
 };
+
+// Face corners
+static uint cubeIds[6][4] = 
+	{1, 2, 6, 5,
+	 0, 4, 7, 3,
+	 4, 5, 6, 7,
+	 0, 3, 2, 1,
+	 0, 1, 5, 4,
+	 2, 3, 7, 6};

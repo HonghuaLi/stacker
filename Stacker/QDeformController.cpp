@@ -28,14 +28,10 @@ void QDeformController::updateController()
 	ctrl->setPrimitivesFrozen(false);
 
 	Primitive * prim = ctrl->getSelectedPrimitive();
+
 	prim->isFrozen = true;
-
-	prim->moveCurveCenter( -1,  pos() - prim->selectedPartPos());
-
-	//prim->deformRespectToJoint(Vec3d(0,0,0), prim->selectedPartPos(), pos() - prim->selectedPartPos());
-	
+	prim->moveCurveCenter( -1,  pos() - prim->selectedPartPos() );
 	ctrl->weakPropagate();
-
 	prim->isFrozen = false;
 
 	emit( objectModified() );
@@ -51,9 +47,9 @@ void QDeformController::scaleUp( double s )
 	if(prim != NULL)
 	{
 		prim->isFrozen = true;
-
 		prim->scaleCurve(-1, s);
 		ctrl->weakPropagate();
+		prim->isFrozen = false;
 
 		emit( objectModified() );
 	}

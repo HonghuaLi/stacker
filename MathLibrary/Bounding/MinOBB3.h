@@ -41,8 +41,9 @@ public:
 		Vector3 Center;
 		std::vector<Vector3> Axis;
 		Vector3 Extent;
-	};
 
+		std::vector<double> faceScaling;
+	};
 
 public:
     MinOBB3(std::vector<Vector3> &points);

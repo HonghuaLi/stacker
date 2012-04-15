@@ -35,7 +35,7 @@ public:
 	virtual void translate( Vec3d &T ) = 0;
 	virtual void moveCurveCenter( int cid, Vec3d T) = 0;
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) = 0;
-	virtual bool excludePoints( std::vector< Vec3d >& pnts ) = 0;
+	virtual bool excludePoints( std::vector< Vec3d > pnts ) = 0;
 	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts ) = 0;
 	virtual void movePoint(Point p, Vec3d T) = 0;
 	virtual void scaleCurve(int cid, double s) = 0;

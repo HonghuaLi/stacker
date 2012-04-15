@@ -133,7 +133,7 @@ void Scene::draw()
 	Vec3d pos(p.x, p.y, p.z);
 	double scaling = 0.05;//pos.norm() / 100.0;
 	pos.normalize();	
-	foreach(EditingSuggestion sg, suggestions)
+	foreach(EditSuggestion sg, suggestions)
 		sg.draw(scaling);
 }
 
@@ -517,7 +517,22 @@ void Scene::postSelection( const QPoint& point )
 	{
 	case CONTROLLER:
 		if (!isEmpty() && ctrl)
+		{
 			ctrl->select(selected);
+
+			if(selected != -1)
+			{
+				defCtrl = new QDeformController(ctrl);
+				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
+				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
+			
+				emit(objectInserted());
+
+				setManipulatedFrame( defCtrl->getFrame() );
+				Vec3d q = ctrl->getPrimPartPos();
+				manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
+			}
+		}
 		break;
 
 	case CONTROLLER_ELEMENT:
@@ -526,24 +541,22 @@ void Scene::postSelection( const QPoint& point )
 			if(ctrl->selectPrimitivePart(selected))
 			{
 				defCtrl = new QDeformController(ctrl);
-
 				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 
 				emit(objectInserted());
 
 				setManipulatedFrame( defCtrl->getFrame() );
-
 				Vec3d q = ctrl->getPrimPartPos();
-				Vec p(q.x(), q.y(), q.z());
-
-				manipulatedFrame()->setPosition(p);
+				manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
 			}
 
 			if(selected == -1)
 			{
 				setSelectMode(CONTROLLER);
 				setManipulatedFrame( activeFrame );
+
+				ctrl->select(selected);
 			}
 
 		}

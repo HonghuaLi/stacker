@@ -36,6 +36,8 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	vdp = new QVoxelDeformerPanel();
 	rightLayout->addWidget(vdp);
 
+	ui.rightDock->hide();
+
 	// Create mesh document manager
 	mDoc = new QMeshDoc(this);
 
