@@ -12,6 +12,8 @@ Primitive::Primitive( QSurfaceMesh* mesh, QString newId )
 	isRotationalSymmetry = false;
 
 	isDraw = true;
+
+	selectedPartId = -1;
 }
 
 void Primitive::drawDebug()
@@ -136,12 +138,12 @@ Eigen::Matrix3d Primitive::rotationMatrixAroundAxis( Vec3d u, double theta )
 	I = Eigen::Matrix3d::Identity(3,3);
 
 	tp <<	x*x, x*y, x*z,
-		x*y, y*y, y*z,
-		x*z, y*z, z*z;
+			x*y, y*y, y*z,
+			x*z, y*z, z*z;
 
-	cpm <<  0, -z,  y,
-		z,  0, -x,
-		-y,  x,  0;
+	cpm <<   0, -z,  y,
+			 z,  0, -x,
+			-y,  x,  0;
 
 	theta = RADIANS(theta);
 	R = cos(theta)*I + sin(theta)*cpm + (1-cos(theta))*tp;

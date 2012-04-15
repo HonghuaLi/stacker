@@ -4,16 +4,13 @@
 #include <QVector>
 #include <QString>
 #include <queue>
-#include "EditingSuggestion.h"
-
-
+#include "Stacker/EditSuggestion.h"
 
 struct PrimitiveState
 {
 	 void* geometry;
 	 bool isFrozen;
 };
-
 
 class ShapeState
 {
@@ -24,7 +21,7 @@ public:
 
 	// N history states have a N-1 long trajectory
 	QVector<ShapeState> history;
-	QVector<EditingSuggestion> trajectory;
+	QVector<EditSuggestion> trajectory;
 
 	double energy();
 

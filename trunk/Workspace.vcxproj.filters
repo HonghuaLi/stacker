@@ -108,6 +108,9 @@
     <Filter Include="Math\Deformer\SkeletonDeform">
       <UniqueIdentifier>{0929f05a-ee7e-483d-86d4-30c3d6273d3b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math\Deformer\MeanValueCoordinates">
+      <UniqueIdentifier>{2bd153b2-910d-422d-9399-218490acc697}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Stacker\Source">
       <UniqueIdentifier>{ed258eba-61fb-4585-a08b-ee676d5c284c}</UniqueIdentifier>
     </Filter>
@@ -337,6 +340,9 @@
     </ClInclude>
     <ClInclude Include="Stacker\StackabilityImprover.h">
       <Filter>Stacker\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\Coordiantes\MeanValueCoordinates.h">
+      <Filter>Math\Deformer\MeanValueCoordinates</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\StackerGlobal.h">
       <Filter>Stacker\Header</Filter>
@@ -753,7 +759,7 @@
     <ClCompile Include="Stacker\StackerPanel.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\EditingSuggestion.cpp">
+    <ClCompile Include="Stacker\EditSuggestion.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
   </ItemGroup>

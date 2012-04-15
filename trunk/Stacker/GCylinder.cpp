@@ -289,6 +289,13 @@ double GCylinder::volume()
 
 Vec3d GCylinder::selectedPartPos()
 {
+	if(selectedPartId < 0){
+		// Return center point
+		std::vector<Point> pnts = points();
+		Vec3d center(0,0,0); foreach(Point p, pnts) center += p;
+		return center / pnts.size();
+	}
+
 	Vec3d result(0,0,0);
 
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection){
@@ -303,8 +310,15 @@ Vec3d GCylinder::selectedPartPos()
 
 void GCylinder::moveCurveCenter( int cid, Vec3d delta )
 {
-	// Using full range
-	moveCurveCenterRanged(cid, delta);
+	if(cid < 0 && selectedPartId < 0)
+	{
+		translate(delta);
+	}
+	else
+	{
+		// Using full range
+		moveCurveCenterRanged(cid, delta);
+	}
 }
 
 void GCylinder::moveCurveCenterRanged(int cid, Vec3d delta, int start, int finish)
@@ -347,7 +361,10 @@ void GCylinder::scaleCurve( int cid, double s )
 
 	int N = gc->frames.count();
 
-	std::cout << "Curve scaling: s = " << s << " weights= "; 
+	// DEBUG:
+	//std::cout << "Curve scaling: s = " << s << " weights= "; 
+
+	// For each cross section in GC
 	for(int i = 0; i < N; i++)	
 	{
 		// Gaussian parameters
@@ -358,11 +375,11 @@ void GCylinder::scaleCurve( int cid, double s )
 
 		double weight = 1 + (s * gaussianFunction(dist, mu, sigma));
 			
-		std::cout << weight << ", ";
+		//std::cout << weight << ", "; // debug
 		gc->crossSection[i].radius *= weight;
 	}
-	std::cout << std::endl;
 
+	//std::cout << std::endl;
 
 	// Re-compute frames and align the cross-sections
 	deformMesh();
@@ -518,7 +535,7 @@ uint GCylinder::detectHotCurve( std::vector< Vec3d > &hotSamples )
 	return selectedPartId;
 }
 
-bool GCylinder::excludePoints( std::vector< Vec3d >& pnts )
+bool GCylinder::excludePoints( std::vector< Vec3d > pnts )
 {
 	// deprecated..
 	// Shrink GC along its skeleton

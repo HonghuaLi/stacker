@@ -9,7 +9,7 @@
 #include "JointGroup.h"
 double JOINT_THRESHOLD = 0.035;
 
-#include "EditingSuggestion.h"
+#include "EditSuggestion.h"
 
 Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 {
@@ -146,8 +146,6 @@ Vec3d Controller::getPrimPartPos()
 		if(prim->isSelected)
 			return prim->selectedPartPos();
 	}
-
-	return Vec3d();
 }
 
 void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cuboidAxis )

@@ -1,7 +1,7 @@
 #include "StackabilityImprover.h"
 #include "Offset.h"
 
-QVector<EditingSuggestion> suggestions;
+QVector<EditSuggestion> suggestions;
 
 StackabilityImprover::StackabilityImprover( Offset *offset )
 {
@@ -132,7 +132,7 @@ void StackabilityImprover::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS 
 			state.deltaStackability = stackability - orgStackability;
 			state.distortion = ctrl->getDistortion();
 
-			EditingSuggestion suggest;
+			EditSuggestion suggest;
 			suggest.center = hotPoint;
 			suggest.direction = Ts[i];
 			suggest.deltaS = state.deltaStackability;
@@ -211,7 +211,7 @@ void StackabilityImprover::applyHeuristicsOnHotRing( HotSpot& HS )
 					state.distortion = 0;
 					state.deltaStackability = stackability - orgStackability;
 
-					EditingSuggestion suggest;
+					EditSuggestion suggest;
 					suggest.center = hotPoint;
 
 					Vec3d t = hotPoint;
@@ -356,7 +356,7 @@ void StackabilityImprover::showSolution( int i )
 
 
 // Suggestions
-QVector<EditingSuggestion> StackabilityImprover::getSuggestions()
+QVector<EditSuggestion> StackabilityImprover::getSuggestions()
 {
 	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
@@ -404,7 +404,7 @@ void StackabilityImprover::normalizeSuggestions()
 		double minV = DBL_MAX;
 		double maxV = DBL_MIN;
 
-		foreach(EditingSuggestion sg, suggestions)
+		foreach(EditSuggestion sg, suggestions)
 		{
 			double s = sg.deltaS;
 			double v = sg.deltaV;
@@ -437,7 +437,7 @@ void StackabilityImprover::normalizeSuggestions()
 	double minValue = DBL_MAX;
 	double maxValue = DBL_MIN;
 
-	foreach(EditingSuggestion sg, suggestions)
+	foreach(EditSuggestion sg, suggestions)
 	{
 		double s = sg.value;
 
