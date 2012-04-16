@@ -35,12 +35,12 @@ MeshBrowserWidget::MeshBrowserWidget()
 	connect(dialog.pathButton, SIGNAL(clicked()), SLOT(changePath()));
 	connect(this, SIGNAL(pathChanged(QString)), dialog.folderLabel, SLOT(setText(QString)));
 	connect(this, SIGNAL(pathChanged(QString)), SLOT(loadMeshes(QString)));
+	connect(dialog.scrollBar, SIGNAL(valueChanged(int)), SLOT(loadMeshes()));
 }
 
 void MeshBrowserWidget::changePath()
 {
-	QFileDialog fd;	fd.setOption(QFileDialog::ShowDirsOnly);
-	path = fd.getExistingDirectory(0, "Select folder", path);
+	path = QFileDialog::getExistingDirectory(0, "Select folder", path, QFileDialog::ShowDirsOnly);
 
 	emit(pathChanged(path));
 
@@ -64,6 +64,7 @@ void MeshBrowserWidget::showNumViewers( int n )
 			{
 				viewers[i][j]->isActive = true;
 				viewers[i][j]->resetView();
+				viewers[i][j]->clearMesh();
 				activeCount++;
 			}
 			else
@@ -78,6 +79,8 @@ void MeshBrowserWidget::showNumViewers( int n )
 
 void MeshBrowserWidget::loadMeshes(QString using_path)
 {
+	showNumViewers(countX * countY);
+
 	path = using_path;
 
 	// Get list of files
@@ -93,7 +96,13 @@ void MeshBrowserWidget::loadMeshes(QString using_path)
 	dialog.scrollBar->setValue(0);
 
 	if(files.size())
-		loadCurrentMeshes();
+		loadMeshes();
+}
+
+void MeshBrowserWidget::loadMeshes()
+{
+	loadCurrentMeshes();
+	refresh();
 }
 
 void MeshBrowserWidget::loadCurrentMeshes()
@@ -106,20 +115,29 @@ void MeshBrowserWidget::loadCurrentMeshes()
 
 	int c = 0;
 
-	for(int i = 0; i < countX; i++)
+	for(int i = 0; i < countX; i++){
 		for(int j = 0; j < countY; j++)
 		{
 			viewers[i][j]->resetView();
 			viewers[i][j]->clearMesh();
 		}
+	}
 
 	for(int i = 0; i < countX; i++){
-		for(int j = 0; j < countY; j++){
+		for(int j = 0; j < countY; j++)
+		{
 			if(index + c > files.size() - 1) return;
 			viewers[i][j]->loadMesh(path + "\\" + files[index + c]);
 			c++; if(c > curActive) return;
 		}
 	}
+}
+
+void MeshBrowserWidget::refresh()
+{
+	for(int i = 0; i < countX; i++)
+		for(int j = 0; j < countY; j++)
+			viewers[i][j]->updateGL();
 }
 
 void MeshBrowserWidget::setActiveViewer( QuickMeshViewer* v)
@@ -130,6 +148,5 @@ void MeshBrowserWidget::setActiveViewer( QuickMeshViewer* v)
 QString MeshBrowserWidget::selectedFile()
 {
 	if(activeViewer) return activeViewer->meshFileName();
-
 	return "";
 }
