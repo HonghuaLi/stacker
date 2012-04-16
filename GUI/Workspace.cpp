@@ -41,11 +41,14 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	// Create mesh document manager
 	mDoc = new QMeshDoc(this);
 
+	// Add new scene action
+	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
+
 	// Connect to mesh management
 	connect(ui.actionImportObject, SIGNAL(triggered()), mDoc, SLOT(importObject()));
 
-	// Add new scene action
-	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
+	// Connect to mesh browser
+	connect(ui.actionMeshBrowser, SIGNAL(triggered()), mDoc, SLOT(importObjectBrowser()));
 
 	leftLayout->addStretch();
 	rightLayout->addStretch();

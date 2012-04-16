@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Workspace">
+    <file>Resources/icons/browse.ico</file>
     <file>AppIcon.ico</file>
     <file>Resources/icons/joints.png</file>
     <file>Resources/icons/cuboid.png</file>
