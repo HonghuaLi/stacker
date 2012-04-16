@@ -32,9 +32,11 @@ protected:
 public slots:
 	void changePath();
 	void loadMeshes(QString using_path);
+	void loadMeshes();
 	void showNumViewers(int n);
 	void loadCurrentMeshes();
 	void setActiveViewer(QuickMeshViewer*);
+	void refresh();
 
 signals:
 	void pathChanged(QString);

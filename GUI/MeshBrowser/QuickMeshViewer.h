@@ -5,6 +5,8 @@ using namespace qglviewer;
 
 #include "QuickMesh.h"
 
+#define GL_MULTISAMPLE 0x809D
+
 class QuickMeshViewer : public QGLViewer{
 	Q_OBJECT
 public:
@@ -42,8 +44,7 @@ public:
 	{
 		if(!this->isActive) return;
 
-		QGLViewer::draw();
-
+		glEnable(GL_MULTISAMPLE);
 		mesh.draw();
 	}
 

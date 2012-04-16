@@ -102,9 +102,6 @@ void QMeshDoc::importObjectBrowser()
 {
 	MeshBrowserWidget * browser = new MeshBrowserWidget;
 
-	if(browser->exec()){
+	if(browser->exec())
 		importObject(browser->selectedFile());
-	}
-
-	printf("Browser done.");
 }
