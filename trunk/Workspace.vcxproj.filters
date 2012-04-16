@@ -117,6 +117,9 @@
     <Filter Include="Stacker\Header">
       <UniqueIdentifier>{9456baa9-2d48-418e-9afa-459f873b466f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GUI\MeshBrowser">
+      <UniqueIdentifier>{2bd0b114-5267-4b14-941e-69e6fdf12afc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GUI\global.h">
@@ -350,6 +353,9 @@
     <ClInclude Include="Stacker\EditingSuggestion.h">
       <Filter>Stacker\Header</Filter>
     </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_MeshBrowserForm.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="GUI\QMeshDoc.h">
@@ -438,6 +444,18 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\StackerPreview.h">
       <Filter>Stacker\Header</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\MeshBrowser\MeshBrowserForm.ui">
+      <Filter>GUI\MeshBrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\MeshBrowser\QuickMesh.h">
+      <Filter>GUI\MeshBrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\MeshBrowser\MeshBrowserWidget.h">
+      <Filter>GUI\MeshBrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GUI\MeshBrowser\QuickMeshViewer.h">
+      <Filter>GUI\MeshBrowser</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -761,6 +779,27 @@
     </ClCompile>
     <ClCompile Include="Stacker\EditSuggestion.cpp">
       <Filter>Stacker\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\MeshBrowser\MeshBrowserWidget.cpp">
+      <Filter>GUI\MeshBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QuickMesh.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QuickMesh.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_MeshBrowserWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_MeshBrowserWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QuickMeshViewer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QuickMeshViewer.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
