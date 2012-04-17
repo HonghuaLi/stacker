@@ -205,6 +205,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -Dqh_QHpointer -DQT_DLL  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I.\GraphicsLibrary\Mesh\SurfaceMesh" "-I.\Utility" "-I.\Stacker" "-I.\GraphicsLibrary\Skeleton" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UMFPACK" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\AMD" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UFconfig" "-I$(NOINHERIT)\." "-I." "-I." "-I." "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
+    <ClInclude Include="MathLibrary\Bounding\Box3.h" />
     <ClInclude Include="MathLibrary\Bounding\ConvexHull2.h" />
     <ClInclude Include="MathLibrary\Bounding\ConvexHull3.h" />
     <ClInclude Include="MathLibrary\Bounding\MinOBB2.h" />
@@ -298,6 +299,7 @@
     </CustomBuild>
     <ClInclude Include="Stacker\HotSpot.h" />
     <ClInclude Include="Stacker\JointDetector.h" />
+    <ClInclude Include="Stacker\LineJointGroup.h" />
     <ClInclude Include="Stacker\PointJointGroup.h" />
     <ClInclude Include="Stacker\Numeric.h" />
     <ClInclude Include="Stacker\Offset.h" />
@@ -573,6 +575,7 @@
     <ClCompile Include="GUI\Tools\TransformationPanel.cpp" />
     <ClCompile Include="GUI\Workspace.cpp" />
     <ClCompile Include="MathLibrary\Bounding\BoundingBox.cpp" />
+    <ClCompile Include="MathLibrary\Bounding\Box3.cpp" />
     <ClCompile Include="MathLibrary\Bounding\ConvexHull2.cpp" />
     <ClCompile Include="MathLibrary\Bounding\ConvexHull3.cpp" />
     <ClCompile Include="MathLibrary\Bounding\MinOBB2.cpp" />
@@ -596,6 +599,7 @@
     <ClCompile Include="Stacker\HiddenViewer.cpp" />
     <ClCompile Include="Stacker\HotSpot.cpp" />
     <ClCompile Include="Stacker\JointDetector.cpp" />
+    <ClCompile Include="Stacker\LineJointGroup.cpp" />
     <ClCompile Include="Stacker\PointJointGroup.cpp" />
     <ClCompile Include="Stacker\Numeric.cpp" />
     <ClCompile Include="Stacker\Offset.cpp" />

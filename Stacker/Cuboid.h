@@ -79,16 +79,16 @@ public:
 	virtual void load(std::ifstream &inF, double scaleFactor);
 
 private:
-	QSurfaceMesh getBoxGeometry( MinOBB3::Box3 &box, bool isUniform = false );
-	Vector3 getCoordinatesInUniformBox(MinOBB3::Box3 &box, Vector3 &p);
-    Vector3 getPositionInUniformBox(const MinOBB3::Box3 &box, const Vector3 &coord);
-	std::vector<Vec3d> getUniformBoxConners( MinOBB3::Box3 &box );
+	QSurfaceMesh getBoxGeometry( Box3 &box, bool isUniform = false );
+	Vector3 getCoordinatesInUniformBox(Box3 &box, Vector3 &p);
+    Vector3 getPositionInUniformBox(const Box3 &box, const Vector3 &coord);
+	std::vector<Vec3d> getUniformBoxConners( Box3 &box );
 
-	Vector3 getPositionInBox( MinOBB3::Box3 &box, int vidx );
+	Vector3 getPositionInBox( Box3 &box, int vidx );
 
-	std::vector<Vector3> getBoxConners(MinOBB3::Box3 &box);
-	std::vector< std::vector<Vector3> > getBoxFaces(MinOBB3::Box3 &fromBox);
-	Vector3 faceCenterOfUniformBox( MinOBB3::Box3 &box, uint fid );
+	std::vector<Vector3> getBoxConners(Box3 &box);
+	std::vector< std::vector<Vector3> > getBoxFaces(Box3 &fromBox);
+	Vector3 faceCenterOfUniformBox( Box3 &box, uint fid );
 
 	void drawCube(double lineWidth, Vec4d color, bool isOpaque = false);
 
@@ -99,7 +99,7 @@ private:
 public:
 	std::vector< std::vector<double> > coordinates;
 
-	MinOBB3::Box3 originalBox, currBox;
+	Box3 originalBox, currBox;
 };
 
 // Face corners

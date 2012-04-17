@@ -45,7 +45,7 @@ void Cuboid::fit( bool useAABB, int obb_method )
 	}
 	else
 	{
-		MinOBB3::Box3 fittedBox;
+		Box3 fittedBox;
 
 		switch(obb_method)
 		{
@@ -110,7 +110,7 @@ void Cuboid::computeMeshCoordiantes()
 	}
 }
 
-Vec3d Cuboid::getCoordinatesInUniformBox( MinOBB3::Box3 &box, Vec3d &p )
+Vec3d Cuboid::getCoordinatesInUniformBox( Box3 &box, Vec3d &p )
 {
 	Vec3d local_p = p - box.Center;
 
@@ -119,7 +119,7 @@ Vec3d Cuboid::getCoordinatesInUniformBox( MinOBB3::Box3 &box, Vec3d &p )
 		dot(local_p, box.Axis[2]) / box.Extent[2]);
 }
 
-Vec3d Cuboid::getPositionInUniformBox( const MinOBB3::Box3 &box, const Vec3d &coord )
+Vec3d Cuboid::getPositionInUniformBox( const Box3 &box, const Vec3d &coord )
 {
 	Vec3d local_p = box.Extent[0] * coord[0] * box.Axis[0]
 	+ box.Extent[1] * coord[1] * box.Axis[1]
@@ -128,7 +128,7 @@ Vec3d Cuboid::getPositionInUniformBox( const MinOBB3::Box3 &box, const Vec3d &co
 	return local_p + box.Center;
 }
 
-Vec3d Cuboid::getPositionInBox( MinOBB3::Box3 &box, int vidx )
+Vec3d Cuboid::getPositionInBox( Box3 &box, int vidx )
 {
 	std::vector<Vec3d> pnts = getBoxConners(box);
 
@@ -152,7 +152,7 @@ void Cuboid::deformMesh()
 	}
 }
 
-std::vector<Vec3d> Cuboid::getUniformBoxConners( MinOBB3::Box3 &box )
+std::vector<Vec3d> Cuboid::getUniformBoxConners( Box3 &box )
 {
 	std::vector<Vec3d> pnts(8);
 
@@ -177,7 +177,7 @@ std::vector<Vec3d> Cuboid::getUniformBoxConners( MinOBB3::Box3 &box )
 	return pnts;
 }
 
-std::vector<Vec3d> Cuboid::getBoxConners( MinOBB3::Box3 &box )
+std::vector<Vec3d> Cuboid::getBoxConners( Box3 &box )
 {
 	std::vector<Vec3d> corner = getUniformBoxConners(box);
 
@@ -199,7 +199,7 @@ std::vector<Vec3d> Cuboid::getBoxConners( MinOBB3::Box3 &box )
 	return corner;
 }
 
-std::vector< std::vector<Vec3d> > Cuboid::getBoxFaces(MinOBB3::Box3 &fromBox)
+std::vector< std::vector<Vec3d> > Cuboid::getBoxFaces(Box3 &fromBox)
 {
 	std::vector< std::vector<Vec3d> > faces(6);
 	std::vector<Vec3d> pnts = getBoxConners(fromBox);
@@ -388,7 +388,7 @@ void Cuboid::translateCurve( uint cid, Vec3d T, uint sid_respect /*= -1*/ )
 }
 
 
-Vec3d Cuboid::faceCenterOfUniformBox( MinOBB3::Box3 &box, uint fid )
+Vec3d Cuboid::faceCenterOfUniformBox( Box3 &box, uint fid )
 {
 	uint id = fid / 2;
 
@@ -406,7 +406,7 @@ QSurfaceMesh Cuboid::getGeometry()
 	return getBoxGeometry(currBox);
 }
 
-QSurfaceMesh Cuboid::getBoxGeometry( MinOBB3::Box3 &box, bool isUniform )
+QSurfaceMesh Cuboid::getBoxGeometry( Box3 &box, bool isUniform )
 {
 	std::vector< std::vector<Vec3d> > faces(6);
 	std::vector<Vec3d> pnts;
@@ -660,13 +660,13 @@ std::vector <Vec3d> Cuboid::majorAxis()
 
 void* Cuboid::getGeometryState()
 {
-	MinOBB3::Box3 *box = new MinOBB3::Box3(currBox);
+	Box3 *box = new Box3(currBox);
 	return (void*)box;
 }
 
 void Cuboid::setGeometryState( void* state)
 {
-	currBox = *( (MinOBB3::Box3*) state );
+	currBox = *( (Box3*) state );
 }
 
 std::vector < std::vector <Vec3d> > Cuboid::getCurves()

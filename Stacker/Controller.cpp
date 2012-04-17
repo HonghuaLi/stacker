@@ -170,7 +170,7 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 
 		Line line(center + (axis * extent), center + (-axis * extent));
 
-		std::vector<Point> spinePoints = line.uniformSample(skeletonJoints);
+		std::vector<Point> spinePoints = line.uniformSample(GC_SKELETON_JOINTS_NUM);
 
 		gc->createGC(spinePoints);
 		gc->buildCage();

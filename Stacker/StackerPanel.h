@@ -37,7 +37,6 @@ public slots:
 	// Scene management
 	void setActiveScene( Scene * );
 	void updateActiveObject();
-	void updateController();
 
 	// Buttons
 	void onHotspotsButtonClicked();
@@ -47,16 +46,6 @@ public slots:
 	void onLoadSuggestionsButtonClicked();
 	void searchDirection();
 	void outputForPaper();
-
-	// Primitives modification
-	void convertGC();
-	void convertCuboid();
-
-	// Joints
-	void findJoints();
-	void findPairwiseJoints();
-	void setJointThreshold(double threshold);
-	void setSkeletonJoints(int num);
 
 	// Parameters
 	void setStackCount(int num);
@@ -71,5 +60,4 @@ public slots:
 signals:
 	void printMessage( QString );
 	void objectModified();
-
 };

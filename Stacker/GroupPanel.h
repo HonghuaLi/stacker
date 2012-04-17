@@ -18,16 +18,25 @@ public:
 	// Utility function
 	QString getItemId(QTreeWidgetItem* item);
 
+	// Active Object
+	QSegMesh* activeObject();
 
 public slots:
+	// Sence management
 	void setActiveScene( Scene * newScene );
 	void updateWidget();
+
+	// Joint detection
+	void findJoints();
+	void findPairwiseJoints();
+	void setJointThreshold(double threshold);
+
+	// Group tree
 	void removeSelectedItem();
-	void saveGroups();
-	void loadGroups();
 	void clearGroups();
 	void toggleGroupDisplay(int state);
 
-signals:
-
+	// Load and save
+	void saveGroups();
+	void loadGroups();
 };

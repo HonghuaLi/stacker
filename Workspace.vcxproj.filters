@@ -78,9 +78,6 @@
     <Filter Include="Stacker">
       <UniqueIdentifier>{3cf3d411-3418-4b2a-a02b-1a3954d61f1e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Stacker\StackerTools">
-      <UniqueIdentifier>{fc488e09-4843-4b16-a2b4-488b9f9e1014}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Stacker\Groups">
       <UniqueIdentifier>{65632ec3-d526-4748-9d48-3818e1f74827}</UniqueIdentifier>
     </Filter>
@@ -111,14 +108,17 @@
     <Filter Include="Math\Deformer\MeanValueCoordinates">
       <UniqueIdentifier>{2bd153b2-910d-422d-9399-218490acc697}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Stacker\Source">
-      <UniqueIdentifier>{ed258eba-61fb-4585-a08b-ee676d5c284c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Stacker\Header">
-      <UniqueIdentifier>{9456baa9-2d48-418e-9afa-459f873b466f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GUI\MeshBrowser">
       <UniqueIdentifier>{2bd0b114-5267-4b14-941e-69e6fdf12afc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stacker\Panels">
+      <UniqueIdentifier>{fc488e09-4843-4b16-a2b4-488b9f9e1014}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stacker\Utility">
+      <UniqueIdentifier>{ed258eba-61fb-4585-a08b-ee676d5c284c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stacker\Core">
+      <UniqueIdentifier>{9456baa9-2d48-418e-9afa-459f873b466f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -327,36 +327,42 @@
       <Filter>Math\Deformer\SkeletonDeform</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\HotSpot.h">
-      <Filter>Stacker\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Stacker\Numeric.h">
-      <Filter>Stacker\Header</Filter>
+      <Filter>Stacker\Core</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\Offset.h">
-      <Filter>Stacker\Header</Filter>
+      <Filter>Stacker\Core</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\ShapeState.h">
-      <Filter>Stacker\Header</Filter>
+      <Filter>Stacker\Core</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\StackabilityImprover.h">
-      <Filter>Stacker\Header</Filter>
+      <Filter>Stacker\Core</Filter>
     </ClInclude>
     <ClInclude Include="MathLibrary\Coordiantes\MeanValueCoordinates.h">
       <Filter>Math\Deformer\MeanValueCoordinates</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\StackerGlobal.h">
-      <Filter>Stacker\Header</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\EditingSuggestion.h">
-      <Filter>Stacker\Header</Filter>
+      <Filter>Stacker\Core</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_MeshBrowserForm.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\JointDetector.h">
-      <Filter>Stacker\Header</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\PointJointGroup.h">
+      <Filter>Stacker\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\LineJointGroup.h">
+      <Filter>Stacker\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\Bounding\Box3.h">
+      <Filter>Math\Bounding</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Numeric.h">
+      <Filter>Stacker\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\StackerGlobal.h">
+      <Filter>Stacker\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\JointDetector.h">
       <Filter>Stacker\Groups</Filter>
     </ClInclude>
   </ItemGroup>
@@ -395,13 +401,13 @@
       <Filter>GUI\Tools</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\ControllerPanel.h">
-      <Filter>Stacker\StackerTools</Filter>
+      <Filter>Stacker\Panels</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\GroupPanel.h">
-      <Filter>Stacker\StackerTools</Filter>
+      <Filter>Stacker\Panels</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\QDeformController.h">
-      <Filter>Stacker\StackerTools</Filter>
+      <Filter>Stacker\Panels</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\StackerWidget.ui">
       <Filter>Stacker\Forms</Filter>
@@ -439,15 +445,6 @@
     <CustomBuild Include="GUI\SubScene.h">
       <Filter>GUI\Header</Filter>
     </CustomBuild>
-    <CustomBuild Include="Stacker\HiddenViewer.h">
-      <Filter>Stacker\Header</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Stacker\StackerPanel.h">
-      <Filter>Stacker\Header</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Stacker\StackerPreview.h">
-      <Filter>Stacker\Header</Filter>
-    </CustomBuild>
     <CustomBuild Include="GUI\MeshBrowser\MeshBrowserForm.ui">
       <Filter>GUI\MeshBrowser</Filter>
     </CustomBuild>
@@ -459,6 +456,15 @@
     </CustomBuild>
     <CustomBuild Include="GUI\MeshBrowser\QuickMeshViewer.h">
       <Filter>GUI\MeshBrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerPanel.h">
+      <Filter>Stacker\Panels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackerPreview.h">
+      <Filter>Stacker\Panels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\HiddenViewer.h">
+      <Filter>Stacker\Panels</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -631,13 +637,13 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\ControllerPanel.cpp">
-      <Filter>Stacker\StackerTools</Filter>
+      <Filter>Stacker\Panels</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\GroupPanel.cpp">
-      <Filter>Stacker\StackerTools</Filter>
+      <Filter>Stacker\Panels</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\QDeformController.cpp">
-      <Filter>Stacker\StackerTools</Filter>
+      <Filter>Stacker\Panels</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\ConcentricGroup.cpp">
       <Filter>Stacker\Groups</Filter>
@@ -750,32 +756,8 @@
     <ClCompile Include="MathLibrary\Deformer\Skinning.cpp">
       <Filter>Math\Deformer\SkeletonDeform</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\StackerPreview.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\HiddenViewer.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\HotSpot.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
     <ClCompile Include="Stacker\Numeric.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\Offset.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\ShapeState.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\StackabilityImprover.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\StackerGlobal.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\StackerPanel.cpp">
-      <Filter>Stacker\Source</Filter>
+      <Filter>Stacker\Utility</Filter>
     </ClCompile>
     <ClCompile Include="GUI\MeshBrowser\MeshBrowserWidget.cpp">
       <Filter>GUI\MeshBrowser</Filter>
@@ -801,14 +783,44 @@
     <ClCompile Include="GUI\MeshBrowser\QuickMeshViewer.cpp">
       <Filter>GUI\MeshBrowser</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\JointDetector.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
     <ClCompile Include="Stacker\PointJointGroup.cpp">
       <Filter>Stacker\Groups</Filter>
     </ClCompile>
+    <ClCompile Include="Stacker\LineJointGroup.cpp">
+      <Filter>Stacker\Groups</Filter>
+    </ClCompile>
+    <ClCompile Include="MathLibrary\Bounding\Box3.cpp">
+      <Filter>Math\Bounding</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackerPanel.cpp">
+      <Filter>Stacker\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackerPreview.cpp">
+      <Filter>Stacker\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\HiddenViewer.cpp">
+      <Filter>Stacker\Panels</Filter>
+    </ClCompile>
     <ClCompile Include="Stacker\EditingSuggestion.cpp">
-      <Filter>Stacker\Source</Filter>
+      <Filter>Stacker\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\HotSpot.cpp">
+      <Filter>Stacker\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Offset.cpp">
+      <Filter>Stacker\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackabilityImprover.cpp">
+      <Filter>Stacker\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\ShapeState.cpp">
+      <Filter>Stacker\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\StackerGlobal.cpp">
+      <Filter>Stacker\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\JointDetector.cpp">
+      <Filter>Stacker\Groups</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

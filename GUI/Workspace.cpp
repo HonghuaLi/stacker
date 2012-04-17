@@ -13,30 +13,39 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	QVBoxLayout * leftLayout = (QVBoxLayout *) ui.leftDockWidget->layout();
 	QVBoxLayout * rightLayout = (QVBoxLayout *) ui.rightDockWidget->layout();
 
-	// Default widgets
-	tp = new TransformationPanel();
-	rightLayout->addWidget(tp);
-	
-	mi = new MeshInfoPanel();
-	rightLayout->addWidget(mi);
-
-	// Stacker widgets
+	// === Left dock
+	// Stacker widget
 	sp = new StackerPanel();
 	leftLayout->addWidget(sp);
 
-	gp = new GroupPanel();
-	rightLayout->addWidget(gp);
-
+	// === Richt dock
+	// Controller widget
 	cp = new ControllerPanel();
 	rightLayout->addWidget(cp);
 
+	// Group widget
+	gp = new GroupPanel();
+	rightLayout->addWidget(gp);
+
+	// Transformation widget
+	tp = new TransformationPanel();
+	rightLayout->addWidget(tp);
+
+	// Deformer widget
 	dp = new DeformerPanel();
 	rightLayout->addWidget(dp);
 
+	// Voxel Deformer widget
 	vdp = new QVoxelDeformerPanel();
 	rightLayout->addWidget(vdp);
 
+	// Mesh info widget
+	mi = new MeshInfoPanel();
+	rightLayout->addWidget(mi);
+
+	// Hide the right dock by default
 	ui.rightDock->hide();
+
 
 	// Create mesh document manager
 	mDoc = new QMeshDoc(this);
@@ -73,43 +82,41 @@ void Workspace::addNewScene()
 
 	// == CONNECTIONS ==
 
-	// Workspace window
+	// Focus changes in scene
 	connect(newScene, SIGNAL(gotFocus(Scene*)), SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(gotFocus(Scene*)), tp, SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(gotFocus(Scene*)), mi, SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(gotFocus(Scene*)), sp, SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(gotFocus(Scene*)), cp, SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(gotFocus(Scene*)), dp, SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(gotFocus(Scene*)), vdp, SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(gotFocus(Scene*)), gp, SLOT(setActiveScene(Scene*)));
+
 	connect(newScene, SIGNAL(lostFocus(Scene*)), SLOT(disconnectScene(Scene*)));
 	connect(newScene, SIGNAL(sceneClosed(Scene*)), SLOT(sceneClosed(Scene*)));
+	connect(newScene, SIGNAL(sceneClosed(Scene*)), sp, SLOT(setActiveScene(Scene*)));
 
-	// MeshDoc
+	// Objects changed in scene
 	connect(newScene, SIGNAL(objectDiscarded(QString)), mDoc, SLOT(deleteObject(QString)));
-
-	// Object transformation
-	connect(newScene, SIGNAL(gotFocus(Scene*)), tp, SLOT(setActiveScene(Scene*)));
-	connect(tp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
-	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
-	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateController()));
-
-	// Object info panel
-	connect(newScene, SIGNAL(gotFocus(Scene*)), mi, SLOT(setActiveScene(Scene*)));
+	connect(newScene, SIGNAL(objectInserted()), sp, SLOT(updateActiveObject()));
+	connect(newScene, SIGNAL(objectInserted()), cp, SLOT(updateController()));
 
 	// Stack panel
-	connect(newScene, SIGNAL(gotFocus(Scene*)), sp, SLOT(setActiveScene(Scene*)));
-	connect(newScene, SIGNAL(objectInserted()), sp, SLOT(updateActiveObject()));
-	connect(newScene, SIGNAL(sceneClosed(Scene*)), sp, SLOT(setActiveScene(Scene*)));
 	connect(sp, SIGNAL(printMessage(QString)), newScene, SLOT(print(QString)));
 	connect(sp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
-
-	// Controllers panel
-	connect(newScene, SIGNAL(gotFocus(Scene*)), cp, SLOT(setActiveScene(Scene*)));
-
-	// Deformation
-	connect(newScene, SIGNAL(gotFocus(Scene*)), dp, SLOT(setActiveScene(Scene*)));
-	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *)));
-
-	connect(newScene, SIGNAL(gotFocus(Scene*)), vdp, SLOT(setActiveScene(Scene*)));
-	connect(vdp, SIGNAL(deformerCreated(VoxelDeformer *)), newScene, SLOT(setActiveVoxelDeformer(VoxelDeformer *)));
+	connect(sp, SIGNAL(objectModified()), cp, SLOT(updateController()));
 
 	// Groups
-	connect(newScene, SIGNAL(gotFocus(Scene*)), gp, SLOT(setActiveScene(Scene*)));
 	connect(newScene, SIGNAL(groupsChanged()), gp, SLOT(updateWidget()));
+
+	// Object transformed by transformation panel
+	connect(tp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
+	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
+	connect(tp, SIGNAL(objectModified()), cp, SLOT(updateController()));
+
+	// Deformation
+	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *)));
+	connect(vdp, SIGNAL(deformerCreated(VoxelDeformer *)), newScene, SLOT(setActiveVoxelDeformer(VoxelDeformer *)));
 
 	// == END ==
 

@@ -11,20 +11,36 @@ class ControllerPanel : public QWidget{
 public:
 	ControllerPanel(QWidget * parent = NULL);
 
+
 	Ui::ControllerManagmentWidget controllerWidget;
 	Scene * activeScene;
 
+
 public slots:
+	// Secen management
 	void setActiveScene( Scene * newScene );
+
+	// Update controller
+	void updateController();
+
+	// Primitives modification
+	void setSkeletonJoints( int num );
+	void convertGC();
+	void convertCuboid();
+
+	// Display
 	void removeSelected();
-	void save();
-	void load();
 	void clear();
 	void togglePrimDisplay(int state);
 
-private:
-	Controller * controller();
+	// Save and load
+	void save();
+	void load();
 
 signals:
+
+private:
+	QSegMesh* activeObject();
+	Controller * controller();
 
 };

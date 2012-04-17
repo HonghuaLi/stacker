@@ -6,18 +6,29 @@
 #include "Controller.h"
 #include "SymmetryGroup.h"
 #include "PointJointGroup.h"
+#include "LineJointGroup.h"
 #include "ConcentricGroup.h"
 #include "CoplanarGroup.h"
+#include "StackerGlobal.h"
+#include "JointDetector.h"
 
 GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 {
 	groupWidget.setupUi(this);
 
+	// Joints
+	connect(groupWidget.jointThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
+	connect(groupWidget.findJointsButton, SIGNAL(clicked()), SLOT(findJoints()));
+	connect(groupWidget.findPairwiseJointButton, SIGNAL(clicked()), SLOT(findPairwiseJoints()));
+
+	// Group tree
 	connect(groupWidget.removeButton, SIGNAL(clicked()), SLOT(removeSelectedItem()));
-	connect(groupWidget.saveGroupsButton, SIGNAL(clicked()), SLOT(saveGroups()));
-	connect(groupWidget.loadGroupsButton, SIGNAL(clicked()), SLOT(loadGroups()));
 	connect(groupWidget.clearButton, SIGNAL(clicked()), SLOT(clearGroups()));
 	connect(groupWidget.showGroups, SIGNAL(stateChanged (int)), SLOT(toggleGroupDisplay(int)));
+
+	// Save and load
+	connect(groupWidget.saveGroupsButton, SIGNAL(clicked()), SLOT(saveGroups()));
+	connect(groupWidget.loadGroupsButton, SIGNAL(clicked()), SLOT(loadGroups()));
 
 	// Strings to show in tree, ordered as in group type enum
 	groupTypes.push_back("SYMMETRY");
@@ -141,7 +152,7 @@ void GroupPanel::saveGroups()
 		outF << '\n';
 	}
 
-	// Save properties for single segment
+	// Save properties for single segment (not groups though)
 	foreach(Primitive * prim, ctrl->getPrimitives())
 	{
 		int nb = prim->symmPlanes.size();
@@ -262,3 +273,46 @@ void GroupPanel::clearGroups()
 	updateWidget();
 }
 
+void GroupPanel::findJoints()
+{
+	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
+
+	// Call joint detector to find joints
+	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
+	JointDetector JD;
+	QVector<Group*> jointGroups = JD.detect(ctrl->getPrimitives());
+
+	foreach(Group* g, jointGroups)
+		ctrl->groups[g->id] = g;
+
+	// update
+	this->updateWidget();
+}
+
+void GroupPanel::findPairwiseJoints()
+{
+	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
+
+	if (activeScene->selection.size() < 2) return;
+
+	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
+
+	int selID1 = activeScene->selection[0];
+	int selID2 = activeScene->selection[1];
+
+	// Call joint detector to find joints
+	//	((Controller *)activeScene->activeObject()->ptr["controller"])->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
+}
+
+void GroupPanel::setJointThreshold( double threshold )
+{
+	JOINT_THRESHOLD = threshold;
+}
+
+QSegMesh* GroupPanel::activeObject()
+{
+	if (activeScene)
+		return activeScene->activeObject();
+	else 
+		return NULL;
+}
