@@ -6,17 +6,13 @@
 class SymmetryGroup : public Group{
 
 public:
-	SymmetryGroup(Controller * controller, GroupType newType) : Group(controller, newType){}
+	SymmetryGroup(GroupType newType) : Group(newType){}
 
-	void process(QVector< QString > segments);
+	// Inherited methods
+	void process(QVector< Primitive* > segments);
 	QVector<QString> regroup();
 	void draw();
 
+public:
 	Plane symmetryPlane;
-	std::vector<Point> allCenters;
-
-	// Symmetry axis for grater than 4?
-	Vec3d symmetryAxis;
-	Vec3d symmetryAxisPos;
-	bool hasSymmetryAxis;
 };

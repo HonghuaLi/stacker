@@ -208,8 +208,8 @@ void StackerPanel::convertCuboid()
 void StackerPanel::findJoints()
 {
 	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
-	
-	((Controller *)activeScene->activeObject()->ptr["controller"])->findJoints();
+
+	// Call joint detector to find joints
 }
 
 void StackerPanel::findPairwiseJoints()
@@ -223,7 +223,8 @@ void StackerPanel::findPairwiseJoints()
 	int selID1 = activeScene->selection[0];
 	int selID2 = activeScene->selection[1];
 
-	((Controller *)activeScene->activeObject()->ptr["controller"])->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
+	// Call joint detector to find joints
+//	((Controller *)activeScene->activeObject()->ptr["controller"])->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
 }
 
 

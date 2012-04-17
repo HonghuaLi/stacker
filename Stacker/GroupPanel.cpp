@@ -5,7 +5,7 @@
 
 #include "Controller.h"
 #include "SymmetryGroup.h"
-#include "JointGroup.h"
+#include "PointJointGroup.h"
 #include "ConcentricGroup.h"
 #include "CoplanarGroup.h"
 
@@ -21,7 +21,8 @@ GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 
 	// Strings to show in tree, ordered as in group type enum
 	groupTypes.push_back("SYMMETRY");
-	groupTypes.push_back("JOINT");
+	groupTypes.push_back("POINTJOINT");
+	groupTypes.push_back("LINEJOINT");
 	groupTypes.push_back("CONCENTRIC");
 	groupTypes.push_back("COPLANNAR");
 	groupTypes.push_back("SELF_SYMMETRY");
@@ -64,7 +65,7 @@ void GroupPanel::updateWidget()
 
 		groupItem->setText(0, QString("g%1:%2").arg(groupTypes[group->type]).arg(group->id));
 
-		foreach(QString node, group->nodes)
+		foreach(QString node, group->getNodes())
 		{
 			QTreeWidgetItem *item = new QTreeWidgetItem(groupItem);
 			item->setText(0, QString("segment:%1").arg(node));
@@ -98,26 +99,7 @@ void GroupPanel::removeSelectedItem()
 		{
 			ctrl->groups.erase( ctrl->groups.find(itemId) );
 		}
-		
-		// For segments
-		if(itemType.startsWith("s"))
-		{
-			QString groupId = getItemId( item->parent() );
-			ctrl->groups[groupId]->removeNode( groupId );
-		}
 	}
-
-	// Clean-up (shouldn't be this class's responsibility?)
-	std::vector<QString> emptyGroups;
-	
-	foreach(Group* group, ctrl->groups)
-	{
-		if(!group->nodes.size())
-			emptyGroups.push_back(group->id);
-	}
-
-	foreach(QString group, emptyGroups)
-		ctrl->groups.erase(ctrl->groups.find(group));
 
 	updateWidget();
 }
@@ -142,11 +124,24 @@ void GroupPanel::saveGroups()
 
 	foreach(Group* group, ctrl->groups)
 	{
+		// type
 		outF << qPrintable(groupTypes[group->type]) << '\t'; 
-		group->save(outF);
+
+		// size
+		outF << group->nodes.size() << "\t";
+
+		// primitives
+		foreach(Primitive* node, group->nodes)
+			outF << qPrintable(node->id) << "\t";
+
+		// parameters
+		group->saveParameters(outF);
+
+		// break line
 		outF << '\n';
 	}
 
+	// Save properties for single segment
 	foreach(Primitive * prim, ctrl->getPrimitives())
 	{
 		int nb = prim->symmPlanes.size();
@@ -199,16 +194,10 @@ void GroupPanel::loadGroups()
 		switch (type)
 		{
 		case SYMMETRY:
-			newGroup = new SymmetryGroup(ctrl, SYMMETRY);
+			newGroup = new SymmetryGroup(SYMMETRY);
 			break;
-		case CONCENTRIC:
-			newGroup = new ConcentricGroup(ctrl, CONCENTRIC);
-			break;
-		case COPLANNAR:
-			newGroup = new CoplanarGroup(ctrl, COPLANNAR);
-			break;
-		case JOINT:
-			newGroup = new JointGroup(ctrl, JOINT);
+		case POINTJOINT:
+			newGroup = new PointJointGroup(POINTJOINT);
 			break;
 		case SELF_SYMMETRY:
 			{
@@ -237,7 +226,19 @@ void GroupPanel::loadGroups()
 
 		if(newGroup)
 		{
-			newGroup->load(inF);
+			int n;
+			inF >> n;
+			std::string str;
+			QVector<Primitive*> segments;
+			for (int i=0;i<n;i++)
+			{
+				inF >> str;
+				segments.push_back(ctrl->getPrimitive(str.c_str()));
+			}
+
+			newGroup->loadParameters(inF);
+			newGroup->process(segments);
+
 			ctrl->groups[newGroup->id] = newGroup;
 		}
 	}

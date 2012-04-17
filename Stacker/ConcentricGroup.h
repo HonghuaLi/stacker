@@ -5,10 +5,10 @@
 class ConcentricGroup : public Group{
 
 public:
-	ConcentricGroup(Controller * controller, GroupType newType) : Group(controller, newType){}
+	ConcentricGroup( GroupType newType) : Group(newType){}
 
-	void process(QVector< QString > segments);
-
+	void process(QVector< Primitive* > segments);
+	QVector<QString> regroup();
 	void draw();
 
 	Vec3d axis;

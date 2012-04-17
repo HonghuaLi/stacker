@@ -1,32 +1,28 @@
 #include "ConcentricGroup.h"
 #include "SimpleDraw.h"
+#include "Primitive.h"
 
-void ConcentricGroup::process( QVector< QString > segments )
+void ConcentricGroup::process( QVector< Primitive* > segments )
 {
-	addNodes(segments);
+	Group::process(segments);
 
-	foreach(int i, nodes.keys())
-	{
-		Primitive * a = getPrimitive(nodes[i]);
-		Point cA = a->centerPoint();
+	Point cA = nodes.first()->centerPoint();
+	Point cB = nodes.last()->centerPoint();
 
-		foreach(int j, nodes.keys())
-		{
-			if(i == j) continue;
+	axis = (cA - cB).normalized();
+	center = (cA + cB) * 0.5;
+}
 
-			Primitive * b = getPrimitive(nodes[j]);
-			Point cB = b->centerPoint();
-
-			axis = (cA - cB).normalized();
-			center = (cA + cB) * 0.5;
-			break;
-		}
-		break;
-	}
+QVector<QString> ConcentricGroup::regroup()
+{
+	QVector<QString> result;
+	return result;
 }
 
 void ConcentricGroup::draw()
 {
 	SimpleDraw::IdentifyArrow(center, center + axis * 1.0);
 	SimpleDraw::IdentifyArrow(center, center - axis * 1.0);
+
+	Group::draw();
 }

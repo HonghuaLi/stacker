@@ -1,12 +1,15 @@
 #include "SymmetryGroup.h"
 #include "SimpleDraw.h"
+#include "Primitive.h"
 
-void SymmetryGroup::process(QVector<QString> segments)
+void SymmetryGroup::process(QVector<Primitive*> segments)
 {
-	addNodes(segments);
+	// Keep the nodes
+	Group::process(segments);
 
-	Primitive * a = getPrimitive(segments.first());
-	Primitive * b = getPrimitive(segments.last());
+	// Compute the symmetry plane
+	Primitive * a = segments.first();
+	Primitive * b = segments.last();
 
 	Point cA = a->centerPoint();
 	Point cB = b->centerPoint();
@@ -16,13 +19,14 @@ void SymmetryGroup::process(QVector<QString> segments)
 
 	symmetryPlane = Plane(normal, point);
 
+	// Representative points of two primitives
 	std::vector<Vec3d> pointsA = a->points();
 	std::vector<Vec3d> pointsB = b->points();
 
+	// Correspondences from both directions
 	correspondence[a->id].resize(pointsA.size());
 	correspondence[b->id].resize(pointsB.size());
 
-	// Reflect along symmetry plane
 	for(int i = 0; i < pointsA.size(); i++)
 	{
 		pointsA[i] = symmetryPlane.reflection(pointsA[i]);
@@ -30,6 +34,7 @@ void SymmetryGroup::process(QVector<QString> segments)
 		double dist = DBL_MAX;
 		int id_closest = -1;
 
+		// Find the point on \b closest to the reflected point on \a
 		for(int j = 0; j < pointsB.size(); j++)
 		{
 			double currDist = (pointsA[i] - pointsB[j]).norm();
@@ -46,28 +51,19 @@ void SymmetryGroup::process(QVector<QString> segments)
 	}
 }
 
-void SymmetryGroup::draw()
-{
-	if(!isDraw) return;
-
-	// Draw debug and stuff
-	Group::draw();
-
-	glColor4d(1,1,1,0.5);
-	symmetryPlane.draw(0.1);
-}
 
 QVector<QString> SymmetryGroup::regroup()
 {
 	QVector<QString> result;
 
-	Primitive * frozen = getPrimitive(nodes.values().first());
-	Primitive * non_frozen = getPrimitive(nodes.values().last());
+	Primitive * frozen =nodes.first();
+	Primitive * non_frozen = nodes.last();
 
+	// Both are frozen or unfrozen
 	if(frozen->isFrozen == non_frozen->isFrozen)
 		return result;
 
-	// Swap if needed
+	// Match the pointer with the correct primitive
 	if(!frozen->isFrozen) 
 	{
 		Primitive * temp = frozen;
@@ -75,23 +71,36 @@ QVector<QString> SymmetryGroup::regroup()
 		non_frozen = temp;
 	}
 
+	// The correspondence from frozen to unfrozen
 	QVector<int> corr = correspondence[frozen->id];
 
-	// reflect frozen
+	// Reflect the representative points of \frozen
 	std::vector<Vec3d> pointsA = frozen->points();
 	std::vector<Vec3d> pointsB = non_frozen->points();
 
 	for(int i = 0; i < pointsA.size(); i++)
 	{
 		Point reflected = symmetryPlane.reflection(pointsA[i]);
-
 		pointsB[corr[i]] = reflected;
 	}
 	
+	// Reconstruct the primitive
 	non_frozen->reshapeFromPoints(pointsB);
 	non_frozen->isFrozen = true;
 
+	// Return the regrouped primitives
 	result.push_back(non_frozen->id);
-
 	return result;
+}
+
+
+void SymmetryGroup::draw()
+{
+	if(!isDraw) return;
+
+	glColor4d(1,1,1,0.5);
+	symmetryPlane.draw(0.1);
+
+	// Draw debug and stuff
+	Group::draw();
 }

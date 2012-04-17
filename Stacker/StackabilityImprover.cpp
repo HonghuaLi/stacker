@@ -539,15 +539,11 @@ void StackabilityImprover::improveStackability()
 {
 	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
-	// improve the stackability of current shape in three steps
-	//=========================================================================================
 	// Step 1: Detect hot spots
 	activeOffset->computeOffsetOfShape();
 	orgStackability = activeOffset->getStackability();
 	activeOffset->detectHotspots();
 
-	//=========================================================================================
 	// Step 2: Apply heuristics on hot spots and propagate deformations
-	// Several hot solutions might be generated, which are stored in *hotSolutions*
 	applyHeuristics();
 }

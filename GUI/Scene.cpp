@@ -335,9 +335,9 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				Group* newGroup = NULL;
 
 				int opt = 0;
-				if(action == symmGrp)		newGroup = new SymmetryGroup(ctrl, SYMMETRY);
-				if(action == concentricGrp) newGroup = new ConcentricGroup(ctrl, CONCENTRIC);
-				if(action == coplanGrp)		newGroup = new CoplanarGroup(ctrl, COPLANNAR);
+				if(action == symmGrp)		newGroup = new SymmetryGroup(SYMMETRY);
+				if(action == concentricGrp) newGroup = new ConcentricGroup(CONCENTRIC);
+				if(action == coplanGrp)		newGroup = new CoplanarGroup(COPLANNAR);
 
 				if(action == self1foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(1);
 				if(action == self2foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(2);
@@ -352,7 +352,8 @@ void Scene::mousePressEvent( QMouseEvent* e )
 
 				if(newGroup)
 				{
-					newGroup->process( ctrl->stringIds(selection) );
+					newGroup->process(ctrl->getPrimitives(selection));
+
 					ctrl->groups[newGroup->id] = newGroup;
 					emit(groupsChanged());
 
