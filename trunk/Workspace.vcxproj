@@ -565,6 +565,7 @@
     <ClCompile Include="GUI\global.cpp" />
     <ClCompile Include="GUI\main.cpp" />
     <ClCompile Include="GUI\MeshBrowser\MeshBrowserWidget.cpp" />
+    <ClCompile Include="GUI\MeshBrowser\QuickMeshViewer.cpp" />
     <ClCompile Include="GUI\QMeshDoc.cpp" />
     <ClCompile Include="GUI\Scene.cpp" />
     <ClCompile Include="GUI\SubScene.cpp" />

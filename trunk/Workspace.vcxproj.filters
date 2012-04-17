@@ -801,6 +801,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_QuickMeshViewer.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\MeshBrowser\QuickMeshViewer.cpp">
+      <Filter>GUI\MeshBrowser</Filter>
+    </ClCompile>
     <ClCompile Include="Stacker\JointDetector.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>

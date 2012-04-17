@@ -41,3 +41,14 @@ public slots:
 signals:
 	void pathChanged(QString);
 };
+
+#include <QThread>
+class LoaderThread : public QThread{
+	Q_OBJECT
+public:
+	LoaderThread(QuickMeshViewer *, QString);
+	QuickMeshViewer * viewer;
+	QString fileName;
+protected:
+	void run();
+};
