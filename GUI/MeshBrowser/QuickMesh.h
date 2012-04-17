@@ -29,18 +29,31 @@ public:
 		glEnable(GL_LIGHTING);
 		glColor3d(1,1,1);
 
-		glBegin(GL_TRIANGLES);
-		foreach(const QVector<int> tri, tris){
-			QVector3D v1 = verts[tri[0]], v2 =verts[tri[1]], v3 = verts[tri[2]];
-			QVector3D n = QVector3D::crossProduct((v2-v1).normalized(), (v3-v1).normalized()).normalized();
+		if(tris.size())
+		{
+			glBegin(GL_TRIANGLES);
+			foreach(const QVector<int> tri, tris){
+				if(tri[0] < 0 || tri[1] < 0 || tri[2] < 0) continue;
 
-			glNormal3d(n.x(), n.y(), n.z());
+				QVector3D v1 = verts[tri[0]], v2 =verts[tri[1]], v3 = verts[tri[2]];
+				QVector3D n = QVector3D::crossProduct((v2-v1).normalized(), (v3-v1).normalized()).normalized();
 
-			glVertex3d(v1.x(), v1.y(), v1.z());
-			glVertex3d(v2.x(), v2.y(), v2.z());
-			glVertex3d(v3.x(), v3.y(), v3.z());
+				glNormal3d(n.x(), n.y(), n.z());
+
+				glVertex3d(v1.x(), v1.y(), v1.z());
+				glVertex3d(v2.x(), v2.y(), v2.z());
+				glVertex3d(v3.x(), v3.y(), v3.z());
+			}
+			glEnd();
 		}
-		glEnd();
+		else{
+			// Point cloud
+			glPointSize(2.0f);
+			glDisable(GL_LIGHTING);
+			glBegin(GL_POINTS);
+			foreach(const QVector3D v, verts) glVertex3d(v.x(), v.y(), v.z());
+			glEnd();
+		}
 
 		glDisable(GL_LIGHTING);
 	}
@@ -79,22 +92,21 @@ private:
 		QTextStream in(&file);
 
 		while (!in.atEnd()){
-			QString line = in.readLine();
+			QStringList v = in.readLine().split(" ", QString::SkipEmptyParts);
 
-			if(line.startsWith("v ")){
-				QStringList v = line.split(" ", QString::SkipEmptyParts);
-				if(v.size() == 4) verts.push_back(QVector3D(v[1].toDouble(),v[2].toDouble(),v[3].toDouble()));
-			}
+			if(v.size() < 4) continue;
 
-			if(line.startsWith("f ")){
-				QStringList f = line.split(" ", QString::SkipEmptyParts);
-				
-				if(f.size() >= 4){
-					tris.push_back(QVector<int>());
-					tris.back().push_back( f[1].split("//")[0].toInt() - 1 );
-					tris.back().push_back( f[2].split("//")[0].toInt() - 1 );
-					tris.back().push_back( f[3].split("//")[0].toInt() - 1 );
-				}
+			if(v[0] == "v")
+			{
+				verts.push_back(QVector3D(v[1].toDouble(),v[2].toDouble(),v[3].toDouble()));
+			} 
+			
+			if(v[0] == "f")
+			{
+				tris.push_back(QVector<int>(3));
+				tris.back()[0] = ( v[1].replace("/", " ").split(" ", QString::SkipEmptyParts)[0].toInt() - 1 );
+				tris.back()[1] = ( v[2].replace("/", " ").split(" ", QString::SkipEmptyParts)[0].toInt() - 1 );
+				tris.back()[2] = ( v[3].replace("/", " ").split(" ", QString::SkipEmptyParts)[0].toInt() - 1 );
 			}
 		}
 	}
@@ -140,7 +152,7 @@ private:
 		QVector3D bbmin (DBL_MAX-1, DBL_MAX-1, DBL_MAX-1);
 		QVector3D bbmax = -bbmin;
 		QVector3D center(0,0,0);
-		foreach(QVector3D v, verts)
+		foreach(const QVector3D v, verts)
 		{
 			if(v.x() < bbmin.x()) bbmin.setX(v.x());
 			if(v.y() < bbmin.y()) bbmin.setY(v.y());
@@ -156,7 +168,8 @@ private:
 		QVector3D d = bbmax - bbmin;
 		double s = (d.x() > d.y())? d.x():d.y();
 		s = (s>d.z())? s: d.z();
-		for(int vi = 0; vi < verts.size(); vi++) verts[vi] = (verts[vi] - center) / s;
+		for(int vi = 0; vi < verts.size(); vi++) 
+			verts[vi] = (verts[vi] - center) / s;
 	}
 	
 	QVector< QVector3D > verts;
