@@ -58,16 +58,6 @@ StackerPanel::StackerPanel()
 	// Hotspot
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
 
-	// Primitives
-	connect(panel.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
-	connect(panel.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
-
-	// Joints
-	connect(panel.findJointsButton, SIGNAL(clicked()), SLOT(findJoints()));
-	connect(panel.findPairwiseJointsButton, SIGNAL(clicked()), SLOT(findPairwiseJoints()));
-	connect(panel.jointsThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
-	connect(panel.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
-
 	// Stacking direction
 	connect(panel.searchDirectionButton, SIGNAL(clicked()), SLOT(searchDirection()));
 
@@ -78,6 +68,8 @@ StackerPanel::StackerPanel()
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
 	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
 	connect(panel.solutionID, SIGNAL(valueChanged(int)), this, SLOT(setSolutionID(int)));
+	
+	// Suggestion
 	connect(panel.suggestionID, SIGNAL(valueChanged(int)), this, SLOT(setSuggestionID(int)));
 	connect(panel.saveSuggestionsButton, SIGNAL(clicked()), SLOT(onSaveSuggestionsButtonClicked()));
 	connect(panel.loadSuggestionsButton, SIGNAL(clicked()), SLOT(onLoadSuggestionsButtonClicked()));
@@ -149,20 +141,7 @@ void StackerPanel::updateActiveObject()
 	stacker_preview->stackCount = panel.stackCount->value();
 	stacker_preview->updateActiveObject();
 
-	// Create a controller if non-exists
-	if (activeScene && activeObject() && !activeObject()->ptr["controller"])
-	{
-		updateController();
-	}
-
 	//std::cout << "objectH = " << activeOffset->objectH << std::endl;
-}
-
-void StackerPanel::updateController()
-{
-	activeObject()->ptr["controller"] = new Controller(activeObject(), panel.useAABB->isChecked());
-	activeScene->setSelectMode(CONTROLLER);
-	showMessage("Controller is built for " + activeObject()->objectName());
 }
 
 QSegMesh* StackerPanel::activeObject()
@@ -177,56 +156,6 @@ void StackerPanel::showMessage( QString message )
 {
 	emit(printMessage(message));
 }
-
-void StackerPanel::convertGC()
-{
-	if(!activeObject() || !activeObject()->ptr["controller"]) return;
-
-	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
-
-	foreach(Primitive * prim, ctrl->getPrimitives())
-	{
-		if(prim->isSelected)
-			ctrl->convertToGC(prim->id, !panel.basicFitGC->isChecked(), panel.convertGcAxis->value());
-	}
-
-	emit(objectModified());
-}
-
-void StackerPanel::convertCuboid()
-{
-	if(!activeObject() || !activeObject()->ptr["controller"]) return;
-
-	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
-
-	foreach(Primitive * prim, ctrl->getPrimitives())
-		if(prim->isSelected) ctrl->convertToCuboid(prim->id, panel.useAABB->isChecked(), panel.cuboidMethod->currentIndex());
-
-	emit(objectModified());
-}
-
-void StackerPanel::findJoints()
-{
-	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
-
-	// Call joint detector to find joints
-}
-
-void StackerPanel::findPairwiseJoints()
-{
-	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
-
-	if (activeScene->selection.size() < 2) return;
-
-	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
-
-	int selID1 = activeScene->selection[0];
-	int selID2 = activeScene->selection[1];
-
-	// Call joint detector to find joints
-//	((Controller *)activeScene->activeObject()->ptr["controller"])->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
-}
-
 
 void StackerPanel::setSolutionID(int id)
 {
@@ -345,10 +274,6 @@ void StackerPanel::outputForPaper()
 	infoFile.close();
 }
 
-void StackerPanel::setJointThreshold( double threshold )
-{
-	JOINT_THRESHOLD = threshold;
-}
 
 void StackerPanel::searchDirection()
 {
@@ -455,16 +380,9 @@ void StackerPanel::searchDirection()
 	// Recompute normals and bounding box
 	activeObject()->build_up();
 
-	// Update controller
-	updateController();
-
 	emit(objectModified());
 }
 
-void StackerPanel::setSkeletonJoints( int num )
-{
-	skeletonJoints = num;
-}
 
 void StackerPanel::setStackCount( int num )
 {

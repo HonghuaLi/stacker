@@ -1,9 +1,11 @@
 #include "GUI/global.h"
 
-#include "Controller.h"
-#include "ControllerPanel.h"
 #include <fstream>
 #include <QFileDialog>
+
+#include "Controller.h"
+#include "ControllerPanel.h"
+#include "StackerGlobal.h"
 
 ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 {
@@ -15,6 +17,11 @@ ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 	connect(controllerWidget.removeButton, SIGNAL(clicked()), SLOT(removeSelected()));
 	connect(controllerWidget.clearButton, SIGNAL(clicked()), SLOT(clear()));
 	connect(controllerWidget.showPrimitives, SIGNAL(stateChanged (int)), SLOT(togglePrimDisplay(int)));
+
+	// Primitives
+	connect(controllerWidget.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
+	connect(controllerWidget.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
+	connect(controllerWidget.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
 
 	this->activeScene = NULL;
 }
@@ -93,4 +100,52 @@ void ControllerPanel::togglePrimDisplay(int state)
 	}
 
 	activeScene->updateGL();
+}
+
+QSegMesh* ControllerPanel::activeObject()
+{
+	if (activeScene)
+		return activeScene->activeObject();
+	else 
+		return NULL;
+}
+
+
+void ControllerPanel::setSkeletonJoints( int num )
+{
+	GC_SKELETON_JOINTS_NUM = num;
+}
+
+void ControllerPanel::convertGC()
+{
+	if(!activeObject() || !activeObject()->ptr["controller"]) return;
+
+	Controller* ctrl = (Controller *)activeObject()->ptr["controller"];
+
+	foreach(Primitive * prim, ctrl->getPrimitives())
+	{
+		if(prim->isSelected)
+			ctrl->convertToGC(prim->id, !controllerWidget.basicFitGC->isChecked(), controllerWidget.convertGcAxis->value());
+	}
+}
+
+void ControllerPanel::convertCuboid()
+{
+	if(!activeObject() || !activeObject()->ptr["controller"]) return;
+
+	Controller* ctrl = (Controller *)activeObject()->ptr["controller"];
+
+	foreach(Primitive * prim, ctrl->getPrimitives())
+		if(prim->isSelected) ctrl->convertToCuboid(prim->id, controllerWidget.useAABB->isChecked(), controllerWidget.cuboidMethod->currentIndex());
+
+}
+
+void ControllerPanel::updateController()
+{
+	// Create a controller if non-exists
+	if (activeScene && activeObject() && !activeObject()->ptr["controller"])
+	{
+		activeObject()->ptr["controller"] = new Controller(activeObject(), controllerWidget.useAABB->isChecked());
+		activeScene->setSelectMode(CONTROLLER);
+	}
 }

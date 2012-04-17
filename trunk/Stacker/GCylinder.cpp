@@ -1,8 +1,7 @@
 #include "GCylinder.h"
 #include "SkeletonExtract.h"
 #include "SimpleDraw.h"
-
-int skeletonJoints = 6;
+#include "StackerGlobal.h"
 
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {
@@ -43,7 +42,6 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId) : Primitive(segment,
 	cage = NULL;
 	cageScale = 0;
 	cageSides = 0;
-	skeletonJoints = 0;
 	deltaScale = 0;
 	isFitted = false;
     primType = GCYLINDER;
@@ -60,7 +58,7 @@ void GCylinder::fit()
 	skel->selectLongestPath();
 
 	// Compute generalized cylinder given spine points
-	int numSteps = Max(skel->sortedSelectedNodes.size(), skeletonJoints);
+	int numSteps = Max(skel->sortedSelectedNodes.size(), GC_SKELETON_JOINTS_NUM);
 	std::vector<Point> reSampledSpinePoints;
 	foreach(ResampledPoint sample, skel->resampleSmoothSelectedPath(numSteps, 3)) 
 		reSampledSpinePoints.push_back(sample.pos);
@@ -710,9 +708,9 @@ void GCylinder::load( std::ifstream &inF, double scaleFactor )
 	inF >> this->cageSides;
 	inF >> this->deltaScale;
 
-	inF >> skeletonJoints;
+	inF >> GC_SKELETON_JOINTS_NUM;
 
-	for(int i = 0; i < skeletonJoints; i++)
+	for(int i = 0; i < GC_SKELETON_JOINTS_NUM; i++)
 	{
 		Point p(0,0,0);
 		inF >> p;
@@ -722,7 +720,7 @@ void GCylinder::load( std::ifstream &inF, double scaleFactor )
 
 	createGC(originalSpine, false);
 
-	for(int i = 0; i < skeletonJoints; i++)
+	for(int i = 0; i < GC_SKELETON_JOINTS_NUM; i++)
 	{
 		double radius;
 		inF >> radius;

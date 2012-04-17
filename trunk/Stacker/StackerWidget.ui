@@ -44,59 +44,7 @@
       <property name="spacing">
        <number>6</number>
       </property>
-      <item row="30" column="0" colspan="7">
-       <widget class="QGroupBox" name="previewBox">
-        <property name="title">
-         <string>Stacking Preview</string>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_3">
-         <item row="1" column="0">
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Resolution</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QSpinBox" name="hidderViewerSize">
-           <property name="suffix">
-            <string> px</string>
-           </property>
-           <property name="minimum">
-            <number>10</number>
-           </property>
-           <property name="maximum">
-            <number>1024</number>
-           </property>
-           <property name="value">
-            <number>400</number>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLabel" name="label_15">
-           <property name="text">
-            <string>#Object</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3">
-          <widget class="QSpinBox" name="stackCount">
-           <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
-           </property>
-           <property name="value">
-            <number>3</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item row="26" column="0" colspan="7">
+      <item row="24" column="0" colspan="7">
        <widget class="QGroupBox" name="groupBox_3">
         <property name="title">
          <string>Stacking configuration</string>
@@ -218,170 +166,52 @@
         </layout>
        </widget>
       </item>
-      <item row="24" column="0" colspan="7">
-       <widget class="QGroupBox" name="controllersPanel">
+      <item row="28" column="0" colspan="7">
+       <widget class="QGroupBox" name="previewBox">
         <property name="title">
-         <string>Controllers</string>
+         <string>Stacking Preview</string>
         </property>
         <property name="flat">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_8">
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label">
            <property name="text">
-            <string>Axis</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QSpinBox" name="convertGcAxis">
-           <property name="maximum">
-            <number>2</number>
-           </property>
-           <property name="value">
-            <number>2</number>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2">
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>#Joint</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="3">
-          <widget class="QSpinBox" name="skeletonJoints">
-           <property name="singleStep">
-            <number>2</number>
-           </property>
-           <property name="value">
-            <number>10</number>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="4" colspan="2">
-          <widget class="QCheckBox" name="basicFitGC">
-           <property name="text">
-            <string>Basic</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="6" colspan="2">
-          <widget class="QPushButton" name="convertToGC">
-           <property name="text">
-            <string>GC</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../Workspace.qrc">
-             <normaloff>:/Workspace/Resources/icons/gc.png</normaloff>:/Workspace/Resources/icons/gc.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item row="10" column="2" colspan="2">
-          <widget class="QCheckBox" name="useAABB">
-           <property name="text">
-            <string>Use AABB</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="10" column="0" colspan="2">
-          <widget class="QComboBox" name="cuboidMethod">
-           <item>
-            <property name="text">
-             <string>MinOBB3</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>OBB</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>OBB2</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="10" column="6" colspan="2">
-          <widget class="QPushButton" name="convertToCuboid">
-           <property name="text">
-            <string>Cuboid</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../Workspace.qrc">
-             <normaloff>:/Workspace/Resources/icons/cuboid.png</normaloff>:/Workspace/Resources/icons/cuboid.png</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item row="25" column="0" colspan="7">
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="title">
-         <string>Joint</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_4">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Voxel size</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QPushButton" name="findPairwiseJointsButton">
-           <property name="text">
-            <string>Pairwise Joints</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QPushButton" name="findJointsButton">
-           <property name="text">
-            <string>Find Joints</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../Workspace.qrc">
-             <normaloff>:/Workspace/Resources/icons/joints.png</normaloff>:/Workspace/Resources/icons/joints.png</iconset>
+            <string>Resolution</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QSpinBox" name="numJoints"/>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string># Joints</string>
+          <widget class="QSpinBox" name="hidderViewerSize">
+           <property name="suffix">
+            <string> px</string>
+           </property>
+           <property name="minimum">
+            <number>10</number>
+           </property>
+           <property name="maximum">
+            <number>1024</number>
+           </property>
+           <property name="value">
+            <number>400</number>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QDoubleSpinBox" name="jointsThreshold">
-           <property name="decimals">
-            <number>5</number>
+         <item row="1" column="2">
+          <widget class="QLabel" name="label_15">
+           <property name="text">
+            <string>#Object</string>
            </property>
-           <property name="minimum">
-            <double>0.000010000000000</double>
-           </property>
-           <property name="maximum">
-            <double>100.000000000000000</double>
-           </property>
-           <property name="singleStep">
-            <double>0.010000000000000</double>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <widget class="QSpinBox" name="stackCount">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
            </property>
            <property name="value">
-            <double>0.035000000000000</double>
+            <number>3</number>
            </property>
           </widget>
          </item>

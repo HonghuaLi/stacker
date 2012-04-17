@@ -6,34 +6,92 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>194</width>
-    <height>186</height>
+    <width>302</width>
+    <height>282</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <property name="margin">
-    <number>0</number>
-   </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>0</number>
    </property>
-   <item row="0" column="0">
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Groups</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="1" column="0">
-       <widget class="QPushButton" name="saveGroupsButton">
-        <property name="text">
-         <string>Save</string>
+      <item row="3" column="0" colspan="2">
+       <widget class="QTreeWidget" name="groupTree">
+        <property name="columnCount">
+         <number>1</number>
         </property>
+        <column>
+         <property name="text">
+          <string notr="true">1</string>
+         </property>
+        </column>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="2" column="0" colspan="2">
+       <widget class="QGroupBox" name="jointGroupBox">
+        <property name="title">
+         <string>Joint</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="jointThreshold">
+           <property name="decimals">
+            <number>5</number>
+           </property>
+           <property name="minimum">
+            <double>0.000010000000000</double>
+           </property>
+           <property name="maximum">
+            <double>100.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.035000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Voxel size</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="findJointsButton">
+           <property name="text">
+            <string>Find Joints</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../Workspace.qrc">
+             <normaloff>:/Workspace/Resources/icons/joints.png</normaloff>:/Workspace/Resources/icons/joints.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="findPairwiseJointButton">
+           <property name="text">
+            <string>Pairwise Joints</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="5" column="0">
        <widget class="QPushButton" name="removeButton">
         <property name="text">
          <string>Remove</string>
@@ -44,14 +102,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="loadGroupsButton">
-        <property name="text">
-         <string>Load</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
+      <item row="5" column="1">
        <widget class="QPushButton" name="clearButton">
         <property name="styleSheet">
          <string notr="true">color:rgb(85, 85, 85);
@@ -63,7 +114,7 @@ font: italic;
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="7" column="0" colspan="2">
        <widget class="QCheckBox" name="showGroups">
         <property name="text">
          <string>Show groups</string>
@@ -73,16 +124,18 @@ font: italic;
         </property>
        </widget>
       </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QTreeWidget" name="groupTree">
-        <property name="columnCount">
-         <number>1</number>
+      <item row="6" column="0">
+       <widget class="QPushButton" name="saveGroupsButton">
+        <property name="text">
+         <string>Save</string>
         </property>
-        <column>
-         <property name="text">
-          <string notr="true">1</string>
-         </property>
-        </column>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QPushButton" name="loadGroupsButton">
+        <property name="text">
+         <string>Load</string>
+        </property>
        </widget>
       </item>
      </layout>

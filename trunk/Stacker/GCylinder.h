@@ -7,8 +7,6 @@
 #include "GUI/Viewer/libQGLViewer/QGLViewer/manipulatedFrame.h"
 #include "MathLibrary/Deformer/Skinning.h"
 
-extern int skeletonJoints;
-
 enum DEFORMER { GREEN_COORDIANTES, SKINNING };
 
 class GCylinder : public QObject, public Primitive

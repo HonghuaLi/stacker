@@ -69,6 +69,8 @@ void PointJointGroup::draw()
 		SimpleDraw::IdentifyPoint( a->fromCoordinate(jointCoords[a->id]), 1,0,1, 5 );
 		SimpleDraw::IdentifyPoint( b->fromCoordinate(jointCoords[b->id]), 0,1,0, 8 );
 	}
+
+	Group::draw();
 }
 
 void PointJointGroup::saveParameters( std::ofstream &outF )

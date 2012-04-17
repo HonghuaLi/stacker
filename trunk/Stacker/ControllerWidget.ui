@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>201</width>
-    <height>109</height>
+    <width>332</width>
+    <height>212</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,20 +20,84 @@
    <property name="spacing">
     <number>0</number>
    </property>
-   <item row="0" column="1" colspan="2">
+   <item row="0" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Controller</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="4" column="0" colspan="4">
+       <widget class="QPushButton" name="removeButton">
+        <property name="text">
+         <string>Delete prim</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../Workspace.qrc">
+          <normaloff>:/Workspace/Resources/icons/remove.png</normaloff>:/Workspace/Resources/icons/remove.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="6" colspan="2">
+       <widget class="QPushButton" name="loadButton">
+        <property name="text">
+         <string>Load</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="7">
+       <widget class="QCheckBox" name="showPrimitives">
+        <property name="text">
+         <string>Show primitives</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Axis</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="4">
        <widget class="QPushButton" name="saveButton">
         <property name="text">
          <string>Save</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="convertGcAxis">
+        <property name="maximum">
+         <number>2</number>
+        </property>
+        <property name="value">
+         <number>2</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QComboBox" name="cuboidMethod">
+        <item>
+         <property name="text">
+          <string>MinOBB3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>OBB</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>OBB2</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="4" column="6" colspan="2">
        <widget class="QPushButton" name="clearButton">
         <property name="styleSheet">
          <string notr="true">color:rgb(85, 85, 85);
@@ -45,31 +109,62 @@ font: italic;
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="loadButton">
+      <item row="0" column="7">
+       <widget class="QPushButton" name="convertToGC">
         <property name="text">
-         <string>Load</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="removeButton">
-        <property name="text">
-         <string>Delete prim</string>
+         <string>GC</string>
         </property>
         <property name="icon">
          <iconset resource="../Workspace.qrc">
-          <normaloff>:/Workspace/Resources/icons/remove.png</normaloff>:/Workspace/Resources/icons/remove.png</iconset>
+          <normaloff>:/Workspace/Resources/icons/gc.png</normaloff>:/Workspace/Resources/icons/gc.png</iconset>
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="showPrimitives">
+      <item row="0" column="3">
+       <widget class="QLabel" name="label_9">
         <property name="text">
-         <string>Show primitives</string>
+         <string>#Joint</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
+       <widget class="QCheckBox" name="basicFitGC">
+        <property name="text">
+         <string>Basic</string>
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QSpinBox" name="skeletonJoints">
+        <property name="singleStep">
+         <number>2</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3" colspan="2">
+       <widget class="QCheckBox" name="useAABB">
+        <property name="text">
+         <string>Use AABB</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="7">
+       <widget class="QPushButton" name="convertToCuboid">
+        <property name="text">
+         <string>Cuboid</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../Workspace.qrc">
+          <normaloff>:/Workspace/Resources/icons/cuboid.png</normaloff>:/Workspace/Resources/icons/cuboid.png</iconset>
         </property>
        </widget>
       </item>

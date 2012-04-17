@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Group.h"
-#include "Primitive.h"
 
 class PointJointGroup : public Group{
 
