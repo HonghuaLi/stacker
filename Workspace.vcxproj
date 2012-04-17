@@ -589,7 +589,7 @@
     <ClCompile Include="Stacker\ControllerPanel.cpp" />
     <ClCompile Include="Stacker\CoplanarGroup.cpp" />
     <ClCompile Include="Stacker\Cuboid.cpp" />
-    <ClCompile Include="Stacker\EditSuggestion.cpp" />
+    <ClCompile Include="Stacker\EditingSuggestion.cpp" />
     <ClCompile Include="Stacker\GCylinder.cpp" />
     <ClCompile Include="Stacker\Group.cpp" />
     <ClCompile Include="Stacker\GroupPanel.cpp" />

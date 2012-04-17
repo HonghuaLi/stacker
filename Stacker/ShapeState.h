@@ -4,7 +4,7 @@
 #include <QVector>
 #include <QString>
 #include <queue>
-#include "Stacker/EditSuggestion.h"
+#include "Stacker/EditingSuggestion.h"
 
 struct PrimitiveState
 {
@@ -21,7 +21,7 @@ public:
 
 	// N history states have a N-1 long trajectory
 	QVector<ShapeState> history;
-	QVector<EditSuggestion> trajectory;
+	QVector<EditingSuggestion> trajectory;
 
 	double energy();
 
