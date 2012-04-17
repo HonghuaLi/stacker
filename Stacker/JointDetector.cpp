@@ -6,6 +6,7 @@
 #include "LineJointGroup.h"
 
 #include <algorithm>
+#include "GraphicsLibrary/Voxel/Voxeler.h"
 #include "MathLibrary/Bounding/MinOBB3.h"
 
 #define POINT_LINE_THRESHOLD 4
@@ -32,20 +33,32 @@ QVector<Group*> JointDetector::detect( QVector<Primitive*> primitives )
 
 			std::vector<Voxel> intersection = voxels[i].Intersects(&voxels[j]);
 
-			if(intersection.empty()) continue;
+			if(!intersection.empty())
+			{
+				// Voxel positions
+				std::vector<Point> points;
+				foreach( Voxel v, intersection){
+					points.push_back(Point(v.x, v.y, v.z) * JOINT_THRESHOLD);
+				}
 
-			// Analyze the pair-wise intersection
-			QVector<Group*> pairwiseJoints = analyzeIntersection(a, b, intersection);
+				//// Debug: visualize the intersection
+				//foreach (Point p, points)
+				//	a->debugPoints.push_back(p);
 
-			foreach(Group* g, pairwiseJoints)
-				Joints.push_back(g);
+				// Analyze the pair-wise intersection
+				QVector<Group*> pairwiseJoints = analyzeIntersection(a, b, points);
+
+				foreach(Group* g, pairwiseJoints)
+					Joints.push_back(g);
+			}
+
 		}
 	}
 
 	return Joints;
 }
 
-QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, std::vector<Voxel> &intersection )
+QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, std::vector<Point> &intersection )
 {
 	QVector<Group*> Joints;
 
@@ -54,14 +67,8 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 	segments.push_back(a);
 	segments.push_back(b);
 
-	// Voxel positions
-	std::vector<Point> points;
-	foreach( Voxel v, intersection){
-		points.push_back(Point(v.x, v.y, v.z));
-	}
-
 	// Compute the minimal bounding box
-	MinOBB3 obb(points);
+	MinOBB3 obb(intersection);
 	Box3 box = obb.mMinBox;
 	box.sort();
 
@@ -69,14 +76,14 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 	if (box.Extent[2]/box.Extent[1] < POINT_LINE_THRESHOLD)
 	{
 		// Point-joint
-		Joints.push_back( setupPointJointGroup(segments, points) );
+		Joints.push_back( setupPointJointGroup(segments, intersection) );
 	}
 	else
 	{
 		// Cluster points into two clusters
 		Point p1 = box.Center + box.Extent[2] * box.Axis[2];
 		Point p2 = box.Center - box.Extent[2] * box.Axis[2];
-		std::vector< std::vector< Point > >clusters = twoClassClustering(points, p1, p2);
+		std::vector< std::vector< Point > >clusters = twoClassClustering(intersection, p1, p2);
 
 		// The distance between two clusters
 		double dis = distanceCluster2Cluster(clusters[0], clusters[1]);
@@ -89,6 +96,8 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 			LJG->lineEnds.push_back(p1);
 			LJG->lineEnds.push_back(p2);
 			LJG->process(segments);
+
+			Joints.push_back(LJG);
 		}
 		else
 		{

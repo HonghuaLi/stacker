@@ -43,8 +43,8 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	mi = new MeshInfoPanel();
 	rightLayout->addWidget(mi);
 
-	// Hide the right dock by default
-	ui.rightDock->hide();
+	//// Hide the right dock by default
+	//ui.rightDock->hide();
 
 
 	// Create mesh document manager

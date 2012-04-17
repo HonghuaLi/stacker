@@ -75,7 +75,7 @@ void PointJointGroup::draw()
 
 void PointJointGroup::saveParameters( std::ofstream &outF )
 {
-	outF << true << joint;
+	outF << joint;
 }
 
 void PointJointGroup::loadParameters( std::ifstream &inF )
