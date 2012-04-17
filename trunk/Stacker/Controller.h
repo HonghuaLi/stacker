@@ -1,7 +1,6 @@
 #pragma once
 #include <QMap>
 #include "Primitive.h"
-#include "GraphicsLibrary/Voxel/Voxeler.h"
 #include "Group.h"
 
 class EditSuggestion;
@@ -22,7 +21,9 @@ public:
 	Primitive * getPrimitive( QString id );
 	Primitive * getPrimitive( uint id );
 	Primitive * getSelectedPrimitive();
-	std::vector<Primitive*> getPrimitives();
+	QVector<Primitive*> getPrimitives( QVector<QString> ids );
+	QVector<Primitive*> getPrimitives( QVector<int> ids );
+	QVector<Primitive*> getPrimitives();
 
 	// Fitting
 	void fitPrimitives();
@@ -30,10 +31,6 @@ public:
 	void convertToGC( QString primitiveId, bool isUsingSkeleton = true, int cuboidAxis = 0 );
 	void convertToCuboid( QString primitiveId, bool useAABB = true, int fit_method = 0);
 
-	// Joints
-	void findJoints();
-	void findPairwiseJoints( QString a, QString b, int nbJoints );
-	QVector< Vec3d > centerOfClusters( QVector< Vec3d> &data, int nbCluster );
 	// Interaction
 	void select(int id);
 	void select(QString id);
@@ -42,7 +39,6 @@ public:
 
 	// Grouping
 	QMap<QString, Group*> groups;
-	std::set< QString > getRidOfRedundancy( std::set< QString > Ids );
 	QVector< Group * > groupsOf( QString id );
 
 

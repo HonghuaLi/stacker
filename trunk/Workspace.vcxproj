@@ -297,7 +297,8 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -Dqh_QHpointer -DQT_DLL  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I.\GraphicsLibrary\Mesh\SurfaceMesh" "-I.\Utility" "-I.\Stacker" "-I.\GraphicsLibrary\Skeleton" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UMFPACK" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\AMD" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UFconfig" "-I$(NOINHERIT)\." "-I." "-I." "-I." "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
     <ClInclude Include="Stacker\HotSpot.h" />
-    <ClInclude Include="Stacker\JointGroup.h" />
+    <ClInclude Include="Stacker\JointDetector.h" />
+    <ClInclude Include="Stacker\PointJointGroup.h" />
     <ClInclude Include="Stacker\Numeric.h" />
     <ClInclude Include="Stacker\Offset.h" />
     <ClInclude Include="Stacker\Primitive.h" />
@@ -593,7 +594,8 @@
     <ClCompile Include="Stacker\GroupPanel.cpp" />
     <ClCompile Include="Stacker\HiddenViewer.cpp" />
     <ClCompile Include="Stacker\HotSpot.cpp" />
-    <ClCompile Include="Stacker\JointGroup.cpp" />
+    <ClCompile Include="Stacker\JointDetector.cpp" />
+    <ClCompile Include="Stacker\PointJointGroup.cpp" />
     <ClCompile Include="Stacker\Numeric.cpp" />
     <ClCompile Include="Stacker\Offset.cpp" />
     <ClCompile Include="Stacker\Primitive.cpp" />

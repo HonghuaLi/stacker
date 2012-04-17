@@ -1,69 +1,40 @@
 #include "Group.h"
-#include "Controller.h"
 #include "SimpleDraw.h"
+#include "Primitive.h"
 
 int GroupUniqueID = 0;
 
-Group::Group( Controller * controller, GroupType newType )
+Group::Group(GroupType newType )
 {
-	this->ctrl = controller;
 	this->type = newType;
 	this->id = QString("%1").arg(GroupUniqueID++);
 
 	this->isDraw = true;
 }
 
-void Group::addNode( QString nodeId )
+void Group::process( QVector< Primitive* > segments )
 {
-	nodes[nodes.size()] = nodeId;
+	// Keep the nodes
+	nodes = segments;
 }
 
-void Group::addNodes( QVector<QString> newNodes )
+void Group::loadParameters( std::ifstream &inF )
 {
-	foreach(QString node, newNodes)
-		addNode(node);
+	// Please reload this method if there are parameters to load
 }
 
-void Group::addEdge( QString nodeA, QString nodeB )
+void Group::saveParameters( std::ofstream &outF )
 {
-	addNode(nodeA);
-	addNode(nodeB);
-
-	edges.insert(Group::Edge(nodeIdNum(nodeA), nodeIdNum(nodeB), edges.size()));
-}
-
-void Group::removeNode( QString nodeId )
-{
-	nodes.remove(nodeIdNum(nodeId));
-}
-
-void Group::removeEdge( QString nodeA, QString nodeB )
-{
-	edges.remove(Edge(nodeIdNum(nodeA), nodeIdNum(nodeB)));
-}
-
-int Group::nodeIdNum(QString stringId)
-{
-	QMapIterator<int, QString> i(nodes);
-	while (i.hasNext()) {
-		i.next();
-		if(i.value() == stringId) return i.key();
-	}
-	return -1;
-}
-
-Primitive * Group::getPrimitive(QString nodeId)
-{
-	return ctrl->getPrimitive(nodeId);
+	// Please reload this method if there are parameters to save
 }
 
 void Group::draw()
 {
 	if(!isDraw) return;
 
-	foreach(QString node, nodes)
+	foreach(Primitive* node, nodes)
 	{
-	//	SimpleDraw::IdentifyPoint(getPrimitive(node)->centerPoint(), 0,0,1);
+	//	SimpleDraw::IdentifyPoint(node->centerPoint(), 0,0,1);
 	}
 
 	drawDebug();
@@ -77,37 +48,20 @@ void Group::drawDebug()
 		SimpleDraw::IdentifyLine(debugLines[i].first, debugLines[i].second, Color(1,1,1,1),false, 6);
 }
 
-void Group::save( std::ofstream &outF )
+bool Group::has( QString id )
 {
-	outF << nodes.size() << "\t";
-	foreach(QString node, nodes)
-		outF << qPrintable(node) << "\t";
-}
-
-void Group::load( std::ifstream &inF )
-{
-	int n;
-	inF >> n;
-	std::string str;
-	QVector<QString> segments;
-	for (int i=0;i<n;i++)
-	{
-		inF >> str;
-		segments.push_back(str.c_str());
+	foreach(Primitive* p, nodes){
+		if (p->id == id) return true;
 	}
 
-	process(segments);
-}
-
-bool Group::has( QString node )
-{
-	foreach(QString nodeId, nodes.values())
-		if(nodeId == node) return true;
 	return false;
 }
 
-QVector<QString> Group::regroup()
+QVector<QString> Group::getNodes()
 {
-	// Return the propagated primitives
-	return QVector<QString>();
+	QVector<QString> ids;
+	foreach(Primitive* p, nodes)
+		ids.push_back(p->id);
+
+	return ids;
 }

@@ -6,10 +6,10 @@
 class CoplanarGroup : public Group{
 
 public:
-	CoplanarGroup(Controller * controller, GroupType newType) : Group(controller, newType){}
+	CoplanarGroup(GroupType newType) : Group(newType){}
 
-	void process(QVector< QString > segments);
-
+	void process(QVector< Primitive* > segments);
+	QVector<QString> regroup();
 	void draw();
 
 	Plane groupAxis[3];

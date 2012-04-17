@@ -1,13 +1,12 @@
 #include "CoplanarGroup.h"
 #include "SimpleDraw.h"
+#include "Primitive.h"
 
-void CoplanarGroup::process( QVector<QString> segments )
+void CoplanarGroup::process( QVector< Primitive* > segments )
 {
-	addNodes(segments);
-	
-	Primitive * a = getPrimitive(nodes.values().first());
+	Group::process(segments);
 
-	std::vector<Vec3d> axis = a->majorAxis();
+	std::vector<Vec3d> axis = nodes.first()->majorAxis();
 
 	groupAxis[0] = Plane(axis[0]);
 	groupAxis[1] = Plane(axis[1]);
@@ -23,10 +22,8 @@ void CoplanarGroup::draw()
 
 	double EPS = 0.5;
 
-	foreach(int i, nodes.keys())
+	foreach(Primitive * a, nodes)
 	{
-		Primitive * a = getPrimitive(nodes[i]);
-
 		std::vector< std::vector<Vec3d> > curves = a->getCurves();
 
 		foreach(std::vector<Vec3d> curve, curves)
@@ -64,4 +61,10 @@ void CoplanarGroup::draw()
 	//groupAxis[0].draw();
 	//groupAxis[1].draw();
 	//groupAxis[2].draw();
+}
+
+QVector<QString> CoplanarGroup::regroup()
+{
+	QVector<QString> result;
+	return result;
 }
