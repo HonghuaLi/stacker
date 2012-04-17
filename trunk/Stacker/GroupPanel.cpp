@@ -210,6 +210,9 @@ void GroupPanel::loadGroups()
 		case POINTJOINT:
 			newGroup = new PointJointGroup(POINTJOINT);
 			break;
+		case LINEJOINT:
+			newGroup = new LineJointGroup(LINEJOINT);
+			break;
 		case SELF_SYMMETRY:
 			{
 				inF >> str;

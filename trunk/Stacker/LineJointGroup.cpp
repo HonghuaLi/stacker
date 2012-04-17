@@ -17,9 +17,11 @@ void LineJointGroup::process( QVector< Primitive* > segments )
 		lineEnds.push_back(Point(0.0, 0.0, 0.0));
 	}
 
+	lineEndsCoords[a->id].resize(2);
 	lineEndsCoords[a->id][0] = a->getCoordinate(lineEnds[0]);
 	lineEndsCoords[a->id][1] = a->getCoordinate(lineEnds[1]);
 
+	lineEndsCoords[b->id].resize(2);
 	lineEndsCoords[b->id][0] = b->getCoordinate(lineEnds[0]);
 	lineEndsCoords[b->id][1] = b->getCoordinate(lineEnds[1]);
 }
@@ -74,7 +76,7 @@ void LineJointGroup::draw()
 
 void LineJointGroup::saveParameters( std::ofstream &outF )
 {
-	outF << true << lineEnds[0] << lineEnds[1];
+	outF << lineEnds[0] << '\t' << lineEnds[1];
 }
 
 void LineJointGroup::loadParameters( std::ifstream &inF )

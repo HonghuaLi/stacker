@@ -5,7 +5,6 @@
 #include <QMap>
 #include <QString>
 
-#include "GraphicsLibrary/Voxel/Voxeler.h"
 #include "GraphicsLibrary/Mesh/QSurfaceMesh.h"
 
 class Group;
@@ -17,7 +16,7 @@ class JointDetector
 public:
 
 	QVector<Group*> detect( QVector<Primitive*> primitives );
-	QVector<Group*> analyzeIntersection( Primitive* a, Primitive* b, std::vector<Voxel> &intersection );
+	QVector<Group*> analyzeIntersection( Primitive* a, Primitive* b, std::vector<Point> &intersection );
 	
 	PointJointGroup* setupPointJointGroup( QVector<Primitive*> segments, std::vector<Point>& points );
 	void twoFurthestPoints(std::vector<Point> &points, Point &p1, Point &p2);
