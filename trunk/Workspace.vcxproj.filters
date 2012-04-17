@@ -777,9 +777,6 @@
     <ClCompile Include="Stacker\StackerPanel.cpp">
       <Filter>Stacker\Source</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\EditSuggestion.cpp">
-      <Filter>Stacker\Source</Filter>
-    </ClCompile>
     <ClCompile Include="GUI\MeshBrowser\MeshBrowserWidget.cpp">
       <Filter>GUI\MeshBrowser</Filter>
     </ClCompile>
@@ -809,6 +806,9 @@
     </ClCompile>
     <ClCompile Include="Stacker\PointJointGroup.cpp">
       <Filter>Stacker\Groups</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\EditingSuggestion.cpp">
+      <Filter>Stacker\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

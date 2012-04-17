@@ -487,14 +487,14 @@ void StackerPanel::onSaveSuggestionsButtonClicked()
 {
 	if(!activeScene || !activeObject())	return;
 
-	QVector< EditSuggestion > &suggestions = suggestions;
+	QVector< EditingSuggestion > &suggestions = suggestions;
 	if (suggestions.empty()) return;
 
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", "", "Group File (*.sgt)"); 
 	std::ofstream outF(qPrintable(fileName), std::ios::out);
 
 	outF << suggestions.size() << std::endl;
-	foreach(EditSuggestion sgt, suggestions)
+	foreach(EditingSuggestion sgt, suggestions)
 	{
 		outF << sgt.center << '\t' << sgt.direction << '\t' << sgt.value << std::endl;
 	}
@@ -513,7 +513,7 @@ void StackerPanel::onLoadSuggestionsButtonClicked()
 	suggestions.clear();
 	for (int i=0; i<num; i++)
 	{
-		EditSuggestion sgt;
+		EditingSuggestion sgt;
 		inF >> sgt.center >> sgt.direction >> sgt.value;
 		suggestions.push_back(sgt);
 	}

@@ -133,7 +133,7 @@ void Scene::draw()
 	Vec3d pos(p.x, p.y, p.z);
 	double scaling = 0.05;//pos.norm() / 100.0;
 	pos.normalize();	
-	foreach(EditSuggestion sg, suggestions)
+	foreach(EditingSuggestion sg, suggestions)
 		sg.draw(scaling);
 }
 

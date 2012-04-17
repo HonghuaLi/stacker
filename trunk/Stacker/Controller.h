@@ -3,7 +3,7 @@
 #include "Primitive.h"
 #include "Group.h"
 
-class EditSuggestion;
+class EditingSuggestion;
 
 extern double JOINT_THRESHOLD;
 

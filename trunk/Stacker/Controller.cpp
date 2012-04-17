@@ -6,7 +6,7 @@
 #include "Offset.h"
 #include <QQueue>
 
-#include "EditSuggestion.h"
+#include "EditingSuggestion.h"
 
 Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 {
