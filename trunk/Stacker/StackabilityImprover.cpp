@@ -1,5 +1,8 @@
 #include "StackabilityImprover.h"
+
 #include "Offset.h"
+#include "Primitive.h"
+#include "Propagator.h"
 
 QVector<EditingSuggestion> suggestions;
 
@@ -101,6 +104,7 @@ void StackabilityImprover::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS 
 	//Ts.push_back(Vec3d(0.4, 0, 0));
 
 	// Actually modify the shape to generate hot solutions
+	Propagator propagator(ctrl);
 	for (int i=0;i<Ts.size();i++)
 	{
 		// Clear the frozen flags
@@ -115,11 +119,11 @@ void StackabilityImprover::applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS 
 		prim->addFixedPoint(hotPoint + Ts[i]);
 
 		// fix the hot segments pair
-		ctrl->regroupPair(prim->id, op_prim->id);
+		propagator.regroupPair(prim->id, op_prim->id);
 		// Propagation the deformation
 		prim->isFrozen = true;
 		op_prim->isFrozen = true;
-		ctrl->weakPropagate();
+		propagator.weakPropagate();
 
 		// Check if this is a candidate solution		
 		if ( satisfyBBConstraint() )
@@ -183,7 +187,7 @@ void StackabilityImprover::applyHeuristicsOnHotRing( HotSpot& HS )
 	// Save the initial hot shape state
 	ShapeState initialHotShapeState = ctrl->getShapeState();
 
-
+	Propagator propagator(ctrl);
 	Vec3d hotPoint = HS.hotSamples[0];
 	for (int i=0;i<Ts.size();i++)
 	{
@@ -196,7 +200,7 @@ void StackabilityImprover::applyHeuristicsOnHotRing( HotSpot& HS )
 		// Propagation the deformation
 		prim->isFrozen = true;
 
-		ctrl->weakPropagate();
+		propagator.weakPropagate();
 
 		// Check if this is a candidate solution
 

@@ -1,16 +1,20 @@
-#include "GUI/global.h"
 #include "GroupPanel.h"
+
 #include <fstream>
+
 #include <QFileDialog>
 
+#include "GUI/global.h"
+#include "Primitive.h"
 #include "Controller.h"
+#include "StackerGlobal.h"
+
+#include "JointDetector.h"
 #include "SymmetryGroup.h"
 #include "PointJointGroup.h"
 #include "LineJointGroup.h"
 #include "ConcentricGroup.h"
 #include "CoplanarGroup.h"
-#include "StackerGlobal.h"
-#include "JointDetector.h"
 
 GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 {

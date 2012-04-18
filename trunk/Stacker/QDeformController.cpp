@@ -1,4 +1,7 @@
 #include "QDeformController.h"
+
+#include "Primitive.h"
+#include "Propagator.h"
 #include "SimpleDraw.h"
 
 QDeformController::QDeformController(Controller * usingController)
@@ -31,7 +34,8 @@ void QDeformController::updateController()
 
 	prim->isFrozen = true;
 	prim->moveCurveCenter( -1,  pos() - prim->selectedPartPos() );
-	ctrl->weakPropagate();
+	Propagator propagator(ctrl);
+	propagator.weakPropagate();
 	prim->isFrozen = false;
 
 	emit( objectModified() );
@@ -48,7 +52,8 @@ void QDeformController::scaleUp( double s )
 	{
 		prim->isFrozen = true;
 		prim->scaleCurve(-1, s);
-		ctrl->weakPropagate();
+		Propagator propagator(ctrl);
+		propagator.weakPropagate();
 		prim->isFrozen = false;
 
 		emit( objectModified() );

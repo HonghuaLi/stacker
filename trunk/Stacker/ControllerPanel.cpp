@@ -1,11 +1,14 @@
-#include "GUI/global.h"
+#include "ControllerPanel.h"
 
 #include <fstream>
+
 #include <QFileDialog>
 
-#include "Controller.h"
-#include "ControllerPanel.h"
+#include "GUI/global.h"
 #include "StackerGlobal.h"
+
+#include "Primitive.h"
+#include "Controller.h"
 
 ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 {
