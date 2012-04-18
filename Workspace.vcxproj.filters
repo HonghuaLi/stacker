@@ -365,6 +365,9 @@
     <ClInclude Include="Stacker\JointDetector.h">
       <Filter>Stacker\Groups</Filter>
     </ClInclude>
+    <ClInclude Include="Stacker\Propagator.h">
+      <Filter>Stacker\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="GUI\QMeshDoc.h">
@@ -821,6 +824,9 @@
     </ClCompile>
     <ClCompile Include="Stacker\JointDetector.cpp">
       <Filter>Stacker\Groups</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Propagator.cpp">
+      <Filter>Stacker\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

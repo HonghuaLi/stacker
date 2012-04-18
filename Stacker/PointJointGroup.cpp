@@ -1,7 +1,9 @@
 #include "PointJointGroup.h"
+
+#include "Primitive.h"
+#include "Controller.h"
 #include "SimpleDraw.h"
 #include "GraphicsLibrary/Voxel/Voxeler.h"
-#include "Controller.h"
 
 
 PointJointGroup::PointJointGroup( GroupType newType ): Group(newType)

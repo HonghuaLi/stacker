@@ -1,14 +1,16 @@
 #pragma once
+
+#include <QString>
+#include <QVector>
 #include <QMap>
-#include "Primitive.h"
-#include "Group.h"
 
-class EditingSuggestion;
-
-extern double JOINT_THRESHOLD;
+#include "ShapeState.h"
+#include "GraphicsLibrary/Mesh/SurfaceMesh/Vector.h"
 
 class QSegMesh;
-
+class Primitive;
+class Group;
+class EditingSuggestion;
 
 class Controller
 {
@@ -17,7 +19,16 @@ public:
 	~Controller();
 
 public:
-	// SET and GET
+
+	// Primitive GET's
+	int numPrimitives();
+	int numHotPrimitives();
+	int getPrimitiveIdNum(QString stringId);
+	QVector<QString> stringIds(QVector<int> numericalIds);
+
+	void removePrimitive( Primitive * prim );
+	void clearPrimitives();
+
 	Primitive * getPrimitive( QString id );
 	Primitive * getPrimitive( uint id );
 	Primitive * getSelectedPrimitive();
@@ -41,10 +52,6 @@ public:
 	QMap<QString, Group*> groups;
 	QVector< Group * > groupsOf( QString id );
 
-
-	uint numPrimitives();
-	int numHotPrimitives();
-
 	// OpenGL stuff
 	void draw();
 	void drawNames(bool isDrawParts = false);
@@ -55,50 +62,38 @@ public:
 
 	// Similarity between two shape state
 	double similarity(ShapeState state1, ShapeState state2);
-
-	// Propagation
-	void weakPropagate(QVector<QString> seeds);
-	void weakPropagate();
-	QVector<ShapeState> strongPropagate();
-	void regroupPair(QString id1, QString id2);
-
-
-	// Debug items
-	std::vector<Point> debugPoints;
-	std::vector< std::vector<Point> > debugLines;
-	QMap< QString, bool > getFrozenFlags();
-
+	
 	// Flags
 	void setSegmentsVisible(bool isVisible = true);
 	void setPrimitivesFrozen(bool isFrozen = false);
 	void setPrimitivesAvailable(bool isAvailable = true);
 
 	// Distortion
-	Vec3d original_bbmin, original_bbmax;
+	double volume();
+	double originalVolume();
 	double getDistortion();
-
-	QVector<QString> stringIds(QVector<int> numericalIds);
-	int getPrimitiveIdNum(QString stringId);
-	QMap<int, QString> primitiveIdNum;
-
-	void removePrimitive( Primitive * prim );
-	void clearPrimitives();
-
-	QVector<QString> primTypeNames;
 
 	// Save and load
 	void save(std::ofstream &outF);
 	void load(std::ifstream &inF);
-	double originalVolume();
-	double volume();
-
-	// DEBUG:
-	void test();
+	
+	// Debug items
+	std::vector<Point> debugPoints;
+	std::vector< std::vector<Point> > debugLines;
+	QMap< QString, bool > getFrozenFlags();	
 
 
 private:
-	QMap<QString, Primitive*> primitives;
+
 	QSegMesh* m_mesh;
+
+	QMap<QString, Primitive*> primitives;
+
+	Vec3d original_bbmin, original_bbmax;
+
+	QVector<QString> primTypeNames;
+
+	QMap<int, QString> primitiveIdNum;
 
 	void assignIds();
 };
