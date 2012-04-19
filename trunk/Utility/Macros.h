@@ -16,8 +16,8 @@
 #ifdef _WIN32
 	#include <GL/GLee.h>
 #else
-        #include <GL/glew.h>
-        #define GLEE_ARB_vertex_buffer_object GLEW_ARB_vertex_buffer_object
+    #include <GL/glew.h>
+    #define GLEE_ARB_vertex_buffer_object GLEW_ARB_vertex_buffer_object
 #endif
 
 // Constants

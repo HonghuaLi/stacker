@@ -15,9 +15,8 @@ public:
 	Ui::ControllerManagmentWidget controllerWidget;
 	Scene * activeScene;
 
-
 public slots:
-	// Secen management
+	// Scene management
 	void setActiveScene( Scene * newScene );
 
 	// Update controller
@@ -37,10 +36,13 @@ public slots:
 	void save();
 	void load();
 
-signals:
+	// Constraints
+	void showGraph();
 
 private:
 	QSegMesh* activeObject();
 	Controller * controller();
+
+signals:
 
 };

@@ -449,3 +449,8 @@ double Controller::getDistortion()
 	// Total Energy
 	return Sum(D);
 }
+
+double Controller::meshRadius()
+{
+	return m_mesh->radius;
+}

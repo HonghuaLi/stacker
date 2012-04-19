@@ -82,6 +82,8 @@ public:
 	std::vector< std::vector<Point> > debugLines;
 	QMap< QString, bool > getFrozenFlags();	
 
+	// Mesh radius
+	double meshRadius();
 
 private:
 
