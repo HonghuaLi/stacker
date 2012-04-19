@@ -85,9 +85,9 @@
    </attribute>
    <addaction name="actionNewScene"/>
    <addaction name="separator"/>
-   <addaction name="actionImportObject"/>
-   <addaction name="separator"/>
    <addaction name="actionMeshBrowser"/>
+   <addaction name="separator"/>
+   <addaction name="actionImportObject"/>
   </widget>
   <widget class="QDockWidget" name="leftDock">
    <property name="minimumSize">

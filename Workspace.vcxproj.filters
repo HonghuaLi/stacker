@@ -368,6 +368,12 @@
     <ClInclude Include="Stacker\Propagator.h">
       <Filter>Stacker\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Stacker\ConstraintGraph.h">
+      <Filter>Stacker\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Basic\Circle.h">
+      <Filter>GraphicsLibrary\Basic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="GUI\QMeshDoc.h">
@@ -468,6 +474,9 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\HiddenViewer.h">
       <Filter>Stacker\Panels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\ConstraintGraphVis.h">
+      <Filter>Stacker\Utility</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -827,6 +836,21 @@
     </ClCompile>
     <ClCompile Include="Stacker\Propagator.cpp">
       <Filter>Stacker\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\ConstraintGraph.cpp">
+      <Filter>Stacker\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ConstraintGraphVis.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ConstraintGraphVis.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\ConstraintGraphVis.cpp">
+      <Filter>Stacker\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Basic\Circle.cpp">
+      <Filter>GraphicsLibrary\Basic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

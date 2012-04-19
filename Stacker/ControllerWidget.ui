@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>332</width>
-    <height>212</height>
+    <width>319</width>
+    <height>175</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,14 +26,24 @@
       <string>Controller</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="4" column="0" colspan="4">
-       <widget class="QPushButton" name="removeButton">
+      <item row="5" column="0" colspan="7">
+       <widget class="QCheckBox" name="showPrimitives">
         <property name="text">
-         <string>Delete prim</string>
+         <string>Show primitives</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="7">
+       <widget class="QPushButton" name="convertToCuboid">
+        <property name="text">
+         <string>Cuboid</string>
         </property>
         <property name="icon">
          <iconset resource="../Workspace.qrc">
-          <normaloff>:/Workspace/Resources/icons/remove.png</normaloff>:/Workspace/Resources/icons/remove.png</iconset>
+          <normaloff>:/Workspace/Resources/icons/cuboid.png</normaloff>:/Workspace/Resources/icons/cuboid.png</iconset>
         </property>
        </widget>
       </item>
@@ -44,13 +54,14 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="7">
-       <widget class="QCheckBox" name="showPrimitives">
+      <item row="4" column="0" colspan="4">
+       <widget class="QPushButton" name="removeButton">
         <property name="text">
-         <string>Show primitives</string>
+         <string>Delete prim</string>
         </property>
-        <property name="checked">
-         <bool>true</bool>
+        <property name="icon">
+         <iconset resource="../Workspace.qrc">
+          <normaloff>:/Workspace/Resources/icons/remove.png</normaloff>:/Workspace/Resources/icons/remove.png</iconset>
         </property>
        </widget>
       </item>
@@ -157,14 +168,10 @@ font: italic;
         </property>
        </widget>
       </item>
-      <item row="1" column="7">
-       <widget class="QPushButton" name="convertToCuboid">
+      <item row="5" column="7">
+       <widget class="QPushButton" name="showGraph">
         <property name="text">
-         <string>Cuboid</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../Workspace.qrc">
-          <normaloff>:/Workspace/Resources/icons/cuboid.png</normaloff>:/Workspace/Resources/icons/cuboid.png</iconset>
+         <string>Graph</string>
         </property>
        </widget>
       </item>

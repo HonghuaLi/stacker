@@ -97,6 +97,7 @@
     <ClInclude Include="GeneratedFiles\ui_Workspace.h" />
     <ClInclude Include="GL\GLee.h" />
     <ClInclude Include="GL\VBO\VBO.h" />
+    <ClInclude Include="GraphicsLibrary\Basic\Circle.h" />
     <ClInclude Include="GraphicsLibrary\Basic\Line.h" />
     <ClInclude Include="GraphicsLibrary\Basic\Plane.h" />
     <ClInclude Include="GraphicsLibrary\Basic\PolygonArea.h" />
@@ -252,6 +253,17 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -Dqh_QHpointer -DQT_DLL  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I.\GraphicsLibrary\Mesh\SurfaceMesh" "-I.\Utility" "-I.\Stacker" "-I.\GraphicsLibrary\Skeleton" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UMFPACK" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\AMD" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UFconfig" "-I$(NOINHERIT)\." "-I." "-I." "-I." "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
     <ClInclude Include="Stacker\ConcentricGroup.h" />
+    <ClInclude Include="Stacker\ConstraintGraph.h" />
+    <CustomBuild Include="Stacker\ConstraintGraphVis.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ConstraintGraphVis.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -Dqh_QHpointer -DQT_DLL "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I.\GraphicsLibrary\Mesh\SurfaceMesh" "-I.\Utility" "-I.\Stacker" "-I.\GraphicsLibrary\Skeleton" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UMFPACK" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\AMD" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UFconfig" "-I$(NOINHERIT)\." "-I." "-I." "-I."</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ConstraintGraphVis.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -Dqh_QHpointer -DQT_DLL "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I.\GraphicsLibrary\Mesh\SurfaceMesh" "-I.\Utility" "-I.\Stacker" "-I.\GraphicsLibrary\Skeleton" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UMFPACK" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\AMD" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UFconfig" "-I$(NOINHERIT)\." "-I." "-I." "-I."</Command>
+    </CustomBuild>
     <ClInclude Include="Stacker\Controller.h" />
     <CustomBuild Include="Stacker\ControllerPanel.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
@@ -400,6 +412,9 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ConstraintGraphVis.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_ControllerPanel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -475,6 +490,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ConstraintGraphVis.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_ControllerPanel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -546,6 +564,7 @@
     </ClCompile>
     <ClCompile Include="GL\GLee.c" />
     <ClCompile Include="GL\VBO\VBO.cpp" />
+    <ClCompile Include="GraphicsLibrary\Basic\Circle.cpp" />
     <ClCompile Include="GraphicsLibrary\Basic\Line.cpp" />
     <ClCompile Include="GraphicsLibrary\Basic\Plane.cpp" />
     <ClCompile Include="GraphicsLibrary\Basic\Triangle.cpp" />
@@ -589,6 +608,8 @@
     <ClCompile Include="MathLibrary\Deformer\Skinning.cpp" />
     <ClCompile Include="MathLibrary\Deformer\VoxelDeformer.cpp" />
     <ClCompile Include="Stacker\ConcentricGroup.cpp" />
+    <ClCompile Include="Stacker\ConstraintGraph.cpp" />
+    <ClCompile Include="Stacker\ConstraintGraphVis.cpp" />
     <ClCompile Include="Stacker\Controller.cpp" />
     <ClCompile Include="Stacker\ControllerPanel.cpp" />
     <ClCompile Include="Stacker\CoplanarGroup.cpp" />

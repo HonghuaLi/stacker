@@ -644,6 +644,16 @@ void SimpleDraw::IdentifyLine( const Vec3d & p1, const Vec3d & p2, Vec4d c, bool
 	glEnable(GL_LIGHTING);
 }
 
+void SimpleDraw::IdentifyDashedLine( const Vec3d & p1, const Vec3d & p2, Vec4d c /*= Vec4d(1,0,0,1)*/, bool showVec3ds /*= true*/, float lineWidth /*= 3.0f */ )
+{
+	glLineStipple (1, 0xf0f0);  // Repeat count, repeat pattern
+	glEnable (GL_LINE_STIPPLE); // Turn stipple on
+
+	IdentifyLine(p1,p2,c,showVec3ds,lineWidth);
+
+	glDisable (GL_LINE_STIPPLE); // Turn it back off
+}
+
 void SimpleDraw::IdentifyLines( const StdVector<Vec3d> & p1, const StdVector<Vec3d> & p2, Vec4d c /*= Vec4d(1,0,0,1)*/, bool showVec3ds /*= true*/, float lineWidth /*= 3.0f */ )
 {
 	glDisable(GL_LIGHTING);

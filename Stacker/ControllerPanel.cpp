@@ -9,6 +9,9 @@
 
 #include "Primitive.h"
 #include "Controller.h"
+#include "ConstraintGraphVis.h"
+
+ConstraintGraphVis * vis;
 
 ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 {
@@ -21,12 +24,16 @@ ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 	connect(controllerWidget.clearButton, SIGNAL(clicked()), SLOT(clear()));
 	connect(controllerWidget.showPrimitives, SIGNAL(stateChanged (int)), SLOT(togglePrimDisplay(int)));
 
+	connect(controllerWidget.showGraph, SIGNAL(clicked()), SLOT(showGraph()));
+
 	// Primitives
 	connect(controllerWidget.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
 	connect(controllerWidget.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(controllerWidget.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
 
 	this->activeScene = NULL;
+
+	this->layout()->addWidget(vis = new ConstraintGraphVis(new ConstraintGraph()));
 }
 
 void ControllerPanel::setActiveScene( Scene * newScene )
@@ -87,7 +94,7 @@ void ControllerPanel::clear()
 
 Controller * ControllerPanel::controller()
 {
-	if(!activeScene || !activeScene->activeObject() || (Controller *)activeScene->activeObject()->ptr["controller"])
+	if(!activeScene || !activeScene->activeObject() || !(Controller *)activeScene->activeObject()->ptr["controller"])
 		return NULL;
 
 	return (Controller *)activeScene->activeObject()->ptr["controller"];
@@ -152,3 +159,14 @@ void ControllerPanel::updateController()
 		activeScene->setSelectMode(CONTROLLER);
 	}
 }
+
+void ControllerPanel::showGraph()
+{
+	if(controller())
+	{
+		vis->setGraph(new ConstraintGraph(controller()));
+		vis->setFloating(true);
+		vis->show();
+	}
+}
+
