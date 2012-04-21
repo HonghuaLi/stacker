@@ -32,6 +32,8 @@ void QDeformController::updateController()
 
 	Primitive * prim = ctrl->getSelectedPrimitive();
 
+	//std::cout << "Moving primitive: " << qPrintable(prim->id) << "\n";
+
 	prim->isFrozen = true;
 	prim->moveCurveCenter( -1,  pos() - prim->selectedPartPos() );
 	Propagator propagator(ctrl);

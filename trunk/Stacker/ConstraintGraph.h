@@ -35,7 +35,7 @@ public:
 	QMap< QString, QList<Edge> > adjacency_map;
 	Controller * controller() { return ctrl; }
 
-private:
+public:
 	Controller * ctrl;
 	Primitive * node(QString id);
 };

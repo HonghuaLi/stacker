@@ -415,9 +415,6 @@
     <CustomBuild Include="Stacker\GroupPanel.h">
       <Filter>Stacker\Panels</Filter>
     </CustomBuild>
-    <CustomBuild Include="Stacker\QDeformController.h">
-      <Filter>Stacker\Panels</Filter>
-    </CustomBuild>
     <CustomBuild Include="Stacker\StackerWidget.ui">
       <Filter>Stacker\Forms</Filter>
     </CustomBuild>
@@ -476,6 +473,9 @@
       <Filter>Stacker\Panels</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\ConstraintGraphVis.h">
+      <Filter>Stacker\Utility</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\QDeformController.h">
       <Filter>Stacker\Utility</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -652,9 +652,6 @@
       <Filter>Stacker\Panels</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\GroupPanel.cpp">
-      <Filter>Stacker\Panels</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\QDeformController.cpp">
       <Filter>Stacker\Panels</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\ConcentricGroup.cpp">
@@ -851,6 +848,9 @@
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\Basic\Circle.cpp">
       <Filter>GraphicsLibrary\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\QDeformController.cpp">
+      <Filter>Stacker\Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

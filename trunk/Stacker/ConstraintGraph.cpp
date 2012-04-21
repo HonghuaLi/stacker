@@ -36,7 +36,6 @@ Primitive * ConstraintGraph::node( QString id )
 
 QString ConstraintGraph::nextTarget()
 {
-
 	// Symmetry first
 	Primitive * n1, * n2;
 	foreach(Group* p, ctrl->groups)
@@ -50,9 +49,8 @@ QString ConstraintGraph::nextTarget()
 		}
 	}
 
-
-	// The most determined free node
-	QString target;
+	// Find the most constrained free node
+	QString target = "";
 	double maxScore = 0.0;
 	foreach(Primitive * p, ctrl->getPrimitives())
 	{

@@ -17,7 +17,7 @@ public:
 	StackabilityImprover(Offset *offset);
 
 	// Execute improving
-	void execute();
+	void executeImprove();
 
 	// Suggestions
 	QVector<EditingSuggestion> getSuggestions();
@@ -58,4 +58,5 @@ private:
 
 	QSegMesh* activeObject();
 	Controller* ctrl();
+
 };
