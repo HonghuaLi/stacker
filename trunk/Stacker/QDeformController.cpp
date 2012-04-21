@@ -35,7 +35,7 @@ void QDeformController::updateController()
 	prim->isFrozen = true;
 	prim->moveCurveCenter( -1,  pos() - prim->selectedPartPos() );
 	Propagator propagator(ctrl);
-	propagator.weakPropagate();
+	propagator.execute();
 	prim->isFrozen = false;
 
 	emit( objectModified() );
@@ -53,7 +53,7 @@ void QDeformController::scaleUp( double s )
 		prim->isFrozen = true;
 		prim->scaleCurve(-1, s);
 		Propagator propagator(ctrl);
-		propagator.weakPropagate();
+		propagator.execute();
 		prim->isFrozen = false;
 
 		emit( objectModified() );

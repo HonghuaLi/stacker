@@ -8,7 +8,7 @@ public:
 	ConcentricGroup( GroupType newType) : Group(newType){}
 
 	void process(QVector< Primitive* > segments);
-	QVector<QString> regroup();
+	void regroup();
 	void draw();
 
 	Vec3d axis;

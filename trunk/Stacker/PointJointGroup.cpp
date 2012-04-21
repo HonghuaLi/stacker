@@ -23,16 +23,13 @@ void PointJointGroup::process( QVector< Primitive* > segments )
 	jointCoords[b->id] = b->getCoordinate(joint);
 }
 
-QVector<QString> PointJointGroup::regroup()
+void PointJointGroup::regroup()
 {
-	QVector<QString> result;
-
 	Primitive * frozen =nodes.first();
 	Primitive * non_frozen = nodes.last();
 
 	// Both are frozen or unfrozen
-	if(frozen->isFrozen == non_frozen->isFrozen)
-		return result;
+	if(frozen->isFrozen == non_frozen->isFrozen) return;
 
 	// Match the pointer with the correct primitive
 	if(!frozen->isFrozen) 
@@ -52,10 +49,7 @@ QVector<QString> PointJointGroup::regroup()
 	// Make the joint fixed
 	non_frozen->addFixedPoint(newPos);
 
-	if (non_frozen->isFrozen)
-		result.push_back(non_frozen->id);
-
-	return result;
+	Group::regroup();
 }
 
 void PointJointGroup::draw()

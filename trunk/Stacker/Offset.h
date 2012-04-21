@@ -35,9 +35,9 @@ public:
 	void computeEnvelopeOfShape(int direction, Vec3d pos, Vec3d upVector = Vec3d(0,1,0), Vec3d horizontalShift = Vec3d(0,0,0));
 	void computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax);
 	void computeOffset();
-	double computeOffsetOfShape( STACKING_TYPE type = STRAIGHT_LINE, int rotDensity = 1);
+	void computeOffsetOfShape( STACKING_TYPE type = STRAIGHT_LINE, int rotDensity = 1);
 	void computeOffsetOfRegion( std::vector< Vec2i >& region );
-	double getStackability();
+	double getStackability(bool recompute = false);
 
 	// Detect hot spots
 	void detectHotspots();

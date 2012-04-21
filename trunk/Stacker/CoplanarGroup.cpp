@@ -63,8 +63,8 @@ void CoplanarGroup::draw()
 	//groupAxis[2].draw();
 }
 
-QVector<QString> CoplanarGroup::regroup()
+void CoplanarGroup::regroup()
 {
-	QVector<QString> result;
-	return result;
+
+	Group::regroup();
 }

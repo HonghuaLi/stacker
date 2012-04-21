@@ -6,18 +6,23 @@
 #include "ShapeState.h"
 
 class Controller;
+class ConstraintGraph;
 
 class Propagator
 {
 public:
 	Propagator( Controller* ctrl );
 
-	// Propagation
-	void weakPropagate(QVector<QString> seeds);
-	void weakPropagate();
-	QVector<ShapeState> strongPropagate();
+	// Regroup pair
 	void regroupPair(QString id1, QString id2);
 
+	// Propagation
+	void execute();
+
+	// Solve constraints
+	void solveConstraints(QString target, QVector<QString> constraints);
+
 private:
-	Controller * mCtrl;
+	Controller *		mCtrl;
+	ConstraintGraph *	mGraph;
 };

@@ -26,7 +26,8 @@ public:
 	ConstraintGraph(Controller * controller = 0);
 
 	QString nextTarget();
-	QVector<QString> constraints(QString target);
+	QVector<QString> getNeighbours(QString node);
+	QVector<QString> getConstraints(QString target);
 
 	GroupType edgeType(QString id);
 

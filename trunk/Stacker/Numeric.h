@@ -23,9 +23,6 @@ std::vector< double > getValuesInRegion( Buffer2d& image, std::vector< Vec2i >& 
 std::vector< Vec2i > getRegionGreaterThan( Buffer2d& image, Buffer2b& mask, Vec2i seed, double threshold);
 std::vector< std::vector< Vec2i > > getRegionsGreaterThan(Buffer2d& image, double threshold);
 
-// Type of region
-bool isRing( std::vector< Vec2i > &pixels);
-
 // Shifting
 std::vector< Vec2i > deltaVectorsToKRing(int deltaX, int deltaY, int K);
 std::vector< Vec2i > shiftRegionInBB( std::vector< Vec2i >& region, Vec2i delta, Vec2i bbmin, Vec2i bbmax );

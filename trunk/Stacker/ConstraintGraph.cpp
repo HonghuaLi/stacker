@@ -36,14 +36,68 @@ Primitive * ConstraintGraph::node( QString id )
 
 QString ConstraintGraph::nextTarget()
 {
-	// First propagate via all symmetry constrain edges
-	// If there is no symmetry constrains, rank the nodes by percentage
-	return "";
+
+	// Symmetry first
+	Primitive * n1, * n2;
+	foreach(Group* p, ctrl->groups)
+	{
+		if (p->type == SYMMETRY)
+		{
+			n1 = p->nodes.first();
+			n2 = p->nodes.last();
+			if (n1->isFrozen != n2->isFrozen)
+				return (n1->isFrozen) ? n2->id : n1->id;
+		}
+	}
+
+
+	// The most determined free node
+	QString target;
+	double maxScore = 0.0;
+	foreach(Primitive * p, ctrl->getPrimitives())
+	{
+		// Skip frozen nodes
+		if(p->isFrozen) continue;
+
+		// Get all neighbours
+		QVector<QString> neighbours = getNeighbours(p->id);
+		int numFrozen = 0;
+		foreach(QString nei, neighbours)
+			if (node(nei)->isFrozen) numFrozen++;
+
+		// Update score
+		double score = (double)numFrozen / neighbours.size();
+		if (maxScore < score)
+		{
+			maxScore = score;
+			target = p->id;
+		}
+	}
+
+	return target;
 }
 
-QVector<QString> ConstraintGraph::constraints( QString target )
+QVector<QString> ConstraintGraph::getNeighbours( QString node )
 {
-	return QVector<QString>();
+	QVector<QString> neighbours;
+
+	foreach(Edge e, adjacency_map[node])
+		neighbours.push_back(e.to);
+
+	return neighbours;
+}
+
+QVector<QString> ConstraintGraph::getConstraints( QString target )
+{
+	QVector<QString> constrains;
+
+	foreach(Edge e, adjacency_map[target])
+	{
+		if (node(e.to)->isFrozen)
+			constrains.push_back(e.id);
+	}
+
+	return constrains;
 }
 
 GroupType ConstraintGraph::edgeType( QString id )

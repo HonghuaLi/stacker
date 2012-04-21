@@ -1,29 +1,23 @@
 #pragma once
 
-#include "Offset.h"
+#include "HotSpot.h"
+#include "ShapeState.h"
 #include "EditingSuggestion.h"
+
+class Offset;
+class QSegMesh;
+class Controller;
+class Propagator;
+
 extern QVector<EditingSuggestion> suggestions;
 
 class StackabilityImprover
 {
 public:
-	// Constructor
 	StackabilityImprover(Offset *offset);
 
-	// Shortener
-	QSegMesh* activeObject();
-
-
-	// Improve stackability
-	void improveStackabilityToTarget();
-	void improveStackability();
-	void applyHeuristics();
-	void applyHeuristicsOnHotspot( HotSpot& HS, HotSpot& opHS );
-	void applyHeuristicsOnHotRing( HotSpot& HS );
-	bool satisfyBBConstraint();
-	bool isUnique( ShapeState state, double threshold );
-	std::vector< Vec3d > getHorizontalMoves( HotSpot& HS );
-	std::vector< Vec3d > getLocalMoves( HotSpot& HS );
+	// Execute improving
+	void execute();
 
 	// Suggestions
 	QVector<EditingSuggestion> getSuggestions();
@@ -32,6 +26,17 @@ public:
 	// Show results
 	void showSolution( int i );
 	void showSuggestion( int i );
+
+private:
+	std::vector< Vec3d > getLocalMoves( HotSpot& HS );
+	void deformNearPointHotspot( HotSpot& freeHS, HotSpot& fixedHS );
+	void deformNearLineHotspot( HotSpot& freeHS, HotSpot& fixedHS );
+	void deformNearRingHotspot( HotSpot& freeHS );
+	void deformNearHotspot( HotSpot& freeHS, HotSpot& fixedHS );
+	void localSearch();
+
+	bool satisfyBBConstraint();
+	bool isUnique( ShapeState state, double threshold );
 
 
 public:
@@ -49,5 +54,8 @@ public:
 	PQShapeShateLessDistortion solutions;
 
 private:
-	Offset *activeOffset;
+	Offset* activeOffset;
+
+	QSegMesh* activeObject();
+	Controller* ctrl();
 };

@@ -4,7 +4,7 @@
 
 void SymmetryGroup::process(QVector<Primitive*> segments)
 {
-	// Keep the nodes
+	// Store the nodes
 	Group::process(segments);
 
 	// Compute the symmetry plane
@@ -52,16 +52,13 @@ void SymmetryGroup::process(QVector<Primitive*> segments)
 }
 
 
-QVector<QString> SymmetryGroup::regroup()
+void SymmetryGroup::regroup()
 {
-	QVector<QString> result;
-
-	Primitive * frozen =nodes.first();
+	Primitive * frozen = nodes.first();
 	Primitive * non_frozen = nodes.last();
 
 	// Both are frozen or unfrozen
-	if(frozen->isFrozen == non_frozen->isFrozen)
-		return result;
+	if(frozen->isFrozen == non_frozen->isFrozen) return;
 
 	// Match the pointer with the correct primitive
 	if(!frozen->isFrozen) 
@@ -88,9 +85,8 @@ QVector<QString> SymmetryGroup::regroup()
 	non_frozen->reshapeFromPoints(pointsB);
 	non_frozen->isFrozen = true;
 
-	// Return the regrouped primitives
-	result.push_back(non_frozen->id);
-	return result;
+	// Set flags
+	Group::regroup();
 }
 
 

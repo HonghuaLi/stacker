@@ -1,19 +1,24 @@
 #pragma once
 
-#include <vector>
-#include <iostream>
+#include <QVector>
 #include <Qstring>
-#include "GraphicsLibrary/Mesh/SurfaceMesh/Vector.h"
+#include "GraphicsLibrary/Mesh/QSegMesh.h"
+
+enum HOTSPOT_TYPE { POINT_HOTSPOT, LINE_HOTSPOT, RING_HOTSPOT};
 
 struct HotSpot
 {
-	int side;
-	int hotRegionID;
-	QString segmentID;
-	bool defineHeight;
-	bool isRing;
-	std::vector< Vec3d > hotSamples;
+	int					side;		// upper or lower
+	int					hotRegionID; 
+	QString				segmentID;
+	bool				defineHeight;
+	QVector< Vec2i >	hotPixels;
+	QVector< Point >	hotSamples;
 
-	void print();
-	Vec3d hotPoint();
+	HOTSPOT_TYPE		type;
+	QVector<Point>		rep;		//representative
+
+	void decideType();
+	void computeRepresentative();
+	void print();	
 };
