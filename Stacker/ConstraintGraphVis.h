@@ -6,15 +6,7 @@
 class ConstraintGraphViewer: public QGLViewer {
 	Q_OBJECT
 public:
-	ConstraintGraphViewer(ConstraintGraph * fromGraph = 0, QWidget * parent = 0) : QGLViewer (parent)
-	{
-		this->graph = fromGraph;
-
-		this->setMaximumSize(800,800);
-		this->setMinimumSize(800,800);
-
-		setBackgroundColor(QColor(255,255,255));
-	}
+	ConstraintGraphViewer(ConstraintGraph * fromGraph = 0, QWidget * parent = 0);
 
 	virtual void draw();
 

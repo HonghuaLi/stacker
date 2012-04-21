@@ -7,6 +7,16 @@
 
 using namespace qglviewer;
 
+ConstraintGraphViewer::ConstraintGraphViewer( ConstraintGraph * fromGraph /*= 0*/, QWidget * parent /*= 0*/ ) : QGLViewer (parent)
+{
+	this->graph = fromGraph;
+
+	//this->setMaximumSize(400,400);
+	//this->setMinimumSize(400,400);
+
+	setBackgroundColor(QColor(255,255,255));
+}
+
 void ConstraintGraphViewer::draw()
 {
 	if(!graph || !graph->controller()) return;

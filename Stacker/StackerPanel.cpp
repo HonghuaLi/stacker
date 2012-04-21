@@ -98,7 +98,7 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-	improver->execute();
+	improver->executeImprove();
 
 	int total = improver->solutions.size();
 	panel.numSolution->setText(QString("/ %1").arg(total));

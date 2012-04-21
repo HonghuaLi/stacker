@@ -17,20 +17,22 @@ Propagator::Propagator( Controller* ctrl )
 
 void Propagator::regroupPair( QString id1, QString id2 )
 {
+	// For sure there is no group
 	if (id1 == id2) return;
 
-	Group *pairGrp = NULL;
+	// Get the constraint group(s)
+	QVector<Group*> constraints;
 	QVector<Group*> groups = mCtrl->groupsOf(id1);
-	for (int i=0;i<groups.size();i++){
+	for (int i=0;i<groups.size();i++)
+	{
 		if (groups[i]->has(id2))
-		{
-			pairGrp = groups[i];
-			break;
-		}
+			constraints.push_back(groups[i]);
 	}
 
-	if (pairGrp)
-		pairGrp->regroup();
+	// If there are constraints, regroup them
+	// Warning: more than two = problems?
+	foreach(Group* c, constraints)
+		c->regroup(); 
 }
 
 void Propagator::execute()
@@ -40,7 +42,10 @@ void Propagator::execute()
 
 	while (!target.isEmpty())
 	{
-		// All the constrains
+		// DEBUG
+		//std::cout << "Current target = " << qPrintable(target) << "\t";
+
+		// All the constrains for the target
 		QVector<QString> constrains = mGraph->getConstraints(target);
 
 		// Solving
@@ -59,18 +64,7 @@ void Propagator::execute()
 
 		// The challenging part
 		if ( !hasSymmetry )
-		{			
-			if (constrains.size() == 1)
-			{
-				// There is only one constraint
-				mCtrl->groups[constrains.first()]->regroup();
-			}
-			else
-			{
-				// There are multiple constraints
-				solveConstraints(target, constrains);
-			}
-		}
+			solveConstraints(target, constrains);
 
 
 		// The next
@@ -80,5 +74,18 @@ void Propagator::execute()
 
 void Propagator::solveConstraints( QString target, QVector<QString> constraints )
 {
+	// \constraints are only positional	
 
+	// There is only one constraint
+	if (constraints.size() == 1)
+	{
+		mCtrl->groups[constraints.first()]->regroup();
+		return;
+	}
+
+	// Solve multiple constraints
+	
+
+	// set target as frozen
+	mGraph->node(target)->isFrozen = true;
 }

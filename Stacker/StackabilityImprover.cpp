@@ -88,10 +88,12 @@ void StackabilityImprover::deformNearPointHotspot( HotSpot& freeHS, HotSpot& fix
 	Point free_handle = freeHS.rep.first();
 	Point fixed_hanble = fixedHS.rep.first();
 
-	// Move hot spot side away or closer to each other
-	std::vector< Vec3d > Ts = getLocalMoves(freeHS);
+	// The constraints solver
 	Propagator propagator(ctrl());
 
+	// Move hot spot side away or closer to each other
+	std::vector< Vec3d > Ts = getLocalMoves(freeHS);
+	
 	// Modify the shape
 	for (int i=0;i<Ts.size();i++)
 	{
@@ -99,10 +101,11 @@ void StackabilityImprover::deformNearPointHotspot( HotSpot& freeHS, HotSpot& fix
 		ctrl()->setPrimitivesFrozen(false);		
 
 		// Modify the hot segment(s)
-		fixed_prim->addFixedPoint(fixed_hanble); 
-		free_prim->movePoint(free_handle, Ts[i]);
-		free_prim->addFixedPoint(free_handle + Ts[i]);
+		fixed_prim->addFixedPoint(fixed_hanble); // original position for fixedHS
+		free_prim->movePoint(free_handle, Ts[i]); // locally move freeHS
+		free_prim->addFixedPoint(free_handle + Ts[i]); // moved position for freeHS
 
+		// Regroup hot segments pair
 		propagator.regroupPair(free_prim->id, fixed_prim->id);
 				
 		// Propagate the deformation
@@ -116,12 +119,14 @@ void StackabilityImprover::deformNearPointHotspot( HotSpot& freeHS, HotSpot& fix
 		// 
 		double stackability = activeOffset->getStackability(true);
 
+		// Save state history
 		ShapeState state = ctrl()->getShapeState();
 		state.history = currentCandidate.history;
 		state.history.push_back(state);
 		state.deltaStackability = stackability - orgStackability;
 		state.distortion = ctrl()->getDistortion();
 
+		// Evaluate suggestion
 		EditingSuggestion suggest;
 		suggest.center = free_handle;
 		suggest.direction = Ts[i];
@@ -133,6 +138,7 @@ void StackabilityImprover::deformNearPointHotspot( HotSpot& freeHS, HotSpot& fix
 		state.trajectory = currentCandidate.trajectory;
 		state.trajectory.push_back(suggest);
 
+		// Weither or not we are tracking candidate solutions
 		if (isSuggesting)
 		{
 			suggestions.push_back(suggest);
@@ -145,7 +151,6 @@ void StackabilityImprover::deformNearPointHotspot( HotSpot& freeHS, HotSpot& fix
 			else if (isUnique(state, 0))
 				candidateSolutions.push(state);
 		}		
-
 
 
 		// Restore the shape state of current candidate
@@ -274,58 +279,6 @@ void StackabilityImprover::localSearch()
 	// Modify one hotspot while keeping the other fixed
 	deformNearHotspot(upperHS, lowerHS);
 	deformNearHotspot(lowerHS, upperHS);	
-}
-
-// === Main access
-void StackabilityImprover::execute()
-{
-	// Clear
-	candidateSolutions = PQShapeShateLessEnergy();
-	solutions = PQShapeShateLessDistortion();
-	usedCandidateSolutions.clear();
-
-	// The bounding box constraint is hard
-	constraint_bbmin = activeObject()->bbmin * BB_TOLERANCE;
-	constraint_bbmax = activeObject()->bbmax * BB_TOLERANCE;
-
-	// Push the current shape as the initial candidate solution
-	ShapeState state = ctrl()->getShapeState();
-	state.deltaStackability = activeOffset->getStackability() - orgStackability;
-	state.distortion = ctrl()->getDistortion();
-	state.history.push_back(state);
-	candidateSolutions.push(state);
-
-	while(!candidateSolutions.empty())
-	{
-		currentCandidate = candidateSolutions.top();
-		candidateSolutions.pop();
-		usedCandidateSolutions.push_back(currentCandidate);
-
-		ctrl()->setShapeState(currentCandidate);
-
-		// Explorer all local successors
-		localSearch();
-
-		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;
-		std::cout << "#Solutions = " << solutions.size() << std::endl;
-
-		if (solutions.size() >= NUM_EXPECTED_SOLUTION)
-		{
-			std::cout << NUM_EXPECTED_SOLUTION << " solutions have been found." << std::endl;
-			break;
-		}
-
-	}
-
-	//// Debug: add candidate solutions to solutions
-	//while (!candidateSolutions.empty())
-	//{
-	//	solutions.push( candidateSolutions.top() );
-	//	candidateSolutions.pop();
-	//}
-
-	ctrl()->setShapeState(state);
-	activeObject()->computeBoundingBox();
 }
 
 bool StackabilityImprover::satisfyBBConstraint()
@@ -546,4 +499,57 @@ QSegMesh* StackabilityImprover::activeObject()
 Controller* StackabilityImprover::ctrl()
 {
 	return (Controller*)activeObject()->ptr["controller"];
+}
+
+
+// === Main access
+void StackabilityImprover::executeImprove()
+{
+	// Clear
+	candidateSolutions = PQShapeShateLessEnergy();
+	solutions = PQShapeShateLessDistortion();
+	usedCandidateSolutions.clear();
+
+	// The bounding box constraint is hard
+	constraint_bbmin = activeObject()->bbmin * BB_TOLERANCE;
+	constraint_bbmax = activeObject()->bbmax * BB_TOLERANCE;
+
+	// Push the current shape as the initial candidate solution
+	ShapeState state = ctrl()->getShapeState();
+	state.deltaStackability = activeOffset->getStackability() - orgStackability;
+	state.distortion = ctrl()->getDistortion();
+	state.history.push_back(state);
+	candidateSolutions.push(state);
+
+	while(!candidateSolutions.empty())
+	{
+		currentCandidate = candidateSolutions.top();
+		candidateSolutions.pop();
+		usedCandidateSolutions.push_back(currentCandidate);
+
+		ctrl()->setShapeState(currentCandidate);
+
+		// Explorer all local successors
+		localSearch();
+
+		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;
+		std::cout << "#Solutions = " << solutions.size() << std::endl;
+
+		if (solutions.size() >= NUM_EXPECTED_SOLUTION)
+		{
+			std::cout << NUM_EXPECTED_SOLUTION << " solutions have been found." << std::endl;
+			break;
+		}
+
+	}
+
+	//// Debug: add candidate solutions to solutions
+	//while (!candidateSolutions.empty())
+	//{
+	//	solutions.push( candidateSolutions.top() );
+	//	candidateSolutions.pop();
+	//}
+
+	ctrl()->setShapeState(state);
+	activeObject()->computeBoundingBox();
 }
