@@ -111,14 +111,14 @@
     <Filter Include="GUI\MeshBrowser">
       <UniqueIdentifier>{2bd0b114-5267-4b14-941e-69e6fdf12afc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Stacker\Panels">
-      <UniqueIdentifier>{fc488e09-4843-4b16-a2b4-488b9f9e1014}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Stacker\Utility">
       <UniqueIdentifier>{ed258eba-61fb-4585-a08b-ee676d5c284c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Stacker\Core">
       <UniqueIdentifier>{9456baa9-2d48-418e-9afa-459f873b466f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stacker\Panels">
+      <UniqueIdentifier>{fc488e09-4843-4b16-a2b4-488b9f9e1014}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

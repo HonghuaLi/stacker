@@ -14,9 +14,18 @@ Group::Group(GroupType newType )
 
 void Group::process( QVector< Primitive* > segments )
 {
-	// Keep the nodes
+	// Store the nodes
 	nodes = segments;
 }
+
+
+void Group::regroup()
+{
+	// Set the nodes frozen
+	foreach(Primitive* p, nodes)
+		p->isFrozen = true;
+}
+
 
 void Group::loadParameters( std::ifstream &inF )
 {

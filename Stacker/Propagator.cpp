@@ -6,15 +6,19 @@
 #include "Primitive.h"
 #include "Controller.h"
 #include "ShapeState.h"
+#include "ConstraintGraph.h"
 
-Propagator::Propagator( Controller* ctrl ) : mCtrl( ctrl )
+Propagator::Propagator( Controller* ctrl )
 {
-
+	mCtrl = ctrl;
+	mGraph = new ConstraintGraph(mCtrl);
 }
 
 
 void Propagator::regroupPair( QString id1, QString id2 )
 {
+	if (id1 == id2) return;
+
 	Group *pairGrp = NULL;
 	QVector<Group*> groups = mCtrl->groupsOf(id1);
 	for (int i=0;i<groups.size();i++){
@@ -29,112 +33,52 @@ void Propagator::regroupPair( QString id1, QString id2 )
 		pairGrp->regroup();
 }
 
-// From *frozen* segments to *unfrozen* ones
-void Propagator::weakPropagate(QVector<QString> seeds)
+void Propagator::execute()
 {
-	QMap< QString, bool > debugFrozenFlags1 = mCtrl->getFrozenFlags();
+	// The next propagation target
+	QString target = mGraph->nextTarget();
 
-	QQueue<QString> frozen;
-	foreach(QString id, seeds)
-		frozen.enqueue(id);
-
-	while(!frozen.isEmpty())
+	while (!target.isEmpty())
 	{
-		QString seed = frozen.dequeue();
-		QVector< Group * > grps = mCtrl->groupsOf(seed);
+		// All the constrains
+		QVector<QString> constrains = mGraph->getConstraints(target);
 
-		foreach(Group * g, grps)
+		// Solving
+		// Apply symmetry constraint no matter how
+		bool hasSymmetry= false;
+		foreach(QString c, constrains)
 		{
-			QVector<QString> regrouped = g->regroup();
-
-			// Only frozen \next's are considered
-			foreach(QString next, regrouped)
-				frozen.enqueue(next);
-
-			//QMap< QString, bool > debugFrozenFlags2 = getFrozenFlags();
-		}
-	}
-}
-
-void Propagator::weakPropagate()
-{
-	QVector<QString> seeds;
-	foreach(Primitive * p, mCtrl->getPrimitives())
-		if(p->isFrozen) seeds.push_back(p->id);
-
-	weakPropagate(seeds);
-}
-
-// In case semi-frozen primitives exist, force one of them as frozen and apply weakPropagation
-QVector<ShapeState> Propagator::strongPropagate()
-{
-	QVector< ShapeState > results;
-
-	// Initialize the queue of candidates
-	QQueue< ShapeState > candidates;
-	candidates.enqueue( mCtrl->getShapeState() );
-
-	while (!candidates.isEmpty())
-	{
-		// Pick up one candidate
-		ShapeState currCandidate = candidates.dequeue();
-		mCtrl->setShapeState(currCandidate);
-
-		// Apply weak propagation
-		//		QMap< QString, bool > debugFrozenFlags1 = getFrozenFlags();
-		if (currCandidate.seeds.isEmpty())
-			weakPropagate();
-		else
-			weakPropagate(currCandidate.seeds);
-		//		QMap< QString, bool > debugFrozenFlags2 = getFrozenFlags();
-
-		// Check whether the propagation is done
-		QQueue< QString > semi_frozen;
-		foreach( Primitive * p, mCtrl->getPrimitives() )
-			if(!p->isFrozen && !p->fixedPoints.isEmpty()) 
-				semi_frozen.enqueue(p->id);	
-
-		if (semi_frozen.isEmpty())
-		{
-			// Weak propagation is done
-			ShapeState newState = mCtrl->getShapeState();
-
-			// Check if unique
-			bool isUnique = true;
-			foreach(ShapeState res, results){
-				if( mCtrl->similarity(res, newState) < 0 )
-				{
-					isUnique = false;
-					break;
-				}
-			}
-
-			// if unique, add to \results
-			results.push_back(newState);
-		}
-		else
-		{
-			// Weak propagation is stuck because of the semi-frozen primitives
-			// Force one of them to be frozen and continue the weak propagation
-			for (int i=0;i<semi_frozen.size();i++)
+			Group* group = mCtrl->groups[c];
+			if ( group->type == SYMMETRY )
 			{
-				Primitive * prim = mCtrl->getPrimitive(semi_frozen[i]);
-				prim->isFrozen = true;
-				QMap< QString, bool > debugFrozenFlags3 = mCtrl->getFrozenFlags();
-				ShapeState state = mCtrl->getShapeState();
-				state.seeds.push_back(prim->id);
-				candidates.enqueue(state);
-
-				// Restore 
-				prim->isFrozen = false;
-				QMap< QString, bool > debugFrozenFlags4 = mCtrl->getFrozenFlags();
-
+				group->regroup();
+				hasSymmetry = true;
+				break;
 			}
 		}
+
+		// The challenging part
+		if ( !hasSymmetry )
+		{			
+			if (constrains.size() == 1)
+			{
+				// There is only one constraint
+				mCtrl->groups[constrains.first()]->regroup();
+			}
+			else
+			{
+				// There are multiple constraints
+				solveConstraints(target, constrains);
+			}
+		}
+
+
+		// The next
+		target = mGraph->nextTarget();
 	}
+}
 
-	// set the shape as the first result
-	//setShapeState(results[0]);
+void Propagator::solveConstraints( QString target, QVector<QString> constraints )
+{
 
-	return results;
 }

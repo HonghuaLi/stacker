@@ -167,9 +167,9 @@ void Offset::computeOffset()
 	}
 }
 
-double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int rotDensity /*= 1*/ )
+void Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int rotDensity /*= 1*/ )
 {
-	if (!activeObject()) return 0;
+	if (!activeObject()) return;
 
 	// Compute the height of the shape
 	activeObject()->computeBoundingBox();
@@ -282,8 +282,6 @@ double Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int
 	// Save offset as image
 	//saveAsImage(offset, O_max, "offset function.png");
 	activeObject()->data2D["offset"] = offset;
-
-	return activeObject()->val["stackability"];
 }
 
 void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
@@ -326,9 +324,11 @@ void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
 	//saveAsImage(offset, O_max, "offset function of region.png");
 }
 
-double Offset::getStackability()
+double Offset::getStackability( bool recompute /*= false*/ )
 {
-	return 1 - O_max/objectH;
+	if (recompute) computeOffsetOfShape();
+
+	return activeObject()->val["stackability"];
 }
 
 
@@ -359,8 +359,8 @@ HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegi
 	uint x, y;
 
 	QMap< QString, int > subHotRegionSize;
-	QMap< QString, std::vector< Vec2i > > subHotPixels;
-	QMap< QString, std::vector< Vec3d > > subHotSamples;
+	QMap< QString, QVector< Vec2i > > subHotPixels;
+	QMap< QString, QVector< Vec3d > > subHotSamples;
 
 //	QImage debugImg(w, h, QImage::Format_ARGB32);
 	
@@ -426,10 +426,8 @@ HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegi
 		Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
 		HS.side = direction;
+		HS.hotPixels = subHotPixels[HS.segmentID];
 		HS.hotSamples = subHotSamples[HS.segmentID];
-		HS.isRing = isRing(subHotPixels[HS.segmentID]);
-
-		std::cout << "isRing = " << HS.isRing << std::endl;
 	}
 
 	return HS;

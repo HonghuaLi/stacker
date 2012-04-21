@@ -21,6 +21,7 @@ public:
 		Vector2 Extent;
 	public:
 		Box2(){Axis.resize(2);}
+		double area(){return Extent[0] * Extent[1];}
 	};
 
 public:

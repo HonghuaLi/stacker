@@ -21,7 +21,7 @@ public:
 	virtual void process(QVector< Primitive* > segments);
 
 	// Regroup
-	virtual QVector<QString> regroup() = 0;
+	virtual void regroup();
 
 	// Visualization
 	virtual void draw();

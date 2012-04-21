@@ -9,7 +9,7 @@ public:
 	CoplanarGroup(GroupType newType) : Group(newType){}
 
 	void process(QVector< Primitive* > segments);
-	QVector<QString> regroup();
+	void regroup();
 	void draw();
 
 	Plane groupAxis[3];

@@ -98,7 +98,7 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-	improver->improveStackabilityToTarget();
+	improver->execute();
 
 	int total = improver->solutions.size();
 	panel.numSolution->setText(QString("/ %1").arg(total));
@@ -141,7 +141,7 @@ void StackerPanel::updateActiveObject()
 	stacker_preview->stackCount = panel.stackCount->value();
 	stacker_preview->updateActiveObject();
 
-	//std::cout << "objectH = " << activeOffset->objectH << std::endl;
+
 }
 
 QSegMesh* StackerPanel::activeObject()
@@ -327,7 +327,7 @@ void StackerPanel::searchDirection()
 	}
 	
 	int sampleCount = 0;
-	double maxStackbaility = activeOffset->computeOffsetOfShape(); // don't go worse than start
+	double maxStackbaility = activeOffset->getStackability(true); // don't go worse than start
 	int bestIndex = 0;
 	double bestAngle = 0;
 
@@ -344,7 +344,7 @@ void StackerPanel::searchDirection()
 		{
 			activeObject()->rotateAroundUp(omega);
 
-			double stackability = activeOffset->computeOffsetOfShape();
+			double stackability = activeOffset->getStackability(true);
 			
 			if(stackability > maxStackbaility)
 			{

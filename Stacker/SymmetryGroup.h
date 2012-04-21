@@ -10,7 +10,7 @@ public:
 
 	// Inherited methods
 	void process(QVector< Primitive* > segments);
-	QVector<QString> regroup();
+	void regroup();
 	void draw();
 
 public:

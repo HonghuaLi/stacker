@@ -9,7 +9,7 @@ public:
 
 	// Inherited methods
 	void process(QVector< Primitive* > segments);
-	QVector<QString> regroup();
+	void regroup();
 	void draw();	
 	void saveParameters( std::ofstream &outF );
 	void loadParameters( std::ifstream &inF );

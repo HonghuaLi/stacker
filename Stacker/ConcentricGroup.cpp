@@ -13,10 +13,10 @@ void ConcentricGroup::process( QVector< Primitive* > segments )
 	center = (cA + cB) * 0.5;
 }
 
-QVector<QString> ConcentricGroup::regroup()
+void ConcentricGroup::regroup()
 {
-	QVector<QString> result;
-	return result;
+
+	Group::regroup();
 }
 
 void ConcentricGroup::draw()
