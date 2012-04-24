@@ -57,7 +57,7 @@ QString ConstraintGraph::nextTarget()
 		// Skip frozen nodes
 		if(p->isFrozen) continue;
 
-		// Get all neighbours
+		// Get all (non-symmetric) neighbours
 		QVector<QString> neighbours = getNeighbours(p->id);
 		int numFrozen = 0;
 		foreach(QString nei, neighbours)
@@ -75,28 +75,36 @@ QString ConstraintGraph::nextTarget()
 	return target;
 }
 
+// Non-symmetric neighbours
 QVector<QString> ConstraintGraph::getNeighbours( QString node )
 {
 	QVector<QString> neighbours;
 
 	foreach(Edge e, adjacency_map[node])
-		neighbours.push_back(e.to);
+	{
+		if (ctrl->groups[e.id]->type != SYMMETRY)
+		{
+			neighbours.push_back(e.to);
+		}
+	}
 
 	return neighbours;
 }
 
-QVector<QString> ConstraintGraph::getConstraints( QString target )
+QVector<ConstraintGraph::Edge> ConstraintGraph::getConstraints( QString target )
 {
-	QVector<QString> constrains;
+	QVector<ConstraintGraph::Edge> constrains;
 
-	foreach(Edge e, adjacency_map[target])
+	foreach(ConstraintGraph::Edge e, adjacency_map[target])
 	{
 		if (node(e.to)->isFrozen)
-			constrains.push_back(e.id);
+			constrains.push_back(e);
 	}
 
 	return constrains;
 }
+
+
 
 GroupType ConstraintGraph::edgeType( QString id )
 {

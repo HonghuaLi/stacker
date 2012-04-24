@@ -507,6 +507,10 @@ void Offset::detectHotspots( )
 		std::vector< double > valuesL = getValuesInRegion(lowerEnvelope, zoomedHR, true);
 		LHS.defineHeight = MinElement(valuesL) < (minLE + ZERO_TOLERANCE);
 
+		UHS.decideType();
+		LHS.decideType();
+		UHS.computeRepresentative();
+		LHS.computeRepresentative();
 
 		upperHotSpots.push_back(UHS);
 		lowerHotSpots.push_back(LHS);
@@ -532,6 +536,27 @@ void Offset::detectHotspots( )
 		hotSegments.insert(lowerHotSpots[i].segmentID);
 	}
 }
+
+std::vector<HotSpot> Offset::getHotspots( int side )
+{
+	if (side == 1)
+		return upperHotSpots;
+	else
+		return lowerHotSpots;
+}
+
+
+HotSpot& Offset::getHotspot( int side, int id )
+{
+	if (id > upperHotSpots.size() - 1) 
+		return HotSpot();
+
+	if (side == 1)
+		upperHotSpots[id];
+	else
+		lowerHotSpots[id];
+}
+
 
 void Offset::showHotSpots()
 {
@@ -561,15 +586,6 @@ void Offset::showHotSpots()
 	}
 }
 
-std::set<QString> Offset::getHotSegment()
-{
-	std::set< QString > hs;
-
-	for (std::map< QString, std::vector< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
-		hs.insert(i->first);
-
-	return hs;
-}
 
 void Offset::saveHotSpots( QString filename, int direction, double percent)
 {

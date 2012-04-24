@@ -6,7 +6,7 @@
 #include "Utility/SimpleDraw.h"
 
 // Stacker stuff
-#include "QDeformController.h"
+#include "QManualDeformer.h"
 #include "Stacker/SymmetryGroup.h"
 #include "Stacker/ConcentricGroup.h"
 #include "Stacker/CoplanarGroup.h"
@@ -524,7 +524,7 @@ void Scene::postSelection( const QPoint& point )
 
 			if(selected != -1)
 			{
-				defCtrl = new QDeformController(ctrl);
+				defCtrl = new QManualDeformer(ctrl);
 				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 			
@@ -542,7 +542,7 @@ void Scene::postSelection( const QPoint& point )
 		{
 			if(ctrl->selectPrimitivePart(selected))
 			{
-				defCtrl = new QDeformController(ctrl);
+				defCtrl = new QManualDeformer(ctrl);
 				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 

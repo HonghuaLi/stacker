@@ -13,6 +13,7 @@ class ConstraintGraph{
 public:
 	// Edge structure
 	struct Edge{
+		Edge(){}
 		QString id, from, to;
 		int flag;
 		Edge(QString ID, QString node1, QString node2, int Flag = -1){
@@ -27,7 +28,7 @@ public:
 
 	QString nextTarget();
 	QVector<QString> getNeighbours(QString node);
-	QVector<QString> getConstraints(QString target);
+	QVector<Edge> getConstraints(QString target);
 
 	GroupType edgeType(QString id);
 

@@ -18,7 +18,7 @@ class SubScene;
 class QFFD;
 class VoxelDeformer;
 class StackerPanel;
-class QDeformController;
+class QManualDeformer;
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
 enum ModifyMode { DEFAULT, CP_REF_VECTOR, MOVE_VERTEX };
@@ -94,7 +94,7 @@ public:
 	StackerPanel * sp; 	// hack
 	bool isShowStacked;
 	bool isDrawOffset;
-	QDeformController * defCtrl;
+	QManualDeformer * defCtrl;
 
 	// Sub scenes
 	QVector<SubScene*> subScenes;

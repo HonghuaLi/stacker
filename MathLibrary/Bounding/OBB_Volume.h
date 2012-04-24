@@ -5,13 +5,13 @@
 // Special math library
 //#include "OBB2_FloatMath.h"
 //#include "OBB2_FloatMath.inl"
-#include "OBB2_math.h"
+#include "OBB_Volume_math.h"
 
 // Eigen: for rotations
 #include "Eigen/Geometry"
 using namespace Eigen;
 
-class OBB2{
+class OBB_Volume{
 
 private:
 	// computes the OBB for this set of points relative to this transform matrix.
@@ -113,7 +113,7 @@ public:
 
 	bool isReady;
 
-	OBB2(Surface_mesh * mesh)
+	OBB_Volume(Surface_mesh * mesh)
 	{
 		// Get points
 		std::vector<Vec3d> pnts;

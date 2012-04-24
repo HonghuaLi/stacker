@@ -44,6 +44,7 @@ public:
 	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts );
 	virtual void movePoint(Point p, Vec3d T);
 	virtual void scaleCurve(int cid, double s);
+	void moveLineJoint(Point A, Point B, Point newA, Point newB);
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v );

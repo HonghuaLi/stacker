@@ -80,13 +80,17 @@ std::vector< Vec3d > StackabilityImprover::getLocalMoves( HotSpot& HS )
 	return result;
 }
 
-void StackabilityImprover::deformNearPointHotspot( HotSpot& freeHS, HotSpot& fixedHS )
+void StackabilityImprover::deformNearPointHotspot( int side )
 {
-	Primitive* free_prim = ctrl()->getPrimitive(freeHS.segmentID);
-	Primitive* fixed_prim = ctrl()->getPrimitive(fixedHS.segmentID);
+	// Modify the first pair of hot spots
+	HotSpot& freeHS = activeOffset->getHotspot(side, 0);
+	HotSpot& fixedHS = activeOffset->getHotspot(-side, 0);
 
 	Point free_handle = freeHS.rep.first();
 	Point fixed_hanble = fixedHS.rep.first();
+
+	Primitive* free_prim = ctrl()->getPrimitive(freeHS.segmentID);
+	Primitive* fixed_prim = ctrl()->getPrimitive(fixedHS.segmentID);
 
 	// The constraints solver
 	Propagator propagator(ctrl());
@@ -97,17 +101,19 @@ void StackabilityImprover::deformNearPointHotspot( HotSpot& freeHS, HotSpot& fix
 	// Modify the shape
 	for (int i=0;i<Ts.size();i++)
 	{
-		// Clear the frozen flags
+		// Clear the frozen flags and positional constraints
 		ctrl()->setPrimitivesFrozen(false);		
 
+		// Set positional constraints
+		setPositionalConstriants(-side );
+
 		// Modify the hot segment(s)
-		fixed_prim->addFixedPoint(fixed_hanble); // original position for fixedHS
 		free_prim->movePoint(free_handle, Ts[i]); // locally move freeHS
 		free_prim->addFixedPoint(free_handle + Ts[i]); // moved position for freeHS
 
 		// Regroup hot segments pair
 		propagator.regroupPair(free_prim->id, fixed_prim->id);
-				
+
 		// Propagate the deformation
 		free_prim->isFrozen = true;
 		fixed_prim->isFrozen = true;
@@ -158,105 +164,34 @@ void StackabilityImprover::deformNearPointHotspot( HotSpot& freeHS, HotSpot& fix
 	}
 }
 
-void StackabilityImprover::deformNearLineHotspot( HotSpot& freeHS, HotSpot& fixedHS )
+void StackabilityImprover::deformNearLineHotspot( int side )
 {
 
 }
 
-void StackabilityImprover::deformNearRingHotspot( HotSpot& freeHS )
+void StackabilityImprover::deformNearRingHotspot( int side )
 {
-	Primitive* prim = ctrl()->getPrimitive(freeHS.segmentID);
-
-	// The hot region	
-	std::vector< Vec2i > &hotRegion = activeOffset->hotRegions[freeHS.hotRegionID];
-
-	Vec2i center = centerOfRegion(hotRegion);
-	Vec2i p = hotRegion[0];
-
-	// Save the initial hot shape state
-	ShapeState initialHotShapeState = ctrl()->getShapeState();
-
-	// Translations
-	std::vector< Vec3d > Ts;
-	Ts.push_back(Vec3d(1,0,0));
-	Ts.push_back(Vec3d(-1,0,0));
-
-	Propagator propagator(ctrl());
-
-	Vec3d hotPoint = freeHS.hotSamples[0];
-	for (int i=0;i<Ts.size();i++)
-	{
-		// Clear the frozen flags
-		ctrl()->setPrimitivesFrozen(false);		
-
-		// Move the current hot spot
-		prim->movePoint(hotPoint, Ts[i]);
-
-		// Propagation the deformation
-		prim->isFrozen = true;
-
-		propagator.execute();
-
-		// Check if this is a candidate solution
-
-		//		if ( satisfyBBConstraint() )
-		{
-			double stackability = activeOffset->getStackability(true);
-			//			if (stackability > orgStackability + 0.1)
-			{
-				ShapeState state = ctrl()->getShapeState();
-				//				if (isUnique(state, 0))
-				{
-					state.distortion = 0;
-					state.deltaStackability = stackability - orgStackability;
-
-					EditingSuggestion suggest;
-					suggest.center = hotPoint;
-
-					Vec3d t = hotPoint;
-					t[2] = 0;
-					if (Ts[i].x() < 0) t *= -1;
-					t.normalize();
-					t *= 0.15;
-
-					suggest.direction = t;
-					suggest.deltaS = state.deltaStackability;
-					suggest.deltaV = state.distortion;
-					suggest.side = freeHS.side;
-					suggest.value = state.energy();
-
-					state.trajectory = currentCandidate.trajectory;
-					state.trajectory.push_back(suggest);
-
-					if (isSuggesting)
-					{
-						suggestions.push_back(suggest);
-						suggestSolutions.push(state);
-					}
-				}			
-
-			}
-		}
-
-		// Restore the initial hot shape state
-		ctrl()->setShapeState(initialHotShapeState);
-	}
-
 
 }
 
-void StackabilityImprover::deformNearHotspot( HotSpot& freeHS, HotSpot& fixedHS )
+void StackabilityImprover::deformNearHotspot( int side )
 {
-	switch (freeHS.type)
+	HOTSPOT_TYPE type;
+	if (side == 1)
+		type = activeOffset->upperHotSpots[0].type;
+	else
+		type = activeOffset->lowerHotSpots[0].type;
+
+	switch (type)
 	{
 	case POINT_HOTSPOT:
-		deformNearPointHotspot(freeHS, fixedHS);
+		deformNearPointHotspot(side);
 		break;
 	case LINE_HOTSPOT:
-		deformNearLineHotspot(freeHS, fixedHS);
+		deformNearLineHotspot(side);
 		break;
 	case RING_HOTSPOT:
-		deformNearRingHotspot(freeHS);
+		deformNearRingHotspot(side);
 		break;
 	}
 }
@@ -269,16 +204,9 @@ void StackabilityImprover::localSearch()
 	orgStackability = activeOffset->getStackability();
 	activeOffset->detectHotspots();
 
-	// Step 2: Deform the object driven by locally modifying the hot spots
-	// Suppose all hotspot pairs have symmetry relationships (direct or indirect)
-	// Modifying one pair of hotspot will be propagated to others naturally later on
-	int hsid = 0;
-	HotSpot& upperHS = activeOffset->upperHotSpots[hsid];
-	HotSpot& lowerHS = activeOffset->lowerHotSpots[hsid];
-
-	// Modify one hotspot while keeping the other fixed
-	deformNearHotspot(upperHS, lowerHS);
-	deformNearHotspot(lowerHS, upperHS);	
+	// Step 2: Deform the object by locally modifying the hot spots
+	deformNearHotspot(1); // upper
+	deformNearHotspot(-1);	//lower
 }
 
 bool StackabilityImprover::satisfyBBConstraint()
@@ -341,6 +269,23 @@ bool StackabilityImprover::isUnique( ShapeState state, double threshold )
 	//std::cout << "Unique: " << result <<std::endl;
 
 	return true;
+}
+
+void StackabilityImprover::setPositionalConstriants(int fixedSide)
+{
+	std::vector<HotSpot> fixedHotspots = activeOffset->getHotspots(fixedSide);
+
+	foreach(HotSpot hs, fixedHotspots)
+	{
+		Primitive* prim = ctrl()->getPrimitive(hs.segmentID);
+
+		// Make them fixed
+		foreach(Point p, hs.rep)
+			prim->addFixedPoint(p);
+
+		// Set height constraint if \hs is height-defining
+		// === To do
+	}
 }
 
 void StackabilityImprover::showSolution( int i )
@@ -489,7 +434,6 @@ void StackabilityImprover::showSuggestion( int i )
 
 	ctrl->setShapeState(suggestSolutionsCopy.top());
 }
-
 
 QSegMesh* StackabilityImprover::activeObject()
 {
