@@ -1,6 +1,7 @@
 #include "LineJointGroup.h"
 #include "Primitive.h"
 #include "SimpleDraw.h"
+#include "Cuboid.h"
 
 
 void LineJointGroup::process( QVector< Primitive* > segments )
@@ -44,8 +45,21 @@ void LineJointGroup::regroup()
 	}
 
 	// Regroup
-	// ........
+	Point A = non_frozen->fromCoordinate(lineEndsCoords[non_frozen->id][0]);
+	Point B = non_frozen->fromCoordinate(lineEndsCoords[non_frozen->id][1]);
+	Point newA = frozen->fromCoordinate(lineEndsCoords[frozen->id][0]);
+	Point newB = frozen->fromCoordinate(lineEndsCoords[frozen->id][1]);
 
+	// Line joint is now only for Cuboid
+	if (non_frozen->primType == CUBOID)
+	{
+		Cuboid* cuboid = (Cuboid*) non_frozen;
+		cuboid->moveLineJoint( A, B, newA, newB );
+	}
+
+	// Update the line ends
+	lineEnds[0] = newA;
+	lineEnds[1] = newB;
 
 	Group::regroup();
 }

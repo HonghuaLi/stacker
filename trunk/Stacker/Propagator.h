@@ -4,9 +4,10 @@
 #include <QString>
 
 #include "ShapeState.h"
+#include "ConstraintGraph.h"
 
 class Controller;
-class ConstraintGraph;
+
 
 class Propagator
 {
@@ -20,7 +21,7 @@ public:
 	void execute();
 
 	// Solve constraints
-	void solveConstraints(QString target, QVector<QString> constraints);
+	void solveConstraints(QString target, QVector<ConstraintGraph::Edge> constraints);
 
 private:
 	Controller *		mCtrl;

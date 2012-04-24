@@ -173,7 +173,7 @@ PointJointGroup* JointDetector::setupPointJointGroup( QVector<Primitive*> segmen
 
 
 	// Set up point-joint
-	PJG->joint = center;
+	PJG->pos = center;
 	PJG->process(segments);
 
 	return PJG;

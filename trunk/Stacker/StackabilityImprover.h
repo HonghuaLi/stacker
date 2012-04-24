@@ -29,14 +29,15 @@ public:
 
 private:
 	std::vector< Vec3d > getLocalMoves( HotSpot& HS );
-	void deformNearPointHotspot( HotSpot& freeHS, HotSpot& fixedHS );
-	void deformNearLineHotspot( HotSpot& freeHS, HotSpot& fixedHS );
-	void deformNearRingHotspot( HotSpot& freeHS );
-	void deformNearHotspot( HotSpot& freeHS, HotSpot& fixedHS );
+	void deformNearPointHotspot( int side );
+	void deformNearLineHotspot( int side );
+	void deformNearRingHotspot( int side );
+	void deformNearHotspot( int side );
 	void localSearch();
 
 	bool satisfyBBConstraint();
 	bool isUnique( ShapeState state, double threshold );
+	void setPositionalConstriants(int fixedSide);
 
 
 public:

@@ -75,9 +75,6 @@ Vec3d Primitive::centerPoint()
 
 void Primitive::addFixedPoint( Point fp )
 {
-	if (!symmPlanes.empty() || !fixedPoints.empty())
-		isFrozen = true;
-
 	fixedPoints.push_back(fp);
 }
 

@@ -181,6 +181,24 @@ void GroupPanel::saveGroups()
 	activeScene->updateGL();
 
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
+
+
+	// debug
+	std::cout << "======= From Controller =====\n";
+	foreach( Primitive* p, ctrl->getPrimitives())
+	{
+		std::cout << qPrintable(p->id) << ": " << p->centerPoint() << std::endl;
+	}
+
+	std::cout << "======= From Groups =====\n";
+	foreach(Group* group, ctrl->groups)
+	{
+		foreach( Primitive* p, group->nodes)
+		{
+			std::cout << qPrintable(p->id) << ": " << p->centerPoint() << std::endl;
+		}
+	}
+
 }
 
 void GroupPanel::loadGroups()

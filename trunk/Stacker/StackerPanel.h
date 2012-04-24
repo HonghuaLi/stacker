@@ -5,7 +5,7 @@
 #include "StackerPreview.h"
 #include "HiddenViewer.h"
 #include "Controller.h"
-#include "QDeformController.h"
+#include "QManualDeformer.h"
 
 // Forward declaration
 class Offset;

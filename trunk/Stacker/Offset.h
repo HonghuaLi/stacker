@@ -42,7 +42,8 @@ public:
 	// Detect hot spots
 	void detectHotspots();
 	HotSpot detectHotspotInRegion(int direction, std::vector<Vec2i>& hotRegion);
-	std::set<QString> getHotSegment();
+	std::vector<HotSpot> getHotspots(int side);
+	HotSpot& getHotspot( int side, int id );
 	void showHotSpots();
 	void saveHotSpots( QString filename, int direction = 1, double percent = 1.0 );
 

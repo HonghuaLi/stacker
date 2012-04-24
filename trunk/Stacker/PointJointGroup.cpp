@@ -8,7 +8,8 @@
 
 PointJointGroup::PointJointGroup( GroupType newType ): Group(newType)
 {
-	joint = Point(0., 0., 0.);
+	Point p(0., 0., 0.);
+	pos = p;
 }
 
 void PointJointGroup::process( QVector< Primitive* > segments )
@@ -19,8 +20,8 @@ void PointJointGroup::process( QVector< Primitive* > segments )
 	Primitive * a = nodes.first();
 	Primitive * b = nodes.last();
 
-	jointCoords[a->id] = a->getCoordinate(joint);
-	jointCoords[b->id] = b->getCoordinate(joint);
+	jointCoords[a->id] = a->getCoordinate(pos);
+	jointCoords[b->id] = b->getCoordinate(pos);
 }
 
 void PointJointGroup::regroup()
@@ -71,10 +72,35 @@ void PointJointGroup::draw()
 
 void PointJointGroup::saveParameters( std::ofstream &outF )
 {
-	outF << joint;
+	//Primitive * a = nodes.first();
+	//Primitive * b = nodes.last();
+
+	//outF << qPrintable(a->id) << '\t';
+	//foreach(double c, jointCoords[a->id])
+	//	outF << c << '\t';
+
+	//outF << qPrintable(b->id) << '\t';
+	//foreach(double c, jointCoords[b->id])
+	//	outF << c << '\t';
+	outF << getJointPos();
 }
 
 void PointJointGroup::loadParameters( std::ifstream &inF )
 {
-	inF >> joint;
+	inF >> pos;
 }
+
+Point PointJointGroup::getJointPosOnPrimitive( Primitive* prim )
+{
+	return prim->fromCoordinate(jointCoords[prim->id]);
+}
+
+Point PointJointGroup::getJointPos()
+{
+	Primitive * a = nodes.first();
+	return a->fromCoordinate(jointCoords[a->id]);
+}
+
+
+
+

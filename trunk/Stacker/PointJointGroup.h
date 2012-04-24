@@ -14,7 +14,11 @@ public:
 	void saveParameters( std::ofstream &outF );
 	void loadParameters( std::ifstream &inF );
 
+	// Get
+	Point getJointPosOnPrimitive(Primitive* prim);
+	Point getJointPos();
+
 public:
-	Point joint;
+	Point pos; // Only used once at the very beginning for \process
     QMap<QString, std::vector<double> > jointCoords;
 };

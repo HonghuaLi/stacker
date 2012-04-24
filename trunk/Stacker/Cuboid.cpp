@@ -4,8 +4,8 @@
 #include <Eigen/Geometry>
 using namespace Eigen;
 
-#include "MathLibrary/Bounding/OBB.h"
-#include "MathLibrary/Bounding/OBB2.h"
+#include "MathLibrary/Bounding/OBB_PCA.h"
+#include "MathLibrary/Bounding/OBB_Volume.h"
 
 #include "MathLibrary/Coordiantes/MeanValueCoordinates.h"
 
@@ -57,7 +57,7 @@ void Cuboid::fit( bool useAABB, int obb_method )
 			}
 		case 1:
 			{
-				OBB obb;
+				OBB_PCA obb;
 				obb.build_from_mesh(m_mesh);
 
 				// set box parameters
@@ -69,7 +69,7 @@ void Cuboid::fit( bool useAABB, int obb_method )
 			}
 		case 2:
 			{
-				OBB2 obb(m_mesh);
+				OBB_Volume obb(m_mesh);
 
 				// set box parameters
 				fittedBox.Center = obb.center();
@@ -885,4 +885,17 @@ Point Cuboid::getSelectedCurveCenter()
 	int id = selectedPartId % 2;
 
 	return currBox.Center + currBox.Axis[id] * currBox.Extent[id];
+}
+
+void Cuboid::moveLineJoint( Point A, Point B, Point newA, Point newB )
+{
+	// Translate \A to \newA
+	Vec3d v = newA - A;
+	currBox.Center += v;
+	B += v;
+
+	// Deform respect to joint
+	deformRespectToJoint(newA, B, newB - B);
+	
+	deformMesh();
 }

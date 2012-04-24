@@ -11,7 +11,7 @@
 
 // Based on code by James Gregson: http://jamesgregson.blogspot.com/2011/03/latex-test.html
 
-class OBB {
+class OBB_PCA {
 private:
 	Vec3d	m_rot[3];	// rotation matrix for the transformation, stored as rows
 	Vec3d	m_pos;		// translation component of the transformation
@@ -61,7 +61,7 @@ private:
 	}
 
 public:
-	OBB(){ isReady = false; }
+	OBB_PCA(){ isReady = false; }
 
 	// returns the volume of the OBB, which is a measure of
 	// how tight the fit is.  Better OBBs will have smaller 

@@ -281,15 +281,6 @@
     <ClInclude Include="MathLibrary\Bounding\MinOBB3.h">
       <Filter>Math\Bounding</Filter>
     </ClInclude>
-    <ClInclude Include="MathLibrary\Bounding\OBB.h">
-      <Filter>Math\Bounding</Filter>
-    </ClInclude>
-    <ClInclude Include="MathLibrary\Bounding\OBB2.h">
-      <Filter>Math\Bounding</Filter>
-    </ClInclude>
-    <ClInclude Include="MathLibrary\Bounding\OBB2_math.h">
-      <Filter>Math\Bounding</Filter>
-    </ClInclude>
     <ClInclude Include="MathLibrary\Coordiantes\GCDeformation.h">
       <Filter>Math\Deformer\GreenCoordiantes</Filter>
     </ClInclude>
@@ -373,6 +364,18 @@
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Basic\Circle.h">
       <Filter>GraphicsLibrary\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\PCA3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\Bounding\OBB_PCA.h">
+      <Filter>Math\Bounding</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\Bounding\OBB_Volume.h">
+      <Filter>Math\Bounding</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibrary\Bounding\OBB_Volume_math.h">
+      <Filter>Math\Bounding</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -475,7 +478,7 @@
     <CustomBuild Include="Stacker\ConstraintGraphVis.h">
       <Filter>Stacker\Utility</Filter>
     </CustomBuild>
-    <CustomBuild Include="Stacker\QDeformController.h">
+    <CustomBuild Include="Stacker\QManualDeformer.h">
       <Filter>Stacker\Utility</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -628,12 +631,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_HiddenViewer.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_QDeformController.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QDeformController.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_StackerPanel.cpp">
@@ -849,7 +846,13 @@
     <ClCompile Include="GraphicsLibrary\Basic\Circle.cpp">
       <Filter>GraphicsLibrary\Basic</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\QDeformController.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_QManualDeformer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QManualDeformer.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\QManualDeformer.cpp">
       <Filter>Stacker\Utility</Filter>
     </ClCompile>
   </ItemGroup>
