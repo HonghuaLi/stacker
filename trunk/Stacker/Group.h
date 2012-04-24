@@ -29,7 +29,7 @@ public:
 
 	// Save and load parameters
 	virtual void saveParameters(std::ofstream &outF);
-	virtual void loadParameters(std::ifstream &inF);
+	virtual void loadParameters(std::ifstream &inF, Vec3d translation, double scaleFactor);
 
 	// Others
 	bool has(QString id);

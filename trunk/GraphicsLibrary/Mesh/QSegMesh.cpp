@@ -343,6 +343,7 @@ void QSegMesh::computeBoundingBox()
 
 void QSegMesh::moveCenterToOrigin()
 {
+	translation = - center;
 
 	for (int i = 0; i < (int)nbSegments();i++)
 	{
@@ -352,7 +353,7 @@ void QSegMesh::moveCenterToOrigin()
 		for (vit = segment[i]->vertices_begin(); vit != vend; ++vit)
 		{
 			if (!segment[i]->is_deleted(vit))
-				points[vit] -= center;
+				points[vit] += translation;
 		}
 	}
 }
@@ -551,6 +552,7 @@ void QSegMesh::setVertexColor( uint vid, const Color& newColor )
 
 void QSegMesh::normalize()
 {
+	scaleFactor = 1 / radius;
 
 	for (uint i = 0; i < nbSegments();i++)
 	{
@@ -560,11 +562,10 @@ void QSegMesh::normalize()
 		for (vit = segment[i]->vertices_begin(); vit != vend; ++vit)
 		{
 			if (!segment[i]->is_deleted(vit))
-				points[vit] = points[vit] / radius;
+				points[vit] = points[vit] * scaleFactor;
 		}
 	}
 
-	scaleFactor = radius;
 }
 
 void QSegMesh::rotateAroundUp( double theta )

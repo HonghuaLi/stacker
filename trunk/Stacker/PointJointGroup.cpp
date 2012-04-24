@@ -85,9 +85,11 @@ void PointJointGroup::saveParameters( std::ofstream &outF )
 	outF << getJointPos();
 }
 
-void PointJointGroup::loadParameters( std::ifstream &inF )
+void PointJointGroup::loadParameters( std::ifstream &inF, Vec3d translation, double scaleFactor )
 {
 	inF >> pos;
+	pos += translation;
+	pos *= scaleFactor;
 }
 
 Point PointJointGroup::getJointPosOnPrimitive( Primitive* prim )

@@ -89,8 +89,14 @@ void LineJointGroup::saveParameters( std::ofstream &outF )
 	outF << lineEnds[0] << '\t' << lineEnds[1];
 }
 
-void LineJointGroup::loadParameters( std::ifstream &inF )
+void LineJointGroup::loadParameters( std::ifstream &inF, Vec3d translation, double scaleFactor )
 {
 	lineEnds.resize(2);
 	inF >> lineEnds[0] >> lineEnds[1];
+
+	lineEnds[0] += translation;
+	lineEnds[0] *= scaleFactor;
+
+	lineEnds[1] += translation;
+	lineEnds[1] *= scaleFactor;
 }

@@ -701,7 +701,8 @@ void GCylinder::save( std::ofstream &outF )
 }
 
 
-void GCylinder::load( std::ifstream &inF, double scaleFactor )
+
+void GCylinder::load( std::ifstream &inF, Vec3d translation, double scaleFactor )
 {
 	inF >> this->isFitted;
 	inF >> this->cageScale;
@@ -710,16 +711,20 @@ void GCylinder::load( std::ifstream &inF, double scaleFactor )
 
 	inF >> GC_SKELETON_JOINTS_NUM;
 
+	// Translate and Scale the skeleton joints
 	for(int i = 0; i < GC_SKELETON_JOINTS_NUM; i++)
 	{
 		Point p(0,0,0);
 		inF >> p;
+		p += translation;
 		p *= scaleFactor;
 		originalSpine.push_back(p);
 	}
 
+	// Create GC using skeleton
 	createGC(originalSpine, false);
 
+	// Scale the radius
 	for(int i = 0; i < GC_SKELETON_JOINTS_NUM; i++)
 	{
 		double radius;

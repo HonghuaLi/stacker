@@ -67,7 +67,7 @@ public:
 	
 	// Save and load
 	virtual void save(std::ofstream &outF);
-	virtual void load(std::ifstream &inF, double scaleFactor);
+	virtual void load(std::ifstream &inF, Vec3d translation, double scaleFactor);
 
 	void buildCage();
 

@@ -12,7 +12,7 @@ public:
 	void regroup();
 	void draw();	
 	void saveParameters( std::ofstream &outF );
-	void loadParameters( std::ifstream &inF );
+	void loadParameters(std::ifstream &inF, Vec3d translation, double scaleFactor);
 
 	// Get
 	Point getJointPosOnPrimitive(Primitive* prim);
