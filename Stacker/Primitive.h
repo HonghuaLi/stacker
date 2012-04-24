@@ -90,7 +90,7 @@ public:
 
 	// Save and load
 	virtual void save(std::ofstream &outF) = 0;
-	virtual void load(std::ifstream &inF, double scaleFactor) = 0;
+	virtual void load(std::ifstream &inF, Vec3d translation, double scaleFactor) = 0;
 
 	// Rotation
 	Eigen::Matrix3d rotationMatrixAroundAxis(Vec3d u, double theta);

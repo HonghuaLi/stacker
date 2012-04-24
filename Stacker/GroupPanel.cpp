@@ -181,29 +181,11 @@ void GroupPanel::saveGroups()
 	activeScene->updateGL();
 
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
-
-
-	// debug
-	std::cout << "======= From Controller =====\n";
-	foreach( Primitive* p, ctrl->getPrimitives())
-	{
-		std::cout << qPrintable(p->id) << ": " << p->centerPoint() << std::endl;
-	}
-
-	std::cout << "======= From Groups =====\n";
-	foreach(Group* group, ctrl->groups)
-	{
-		foreach( Primitive* p, group->nodes)
-		{
-			std::cout << qPrintable(p->id) << ": " << p->centerPoint() << std::endl;
-		}
-	}
-
 }
 
 void GroupPanel::loadGroups()
 {
-	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
+	Controller * ctrl = (Controller *)activeObject()->ptr["controller"];
 	if (ctrl == NULL) 
 	{
 		std::cout << "There is no controller.\n";
@@ -272,7 +254,7 @@ void GroupPanel::loadGroups()
 				segments.push_back(ctrl->getPrimitive(str.c_str()));
 			}
 
-			newGroup->loadParameters(inF);
+			newGroup->loadParameters(inF, activeObject()->translation, activeObject()->scaleFactor);
 			newGroup->process(segments);
 
 			ctrl->groups[newGroup->id] = newGroup;

@@ -26,8 +26,7 @@ void Group::regroup()
 		p->isFrozen = true;
 }
 
-
-void Group::loadParameters( std::ifstream &inF )
+void Group::loadParameters( std::ifstream &inF, Vec3d translation, double scaleFactor )
 {
 	// Please reload this method if there are parameters to load
 }

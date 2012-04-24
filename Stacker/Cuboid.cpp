@@ -836,7 +836,8 @@ void Cuboid::save( std::ofstream &outF )
 		outF << s << "\t";
 }
 
-void Cuboid::load( std::ifstream &inF, double scaleFactor )
+
+void Cuboid::load( std::ifstream &inF, Vec3d translation, double scaleFactor )
 {
 	this->currBox.faceScaling = std::vector<double>(6, 1.0);
 
@@ -852,20 +853,22 @@ void Cuboid::load( std::ifstream &inF, double scaleFactor )
 	for(int i = 0; i < 6; i++)
 		inF >> this->currBox.faceScaling[i];
 
+	// Translating
+	currBox.Center += translation;
+
 	// Scaling
-	Point center = currBox.Center;
 	std::vector< Point > p(3);
 	for (int i=0;i<3;i++)
 	{
-		p[i] = center + currBox.Axis[i] * currBox.Extent[i];
+		p[i] = currBox.Center + currBox.Axis[i] * currBox.Extent[i];
 		p[i] *= scaleFactor;
 	}
-	center *= scaleFactor;
+	currBox.Center *= scaleFactor;
 
-	currBox.Center = center;
+	// Reconstruct the cuboid
 	for (int i=0;i<3;i++ )
 	{
-		Vec3d vec = p[i] - center;
+		Vec3d vec = p[i] - currBox.Center;
 		currBox.Axis[i] = vec.normalized();
 		currBox.Extent[i] = vec.norm();
 	}
