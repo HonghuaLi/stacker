@@ -1,10 +1,10 @@
-#include "QDeformController.h"
+#include "QManualDeformer.h"
 
 #include "Primitive.h"
 #include "Propagator.h"
 #include "SimpleDraw.h"
 
-QDeformController::QDeformController(Controller * usingController)
+QManualDeformer::QManualDeformer(Controller * usingController)
 {
 	this->frame = new qglviewer::ManipulatedFrame;
 	this->ctrl = usingController;
@@ -14,18 +14,18 @@ QDeformController::QDeformController(Controller * usingController)
 	this->connect(frame, SIGNAL(manipulated()), SLOT(updateController()));
 }
 
-qglviewer::ManipulatedFrame * QDeformController::getFrame()
+qglviewer::ManipulatedFrame * QManualDeformer::getFrame()
 {
 	return frame;
 }
 
-Vec3d QDeformController::pos()
+Vec3d QManualDeformer::pos()
 {
 	qglviewer::Vec q = frame->position();
 	return Vec3d (q.x,q.y,q.z);
 }
 
-void QDeformController::updateController()
+void QManualDeformer::updateController()
 {
 	// unfreeze all
 	ctrl->setPrimitivesFrozen(false);
@@ -43,7 +43,7 @@ void QDeformController::updateController()
 	emit( objectModified() );
 }
 
-void QDeformController::scaleUp( double s )
+void QManualDeformer::scaleUp( double s )
 {
 	// unfreeze all
 	ctrl->setPrimitivesFrozen(false);
@@ -62,7 +62,7 @@ void QDeformController::scaleUp( double s )
 	}
 }
 
-void QDeformController::draw()
+void QManualDeformer::draw()
 {
 	SimpleDraw::IdentifyPoint(pos(), 1,1,0,20);
 }

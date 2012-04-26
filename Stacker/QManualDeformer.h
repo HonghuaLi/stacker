@@ -3,10 +3,10 @@
 #include "Controller.h"
 #include "GUI/Viewer/libQGLViewer/QGLViewer/qglviewer.h"
 
-class QDeformController: public QObject{
+class QManualDeformer: public QObject{
 	Q_OBJECT
 public:
-	QDeformController(Controller * usingController);
+	QManualDeformer(Controller * usingController);
 
 	qglviewer::ManipulatedFrame * getFrame();
 	Vec3d pos();
