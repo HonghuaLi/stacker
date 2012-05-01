@@ -140,8 +140,6 @@ void StackerPanel::updateActiveObject()
 
 	stacker_preview->stackCount = panel.stackCount->value();
 	stacker_preview->updateActiveObject();
-
-
 }
 
 QSegMesh* StackerPanel::activeObject()
@@ -392,8 +390,11 @@ void StackerPanel::setStackCount( int num )
 
 void StackerPanel::onSuggestButtonClicked()
 {
-	suggestions.clear();
-	suggestions = improver->getSuggestions();
+	improver->suggestions.clear();
+
+	isSuggesting = true;
+	improver->executeImprove(0);
+	isSuggesting = false;
 	
 	int total = improver->suggestSolutions.size();
 	panel.numSuggestion->setText(QString("/ %1").arg(total));
@@ -428,12 +429,12 @@ void StackerPanel::onLoadSuggestionsButtonClicked()
 
 	int num;
 	inF >> num;
-	suggestions.clear();
+	improver->suggestions.clear();
 	for (int i=0; i<num; i++)
 	{
 		EditingSuggestion sgt;
 		inF >> sgt.center >> sgt.direction >> sgt.value;
-		suggestions.push_back(sgt);
+		improver->suggestions.push_back(sgt);
 	}
 
 	inF.close();
@@ -452,4 +453,9 @@ void StackerPanel::setNumExpectedSolutions( int num )
 void StackerPanel::setTargetStackability( double s )
 {
 	TARGET_STACKABILITY = s;
+}
+
+void StackerPanel::print( QString message )
+{
+	printMessage(message);
 }

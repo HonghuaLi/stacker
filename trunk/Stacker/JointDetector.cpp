@@ -2,6 +2,7 @@
 
 #include "StackerGlobal.h"
 #include "Primitive.h"
+#include "Cuboid.h"
 #include "PointJointGroup.h"
 #include "LineJointGroup.h"
 
@@ -80,9 +81,21 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 	}
 	else
 	{
-		// Cluster points into two clusters
 		Point p1 = box.Center + box.Extent[2] * box.Axis[2];
 		Point p2 = box.Center - box.Extent[2] * box.Axis[2];
+
+		// Two ends (projected to one major axes of the cuboid)
+		Cuboid* cuboid;
+		if (a->primType == CUBOID) cuboid = (Cuboid*) a;
+		if (b->primType == CUBOID) cuboid = (Cuboid*) b;
+		if (cuboid) 
+		{
+			Vec3d vec = p2 - p1;
+			Vec3d axis = cuboid->currBox.ClosestAxis(vec);
+			p2 = p1 + dot(vec, axis) * axis;
+		}
+
+		// Cluster points into two clusters
 		std::vector< std::vector< Point > >clusters = twoClassClustering(intersection, p1, p2);
 
 		// The distance between two clusters

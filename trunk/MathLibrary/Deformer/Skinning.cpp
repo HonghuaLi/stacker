@@ -94,13 +94,13 @@ void Skinning::deform()
 		Vec3d n1(orig_c.normal()), n2(c.normal());
 		Vector3d axis = V2E(cross(n1, n2).normalized());
 
-		// Rotation
+		/// Rotation
 		if(axis.norm() > 0){
 			double angle = acos(dot(n1, n2));
 			SPR[i] = AngleAxisd(angle, axis).toRotationMatrix();
 		}
 
-		// Translation
+		/// Translation
 		SPT[i] = V2E(c.center) - SPR[i] * V2E(orig_c.center);
 	}
 
@@ -116,8 +116,7 @@ void Skinning::deform()
 		int i2 = weights[vi].n2;
 		double w = weights[vi].weight;
 
-
-		// Scaling
+		/// Scaling
 		double s = 1.0;
 		GeneralizedCylinder::Circle & org_c1 = origGC.crossSection[i1];
 		GeneralizedCylinder::Circle & org_c2 = origGC.crossSection[i2];
@@ -125,11 +124,11 @@ void Skinning::deform()
 		GeneralizedCylinder::Circle & c2 = gc->crossSection[i2];
 
 		if(w == 0)
-			s = c1.radius / org_c1.radius; // Kevin used squared distance?
+			s = c1.radius / org_c1.radius;
 		else{
 			// Interpolate radius
-			double orig_r = org_c1.radius*(1-w) + org_c2.radius*w;
-			double r = c1.radius*(1-w) + c2.radius*w;
+			double orig_r = org_c1.radius*(1.0-w) + org_c2.radius*w;
+			double r = c1.radius*(1.0-w) + c2.radius*w;
 			s = r / orig_r;
 		}
 

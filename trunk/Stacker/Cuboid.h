@@ -21,63 +21,65 @@ public:
 	Cuboid( QSurfaceMesh* segment, QString newId, bool useAABB, int fit_method);
 public:
 	// Fit primitive to the underlying QSurfaceMesh
-	virtual void fit(){}
-	virtual void computeMeshCoordiantes();
+	void fit(){}
+	void computeMeshCoordiantes();
 	void fit(bool useAABB = true, int obb_method = 0);
 
 	// Deform the underlying geometry according to the \pre_state and current state
-	virtual void deformMesh();
+	void deformMesh();
 
 	// Visualize the primitive and potential actions
-	virtual void draw();
-	virtual	void drawNames(int name, bool isDrawParts = false);
+	void draw();
+	void drawNames(int name, bool isDrawParts = false);
 
 	// Hot curves
-	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
-	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect );
+	int detectHotCurve( QVector<Vec3d> &hotSamples );
+	void translateCurve( uint cid, Vec3d T, uint sid_respect );
 
 	// Reshaping
-	virtual void translate( Vec3d &T );
-	virtual void moveCurveCenter( int cid, Vec3d T);
-	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
-	virtual bool excludePoints( std::vector< Vec3d > pnts );
-	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts );
-	virtual void movePoint(Point p, Vec3d T);
-	virtual void scaleCurve(int cid, double s);
-	void moveLineJoint(Point A, Point B, Point newA, Point newB);
+	void translate( Vec3d &T );
+	void moveCurveCenter( int cid, Vec3d T);
+	void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
+	bool excludePoints( std::vector< Vec3d > pnts );
+	void reshapeFromPoints( std::vector<Vec3d>& pnts );
+	void movePoint(Point p, Vec3d T);
+	void scaleCurve(int cid, double s);
+	void moveLineJoint(Point A, Point B, Vec3d deltaA, Vec3d deltaB);
 
 	// Primitive coordinate system
-	virtual std::vector<double> getCoordinate( Point v );
-	virtual Point fromCoordinate(std::vector<double> coords);
-	virtual bool containsPoint(Point p);
-	virtual Vec3d closestPoint(Point p);
+	std::vector<double> getCoordinate( Point v );
+	Point fromCoordinate(std::vector<double> coords);
+	bool containsPoint(Point p);
+	Vec3d closestPoint(Point p);
 
 	// Primitive state
-	virtual void* getGeometryState();
-	virtual void setGeometryState( void* );
+	void* getGeometryState();
+	void setGeometryState( void* );
 
 	// Primitive geometry
-	virtual std::vector <Vec3d> points();
-	virtual QSurfaceMesh getGeometry();
-	virtual double volume();
-	virtual std::vector<Vec3d> majorAxis();
-	virtual std::vector < std::vector <Vec3d> > getCurves();
+	double volume();
+	Point curveCenter(int cid);
+	double curveRadius(int cid);
+	QSurfaceMesh getGeometry();
+	std::vector<Vec3d> points();
+	std::vector<Vec3d> majorAxis();
+	std::vector< std::vector <Vec3d> > getCurves();
 
 	// Joint, symmetry
-	virtual void setSymmetryPlanes(int nb_fold);
+	void setSymmetryPlanes(int nb_fold);
 
 	// Selecting
-	virtual Vec3d selectedPartPos();
-	virtual void setSelectedPartId( Vec3d normal );
-	virtual Point getSelectedCurveCenter();
+	Vec3d selectedPartPos();
+	void setSelectedPartId( Vec3d normal );
+	Point getSelectedCurveCenter();
 
 	void scaleAlongAxis( Vector3 &scales );
 	void rotateAroundAxes(Vector3 &angles );
 	void recoverMesh();
 
 	// Save and load
-	virtual void save(std::ofstream &outF);
-	virtual void load(std::ifstream &inF, Vec3d translation, double scaleFactor);
+	void save(std::ofstream &outF);
+	void load(std::ifstream &inF, Vec3d translation, double scaleFactor);
 
 private:
 	QSurfaceMesh getBoxGeometry( Box3 &box, bool isUniform = false );

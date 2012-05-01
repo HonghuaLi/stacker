@@ -57,6 +57,9 @@ public slots:
 	void setSolutionID(int id);
 	void setSuggestionID(int id);
 
+	// Message
+	void print(QString message);
+
 signals:
 	void printMessage( QString );
 	void objectModified();

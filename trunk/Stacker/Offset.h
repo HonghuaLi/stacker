@@ -28,6 +28,7 @@ public:
 	// Shortener
 	void clear();
 	QSegMesh* activeObject();
+	Controller* ctrl();
 	
 	// Compute offset function and stackability
 	void computeEnvelope(int direction);

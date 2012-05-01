@@ -11,4 +11,7 @@ int HIDDEN_VIEWER_SIZE = 200;
 double JOINT_THRESHOLD = 0.035;
 
 // Primitive
-int GC_SKELETON_JOINTS_NUM = 6;
+int GC_SKELETON_JOINTS_NUM = 10;
+
+// Suggesting
+bool isSuggesting = false;

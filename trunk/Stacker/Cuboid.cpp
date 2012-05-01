@@ -335,34 +335,29 @@ Vec3d Cuboid::selectedPartPos()
 	return partPos / face.size();
 }
 
-uint Cuboid::detectHotCurve( std::vector< Vec3d > &hotSamples )
+int Cuboid::detectHotCurve( QVector<Vec3d> &hotSamples )
 {
-	if ( dot( currBox.Axis[2], cross( currBox.Axis[0],  currBox.Axis[1] ) ) < 0 )
-		std::cout << "The coordinate frame is not right handed!" << std::endl;
-
-	std::vector< std::vector< double > > projections(3);
-
-	Vec3d &center = currBox.Center;
+	if (hotSamples.isEmpty()) return -1;
 
 	QSurfaceMesh currBoxMesh = getGeometry();
 	QSurfaceMesh currUniformBoxMesh = getBoxGeometry(currBox, true);
 
+	// Project hot samples to 3 axes of the cuboid
+	std::vector< std::vector< double > > projections(3);
 	for (int i = 0; i < hotSamples.size(); i++)
 	{
-		// Map from world coordinates to a uniform box
 		std::vector<double> weights = MeanValueCooridnates::weights(hotSamples[i], &currBoxMesh);
 		Vec3d mappedHotPoint = MeanValueCooridnates::point(weights, &currUniformBoxMesh);
 
-        Vec3d vec = mappedHotPoint - center;
-
+        Vec3d vec = mappedHotPoint - currBox.Center;
 		for (int j = 0; j < 3; j++)
 		{
             Vec3d axis = currBox.Axis[j];
 			projections[j].push_back( dot( axis, vec ) );
 		}
-
 	}
 
+	// The range and mean of projections
 	std::vector< double > range, mean;
 	for (int j = 0; j < 3; j++)
 	{
@@ -373,12 +368,13 @@ uint Cuboid::detectHotCurve( std::vector< Vec3d > &hotSamples )
 		mean.push_back( (maxProj + minProj) / 2 );
 	}
 
+	// The axis along which the projections have the minimal range is selected first
+	// Use the mean of projections to decide which curve is hot
 	uint axis = std::min_element( range.begin(), range.end() ) - range.begin();
+	int cid = 2 * axis;
+	if (mean[axis] < 0) cid += 1;
 
-	selectedPartId = 2 * axis;
-	if (mean[axis] < 0) selectedPartId += 1;
-
-	return selectedPartId;
+	return cid;
 }
 
 void Cuboid::translateCurve( uint cid, Vec3d T, uint sid_respect /*= -1*/ )
@@ -457,77 +453,6 @@ std::vector<double> Cuboid::getCoordinate( Point v )
 Point Cuboid::fromCoordinate( std::vector<double> coords )
 {
 	return getPositionInUniformBox(currBox, Vec3d(coords[0], coords[1], coords[2]));
-}
-
-bool Cuboid::excludePoints( std::vector< Vec3d > pnts )
-{
-	// Map points to uniform box coordinates
-	QSurfaceMesh currBoxMesh = getGeometry();
-	QSurfaceMesh currUniformBoxMesh = getBoxGeometry(currBox, true);
-	for (int i = 0; i < pnts.size(); i++)
-	{
-		std::vector<double> weights = MeanValueCooridnates::weights(pnts[i], &currBoxMesh);
-		pnts[i] = MeanValueCooridnates::point(weights, &currUniformBoxMesh);
-	}
-
-	// Project pnts to axes
-	std::vector< std::vector< double > > coords(3);
-	for (int i = 0; i < pnts.size(); i++)
-	{		
-		Vec3d pos = getCoordinatesInUniformBox(currBox, pnts[i]);
-
-		for (int j = 0; j < 3; j++){
-			coords[j].push_back( pos[j] );
-		}
-	}
-
-	// Select the best axis to scale
-	Vec3d z(0, 0, 1);
-	int selectedID = -1;
-	double bestScale = .0;
-	double newPos = 0;
-	for (int j = 0; j < 3; j++)
-	{
-		double epsilon = 0.1 * currBox.Extent[j];
-		double left = MinElement(coords[j]) - epsilon;
-		double right = MaxElement(coords[j]) + epsilon;
-
-		// The pnts are not on the margin
-		if (left * right < 0) continue;
-
-		// Only scale along axis that is far away from z (the stacking direction)
-		Vec3d &axis = currBox.Axis[j];
-		if (abs( dot( axis, z ) ) > 0.5) continue;
-
-		// if the scale is smaller
-		double scale;
-		if ( left > 0 )
-			scale = (1+left) / 2;
-		else
-			scale = (1-right) / 2;
-
-		if (scale > bestScale)
-		{
-			bestScale = scale;
-			selectedID = j;
-			newPos = (left>0)? left : right;
-		}
-
-	}
-
-	// Scale along the best axis
-	bool result = false;
-	if (bestScale >.0)
-	{
-		double delta = (newPos > 0)? (-1 + newPos) / 2 : (newPos + 1) / 2;
-		delta *= currBox.Extent[selectedID];
-		currBox.Center += delta;
-		currBox.Extent[selectedID] *= bestScale;
-		result = true;
-	}
-
-	deformMesh();
-	return result;
 }
 
 //      k
@@ -814,9 +739,11 @@ void Cuboid::movePoint( Point p, Vec3d T )
 
 void Cuboid::scaleCurve( int cid, double s )
 {
+	if(!this->symmPlanes.size()) return;
+
 	if(cid < 0)	cid = selectedPartId;
 
-	currBox.faceScaling[cid] *= (1 + s);
+	currBox.faceScaling[cid] *= s;
 
 	deformMesh();
 }
@@ -890,15 +817,46 @@ Point Cuboid::getSelectedCurveCenter()
 	return currBox.Center + currBox.Axis[id] * currBox.Extent[id];
 }
 
-void Cuboid::moveLineJoint( Point A, Point B, Point newA, Point newB )
+
+void Cuboid::moveLineJoint( Point A, Point B, Vec3d deltaA, Vec3d deltaB )
 {
 	// Translate \A to \newA
-	Vec3d v = newA - A;
-	currBox.Center += v;
-	B += v;
+	currBox.Center += deltaA;
+	B += deltaA;
 
 	// Deform respect to joint
-	deformRespectToJoint(newA, B, newB - B);
+	deformRespectToJoint(A + deltaA, B, deltaB);
 	
 	deformMesh();
+}
+
+double Cuboid::curveRadius( int cid )
+{
+	if (cid < 0 || cid > 5)
+		return -1.0;
+
+	int axis_id = cid / 2;
+	Vec3d R = currBox.Extent;
+	R[axis_id] = 0.0;
+
+	return R.norm();
+}
+
+Point Cuboid::curveCenter( int cid )
+{
+	Point center;
+
+	if (cid < 0 || cid > 5)
+		center = Point(DOUBLE_INFINITY,0,0);
+	else
+	{
+		int axis_id = cid / 2;
+
+		if (cid % 2)
+			center = currBox.Center - currBox.Axis[axis_id];
+		else
+			center = currBox.Center + currBox.Axis[axis_id];
+	}
+
+	return center;
 }

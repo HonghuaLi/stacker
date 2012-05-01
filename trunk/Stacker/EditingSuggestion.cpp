@@ -16,8 +16,10 @@ EditingSuggestion::EditingSuggestion()
 	this->value = 0;
 }
 
-void EditingSuggestion::draw(double scale)
+void EditingSuggestion::draw()
 {
+	double scale = 0.05;
+
 	Vec3d pos = center + direction;
 
 	double value3 = value * value * value;
