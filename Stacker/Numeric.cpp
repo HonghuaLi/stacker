@@ -172,7 +172,8 @@ std::vector< std::vector< Vec2i > > getRegionsGreaterThan( Buffer2d& image, doub
 			if (!mask[y][x] && image[y][x]>threshold)
 			{
 				//saveAsImage(mask, "mask1.png");
-				regions.push_back(getRegionGreaterThan(image, mask, Vec2i(x, y), threshold));
+				std::vector< Vec2i > region = getRegionGreaterThan(image, mask, Vec2i(x, y), threshold);
+				regions.push_back(sampleRegion(region, 100));
 				//saveAsImage(mask, "mask2.png");
 			}
 			mask[y][x] = true;
@@ -180,7 +181,7 @@ std::vector< std::vector< Vec2i > > getRegionsGreaterThan( Buffer2d& image, doub
 	}
 
 	// If there are a lot of hot regions, regard them as one
-	std::vector< Vec2i > super_region;
+	std::vector< Vec2i > super_region, sampleSuper;
 	if (regions.size() > 10)
 	{
 		foreach(std::vector< Vec2i > r, regions)
@@ -190,7 +191,7 @@ std::vector< std::vector< Vec2i > > getRegionsGreaterThan( Buffer2d& image, doub
 		}
 
 		regions.clear();
-		regions.push_back(super_region);
+		regions.push_back(sampleRegion(super_region, 100));
 	}
 
 	return regions;
@@ -353,7 +354,32 @@ void saveAsImage( Buffer2d& image, QString fileName )
 	Output.save(fileName);
 }
 
+std::vector<int> uniformIntegerSamples( int N, int range )
+{
+	N = Min(N, range);
 
+	std::vector<int> results;
+
+	for (int i = 0; i < range; i++)
+		results.push_back(i);
+
+	// Shuffle
+	std::random_shuffle ( results.begin(), results.end() );
+
+	return std::vector<int>(results.begin(), results.begin() + N);
+}
+
+std::vector<Vec2i> sampleRegion( std::vector<Vec2i> &region, int N )
+{
+	if(region.size() <= N) return region;
+
+	std::vector<Vec2i> samples;
+	std::vector<int> sampleIdx = uniformIntegerSamples(N, region.size());
+	foreach(int i, sampleIdx)
+		samples.push_back(region[i]);
+
+	return samples;
+}
 
 
 
