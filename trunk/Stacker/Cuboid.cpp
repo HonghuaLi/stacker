@@ -103,10 +103,14 @@ void Cuboid::computeMeshCoordiantes()
 	Surface_mesh::Vertex_iterator vit, vend = m_mesh->vertices_end();
 
 	QSurfaceMesh cubeMesh = getGeometry();
+	cubeMesh.fillTrianglesList();
 
-	for (vit = m_mesh->vertices_begin(); vit != vend; ++vit)
+	coordinates.resize(m_mesh->n_vertices(), std::vector<double>(cubeMesh.n_vertices()));
+
+	#pragma omp parallel for
+	for(int i = 0; i < m_mesh->n_vertices(); i++)
 	{
-		coordinates.push_back(MeanValueCooridnates::weights(points[vit], &cubeMesh));
+		coordinates[i] = MeanValueCooridnates::weights(points[Surface_mesh::Vertex(i)], &cubeMesh);
 	}
 }
 

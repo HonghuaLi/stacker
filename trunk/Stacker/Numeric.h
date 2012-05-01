@@ -39,3 +39,7 @@ std::vector< std::vector < T > > createImage( int w, int h, T intial);
 void saveAsImage( Buffer2d& image, double maxV, QString fileName );
 void saveAsImage( Buffer2d& image, QString fileName );
 void saveAsData( Buffer2d& image, double maxV, QString fileName );
+
+// Random set of unique integers
+std::vector<int> uniformIntegerSamples(int N, int range);
+std::vector<Vec2i> sampleRegion(std::vector<Vec2i> &region, int N);
