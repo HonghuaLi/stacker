@@ -4,6 +4,7 @@
 #include "SimpleDraw.h"
 #include <QFile>
 #include <numeric>
+#include "Numeric.h"
 
 
 #define BIG_NUMBER 10
@@ -437,6 +438,8 @@ void Offset::detectHotspots( )
 {
 	// Initialization
 	clear();
+	int h = activeViewer->height();
+	int w = activeViewer->width();
 
 	// Recompute the offset function of the entire shape
 	computeOffsetOfShape();
@@ -448,7 +451,7 @@ void Offset::detectHotspots( )
 		hot_cap -= 0.05; // increase the cap
 		hotRegions = getRegionsGreaterThan(offset, O_max * hot_cap);
 	}
-	//visualizeRegions(hotRegions, "hot regions of shape.png");
+//	visualizeRegions(w, h, hotRegions, "hot regions of shape.png");
 
 	// The max offset of hot regions
 	maxOffsetInHotRegions.clear();
@@ -461,8 +464,6 @@ void Offset::detectHotspots( )
 	double minLE = getMinValue(lowerEnvelope);
 
 	// Zoom into each hot region
-	int h = activeViewer->height();
-	int w = activeViewer->width();
 	for (int i=0;i<hotRegions.size();i++)
 	{
 		computeOffsetOfRegion(hotRegions[i]);
@@ -509,8 +510,8 @@ void Offset::detectHotspots( )
 
 		UHS.decideType();
 		LHS.decideType();
-		UHS.computeRepresentative();
-		LHS.computeRepresentative();
+		UHS.computeRepresentative(ctrl());
+		LHS.computeRepresentative(ctrl());
 
 		upperHotSpots.push_back(UHS);
 		lowerHotSpots.push_back(LHS);
@@ -644,5 +645,10 @@ Vec2i Offset::projectedCoordinatesOf( Vec3d point, int pathID )
 	// Convert to OpenGL coordinates
 	int h = activeViewer->height();
 	return Vec2i(p[0], (h-1)-p[1]);
+}
+
+Controller* Offset::ctrl()
+{
+	return (Controller*)activeObject()->ptr["controller"];
 }
 

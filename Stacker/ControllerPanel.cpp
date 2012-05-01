@@ -34,6 +34,9 @@ ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 	this->activeScene = NULL;
 
 	this->layout()->addWidget(vis = new ConstraintGraphVis(new ConstraintGraph()));
+
+	// Default values
+	controllerWidget.skeletonJoints->setValue(GC_SKELETON_JOINTS_NUM);
 }
 
 void ControllerPanel::setActiveScene( Scene * newScene )
@@ -137,6 +140,8 @@ void ControllerPanel::convertGC()
 		if(prim->isSelected)
 			ctrl->convertToGC(prim->id, !controllerWidget.basicFitGC->isChecked(), controllerWidget.convertGcAxis->value());
 	}
+
+	if(activeScene)	activeScene->updateGL();
 }
 
 void ControllerPanel::convertCuboid()
@@ -148,6 +153,7 @@ void ControllerPanel::convertCuboid()
 	foreach(Primitive * prim, ctrl->getPrimitives())
 		if(prim->isSelected) ctrl->convertToCuboid(prim->id, controllerWidget.useAABB->isChecked(), controllerWidget.cuboidMethod->currentIndex());
 
+	if(activeScene)	activeScene->updateGL();
 }
 
 void ControllerPanel::updateController()

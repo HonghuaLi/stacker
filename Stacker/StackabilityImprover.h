@@ -9,50 +9,50 @@ class QSegMesh;
 class Controller;
 class Propagator;
 
-extern QVector<EditingSuggestion> suggestions;
-
-class StackabilityImprover
+class StackabilityImprover : public QObject
 {
+	Q_OBJECT
+
 public:
 	StackabilityImprover(Offset *offset);
 
 	// Execute improving
-	void executeImprove();
-
-	// Suggestions
-	QVector<EditingSuggestion> getSuggestions();
-	void normalizeSuggestions();
+	void executeImprove(int level = -1);
 
 	// Show results
 	void showSolution( int i );
 	void showSuggestion( int i );
+	void normalizeSuggestions();
+
+	// Clear
+	void clear();
 
 private:
-	std::vector< Vec3d > getLocalMoves( HotSpot& HS );
-	void deformNearPointHotspot( int side );
-	void deformNearLineHotspot( int side );
+	QVector<Vec3d> getLocalMoves( HotSpot& HS );
+	QVector<double> getLocalScales( HotSpot& HS );
+	void deformNearPointLineHotspot( int side );
 	void deformNearRingHotspot( int side );
 	void deformNearHotspot( int side );
+	void recordSolution(Point handleCenter, Vec3d localMove, int side);
 	void localSearch();
 
 	bool satisfyBBConstraint();
 	bool isUnique( ShapeState state, double threshold );
-	void setPositionalConstriants(int fixedSide);
+	void setPositionalConstriants( HotSpot& fixedHS );
 
 
 public:
 	// Suggestion
-	bool isSuggesting;
 	QVector<EditingSuggestion> suggestions;
-	PQShapeShateLessEnergy suggestSolutions;
+	PQShapeStateLessEnergy suggestSolutions;
 
 	// Beam Searching
 	double orgStackability;
 	Vec3d constraint_bbmin, constraint_bbmax;
 	ShapeState currentCandidate;
 	QVector< ShapeState > usedCandidateSolutions;
-	PQShapeShateLessEnergy candidateSolutions;
-	PQShapeShateLessDistortion solutions;
+	PQShapeStateLessEnergy candidateSolutions;
+	PQShapeStateLessDistortion solutions;
 
 private:
 	Offset* activeOffset;
@@ -60,4 +60,6 @@ private:
 	QSegMesh* activeObject();
 	Controller* ctrl();
 
+signals:
+	void printMessage( QString );
 };

@@ -19,55 +19,57 @@ public:
 	GCylinder( QSurfaceMesh* segment, QString newId, bool doFit);
 
 public:
-	virtual void fit();
-	virtual void createGC( std::vector<Point> spinePoints, bool computeRadius = true );
+	void fit();
+	void createGC( std::vector<Point> spinePoints, bool computeRadius = true );
 
-	virtual void computeMeshCoordiantes();
-	virtual void deformMesh();
-	virtual void draw();
-	virtual	void drawNames(int name, bool isDrawParts = false);
+	void computeMeshCoordiantes();
+	void deformMesh();
+	void draw();
+	void drawNames(int name, bool isDrawParts = false);
 
 	// Hot curves
-	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples );
-	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect );
-	virtual Point getSelectedCurveCenter();
+	int detectHotCurve( QVector< Vec3d > &hotSamples );
+	Point getSelectedCurveCenter();
 
 	// Reshaping
-	virtual void translate( Vec3d &T );
-	virtual void moveCurveCenter( int cid, Vec3d T);
-	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
-	virtual bool excludePoints( std::vector< Vec3d > pnts );
-	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts );
-	virtual void movePoint(Point p, Vec3d T);
-	virtual void scaleCurve(int cid, double s);
+	void translate( Vec3d &T );
+	void translateCurve( uint cid, Vec3d T, uint sid_respect );
+	void moveCurveCenter( int cid, Vec3d T);
+	void scaleCurve(int cid, double s);
+	void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
+	void reshapeFromPoints( std::vector<Vec3d>& pnts );
+	void movePoint(Point p, Vec3d T);
+	void moveLineJoint(Point A, Point B, Vec3d deltaA, Vec3d deltaB);
 
 	// Primitive coordinate system
-	virtual std::vector<double> getCoordinate( Point v );
-	virtual Point fromCoordinate(std::vector<double> coords);
-	virtual bool containsPoint(Point p);
-	virtual Vec3d closestPoint(Point p);
+	std::vector<double> getCoordinate( Point v );
+	Point fromCoordinate(std::vector<double> coords);
+	bool containsPoint(Point p);
+	Vec3d closestPoint(Point p);
 
 	// Primitive state
-	virtual void* getGeometryState();
-	virtual void setGeometryState( void* );
+	void* getGeometryState();
+	void setGeometryState( void* );
 
 	// Primitive geometry
-	virtual std::vector <Vec3d> points();
-	virtual QSurfaceMesh getGeometry();
-	virtual double volume();
-	virtual std::vector<Vec3d> majorAxis();
-	virtual std::vector < std::vector <Vec3d> > getCurves();
+	double volume();
+	Point curveCenter(int cid);
+	double curveRadius(int cid);
+	QSurfaceMesh getGeometry();
+	std::vector<Vec3d> points();
+	std::vector<Vec3d> majorAxis();
+	std::vector< std::vector <Vec3d> > getCurves();
 
 	// Joint, symmetry
-	virtual void setSymmetryPlanes(int nb_fold);
+	void setSymmetryPlanes(int nb_fold);
 
 	// Selecting
-	virtual Vec3d selectedPartPos();
-	virtual void setSelectedPartId( Vec3d normal );
+	Vec3d selectedPartPos();
+	void setSelectedPartId( Vec3d normal );
 	
 	// Save and load
-	virtual void save(std::ofstream &outF);
-	virtual void load(std::ifstream &inF, Vec3d translation, double scaleFactor);
+	void save(std::ofstream &outF);
+	void load(std::ifstream &inF, Vec3d translation, double scaleFactor);
 
 	void buildCage();
 
@@ -79,6 +81,8 @@ public slots:
 private:
 	void moveCurveCenterRanged(int cid, Vec3d delta, int start = 0, int finish = -1);
 
+	QVector<double> origRadius; 
+	QVector<double> scales;
 	GeneralizedCylinder * gc;
 	Skeleton * skel;
 

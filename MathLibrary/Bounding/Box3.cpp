@@ -93,3 +93,20 @@ void Box3::sort()
 	foreach(int id, indices)
 		Axis.push_back(axisCopy[id]);
 }
+
+Vec3d Box3::ClosestAxis( const Vec3d& v )
+{
+	double maxDot = 0;
+	int bestID = 0;
+	for (int i = 0; i< 3; i++)
+	{
+		double dp = abs(dot(Axis[i], v));
+		if (dp > maxDot)
+		{
+			maxDot = dp;
+			bestID = i;
+		}
+	}
+
+	return Axis[bestID];
+}

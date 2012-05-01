@@ -11,8 +11,7 @@
 #include "Stacker/ConcentricGroup.h"
 #include "Stacker/CoplanarGroup.h"
 #include "Stacker/Primitive.h"
-#include "Stacker/StackabilityImprover.h" // suggestions should be put somewhere else
-
+#include "StackabilityImprover.h"
 
 Scene::Scene( QWidget * parent, const QGLWidget * shareWidget, Qt::WFlags flags) : QGLViewer(parent, shareWidget, flags)
 {
@@ -130,12 +129,8 @@ void Scene::draw()
 	if (ctrl) ctrl->draw();
 
 	// Suggestions
-	Vec p = camera()->position();
-	Vec3d pos(p.x, p.y, p.z);
-	double scaling = 0.05;//pos.norm() / 100.0;
-	pos.normalize();	
-	foreach(EditingSuggestion sg, suggestions)
-		sg.draw(scaling);
+	foreach(EditingSuggestion sg, sp->improver->suggestions)
+		sg.draw();
 }
 
 
@@ -241,6 +236,8 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 
 	// Set camera
 	resetView();
+
+	sp->improver->clear();
 
 	emit(gotFocus(this));
 	emit(objectInserted());
@@ -378,7 +375,7 @@ void Scene::wheelEvent( QWheelEvent* e )
 			if(!defCtrl) break;
 
 			double s = 0.1 * (e->delta() / 120.0);
-			defCtrl->scaleUp(s);
+			defCtrl->scaleUp(1 + s);
 		}
 		break;
 	}

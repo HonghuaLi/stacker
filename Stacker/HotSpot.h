@@ -4,6 +4,8 @@
 #include <Qstring>
 #include "GraphicsLibrary/Mesh/QSegMesh.h"
 
+class Controller;
+
 enum HOTSPOT_TYPE { POINT_HOTSPOT, LINE_HOTSPOT, RING_HOTSPOT};
 
 struct HotSpot
@@ -19,6 +21,6 @@ struct HotSpot
 	QVector<Point>		rep;		//representative
 
 	void decideType();
-	void computeRepresentative();
+	void computeRepresentative(Controller* ctrl);
 	void print();	
 };

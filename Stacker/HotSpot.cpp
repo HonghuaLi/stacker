@@ -2,6 +2,9 @@
 
 #include <iostream>
 #include "MathLibrary/Bounding/MinOBB3.h"
+#include "Primitive.h"
+#include "Cuboid.h"
+#include "Controller.h"
 
 void HotSpot::print()
 {
@@ -23,8 +26,9 @@ void HotSpot::decideType()
 	MinOBB2::Box2 box = obb.getBox2();
 
 	// Check if it is a ring
-	double occupancy  = hotPixels.size() / box.area();
-	if (occupancy < 0.4)
+	//double occupancy  = hotPixels.size() / box.area();
+	//if (occupancy < 0.4)
+	if (!hotPixels.contains(box.Center))
 		type = RING_HOTSPOT;
 	else
 	{
@@ -39,7 +43,7 @@ void HotSpot::decideType()
 }
 
 
-void HotSpot::computeRepresentative()
+void HotSpot::computeRepresentative(Controller* ctrl)
 {
 	if (type == RING_HOTSPOT) return;
 	
@@ -63,8 +67,19 @@ void HotSpot::computeRepresentative()
 		rep.push_back(box.Center);
 		break;
 	case LINE_HOTSPOT:
-		rep.push_back(box.Center + box.Extent[2] * box.Axis[2]);
-		rep.push_back(box.Center - box.Extent[2] * box.Axis[2]);
+		{
+			Point p1 = box.Center + box.Extent[2] * box.Axis[2];
+			Point p2 = box.Center - box.Extent[2] * box.Axis[2];
+			if (ctrl->getPrimitive(segmentID)->primType == CUBOID)
+			{
+				Cuboid* cuboid = (Cuboid*) ctrl->getPrimitive(segmentID);
+				Vec3d vec = p2 - p1;
+				Vec3d axis = cuboid->currBox.ClosestAxis(vec);
+				p2 = p1 + dot(vec, axis) * axis;
+			}
+			rep.push_back(p1);
+			rep.push_back(p2);
+		}
 		break;
 	}
 }

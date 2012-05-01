@@ -179,6 +179,20 @@ std::vector< std::vector< Vec2i > > getRegionsGreaterThan( Buffer2d& image, doub
 		}
 	}
 
+	// If there are a lot of hot regions, regard them as one
+	std::vector< Vec2i > super_region;
+	if (regions.size() > 10)
+	{
+		foreach(std::vector< Vec2i > r, regions)
+		{
+			foreach(Vec2i p, r)
+				super_region.push_back(p);
+		}
+
+		regions.clear();
+		regions.push_back(super_region);
+	}
+
 	return regions;
 }
 

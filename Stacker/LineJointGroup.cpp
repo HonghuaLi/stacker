@@ -54,7 +54,7 @@ void LineJointGroup::regroup()
 	if (non_frozen->primType == CUBOID)
 	{
 		Cuboid* cuboid = (Cuboid*) non_frozen;
-		cuboid->moveLineJoint( A, B, newA, newB );
+		cuboid->moveLineJoint( A, B, newA-A, newB-B );
 	}
 
 	// Update the line ends

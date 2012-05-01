@@ -26,24 +26,22 @@ public:
 	virtual	void drawNames(int name, bool isDrawParts = false) = 0;
 
 	// Hot curves
-	virtual uint detectHotCurve( Vec3d hotSample );
-	virtual uint detectHotCurve( std::vector< Vec3d > &hotSamples ) = 0;
-	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect ) = 0;
-	virtual Point getSelectedCurveCenter() = 0;
+	virtual int detectHotCurve( QVector<Vec3d> &hotSamples ) = 0;
 
 	// Reshaping
 	virtual void translate( Vec3d &T ) = 0;
-	virtual void moveCurveCenter( int cid, Vec3d T) = 0;
-	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) = 0;
-	virtual bool excludePoints( std::vector< Vec3d > pnts ) = 0;
 	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts ) = 0;
-	virtual void movePoint(Point p, Vec3d T) = 0;
+	virtual void moveCurveCenter( int cid, Vec3d T) = 0;
+	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect ) = 0;
 	virtual void scaleCurve(int cid, double s) = 0;
+	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) = 0;
+	virtual void movePoint(Point p, Vec3d T) = 0;
+	virtual void moveLineJoint(Point A, Point B, Vec3d deltaA, Vec3d deltaB) = 0;
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v ) = 0;
-	virtual Point fromCoordinate(std::vector<double> coords) = 0;
 	virtual bool containsPoint(Point p) = 0;
+	virtual Point fromCoordinate(std::vector<double> coords) = 0;
 	virtual Vec3d closestPoint(Point p) = 0;
 
 	// Primitive state
@@ -53,13 +51,15 @@ public:
 	virtual void setGeometryState( void* ) = 0;
 
 	// Primitive geometry
-	virtual std::vector <Vec3d> points() = 0;
-	virtual QSurfaceMesh getGeometry() = 0;
 	double originalVolume;
 	virtual double volume() = 0;
+	virtual std::vector<Vec3d> points() = 0;
+	virtual QSurfaceMesh getGeometry() = 0;
 	virtual std::vector<Vec3d> majorAxis() = 0;
-	virtual std::vector < std::vector <Vec3d> > getCurves() = 0;
+	virtual std::vector< std::vector<Vec3d> > getCurves() = 0;
 	virtual Vec3d centerPoint();
+	virtual double curveRadius(int cid) = 0;
+	virtual Point curveCenter(int cid) = 0;
 
 	// The underlying geometry
 	QSurfaceMesh*	m_mesh;			
@@ -71,6 +71,7 @@ public:
 	QVector<Plane> symmPlanes;
 	virtual void setSymmetryPlanes(int nb_fold) = 0;
 	virtual void addFixedPoint(Point fp);
+	virtual void addFixedCurve(int cid);
 
 	// Similarity between two primitives
 	double similarity(PrimitiveState state1, PrimitiveState state2);
@@ -87,6 +88,7 @@ public:
 	int selectedPartId;
 	virtual Vec3d selectedPartPos() = 0;
 	virtual void setSelectedPartId( Vec3d normal ) = 0;
+	virtual Point getSelectedCurveCenter() = 0;
 
 	// Save and load
 	virtual void save(std::ofstream &outF) = 0;

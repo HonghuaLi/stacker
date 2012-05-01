@@ -39,5 +39,5 @@ struct lessEnergy
 	bool operator () (ShapeState a, ShapeState b);
 };
 
-typedef std::priority_queue< ShapeState, QVector<ShapeState>, lessEnergy >		PQShapeShateLessEnergy;
-typedef std::priority_queue< ShapeState, QVector<ShapeState>, lessDistortion >	PQShapeShateLessDistortion;
+typedef std::priority_queue< ShapeState, QVector<ShapeState>, lessEnergy >		PQShapeStateLessEnergy;
+typedef std::priority_queue< ShapeState, QVector<ShapeState>, lessDistortion >	PQShapeStateLessDistortion;

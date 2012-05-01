@@ -32,7 +32,7 @@ void Primitive::drawDebug()
 	foreach(std::vector<Vec3d> poly, debugPoly2)	SimpleDraw::DrawPoly(poly, 1, 0, 0);
 
 	// Outline shape
-	if(isSelected)
+	/*if(isSelected)
 	{
 		glPushAttrib( GL_ALL_ATTRIB_BITS );
 		glEnable( GL_LIGHTING );
@@ -61,7 +61,7 @@ void Primitive::drawDebug()
 		m_mesh->simpleDraw(false, true);
 
 		glPopAttrib();
-	}
+	}*/
 }
 
 Vec3d Primitive::centerPoint()
@@ -76,13 +76,6 @@ Vec3d Primitive::centerPoint()
 void Primitive::addFixedPoint( Point fp )
 {
 	fixedPoints.push_back(fp);
-}
-
-uint Primitive::detectHotCurve( Vec3d hotSample )
-{
-	std::vector<Vec3d> samples;
-	samples.push_back(hotSample);
-	return this->detectHotCurve(samples);
 }
 
 PrimitiveState Primitive::getState()
@@ -152,4 +145,9 @@ Vec3d Primitive::rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p )
 {
 	Eigen::Vector3d rp = R * V2E(p);
 	return E2V(rp);
+}
+
+void Primitive::addFixedCurve( int cid )
+{
+
 }

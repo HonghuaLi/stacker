@@ -326,9 +326,6 @@
     <ClInclude Include="Stacker\ShapeState.h">
       <Filter>Stacker\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\StackabilityImprover.h">
-      <Filter>Stacker\Core</Filter>
-    </ClInclude>
     <ClInclude Include="MathLibrary\Coordiantes\MeanValueCoordinates.h">
       <Filter>Math\Deformer\MeanValueCoordinates</Filter>
     </ClInclude>
@@ -480,6 +477,9 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\QManualDeformer.h">
       <Filter>Stacker\Utility</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\StackabilityImprover.h">
+      <Filter>Stacker\Core</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -854,6 +854,12 @@
     </ClCompile>
     <ClCompile Include="Stacker\QManualDeformer.cpp">
       <Filter>Stacker\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_StackabilityImprover.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_StackabilityImprover.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
