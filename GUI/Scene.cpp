@@ -389,15 +389,15 @@ void Scene::mousePressEvent( QMouseEvent* e )
 						if(action == longEdgeAction)	LongestEdgeSubdivision(
 							mesh->getAverageEdgeLength() * 0.7).subdivide(*mesh, 1);
 
-						if(action == laplacianSmoothAction) Smoother::LaplacianSmoothing(mesh, 10);
+						if(action == laplacianSmoothAction) Smoother::LaplacianSmoothing(mesh, 1);
 						if(action == scaleSmoothAction) Smoother::ScaleDependentSmoothing(mesh, 1);
-						if(action == mcfSmoothAction) Smoother::MeanCurvatureFlowExplicit(mesh, 10);
+						if(action == mcfSmoothAction) Smoother::MeanCurvatureFlow(mesh, 2);
 
 						mesh->garbage_collection();
 
 						mesh->buildUp();
 						updateActiveObject();
-						prim->computeMeshCoordiantes();
+						prim->computeMeshCoordinates();
 					}
 				}
 

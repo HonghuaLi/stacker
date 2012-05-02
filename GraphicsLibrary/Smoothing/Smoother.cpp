@@ -1,5 +1,13 @@
 #include "Smoother.h"
 
+#define EIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET
+#include <Eigen/Core>
+#include <Eigen/Sparse>
+using namespace Eigen;
+
+// SparseLib++ : Linear Solver
+#include "SparseLib/sparse_lib.h"
+
 void Smoother::LaplacianSmoothing(Surface_mesh * m, int numIteration, bool protectBorders)
 {
 	//CreateTimer(timer);
@@ -141,182 +149,169 @@ void Smoother::ScaleDependentSmoothing(Surface_mesh * m, int numIteration, doubl
 * K_{ij} = -sum_j cot_{ij} for i = j
 *
 */
-void Smoother::MeanCurvatureFlow(QSurfaceMesh * m, double step,int numIteration, bool isVolumePreservation)
+void Smoother::MeanCurvatureFlow(QSurfaceMesh * m, int numIteration, double step, bool isVolumePreservation)
 {
 	if(step == 0.0)	return;
+
+	Surface_mesh::Vertex_property<Point> points = m->vertex_property<Point>("v:point");
 
 	numIteration = numIteration;
 	isVolumePreservation = isVolumePreservation;
 
 	// WARNGING: this is disabled since SparseLib++ is not included in this project (for simplicity)
 
-	/*
 	//CreateTimer(timer);
 	printf("\n\nPerforming Mean Curvature Flow smoothing (iterations = %d, step = %f)...", numIteration, step);
 
-	mesh->flagBorderVertices();
-
-	int real_N = mesh->numberOfVertices();
-
-	// Should be replaced by HalfEdges ?
-	Vector<Umbrella> * U;
-
-	if(mesh->tempUmbrellas.size() < 1)
-	mesh->getUmbrellas();
-
-	U = &mesh->tempUmbrellas;
-
 	// Process borders, from paper's suggestion of virtual center point
-	treatBorders(QSurfaceMesh, *U);
+	//treatBorders(QSurfaceMesh, *U);
 
-	int N = U->size();
+	int N = m->n_vertices();
 
 	// Initialize B & X vectors
-
-	Vectordouble b_x(N), b_y(N), b_z(N);
-	Vectordouble X(N), Y(N), Z(N);
-	Vector<double> area (N, 0.0);
+	VECTOR_double b_x(N), b_y(N), b_z(N);
+	VECTOR_double X(N), Y(N), Z(N);
+	std::vector<double> area (N, 0.0);
 
 	double dt = step;
-	double alpha, beta, cots;
+	double alpha, beta, cots, cot_alpha, cot_beta;
 
-	double init_volume = mesh->computeVolume();
+	double init_volume = m->volume();
 
+	// Perform smoothing iteration
 	for(int k = 0; k < numIteration; k++)
 	{
-	// Initialize dynamic sparse matrix, used for creation of sparse M
-	Eigen::DynamicSparseMatrix<double> M(N, N);
-	M.reserve(N * 7);
+		// Initialize dynamic sparse matrix, used for creation of sparse M
+		Eigen::DynamicSparseMatrix<double> M(N, N);
+		M.reserve(N * 7);
 
-	// For each point
-	for(int i = 0; i < N; i++)
-	{
-	Vector<Face *> * ifaces = &(U->at(i)).ifaces;
+		// For each point
+		for(int i = 0; i < N; i++)
+		{
+			Surface_mesh::Vertex v(i);
 
-	// for each neighboring edge
-	for(int f = 0; f < (int)ifaces->size(); f++)
-	area[i] += ifaces->at(f)->area();
+			// for each neighboring face
+			Surface_mesh::Face_around_vertex_circulator fvit, fvend;
+			fvit = fvend = m->faces(v);
+			do{	area[i] += m->faceArea(fvit); } while (++fvit != fvend);
 
-	if(area[i] == 0) printf(".zero area."); // should not happen
+			M.coeffRef(i,i) = area[i];
 
-	M.coeffRef(i,i) = area[i];
+			// for each neighboring vertex
+			if(!m->is_boundary(v))
+			{
+				Point p0 = points[v];
 
-	if((U->at(i)).flag != VF_BORDER)
-	{
-	for(HalfEdgeSet::iterator halfEdge = (U->at(i)).halfEdge.begin(); halfEdge != (U->at(i)).halfEdge.end(); halfEdge++)
-	{
-	int j = halfEdge->vertex(0);
-	if(j == i)	j = halfEdge->vertex(1);
+				Surface_mesh::Halfedge_around_vertex_circulator h = m->halfedges(v), hend = m->halfedges(v);
+				do{
+					Surface_mesh::Vertex vj = m->from_vertex(h);
+					int j = vj.idx();
 
-	if(halfEdge->face(0) == NULL || halfEdge->face(1) == NULL)
-	{
-	cots = 0;
-	}
-	else
-	{
-	Edge e = halfEdge->edge;
-	alpha = halfEdge->face(0)->angleCotangent(e);
-	beta = halfEdge->face(1)->angleCotangent(e);
+					Point p1 = points[vj];
 
-	cots = (alpha + beta) * 0.25 * dt;
+					Point p2 = points[m->to_vertex(m->next_halfedge(h))];
+					Point p3 = points[m->to_vertex(m->next_halfedge(m->opposite_halfedge(h)))];
+					Vec3d d0 = (p0 - p2).normalize();
+					Vec3d d1 = (p1 - p2).normalize();
+					Vec3d d2 = (p0 - p3).normalize();
+					Vec3d d3 = (p1 - p3).normalize();
 
-	if(alpha == 0 || beta == 0 || (U->at(j)).flag == VF_BORDER)
-	cots = 0;
-	}
+					double cos_alpha = dot(d0,d1);
+					double cos_beta = dot(d2,d3);
 
-	if(i > j)
-	{
-	M.coeffRef(i,j) -= cots;
-	M.coeffRef(j,i) -= cots;
-	}
+					alpha = acos( cos_alpha );
+					beta = acos( cos_beta );
 
-	M.coeffRef(i,i) += cots;
-	}
-	}
+					cot_alpha = cos_alpha / sin(alpha);
+					cot_beta = cos_beta / sin(beta);
 
-	Vertex * vertex;
+					cots = (cot_alpha + cot_beta) * 0.25 * dt;
 
-	if( i < real_N )
-	vertex = mesh->v(i);
-	else
-	vertex =  (U->at(i)).ifaces[0]->PointIndexed(i); // Special border virtual vertices
+					if(alpha == 0 || beta == 0)
+						cots = 0;
+					
+					if(i > j)
+					{
+						M.coeffRef(i,j) -= cots;
+						M.coeffRef(j,i) -= cots;
+					}
 
-	X(i) = vertex->x;
-	Y(i) = vertex->y;
-	Z(i) = vertex->z;
+					M.coeffRef(i,i) += cots;
 
-	b_x(i) = area[i] * X(i);
-	b_y(i) = area[i] * Y(i);
-	b_z(i) = area[i] * Z(i);
-	}
+					++h;
+				} while( h != hend );
+			}
 
-	Eigen::SparseMatrix<double> mat(M);
-	CompCol_Mat_double A(N, N, mat.nonZeros(), mat._valuePtr(), mat._innerIndexPtr(), mat._outerIndexPtr());
+			X(i) = points[v].x();
+			Y(i) = points[v].y();
+			Z(i) = points[v].z();
 
-	//Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
-	//std::cout << "\n" << mat.toDense().format(CleanFmt) << "\n";
+			b_x(i) = area[i] * X(i);
+			b_y(i) = area[i] * Y(i);
+			b_z(i) = area[i] * Z(i);
+		}
 
-	// Solver tolerance
-	double tol = 0.01;
-	double tol_x = tol, tol_y = tol, tol_z = tol;
-	int maxit = 500, maxit_x = maxit, maxit_y = maxit, maxit_z = maxit;
-	int result;
+		Eigen::SparseMatrix<double> mat(M);
+		CompCol_Mat_double A(N, N, mat.nonZeros(), mat._valuePtr(), mat._innerIndexPtr(), mat._outerIndexPtr());
 
-	// Precondition
-	DiagPreconditioner_double precond(A);
+		//Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+		//std::cout << "\n" << mat.toDense().format(CleanFmt) << "\n";
 
-	CreateTimer(solveTime);
-	printf("\nSolving..");
+		// Solver tolerance
+		double tol = 0.01;
+		double tol_x = tol, tol_y = tol, tol_z = tol;
+		int maxit = 500, maxit_x = maxit, maxit_y = maxit, maxit_z = maxit;
+		int result;
 
-	// Solve
-	//		#pragma omp parallel sections
-	{
-	//			#pragma omp section
-	{
-	result = Solver::BiCG(A, X, b_x, precond, maxit_x, tol_x);
-	printf(" conv X = %s ..",(result)?"false":"true");
-	}
+		// Precondition
+		DiagPreconditioner_double precond(A);
 
-	//			#pragma omp section
-	{
-	result = Solver::BiCG(A, Y, b_y, precond, maxit_y, tol_y);
-	printf(" conv Y = %s ..",(result)?"false":"true");
-	}
+		//CreateTimer(solveTime);
+		printf("\nSolving..");
 
-	//			#pragma omp section
-	{
-	result = Solver::BiCG(A, Z, b_z, precond, maxit_z, tol_z);
-	printf(" conv Z = %s ..",(result)?"false":"true");
-	}
-	}
+		// Solve
+		#pragma omp parallel sections
+		{
+			#pragma omp section
+			{
+				result = Solver::BiCG(A, X, b_x, precond, maxit_x, tol_x);
+				printf(" conv X = %s ..",(result)?"false":"true");
+			}
 
-	printf("\nSolve time = %d ms\n", (int)solveTime.elapsed());
+			#pragma omp section
+			{
+				result = Solver::BiCG(A, Y, b_y, precond, maxit_y, tol_y);
+				printf(" conv Y = %s ..",(result)?"false":"true");
+			}
 
-	Vec center = mesh->computeCenter();
+			#pragma omp section
+			{
+				result = Solver::BiCG(A, Z, b_z, precond, maxit_z, tol_z);
+				printf(" conv Z = %s ..",(result)?"false":"true");
+			}
+		}
 
-	//if(result == 0)
-	{
-	// Assign returned solution
-	for(int i = 0; i < real_N; i++)
-	mesh->vertex[i].set(X(i), Y(i), Z(i));
-	}
+		//printf("\nSolve time = %d ms\n", (int)solveTime.elapsed());
 
-	if(isVolumePreservation)
-	{
-	// Volume preservation
-	double new_volume = mesh->computeVolume();
-	mesh->scale(pow(init_volume / new_volume, 1.0 / 3.0));
-	}
+		for(int i = 0; i < N; i++)
+			points[Surface_mesh::Vertex(i)] = Point(X(i), Y(i), Z(i));
 
-	// Undo addition of virtual hole center points
-	untreatBorders(QSurfaceMesh, *U);
+		if(isVolumePreservation)
+		{
+			// Volume preservation
+			double new_volume = m->volume();
+			//mesh->scale(pow(init_volume / new_volume, 1.0 / 3.0));
+		}
+
+		// Undo addition of virtual hole center points
+		//untreatBorders(QSurfaceMesh, *U);
 
 	}
 
 	//printf("Smoothing done. (%d ms)\n", (int)timer.elapsed());*/
 }
 
-void Smoother::MeanCurvatureFlowExplicit( QSurfaceMesh * m, int numIteration, double lambda )
+void Smoother::MeanCurvatureFlowExplicit( QSurfaceMesh * m, int numIteration, double step )
 {
 	//CreateTimer(timer);
 	printf("\n\nPerforming Mean Curvature Flow smoothing (Explicit, iterations = %d)...", numIteration);
@@ -324,16 +319,16 @@ void Smoother::MeanCurvatureFlowExplicit( QSurfaceMesh * m, int numIteration, do
 	for(int iteration = 0; iteration < numIteration; iteration++)
 	{
 		Surface_mesh::Vertex_property<Point> points = m->vertex_property<Point>("v:point");
-		Surface_mesh::Vertex_property<Point> u = m->vertex_property<Point>("v:point_u");
-		Surface_mesh::Vertex_property<Point> pos = m->vertex_property<Point>("v:new_point");
+		Surface_mesh::Vertex_property<Point> d = m->vertex_property<Point>("v:point_delta");
+		Surface_mesh::Vertex_property<Point> disp = m->vertex_property<Point>("v:point_displace");
 
 		Surface_mesh::Vertex_iterator v, vend = m->vertices_end();
 
 		// Original positions, for boundary
 		for(v = m->vertices_begin(); v != vend; ++v)
 		{
-			u[v] = Point(0,0,0);
-			pos[v] = Point(0,0,0);
+			d[v] = Point(0,0,0);
+			disp[v] = Point(0,0,0);
 		}
 
 		double init_volume = m->volume();
@@ -345,18 +340,20 @@ void Smoother::MeanCurvatureFlowExplicit( QSurfaceMesh * m, int numIteration, do
 		{
 			Point p0 = points[v];
 
-			double W = 1e-14; // close to zero
+			double totw = 0;
 
 			Surface_mesh::Halfedge_around_vertex_circulator h = m->halfedges(v), hend = m->halfedges(v);
 			do{
 				Point p1 = points[m->to_vertex(h)];
 
-				double Wt = 0;
+				double w = 0;
 
 				if(m->is_boundary(h))
-					Wt = 0;
+					w = 0;
 				else
 				{
+					Vec3d evec = p1 - p0;
+
 					Point p2 = points[m->to_vertex(m->next_halfedge(h))];
 					Point p3 = points[m->to_vertex(m->next_halfedge(m->opposite_halfedge(h)))];
 					Vec3d d0 = (p0 - p2).normalize();
@@ -364,26 +361,29 @@ void Smoother::MeanCurvatureFlowExplicit( QSurfaceMesh * m, int numIteration, do
 					Vec3d d2 = (p0 - p3).normalize();
 					Vec3d d3 = (p1 - p3).normalize();
 
-					alpha = acos( dot(d0,d1) );
-					beta = acos( dot(d2,d3) );
+					double cos_alpha = dot(d0,d1);
+					double cos_beta = dot(d2,d3);
 
-					Wt = alpha + beta;
+					alpha = acos( cos_alpha );
+					beta = acos( cos_beta );
+
+					double cot_alpha = cos_alpha / sin(alpha);
+					double cot_beta = cos_beta / sin(beta);
+
+					double w = cot_alpha + cot_beta;
+					totw += w;
+					d[v] += w * evec;
 				}
 
-				u[v] += Wt * (p0 - p1);
-
-				W += Wt;
-				
 				++h;
 			} while( h != hend );
-			// ===========================
-			pos[v] = points[v] - (lambda * u[v] / W);
 
+			disp[v] = d[v] * (1.0 / totw);
 		}
 
 		// Set vertices to final position
 		for(v = m->vertices_begin(); v != vend; ++v)
-			points[v] = pos[v];
+			points[v] += disp[v];
 
 		// Volume preservation
 		double new_volume = m->volume();
@@ -392,6 +392,7 @@ void Smoother::MeanCurvatureFlowExplicit( QSurfaceMesh * m, int numIteration, do
 
 	//printf(" done. (%d ms)\n", (int)timer.elapsed());
 }
+
 
 
 #if 0
@@ -451,7 +452,7 @@ void Smoother::treatBorders(QSurfaceMesh * QSurfaceMesh, Vector<Umbrella> & U)
 					U[v2_index].ifaces.push_back(f);
 					U[v3_index].ifaces.push_back(f);
 
-					// Unflag as border
+					// Un-flag as border
 					U[v2_index].flag = VF_CLEAR;
 					U[v3_index].flag = VF_CLEAR;
 				}
@@ -481,9 +482,7 @@ void Smoother::untreatBorders(QSurfaceMesh * QSurfaceMesh, Vector<Umbrella> & U)
 			// Refresh modified umbrellas
 			Umbrella * u = &U.at(vi);
 			foreach(int j, u->neighbor)
-			{
 				mesh->tempUmbrellas[j] = Umbrella(mesh->vd(j));
-			}
 		}
 
 		U.resize(N);
