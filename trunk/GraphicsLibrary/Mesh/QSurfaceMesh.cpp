@@ -666,9 +666,7 @@ std::vector<uint> QSurfaceMesh::vertexIndicesAroundFace( uint f_id )
 	Vertex_around_face_circulator fvit, fvend;
 	fvit = fvend = vertices(Face(f_id));
 
-	do{
-		vindices.push_back( ((Vertex)fvit).idx() );
-	} while (++fvit != fvend);
+	do{ vindices.push_back( ((Vertex)fvit).idx() ); } while (++fvit != fvend);
 
 	return vindices;
 }
@@ -851,4 +849,29 @@ void QSurfaceMesh::scale( double s )
 	Vertex_iterator vit, vend = vertices_end();
 	for(vit = vertices_begin(); vit != vend; ++vit)
 		points[vit] *= s;
+}
+
+void QSurfaceMesh::setFromOther( QSurfaceMesh * other )
+{
+	Point oldCenter = this->center;
+
+	// Remove vertices, faces, edges
+	this->clear();
+
+	// Add other vertices
+	Vertex_property<Point>  other_points  = other->vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = other->vertices_end();
+	for(vit = other->vertices_begin(); vit != vend; ++vit)
+		this->add_vertex((other_points[vit] - other->center) + oldCenter);
+
+	// Add other faces
+	Face_iterator fit, fend = other->faces_end();
+	for(fit = other->faces_begin(); fit != fend; ++fit){
+		std::vector<Vertex> verts;
+
+		Vertex_around_face_circulator fvit = other->vertices(fit), fvend = other->vertices(fit);
+		do{ verts.push_back(fvit); } while (++fvit != fvend);
+
+		this->add_face(verts);
+	}
 }

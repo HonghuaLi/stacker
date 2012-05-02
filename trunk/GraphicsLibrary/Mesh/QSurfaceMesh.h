@@ -54,6 +54,7 @@ public:
 	std::vector<Point> clonePoints();
 	void setFromPoints(const std::vector<Point>& fromPoints);
 	void setFromNormals( const std::vector<Normal>& fromNormals );
+	void setFromOther(QSurfaceMesh * other);
 	std::vector< std::pair<Point, Point> > cloneEdges();
 
 	std::vector<Normal> cloneFaceNormals();
