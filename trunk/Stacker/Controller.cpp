@@ -175,8 +175,7 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 		std::vector<Point> spinePoints = line.uniformSample(GC_SKELETON_JOINTS_NUM);
 
 		gc->createGC(spinePoints);
-		gc->buildCage();
-		gc->computeMeshCoordiantes();
+		gc->build_up();
 	}
 
 	delete oldPrimitive;
@@ -365,9 +364,6 @@ void Controller::save( std::ofstream &outF )
 void Controller::load( std::ifstream &inF )
 {
 	primitives.clear();
-
-	std::cout << "Translation = " << m_mesh->translation << std::endl
-			  << "Scaling = " << m_mesh->scaleFactor << std::endl;
 
 	while(!inF.eof())
 	{

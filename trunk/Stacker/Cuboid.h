@@ -22,7 +22,7 @@ public:
 public:
 	// Fit primitive to the underlying QSurfaceMesh
 	void fit(){}
-	void computeMeshCoordiantes();
+	void computeMeshCoordinates();
 	void fit(bool useAABB = true, int obb_method = 0);
 
 	// Deform the underlying geometry according to the \pre_state and current state

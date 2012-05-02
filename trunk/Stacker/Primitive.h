@@ -16,7 +16,7 @@ public:
 
 	// Fit primitive to the underlying QSurfaceMesh
 	virtual void fit() = 0;
-	virtual void computeMeshCoordiantes() = 0;
+	virtual void computeMeshCoordinates() = 0;
 
 	// Deform the underlying geometry according to the \pre_state and current state
 	virtual void deformMesh() = 0;
@@ -32,7 +32,6 @@ public:
 	virtual void translate( Vec3d &T ) = 0;
 	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts ) = 0;
 	virtual void moveCurveCenter( int cid, Vec3d T) = 0;
-	virtual void translateCurve( uint cid, Vec3d T, uint sid_respect ) = 0;
 	virtual void scaleCurve(int cid, double s) = 0;
 	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) = 0;
 	virtual void movePoint(Point p, Vec3d T) = 0;
@@ -45,33 +44,33 @@ public:
 	virtual Vec3d closestPoint(Point p) = 0;
 
 	// Primitive state
-	virtual PrimitiveState getState();
-	virtual void setState( PrimitiveState state);
-	virtual void* getGeometryState() = 0;
-	virtual void setGeometryState( void* ) = 0;
+	virtual PrimitiveState	getState();
+	virtual void			setState( PrimitiveState state);
+	virtual void*			getGeometryState() = 0;
+	virtual void			setGeometryState( void* ) = 0;
 
 	// Primitive geometry
-	double originalVolume;
-	virtual double volume() = 0;
-	virtual std::vector<Vec3d> points() = 0;
-	virtual QSurfaceMesh getGeometry() = 0;
-	virtual std::vector<Vec3d> majorAxis() = 0;
+	double	originalVolume;
+	virtual double	volume() = 0;
+	virtual Vec3d	centerPoint();
+	virtual double	curveRadius(int cid) = 0;
+	virtual Point	curveCenter(int cid) = 0;
+	virtual QSurfaceMesh		getGeometry() = 0;
+	virtual std::vector<Vec3d>	majorAxis() = 0;
+	virtual std::vector<Vec3d>	points() = 0;
 	virtual std::vector< std::vector<Vec3d> > getCurves() = 0;
-	virtual Vec3d centerPoint();
-	virtual double curveRadius(int cid) = 0;
-	virtual Point curveCenter(int cid) = 0;
 
 	// The underlying geometry
-	QSurfaceMesh*	m_mesh;			
+	QSurfaceMesh* m_mesh;			
 	QSurfaceMesh* getMesh(){ return m_mesh; }
 
 	// Symmetry, joints, fixed points
-	bool isRotationalSymmetry;
-	QVector<Point> fixedPoints;
-	QVector<Plane> symmPlanes;
-	virtual void setSymmetryPlanes(int nb_fold) = 0;
-	virtual void addFixedPoint(Point fp);
-	virtual void addFixedCurve(int cid);
+	bool			isRotationalSymmetry;
+	QVector<Point>	fixedPoints;
+	QVector<Plane>	symmPlanes;
+	virtual void	setSymmetryPlanes(int nb_fold) = 0;
+	virtual void	addFixedPoint(Point fp);
+	virtual void	addFixedCurve(int cid);
 
 	// Similarity between two primitives
 	double similarity(PrimitiveState state1, PrimitiveState state2);
@@ -84,25 +83,22 @@ public:
 	void drawDebug();
 
 	// Selecting
-	bool isSelected;
-	int selectedPartId;
-	virtual Vec3d selectedPartPos() = 0;
-	virtual void setSelectedPartId( Vec3d normal ) = 0;
-	virtual Point getSelectedCurveCenter() = 0;
+	bool	isSelected;
+	int		selectedPartId;
+	virtual Vec3d	selectedPartPos() = 0;
+	virtual void	setSelectedPartId( Vec3d normal ) = 0;
+	virtual Point	getSelectedCurveCenter() = 0;
 
 	// Save and load
 	virtual void save(std::ofstream &outF) = 0;
 	virtual void load(std::ifstream &inF, Vec3d translation, double scaleFactor) = 0;
 
-	// Rotation
-	Eigen::Matrix3d rotationMatrixAroundAxis(Vec3d u, double theta);
-	Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );
 
-	QString id;
-	PrimType primType;
-	bool isDraw;
 
-	bool				isHot;			// Is this hot component?
-	bool				isDirty;		// Has the underlying geometry been updated?
-	bool				isFrozen;		// The seed of propagation
+	QString		id;
+	PrimType	primType;
+	bool		isDraw;
+
+	bool		isHot;			// Is this hot component?
+	bool		isFrozen;		// The seed of propagation
 };

@@ -1,5 +1,6 @@
 #include "Cuboid.h"
 #include "SimpleDraw.h"
+#include "Numeric.h"
 
 #include <Eigen/Geometry>
 using namespace Eigen;
@@ -92,10 +93,10 @@ void Cuboid::fit( bool useAABB, int obb_method )
 
 	originalVolume = volume();
 
-	computeMeshCoordiantes();
+	computeMeshCoordinates();
 }
 
-void Cuboid::computeMeshCoordiantes()
+void Cuboid::computeMeshCoordinates()
 {
 	// Compute the OBB coordinates for all vertices
 	coordinates.clear();
@@ -379,12 +380,6 @@ int Cuboid::detectHotCurve( QVector<Vec3d> &hotSamples )
 	if (mean[axis] < 0) cid += 1;
 
 	return cid;
-}
-
-void Cuboid::translateCurve( uint cid, Vec3d T, uint sid_respect /*= -1*/ )
-{
-	selectedPartId = cid;
-	moveCurveCenter(cid, T);
 }
 
 
@@ -809,7 +804,7 @@ void Cuboid::load( std::ifstream &inF, Vec3d translation, double scaleFactor )
 
 	originalVolume = volume();
 
-	computeMeshCoordiantes();
+	computeMeshCoordinates();
 }
 
 Point Cuboid::getSelectedCurveCenter()

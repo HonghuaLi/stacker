@@ -4,6 +4,7 @@
 #include "GraphicsLibrary/Mesh/SurfaceMesh/Vector.h"
 #include <QColor>
 #include <QString>
+#include <Eigen/Dense>
 
 
 typedef std::vector< std::vector<double> >	Buffer2d;
@@ -43,3 +44,7 @@ void saveAsData( Buffer2d& image, double maxV, QString fileName );
 // Random set of unique integers
 std::vector<int> uniformIntegerSamples(int N, int range);
 std::vector<Vec2i> sampleRegion(std::vector<Vec2i> &region, int N);
+
+// Rotation
+Eigen::Matrix3d rotationMatrixAroundAxis(Vec3d u, double theta);
+Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );

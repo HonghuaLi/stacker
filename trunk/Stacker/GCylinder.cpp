@@ -24,10 +24,7 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 	if(doFit)
 	{
 		fit();
-		buildCage();
-		computeMeshCoordiantes();
-
-		originalVolume = volume();
+		build_up();
 	}
 
 	fixedPoints.clear();
@@ -72,20 +69,12 @@ void GCylinder::fit()
 void GCylinder::createGC( std::vector<Point> spinePoints, bool computeRadius )
 {
 	gc = new GeneralizedCylinder( spinePoints, m_mesh, computeRadius );
-	
+
 	printf(" GC with %d cross-sections. ", gc->crossSection.size());
 	
+	// Original spine points
 	this->originalSpine = spinePoints;
-}
 
-void GCylinder::computeMeshCoordiantes()
-{
-	if(deformer == GREEN_COORDIANTES)
-		gcd = new GCDeformation(m_mesh, cage);
-
-	if(deformer == SKINNING)
-		skinner = new Skinning(m_mesh, gc);
-	
 	// Save the original radii
 	origRadius.clear();
 	scales.clear();
@@ -94,15 +83,29 @@ void GCylinder::computeMeshCoordiantes()
 		origRadius.push_back(c.radius);
 		scales.push_back(1.0);
 	}
+}
 
-	// Save volume
-	originalVolume = cage->volume();
+void GCylinder::computeMeshCoordinates()
+{
+	// The coordinates depend on the underlying deformer
+	// So create the deformer accordingly first
+	// The coordinates can be required from the deformer
+
+	if(deformer == GREEN_COORDIANTES)
+		gcd = new GCDeformation(m_mesh, cage);
+
+	if(deformer == SKINNING)
+		skinner = new Skinning(m_mesh, gc);
 }
 
 void GCylinder::deformMesh()
 {
+	// The GC has been modified, now update the cage and underlying geometry
+
+	// The cage
 	updateCage();
 
+	// Underlying geometry
 	if(deformer == GREEN_COORDIANTES) gcd->deform();
 	if(deformer == SKINNING) skinner->deform();
 }
@@ -155,19 +158,8 @@ void GCylinder::draw()
 	glEnable(GL_LIGHTING);
 
 
-	// Debug
-	/*Vec3d p(mf1->position().x, mf1->position().y, mf1->position().z);
-	Vec3d q(mf2->position().x, mf2->position().y, mf2->position().z);
-
-	SimpleDraw::IdentifyPoint(p);
-	SimpleDraw::IdentifyPoint2(q);*/
-
-	//gc->draw();
-	//skel->draw(true);
-
 	if(cage) 
 	{
-		//cage->simpleDrawWireframe();
 		cage->drawDebug();
 		cage->simpleDraw();
 	}
@@ -261,6 +253,9 @@ void GCylinder::buildCage()
 	cage->setColorVertices(0.8,0.8,1,0.3); // transparent cage
 	cage->update_face_normals();
 	cage->update_vertex_normals();
+
+	// Save volume
+	originalVolume = cage->volume();
 }
 
 void GCylinder::updateCage()
@@ -418,50 +413,51 @@ void GCylinder::setGeometryState( void* toState)
 
 std::vector<double> GCylinder::getCoordinate( Point v )
 {
-	GCDeformation::GreenCoordiante c = gcd->computeCoordinates(v);
-	
-	std::vector<double> coords(c.coord_v.size() + c.coord_n.size());
+	std::vector<double> coords;
 
-	coords.insert(coords.begin(), c.coord_n.begin(), c.coord_n.end());
-	coords.insert(coords.begin(), c.coord_v.begin(), c.coord_v.end());
+	if (deformer == GREEN_COORDIANTES)
+	{
+		GCDeformation::GreenCoordiante c = gcd->computeCoordinates(v);
 
-	//uint vi = m_mesh->closestVertex(v);
+		coords.resize(c.coord_v.size() + c.coord_n.size());
 
-	//Point closestPoint = m_mesh->getVertexPos(vi);
-	//Vec3d delta = v - closestPoint;
-
-	//std::vector<double> coords;
-
-	//coords.push_back(vi);
-	//coords.push_back(delta[0]);
-	//coords.push_back(delta[1]);
-	//coords.push_back(delta[2]);
+		coords.insert(coords.begin(), c.coord_n.begin(), c.coord_n.end());
+		coords.insert(coords.begin(), c.coord_v.begin(), c.coord_v.end());
+	}
+	else if (deformer == SKINNING)
+	{
+		coords = skinner->getCoordinate(v);
+	}
 
 	return coords;
 }
 
 Point GCylinder::fromCoordinate( std::vector<double> coords )
 {
-	uint NV = cage->n_vertices();
+	Point v;
 
-	GCDeformation::GreenCoordiante c;
+	if (deformer == GREEN_COORDIANTES)
+	{
+		GCDeformation::GreenCoordiante c;
 
-	// Coordinates from cage vertices
-	for(uint i = 0; i < NV; i++)
-		c.coord_v.push_back(coords[i]);
+		// Coordinates from cage vertices
+		uint NV = cage->n_vertices();
+		for(uint i = 0; i < NV; i++)
+			c.coord_v.push_back(coords[i]);
 
-	// Coordinates from cage normal
-	for(uint i = 0; i < cage->n_faces(); i++)
-		c.coord_n.push_back(coords[i + NV]);
+		// Coordinates from cage normal
+		for(uint i = 0; i < cage->n_faces(); i++)
+			c.coord_n.push_back(coords[i + NV]);
 
-	gcd->initDeform();
-	return gcd->deformedPoint(c);
+		gcd->initDeform();
+		v = gcd->deformedPoint(c);
+	}
+	else if (deformer == SKINNING)
+	{
+		v = skinner->fromCoordinates(coords);
+	}
 
-	//uint vi = coords[0];
-
-	//Vec3d delta(coords[1], coords[2], coords[3]);
-
-	//return m_mesh->getVertexPos(vi) + delta;
+	return v;
 }
 
 std::vector <Vec3d> GCylinder::majorAxis()
@@ -513,11 +509,6 @@ void GCylinder::reshapeFromPoints( std::vector<Vec3d>& pnts )
 	deformMesh();
 }
 
-void GCylinder::translateCurve( uint cid, Vec3d T, uint sid_respect )
-{
-	selectedPartId = cid;
-	moveCurveCenter(cid, T);
-}
 
 int GCylinder::detectHotCurve( QVector< Vec3d > &hotSamples )
 {
@@ -681,15 +672,14 @@ void GCylinder::load( std::ifstream &inF, Vec3d translation, double scaleFactor 
 	inF >> this->cageScale;
 	inF >> this->cageSides;
 	inF >> this->deltaScale;
-
 	inF >> GC_SKELETON_JOINTS_NUM;
 
-	// Translate and Scale the skeleton joints
+	// Load skeleton joints
 	for(int i = 0; i < GC_SKELETON_JOINTS_NUM; i++)
 	{
 		Point p(0,0,0);
 		inF >> p;
-		p += translation;
+		p += translation; 
 		p *= scaleFactor;
 		originalSpine.push_back(p);
 	}
@@ -697,7 +687,7 @@ void GCylinder::load( std::ifstream &inF, Vec3d translation, double scaleFactor 
 	// Create GC using skeleton
 	createGC(originalSpine, false);
 
-	// Scale the radius
+	// Load radius
 	for(int i = 0; i < GC_SKELETON_JOINTS_NUM; i++)
 	{
 		double radius;
@@ -706,9 +696,8 @@ void GCylinder::load( std::ifstream &inF, Vec3d translation, double scaleFactor 
 		gc->crossSection[i].radius = radius;
 	}
 
-	buildCage();
-
-	originalVolume = volume();
+	// Build up
+	build_up();
 }
 
 Point GCylinder::getSelectedCurveCenter()
@@ -743,4 +732,10 @@ Point GCylinder::curveCenter( int cid )
 		center = gc->crossSection[cid].center;
 
 	return center;
+}
+
+void GCylinder::build_up()
+{
+	buildCage();
+	computeMeshCoordinates();
 }
