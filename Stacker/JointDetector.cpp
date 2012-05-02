@@ -73,6 +73,15 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 	Box3 box = obb.mMinBox;
 	box.sort();
 
+	//// Debug: visualize the intersection
+	//std::vector<Point> conners;
+	//obb.getCorners(conners);
+	//foreach (Point p, conners)
+	//	a->debugPoints2.push_back(p);
+
+	////return Joints;
+
+
 	// Decide the type of joint
 	if (box.Extent[2]/box.Extent[1] < POINT_LINE_THRESHOLD)
 	{
@@ -84,8 +93,13 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 		Point p1 = box.Center + box.Extent[2] * box.Axis[2];
 		Point p2 = box.Center - box.Extent[2] * box.Axis[2];
 
+//		// Debug 
+//		a->debugPoints3.push_back(p1);
+//		b->debugPoints3.push_back(p2);
+////		return Joints;
+
 		// Two ends (projected to one major axes of the cuboid)
-		Cuboid* cuboid;
+		Cuboid* cuboid = NULL;
 		if (a->primType == CUBOID) cuboid = (Cuboid*) a;
 		if (b->primType == CUBOID) cuboid = (Cuboid*) b;
 		if (cuboid) 
