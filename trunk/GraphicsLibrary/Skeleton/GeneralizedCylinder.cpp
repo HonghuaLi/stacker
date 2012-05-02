@@ -80,8 +80,8 @@ GeneralizedCylinder::GeneralizedCylinder( std::vector<Point> spinePoints, QSurfa
 	}
 
 	// push ends a tiny bit
-	crossSection.front().center -= 0.01 * (crossSection[1].center - crossSection[0].center).normalized();
-	crossSection.back().center += 0.01 * (crossSection.back().center - crossSection[crossSection.size() - 2].center).normalized();
+	crossSection.front().center -= 0.1 * (crossSection[1].center - crossSection[0].center).normalized();
+	crossSection.back().center += 0.1 * (crossSection.back().center - crossSection[crossSection.size() - 2].center).normalized();
 
 	src_mesh = mesh;
 	isDrawFrames = false;

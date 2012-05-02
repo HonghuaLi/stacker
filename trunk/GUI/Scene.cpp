@@ -383,15 +383,16 @@ void Scene::mousePressEvent( QMouseEvent* e )
 					if(prim){
 						QSurfaceMesh * mesh = prim->getMesh();
 
-						if(action == remeshAction)		LaplacianRemesher::remesh(mesh, 0.05);
+						double avgEdge = mesh->getAverageEdgeLength();
+
+						if(action == remeshAction)		LaplacianRemesher::remesh(mesh, avgEdge * 0.25);
 						if(action == loopAction)		LoopSubdivider().subdivide(*mesh,1);
 						if(action == butterflyAction)	ModifiedButterfly().subdivide(*mesh, 1);
-						if(action == longEdgeAction)	LongestEdgeSubdivision(
-							mesh->getAverageEdgeLength() * 0.7).subdivide(*mesh, 1);
+						if(action == longEdgeAction)	LongestEdgeSubdivision(avgEdge * 0.5).subdivide(*mesh, 1);
 
 						if(action == laplacianSmoothAction) Smoother::LaplacianSmoothing(mesh, 1);
-						if(action == scaleSmoothAction) Smoother::ScaleDependentSmoothing(mesh, 1);
-						if(action == mcfSmoothAction) Smoother::MeanCurvatureFlow(mesh, 2);
+						if(action == scaleSmoothAction)		Smoother::ScaleDependentSmoothing(mesh, 1);
+						if(action == mcfSmoothAction)		Smoother::MeanCurvatureFlow(mesh, 1);
 
 						mesh->garbage_collection();
 

@@ -26,16 +26,6 @@
       <string>Controller</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="5" column="0" colspan="7">
-       <widget class="QCheckBox" name="showPrimitives">
-        <property name="text">
-         <string>Show primitives</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="7">
        <widget class="QPushButton" name="convertToCuboid">
         <property name="text">
@@ -109,14 +99,14 @@
        </widget>
       </item>
       <item row="4" column="6" colspan="2">
-       <widget class="QPushButton" name="clearButton">
+       <widget class="QPushButton" name="resetButton">
         <property name="styleSheet">
          <string notr="true">color:rgb(85, 85, 85);
 font: italic;
 </string>
         </property>
         <property name="text">
-         <string>Clear</string>
+         <string>Reset</string>
         </property>
        </widget>
       </item>
@@ -172,6 +162,16 @@ font: italic;
        <widget class="QPushButton" name="showGraph">
         <property name="text">
          <string>Graph</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="7">
+       <widget class="QCheckBox" name="showPrimitives">
+        <property name="text">
+         <string>Show primitives</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

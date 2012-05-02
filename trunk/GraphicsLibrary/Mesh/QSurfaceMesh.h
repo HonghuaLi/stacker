@@ -33,6 +33,7 @@ public:
 	void computeBoundingBox();
 	void moveCenterToOrigin();
 	void translate(Vec3d delta);
+	void scale(double s);
 
 	void rotateUp( Vec3d to);
 	Vec3d upVec;

@@ -4,6 +4,8 @@
 
 DeformerPanel::DeformerPanel()
 {
+	activeScene = NULL;
+
 	dw.setupUi(this);
 
 	// Connections
@@ -13,7 +15,6 @@ DeformerPanel::DeformerPanel()
 void DeformerPanel::setActiveScene( Scene * newScene)
 {
 	activeScene = newScene;
-
 }
 
 void DeformerPanel::onCreateBoundingClicked()

@@ -16,6 +16,8 @@ void Smoother::LaplacianSmoothing(Surface_mesh * m, int numIteration, bool prote
 	Surface_mesh::Vertex_property<Point> points = m->vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_property<Point> newPositions = m->vertex_property<Point>("v:new_point");
 
+	Surface_mesh::Vertex_around_vertex_circulator vvit, vvend;
+
 	// This method uses the basic equal weights Laplacian operator
 	for(int iteration = 0; iteration < numIteration; iteration++)
 	{
@@ -33,9 +35,8 @@ void Smoother::LaplacianSmoothing(Surface_mesh * m, int numIteration, bool prote
 				newPositions[vit] = Point(0,0,0);
 
 				// Sum up neighbors
-				Surface_mesh::Vertex_around_vertex_circulator vvit, vvend;
 				vvit = vvend = m->vertices(vit);
-				do{ newPositions[vit] += points[vvit]; ++vvit; } while(vvit != vvend);
+				do{ newPositions[vit] += points[vvit]; } while(++vvit != vvend);
 
 				// Average it
 				newPositions[vit] /= m->valence(vit);
@@ -55,10 +56,10 @@ Point Smoother::LaplacianSmoothVertex(Surface_mesh * m, int vi)
 	Point newPos(0,0,0);
 
 	Surface_mesh::Vertex_property<Point> points = m->vertex_property<Point>("v:point");
-
 	Surface_mesh::Vertex_around_vertex_circulator vit, vend;
+
 	vit = vend = m->vertices(Surface_mesh::Vertex(vi));
-	do{ newPos += points[vit]; ++vit; } while(vit != vend);
+	do{ newPos += points[vit]; } while(++vit != vend);
 
 	return newPos;
 }
@@ -91,8 +92,7 @@ Point Smoother::ScaleDependentSmoothVertex(Surface_mesh * m, Surface_mesh::Verte
 		weight.push_back(edgeLen);
 		nighbour.push_back(points[vj]);
 
-		++hit;
-	} while(hit != hend);
+	} while(++hit != hend);
 
 	// Normalize weights
 	if(E > 0)
@@ -115,11 +115,10 @@ void Smoother::ScaleDependentSmoothing(Surface_mesh * m, int numIteration, doubl
 
 	Surface_mesh::Vertex_property<Point> points = m->vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_property<Point> newPositions = m->vertex_property<Point>("v:new_point");
+	Surface_mesh::Vertex_iterator vit, vend = m->vertices_end();
 
 	for(int iteration = 0; iteration < numIteration; iteration++)
 	{
-		Surface_mesh::Vertex_iterator vit, vend = m->vertices_end();
-
 		// Original positions, for boundary
 		for(vit = m->vertices_begin(); vit != vend; ++vit)
 			newPositions[vit] = points[vit];
@@ -154,6 +153,8 @@ void Smoother::MeanCurvatureFlow(QSurfaceMesh * m, int numIteration, double step
 	if(step == 0.0)	return;
 
 	Surface_mesh::Vertex_property<Point> points = m->vertex_property<Point>("v:point");
+	Surface_mesh::Face_around_vertex_circulator fvit, fvend;
+	Surface_mesh::Halfedge_around_vertex_circulator h, hend;
 
 	numIteration = numIteration;
 	isVolumePreservation = isVolumePreservation;
@@ -191,7 +192,6 @@ void Smoother::MeanCurvatureFlow(QSurfaceMesh * m, int numIteration, double step
 			Surface_mesh::Vertex v(i);
 
 			// for each neighboring face
-			Surface_mesh::Face_around_vertex_circulator fvit, fvend;
 			fvit = fvend = m->faces(v);
 			do{	area[i] += m->faceArea(fvit); } while (++fvit != fvend);
 
@@ -202,28 +202,20 @@ void Smoother::MeanCurvatureFlow(QSurfaceMesh * m, int numIteration, double step
 			{
 				Point p0 = points[v];
 
-				Surface_mesh::Halfedge_around_vertex_circulator h = m->halfedges(v), hend = m->halfedges(v);
+				h = m->halfedges(v), hend = m->halfedges(v);
 				do{
-					Surface_mesh::Vertex vj = m->from_vertex(h);
+					Surface_mesh::Vertex vj = m->to_vertex(h);
 					int j = vj.idx();
 
 					Point p1 = points[vj];
-
 					Point p2 = points[m->to_vertex(m->next_halfedge(h))];
 					Point p3 = points[m->to_vertex(m->next_halfedge(m->opposite_halfedge(h)))];
-					Vec3d d0 = (p0 - p2).normalize();
-					Vec3d d1 = (p1 - p2).normalize();
-					Vec3d d2 = (p0 - p3).normalize();
-					Vec3d d3 = (p1 - p3).normalize();
 
-					double cos_alpha = dot(d0,d1);
-					double cos_beta = dot(d2,d3);
+					double cos_alpha = dot((p0 - p2).normalize(), (p1 - p2).normalize());
+					double cos_beta = dot((p0 - p3).normalize(), (p1 - p3).normalize());
 
-					alpha = acos( cos_alpha );
-					beta = acos( cos_beta );
-
-					cot_alpha = cos_alpha / sin(alpha);
-					cot_beta = cos_beta / sin(beta);
+					cot_alpha = cos_alpha / sin(acos( cos_alpha ));
+					cot_beta = cos_beta / sin(acos( cos_beta ));
 
 					cots = (cot_alpha + cot_beta) * 0.25 * dt;
 
@@ -238,8 +230,7 @@ void Smoother::MeanCurvatureFlow(QSurfaceMesh * m, int numIteration, double step
 
 					M.coeffRef(i,i) += cots;
 
-					++h;
-				} while( h != hend );
+				} while( ++h != hend );
 			}
 
 			X(i) = points[v].x();
@@ -300,7 +291,7 @@ void Smoother::MeanCurvatureFlow(QSurfaceMesh * m, int numIteration, double step
 		{
 			// Volume preservation
 			double new_volume = m->volume();
-			//mesh->scale(pow(init_volume / new_volume, 1.0 / 3.0));
+			m->scale(pow(init_volume / new_volume, 1.0 / 3.0));
 		}
 
 		// Undo addition of virtual hole center points
@@ -387,13 +378,11 @@ void Smoother::MeanCurvatureFlowExplicit( QSurfaceMesh * m, int numIteration, do
 
 		// Volume preservation
 		double new_volume = m->volume();
-		//mesh->scale(pow(init_volume / new_volume, 1.0 / 3.0));
+		m->scale(pow(init_volume / new_volume, 1.0 / 3.0));
 	}
 
 	//printf(" done. (%d ms)\n", (int)timer.elapsed());
 }
-
-
 
 #if 0
 void Smoother::treatBorders(QSurfaceMesh * QSurfaceMesh, Vector<Umbrella> & U)
