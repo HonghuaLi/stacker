@@ -330,6 +330,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				menu.addSeparator();
 				QMenu & mesh_menu			= *menu.addMenu("Modify geometry");
 				QAction* remeshAction		= mesh_menu.addAction("Remesh");
+				QAction* replaceAction		= mesh_menu.addAction("Replace geometry...");
 				mesh_menu.addSeparator();
 				QAction* loopAction			= mesh_menu.addAction("Loop");
 				QAction* longEdgeAction		= mesh_menu.addAction("Longest Edge");
@@ -393,6 +394,25 @@ void Scene::mousePressEvent( QMouseEvent* e )
 						if(action == laplacianSmoothAction) Smoother::LaplacianSmoothing(mesh, 1);
 						if(action == scaleSmoothAction)		Smoother::ScaleDependentSmoothing(mesh, 1);
 						if(action == mcfSmoothAction)		Smoother::MeanCurvatureFlow(mesh, 1);
+
+						if(action == replaceAction)
+						{
+							QMenu prim_menu( this );
+
+							foreach(Primitive * prim, ctrl->getPrimitives())
+								prim_menu.addAction(prim->id);
+
+							action = prim_menu.exec(e->globalPos());
+
+							// Replace geometry
+							QSurfaceMesh * originalMesh = prim->getMesh();
+							Primitive * otherPrim = ctrl->getPrimitive(action->text());
+
+							if(otherPrim){
+								QSurfaceMesh * toMesh = otherPrim->getMesh();
+								originalMesh->setFromOther(toMesh);
+							}
+						}
 
 						mesh->garbage_collection();
 
