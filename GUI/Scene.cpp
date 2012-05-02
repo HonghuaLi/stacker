@@ -13,6 +13,10 @@
 #include "Stacker/Primitive.h"
 #include "StackabilityImprover.h"
 
+#include "GraphicsLibrary/Remeshing/LaplacianRemesher.h"
+#include "GraphicsLibrary/Subdivision/SubdivisionAlgorithms.h"
+#include "GraphicsLibrary/Smoothing/Smoother.h"
+
 Scene::Scene( QWidget * parent, const QGLWidget * shareWidget, Qt::WFlags flags) : QGLViewer(parent, shareWidget, flags)
 {
 	activeMesh = NULL;
@@ -322,6 +326,21 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				QAction* selectVoxelDeformer = menu.addAction("Voxel Deformer");
 				// == end deformer ===
 
+				// == Primitive geometry stuff ==
+				menu.addSeparator();
+				QMenu & mesh_menu			= *menu.addMenu("Modify geometry");
+				QAction* remeshAction		= mesh_menu.addAction("Remesh");
+				mesh_menu.addSeparator();
+				QAction* loopAction			= mesh_menu.addAction("Loop");
+				QAction* longEdgeAction		= mesh_menu.addAction("Longest Edge");
+				QAction* butterflyAction	= mesh_menu.addAction("Modified Butterfly");
+				mesh_menu.addSeparator();
+				QAction* laplacianSmoothAction = mesh_menu.addAction("Laplacian smoothing");
+				QAction* scaleSmoothAction	= mesh_menu.addAction("Scale dependent smoothing");
+				QAction* mcfSmoothAction = mesh_menu.addAction("MCF smoothing");
+				// == end ===
+
+
 				action = menu.exec(e->globalPos()); // show menu
 
 				// Selections
@@ -356,6 +375,30 @@ void Scene::mousePressEvent( QMouseEvent* e )
 					emit(groupsChanged());
 
 					print("New group added.");
+				}
+
+				if(mesh_menu.actions().contains(action))
+				{
+					Primitive * prim = ctrl->getSelectedPrimitive();
+					if(prim){
+						QSurfaceMesh * mesh = prim->getMesh();
+
+						if(action == remeshAction)		LaplacianRemesher::remesh(mesh, 0.05);
+						if(action == loopAction)		LoopSubdivider().subdivide(*mesh,1);
+						if(action == butterflyAction)	ModifiedButterfly().subdivide(*mesh, 1);
+						if(action == longEdgeAction)	LongestEdgeSubdivision(
+							mesh->getAverageEdgeLength() * 0.7).subdivide(*mesh, 1);
+
+						if(action == laplacianSmoothAction) Smoother::LaplacianSmoothing(mesh, 10);
+						if(action == scaleSmoothAction) Smoother::ScaleDependentSmoothing(mesh, 1);
+						if(action == mcfSmoothAction) Smoother::MeanCurvatureFlowExplicit(mesh, 10);
+
+						mesh->garbage_collection();
+
+						mesh->buildUp();
+						updateActiveObject();
+						prim->computeMeshCoordiantes();
+					}
 				}
 
 				/*break;

@@ -120,6 +120,15 @@
     <Filter Include="Stacker\Panels">
       <UniqueIdentifier>{fc488e09-4843-4b16-a2b4-488b9f9e1014}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GraphicsLibrary\Remeshing">
+      <UniqueIdentifier>{ca3ec678-d752-49c1-af69-b534df402c4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsLibrary\Subdivision">
+      <UniqueIdentifier>{b1105fdd-6a06-4013-82fe-91dd0182c3ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsLibrary\Smoothing">
+      <UniqueIdentifier>{f0d8eb53-ef99-46fd-9f3e-6848a064c12f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GUI\global.h">
@@ -373,6 +382,27 @@
     </ClInclude>
     <ClInclude Include="MathLibrary\Bounding\OBB_Volume_math.h">
       <Filter>Math\Bounding</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Remeshing\LaplacianRemesher.h">
+      <Filter>GraphicsLibrary\Remeshing</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Subdivision\LoopSubdivision.h">
+      <Filter>GraphicsLibrary\Subdivision</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Subdivision\Sqrt3Subdivision.h">
+      <Filter>GraphicsLibrary\Subdivision</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Subdivision\LongestEdgeSubdivision.h">
+      <Filter>GraphicsLibrary\Subdivision</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Subdivision\ModifiedButterflySubdivision.h">
+      <Filter>GraphicsLibrary\Subdivision</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Subdivision\SubdivisionAlgorithms.h">
+      <Filter>GraphicsLibrary\Subdivision</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Smoothing\Smoother.h">
+      <Filter>GraphicsLibrary\Smoothing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -860,6 +890,9 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_StackabilityImprover.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsLibrary\Smoothing\Smoother.cpp">
+      <Filter>GraphicsLibrary\Smoothing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

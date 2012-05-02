@@ -1,8 +1,4 @@
-#ifndef SMOOTHER_H
-#define SMOOTHER_H
-
-#undef min
-#undef max
+#pragma once 
 
 // Linear Solver ================
 // WARNING: disabled SparseLib++ since we aren't using it in this project
@@ -13,7 +9,7 @@
 #include "compcol_double.h"
 #include "mvblasd.h"
 
-// Preconditioners
+// Pre conditioners
 #include "diagpre_double.h"
 #include "icpre_double.h"
 #include "ilupre_double.h"
@@ -27,24 +23,23 @@
 #define Vector std::vector*/
 // End of Solver ================
 
-#include "Mesh.h"
+#undef min
+#undef max
+
+#include "GraphicsLibrary/Mesh/QSurfaceMesh.h"
 
 class Smoother{
 private:
-	static void treatBorders(Mesh * mesh, Vector<Umbrella> & U);
-	static void untreatBorders(Mesh * mesh, Vector<Umbrella> & U);
+	static void treatBorders(Surface_mesh * m, std::vector<Surface_mesh::Vertex> & U);
+	static void untreatBorders(Surface_mesh * m, std::vector<Surface_mesh::Vertex> & U);
 
 public:
-	static void LaplacianSmoothing(Mesh * m, int numIteration, bool protectBorders = true);
-	static void LaplacianSmoothing(Mesh * m, StdSet<Face*> & faceList, int numIteration, bool protectBorders = true);
-	static Point3D LaplacianSmoothVertex(Mesh * m, int vi);
+	static void LaplacianSmoothing(Surface_mesh * m, int numIteration, bool protectBorders = true);
+	static Point LaplacianSmoothVertex(Surface_mesh * m, int vi);
 
-	static void ScaleDependentSmoothing(Mesh * m, int numIteration, float step_size = 0.5f, bool protectBorders = true);
-	static Point3D ScaleDependentSmoothVertex(Mesh * m, int vi, float step_size = 0.5f);
+	static void ScaleDependentSmoothing(Surface_mesh * m, int numIteration, double step_size = 0.5, bool protectBorders = true);
+	static Point ScaleDependentSmoothVertex(Surface_mesh * m, Surface_mesh::Vertex v, double step_size = 0.5);
 
-	static void MeanCurvatureFlow(Mesh * mesh, double step, int numIteration, bool isVolumePreservation = true);
-	static void MeanCurvatureFlowExplicit(Mesh * mesh, double step, int numIteration);
+	static void MeanCurvatureFlow(QSurfaceMesh * m, double step, int numIteration, bool isVolumePreservation = true);
+	static void MeanCurvatureFlowExplicit(QSurfaceMesh * m, int numIteration, double step = 0.5);
 };
-
-
-#endif // SMOOTHER_H

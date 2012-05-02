@@ -335,10 +335,10 @@ void QSurfaceMesh::setVertexColor( uint v_id, const Color& newColor )
 double QSurfaceMesh::getAverageEdgeLength()
 {
 	// Efficiency
-	if(averageEdgeLength >= 0)
-		return averageEdgeLength;
+	//if(averageEdgeLength >= 0)
+	//	return averageEdgeLength;
 
-	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_property<Point>  points = vertex_property<Point>("v:point");
 
 	Edge_iterator eit, eend = edges_end();
 
@@ -539,6 +539,7 @@ void QSurfaceMesh::buildUp()
 	setColorVertices();
 	update_face_normals();
 	update_vertex_normals();
+	fillTrianglesList();
 }
 
 void QSurfaceMesh::assignVertexArray()

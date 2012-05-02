@@ -28,6 +28,7 @@ public:
 	QSurfaceMesh* operator [] (uint i);
 	QSurfaceMesh* getSegment(uint i);
 	QSurfaceMesh* getSegment( QString sid );
+	void setSegment(uint i, QSurfaceMesh * newSegment);
 	std::vector<QSurfaceMesh*> getSegments();
 	uint nbSegments();
 	uint segmentIdOfVertex( uint vid );
