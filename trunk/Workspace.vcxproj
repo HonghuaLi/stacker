@@ -107,6 +107,7 @@
     <ClInclude Include="GraphicsLibrary\Mesh\SurfaceMesh\Quadric.h" />
     <ClInclude Include="GraphicsLibrary\Mesh\SurfaceMesh\Surface_mesh.h" />
     <ClInclude Include="GraphicsLibrary\Mesh\SurfaceMesh\Vector.h" />
+    <ClInclude Include="GraphicsLibrary\Remeshing\LaplacianRemesher.h" />
     <ClInclude Include="GraphicsLibrary\Sampling\EdgeSampler.h" />
     <ClInclude Include="GraphicsLibrary\Sampling\RegularRecursive.h" />
     <ClInclude Include="GraphicsLibrary\Sampling\Sampler.h" />
@@ -122,7 +123,13 @@
     <ClInclude Include="GraphicsLibrary\Skeleton\SkeletonExtract.h" />
     <ClInclude Include="GraphicsLibrary\Skeleton\SkeletonNode.h" />
     <ClInclude Include="GraphicsLibrary\Skeleton\VertexRecord.h" />
+    <ClInclude Include="GraphicsLibrary\Smoothing\Smoother.h" />
     <ClInclude Include="GraphicsLibrary\SpacePartition\Octree.h" />
+    <ClInclude Include="GraphicsLibrary\Subdivision\LongestEdgeSubdivision.h" />
+    <ClInclude Include="GraphicsLibrary\Subdivision\LoopSubdivision.h" />
+    <ClInclude Include="GraphicsLibrary\Subdivision\ModifiedButterflySubdivision.h" />
+    <ClInclude Include="GraphicsLibrary\Subdivision\Sqrt3Subdivision.h" />
+    <ClInclude Include="GraphicsLibrary\Subdivision\SubdivisionAlgorithms.h" />
     <ClInclude Include="GraphicsLibrary\Voxel\Voxel.h" />
     <ClInclude Include="GraphicsLibrary\Voxel\Voxeler.h" />
     <CustomBuild Include="GUI\Tools\MeshInfoPanel.h">
@@ -597,6 +604,7 @@
     <ClCompile Include="GraphicsLibrary\Skeleton\PriorityQueue.cpp" />
     <ClCompile Include="GraphicsLibrary\Skeleton\Skeleton.cpp" />
     <ClCompile Include="GraphicsLibrary\Skeleton\SkeletonExtract.cpp" />
+    <ClCompile Include="GraphicsLibrary\Smoothing\Smoother.cpp" />
     <ClCompile Include="GraphicsLibrary\SpacePartition\kdtree.cpp" />
     <ClCompile Include="GraphicsLibrary\SpacePartition\Octree.cpp" />
     <ClCompile Include="GraphicsLibrary\Voxel\Voxeler.cpp" />

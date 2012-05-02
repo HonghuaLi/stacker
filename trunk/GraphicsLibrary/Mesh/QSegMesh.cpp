@@ -399,6 +399,11 @@ QSurfaceMesh* QSegMesh::getSegment( QString sid )
 	return NULL;
 }
 
+void QSegMesh::setSegment(uint i, QSurfaceMesh * newSegment)
+{
+	segment[i] = newSegment;
+}
+
 std::vector<QSurfaceMesh*> QSegMesh::getSegments()
 {
 	return segment;
