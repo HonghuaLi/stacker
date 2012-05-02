@@ -844,3 +844,11 @@ Point QSurfaceMesh::closestPointFace( Face f, const Point & p )
 
 	return ClosestPtPointTriangle(p, pnts[0], pnts[1], pnts[2]);
 }
+
+void QSurfaceMesh::scale( double s )
+{
+	Vertex_property<Point>  points  = vertex_property<Point>("v:point");
+	Vertex_iterator vit, vend = vertices_end();
+	for(vit = vertices_begin(); vit != vend; ++vit)
+		points[vit] *= s;
+}

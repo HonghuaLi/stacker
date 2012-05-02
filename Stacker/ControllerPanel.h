@@ -29,7 +29,7 @@ public slots:
 
 	// Display
 	void removeSelected();
-	void clear();
+	void reset();
 	void togglePrimDisplay(int state);
 
 	// Save and load

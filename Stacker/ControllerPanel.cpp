@@ -21,7 +21,7 @@ ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 	connect(controllerWidget.saveButton, SIGNAL(clicked()), SLOT(save()));
 	connect(controllerWidget.loadButton, SIGNAL(clicked()), SLOT(load()));
 	connect(controllerWidget.removeButton, SIGNAL(clicked()), SLOT(removeSelected()));
-	connect(controllerWidget.clearButton, SIGNAL(clicked()), SLOT(clear()));
+	connect(controllerWidget.resetButton, SIGNAL(clicked()), SLOT(reset()));
 	connect(controllerWidget.showPrimitives, SIGNAL(stateChanged (int)), SLOT(togglePrimDisplay(int)));
 
 	connect(controllerWidget.showGraph, SIGNAL(clicked()), SLOT(showGraph()));
@@ -64,9 +64,12 @@ void ControllerPanel::load()
 
 	activeScene->activeObject()->ptr["controller"] = new Controller(activeScene->activeObject());
 
-	this->clear();
+	this->reset();
 
 	QString fileName = QFileDialog::getOpenFileName(0, "Load Controller", DEFAULT_FILE_PATH, "Controller File (*.ctrl)"); 
+
+	if(fileName.isEmpty() || !QFileInfo(fileName).exists()) return;
+
 	std::ifstream inF(qPrintable(fileName), std::ios::in);
 
 	controller()->load(inF);
@@ -86,13 +89,19 @@ void ControllerPanel::removeSelected()
 	// delete prim?
 }
 
-void ControllerPanel::clear()
+void ControllerPanel::reset()
 {
-	if(!controller())	return;
+	if(!controller())
+	{
+		// Re-compute controller
 
-	//delete controller();
-	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
-	ctrl->clearPrimitives();
+	}
+	else
+	{
+		//delete controller();
+		Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
+		ctrl->clearPrimitives();
+	}
 }
 
 Controller * ControllerPanel::controller()

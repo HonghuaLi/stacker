@@ -121,6 +121,9 @@ void GroupPanel::removeSelectedItem()
 
 void GroupPanel::saveGroups()
 {
+	if(!activeScene || !activeScene->activeObject() || !(Controller *)activeScene->activeObject()->ptr["controller"])
+		return;
+
 	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 	if (ctrl == NULL) 
 	{
@@ -185,6 +188,9 @@ void GroupPanel::saveGroups()
 
 void GroupPanel::loadGroups()
 {
+	if(!activeScene || !activeScene->activeObject() || !(Controller *)activeScene->activeObject()->ptr["controller"])
+		return;
+
 	Controller * ctrl = (Controller *)activeObject()->ptr["controller"];
 	if (ctrl == NULL) 
 	{
@@ -193,6 +199,8 @@ void GroupPanel::loadGroups()
 	}
 
 	QString fileName = QFileDialog::getOpenFileName(0, "Import Groups", DEFAULT_FILE_PATH, "Group File (*.grp)"); 
+	if(fileName.isEmpty() || !QFileInfo(fileName).exists()) return;
+
 	std::ifstream inF(qPrintable(fileName), std::ios::in);
 
 	if (!inF) return;
@@ -269,6 +277,8 @@ void GroupPanel::loadGroups()
 
 void GroupPanel::clearGroups()
 {
+	if(!activeScene || !activeScene->activeObject()) return;
+
 	Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 	ctrl->groups.clear();
 

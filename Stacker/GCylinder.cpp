@@ -7,11 +7,11 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 {
 	cage = NULL;
 
-	cageScale = 1.3;
+	cageScale = 1.5;
 	cageSides = 16;
 
 	// For visualization
-	deltaScale = 1.3;
+	deltaScale = cageScale;
 
 	// useful for fitting process
 	if(!m_mesh->vertex_array.size()){

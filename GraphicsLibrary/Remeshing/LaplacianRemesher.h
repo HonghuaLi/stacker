@@ -224,11 +224,9 @@ private:
     }
 
 public:
-	static void remesh(QSurfaceMesh *model, double edgeFactor = 0.1, int iter = 3, int smoothIter = 2)
+	static void remesh(QSurfaceMesh *model, double longest_edge_length, int iter = 2, int smoothIter = 1)
 	{
-		double edge_len = edgeFactor * (model->bbmax - model->bbmin).norm();
-
-		remesh(model, edge_len, iter, iter, iter, smoothIter);
+		remesh(model, longest_edge_length, iter, iter, iter, smoothIter);
 	}
 
 	static void remesh(Surface_mesh *mesh, Scalar longest_edge_length, Counter num_split_iters, 

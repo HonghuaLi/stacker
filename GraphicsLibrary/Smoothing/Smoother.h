@@ -14,6 +14,6 @@ public:
 	static void ScaleDependentSmoothing(Surface_mesh * m, int numIteration, double step_size = 0.5, bool protectBorders = true);
 	static Point ScaleDependentSmoothVertex(Surface_mesh * m, Surface_mesh::Vertex v, double step_size = 0.5);
 
-	static void MeanCurvatureFlow(QSurfaceMesh * m, int numIteration = 1, double step = 0.25, bool isVolumePreservation = true);
+	static void MeanCurvatureFlow(QSurfaceMesh * m, int numIteration = 1, double step = 0.01, bool isVolumePreservation = true);
 	static void MeanCurvatureFlowExplicit(QSurfaceMesh * m, int numIteration, double step = 0.5);
 };
