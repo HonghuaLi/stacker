@@ -64,7 +64,6 @@ void ControllerPanel::load()
 
 	activeScene->activeObject()->ptr["controller"] = new Controller(activeScene->activeObject());
 
-	this->reset();
 
 	QString fileName = QFileDialog::getOpenFileName(0, "Load Controller", DEFAULT_FILE_PATH, "Controller File (*.ctrl)"); 
 
@@ -91,25 +90,30 @@ void ControllerPanel::removeSelected()
 
 void ControllerPanel::reset()
 {
-	if(!controller())
+	Controller * ctrl = controller();
+	if(!ctrl)
 	{
 		// Re-compute controller
-
+		activeObject()->ptr["controller"] = new Controller(activeObject());
 	}
 	else
 	{
 		//delete controller();
-		Controller * ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
 		ctrl->clearPrimitives();
+		delete ctrl;
+		activeObject()->ptr.erase( activeObject()->ptr.find("controller") );
 	}
+
+	// Refresh
+	activeScene->updateGL();
 }
 
 Controller * ControllerPanel::controller()
 {
-	if(!activeScene || !activeScene->activeObject() || !(Controller *)activeScene->activeObject()->ptr["controller"])
+	if(!activeScene || !activeObject())
 		return NULL;
 
-	return (Controller *)activeScene->activeObject()->ptr["controller"];
+	return (Controller *)activeObject()->ptr["controller"];
 }
 
 void ControllerPanel::togglePrimDisplay(int state)

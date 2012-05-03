@@ -38,7 +38,7 @@ QVector<Vec3d> StackabilityImprover::getLocalMoves( HotSpot& HS )
 
 	// step
 	Vec3d step = (constraint_bbmax - constraint_bbmin) / 20;
-	int K = 6;
+	int K = 4;
 
 	// Horizontal moves
 	if (HS.type == POINT_HOTSPOT)
@@ -166,8 +166,20 @@ void StackabilityImprover::deformNearPointLineHotspot( int side )
 	// Move the hotspot locally
 	Propagator propagator(ctrl());
 	QVector<Vec3d> Ts = getLocalMoves(freeHS);
+
+	//// debug
+	//Ts.clear();
+	//Ts.push_back(Vec3d(-0.25,0,0));
+	//Ts.push_back(Vec3d(0,-0.25,0));
+	//Ts.push_back(Vec3d(0.25,0,0));
+	//Ts.push_back(Vec3d(0,0.25,0));
+	//Ts.push_back(Vec3d(0.25,0.25,0));
+	//Ts.push_back(Vec3d(-0.25,-0.25,0));
+
 	foreach ( Vec3d T, Ts)
 	{
+		std::cout << T << std::endl;	// debug
+
 		ctrl()->setPrimitivesFrozen(false);	// Clear flags
 		setPositionalConstriants(fixedHS); // Fix one end
 
@@ -187,7 +199,7 @@ void StackabilityImprover::deformNearPointLineHotspot( int side )
 		propagator.regroupPair(free_prim->id, fixed_prim->id); 
 		propagator.execute(); 
 			
-		if ( !satisfyBBConstraint() ) continue; // BB constraint is hard	
+//		if ( !satisfyBBConstraint() ) continue; // BB constraint is hard	
 
 		// Record the shape state
 		if (freeHS.type == POINT_HOTSPOT)
@@ -503,11 +515,11 @@ void StackabilityImprover::executeImprove(int level)
 	constraint_bbmax = activeObject()->bbmax * BB_TOLERANCE;
 
 	// Push the current shape as the initial candidate solution
-	ShapeState state = ctrl()->getShapeState();
-	state.deltaStackability = activeOffset->getStackability() - orgStackability;
-	state.distortion = ctrl()->getDistortion();
-	state.history.push_back(state);
-	candidateSolutions.push(state);
+	ShapeState origState = ctrl()->getShapeState();
+	origState.deltaStackability = activeOffset->getStackability() - orgStackability;
+	origState.distortion = ctrl()->getDistortion();
+	origState.history.push_back(origState);
+	candidateSolutions.push(origState);
 
 	while(!candidateSolutions.empty())
 	{
@@ -540,8 +552,6 @@ void StackabilityImprover::executeImprove(int level)
 	//	solutions.push( candidateSolutions.top() );
 	//	candidateSolutions.pop();
 	//}
-
-	ctrl()->setShapeState(state);
 	activeObject()->computeBoundingBox();
 
 	// Suggestions

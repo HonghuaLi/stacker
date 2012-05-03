@@ -78,6 +78,9 @@ void Scene::init()
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 	glMaterialf(GL_FRONT, GL_SHININESS, high_shininess);
+
+	// Redirect keyboard
+	setShortcut( HELP, Qt::CTRL+Qt::Key_H);
 }
 
 void Scene::setupCamera()
@@ -386,7 +389,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 
 						double avgEdge = mesh->getAverageEdgeLength();
 
-						if(action == remeshAction)		LaplacianRemesher::remesh(mesh, avgEdge * 0.25);
+						if(action == remeshAction)		LaplacianRemesher::remesh(mesh, avgEdge * 0.6);
 						if(action == loopAction)		LoopSubdivider().subdivide(*mesh,1);
 						if(action == butterflyAction)	ModifiedButterfly().subdivide(*mesh, 1);
 						if(action == longEdgeAction)	LongestEdgeSubdivision(avgEdge * 0.5).subdivide(*mesh, 1);
@@ -538,10 +541,14 @@ void Scene::postSelection( const QPoint& point )
 {
 	// Regular behavior
 	//QGLViewer::postSelection(point);
+	Controller * ctrl = ((Controller *)activeObject()->ptr["controller"]);
 
 	int selected = selectedName();
 
-	print(QString("Selected %1").arg(selected));
+	if (selected >= 0 && selectMode == CONTROLLER)
+		print( QString("Selected %1").arg( qPrintable(ctrl->getPrimitive(selected)->id) ) );
+	else
+		print(QString("Selected"));
 
 	// General selection
 	if(selected == -1)
@@ -573,7 +580,6 @@ void Scene::postSelection( const QPoint& point )
 		activeVoxelDeformer->select(selected);
 	}
 
-	Controller * ctrl = ((Controller *)activeObject()->ptr["controller"]);
 
 	// Selection mode cases
 	switch (selectMode)

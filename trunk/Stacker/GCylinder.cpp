@@ -7,7 +7,7 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 {
 	cage = NULL;
 
-	cageScale = 1.5;
+	cageScale = 1.2;
 	cageSides = 16;
 
 	// For visualization
@@ -326,32 +326,80 @@ void GCylinder::moveCurveCenter( int cid, Vec3d delta )
 	}
 }
 
-void GCylinder::moveCurveCenterRanged(int cid, Vec3d delta, int start, int finish)
+
+double GCylinder::computeWeight( double x, bool useGaussian /* = false*/ ) 
 {
-	if(cid < 0)	cid = selectedPartId;
-
-	int N = gc->frames.count();
-
-	// Range parameter
-	if(finish < 0) 	finish = N;
-	else N = finish - start;
-
-	// Range check
-	if(start >= finish) 
-		return;
-
-	// Move curves, with weight
-	for(int i = start; i < finish; i++)
+	double weight = 1;
+	if (!useGaussian)
+	{
+		weight = pow(1 - x, 10);
+	}
+	else
 	{
 		double sigma = 1.0 / sqrt(2 * M_PI);
 		double mu = 0;
+		weight = gaussianFunction(x, mu, sigma);
+	}
 
-		double decay = (double(N) / gc->frames.count()) * 0.9;
-		double dist = abs(double(cid - i)) / (N * decay);
+	return weight;
+}
 
-		double weight = gaussianFunction(dist, mu, sigma);
+void GCylinder::moveCurveCenterRanged(int cid, Vec3d T, int fixed_end_id1, int fixed_end_id2)
+{
+	int N = gc->crossSection.size();
+	bool useGaussian = false;
 
-		gc->frames.point[i] += delta * weight;
+	// Only for manual mode
+	if (fixed_end_id2 < 0) fixed_end_id2 = N;
+
+	if (cid < 0)	
+	{
+		useGaussian = true;
+
+		cid = selectedPartId;
+		if (cid - fixed_end_id1 < fixed_end_id2 - cid)
+			fixed_end_id2 = N-1;
+		else
+			fixed_end_id1 = 0;
+	}
+
+
+	// Range check
+	if(fixed_end_id1 >= fixed_end_id2) return;
+
+	// First half: (fixed_end_id1, \cid)
+	double range = cid - fixed_end_id1; // Only if \fixed_end_id1 >= 0
+	for (int i = fixed_end_id1 + 1; i < cid; i++)
+	{
+		double weight = 1.0;
+		
+		// This range is not free
+		if (fixed_end_id1 != -1)
+		{
+			double dist = double(cid - i) / range;
+			weight = computeWeight(dist, useGaussian);
+		}
+
+		gc->frames.point[i] += T * weight;
+	}
+
+	// The \cid
+	gc->frames.point[cid] += T;
+
+	// The second half: (\cid, fixed_end_id2)
+	range = fixed_end_id2 - cid; // Only if \fixed_end_id1 >= 0
+	for(int i = cid + 1; i < fixed_end_id2; i++)
+	{
+		double weight = 1.0;
+
+		// This range is not free
+		if (fixed_end_id2 < N)
+		{
+			double dist = double(i - cid) / range;
+			weight = computeWeight(dist, useGaussian);
+		}
+
+		gc->frames.point[i] += T * weight;
 	}
 
 	// Re-compute frames and align the cross-sections
@@ -408,7 +456,14 @@ void* GCylinder::getGeometryState()
 void GCylinder::setGeometryState( void* toState)
 {
 	gc->crossSection = *( (std::vector<GeneralizedCylinder::Circle>*) toState );
-	updateCage();
+	
+	for(int i = 0; i < gc->frames.count(); i++)	
+		gc->frames.point[i] = gc->crossSection[i].center;
+
+	// Re-compute frames and align the cross-sections
+	gc->frames.compute();
+	gc->realignCrossSections();
+	deformMesh();
 }
 
 std::vector<double> GCylinder::getCoordinate( Point v )
@@ -509,8 +564,7 @@ void GCylinder::reshapeFromPoints( std::vector<Vec3d>& pnts )
 	deformMesh();
 }
 
-
-int GCylinder::detectHotCurve( QVector< Vec3d > &hotSamples )
+int GCylinder::detectHotCurve( QVector<Point> &hotSamples )
 {
 	if (hotSamples.isEmpty()) return -1;
 
@@ -518,12 +572,17 @@ int GCylinder::detectHotCurve( QVector< Vec3d > &hotSamples )
 	foreach(Point p, hotSamples) samplesCenter += p;
 	samplesCenter /= hotSamples.size();
 
+	return detectHotCurve(samplesCenter);
+}
+
+int GCylinder::detectHotCurve( Point hotSample )
+{
 	// Measure the distance to the curve centers
 	uint closestID = 0;
 	double minDist = DBL_MAX;
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
-		double dist = (c.center - samplesCenter).norm();
+		double dist = (c.center - hotSample).norm();
 		if(dist < minDist)
 		{
 			minDist = dist;
@@ -607,43 +666,39 @@ void GCylinder::movePoint( Point p, Vec3d T )
 {
 	if (fixedPoints.isEmpty())
 		translate(T);
-	else if (fixedPoints.size() == 1)
-		deformRespectToJoint(fixedPoints.first(), p, T);
 	else
 	{
+		// The fixed tags for cross sections
 		int N = gc->crossSection.size();
-
-		int start = 0, finish = N;
-		QVector<Point> points;
-		points.push_back(p);
-		GeneralizedCylinder::Circle* c = &gc->crossSection[detectHotCurve(points)];
-
 		std::vector<bool> fixedCrossSection(N, false);
-
 		foreach(Point fp, fixedPoints)
 		{
-			points.clear();
-			points.push_back(fp);
-			int csi = gc->crossSection[detectHotCurve(points)].index;
+			int csi = gc->crossSection[detectHotCurve(fp)].index;
 			fixedCrossSection[csi] = true;
 		}
 
 		// If point to be moved is near fixed area, do nothing
-		if(fixedCrossSection[c->index])
-			return;
+		int cid = detectHotCurve(p);
+		if(fixedCrossSection[cid])	return;
 
 		// Find range
+		int fixed_end_id1 = -1, fixed_end_id2 = N;
 		for(uint i = 0; i < N; i++)
 		{
-			if(i < c->index && fixedCrossSection[i])
-				start = Max(start, i);
+			if(i < cid && fixedCrossSection[i])
+				fixed_end_id1 = Max(fixed_end_id1, i);
 
-			if(i > c->index && fixedCrossSection[i])
-				finish = Min(finish, i);
+			if(i > cid && fixedCrossSection[i])
+				fixed_end_id2 = Min(fixed_end_id2, i);
 		}
 
+		// post fixing
+		if (fixed_end_id1 == -1 && cid - fixed_end_id1 < 3)	cid = 0;
+		if (fixed_end_id2 ==  N && fixed_end_id2 - cid < 3)	cid = N-1;
+
+
 		// Move range
-		moveCurveCenterRanged(c->index, T, start, finish);
+		moveCurveCenterRanged(cid, T, fixed_end_id1, fixed_end_id2);
 	}
 }
 
@@ -739,3 +794,4 @@ void GCylinder::build_up()
 	buildCage();
 	computeMeshCoordinates();
 }
+
