@@ -224,7 +224,7 @@ private:
     }
 
 public:
-	static void remesh(QSurfaceMesh *model, double longest_edge_length, int iter = 2, int smoothIter = 1)
+	static void remesh(QSurfaceMesh *model, double longest_edge_length, int iter = 2, int smoothIter = 3)
 	{
 		remesh(model, longest_edge_length, iter, iter, iter, smoothIter);
 	}
