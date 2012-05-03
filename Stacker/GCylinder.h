@@ -42,8 +42,12 @@ public:
 	std::vector< std::vector <Vec3d> > getCurves();
 
 	// Hot curves
-	int		detectHotCurve( QVector< Vec3d > &hotSamples );
+	int detectHotCurve( Point hotSample);
+	int detectHotCurve( QVector<Point> &hotSamples );
 	Point	getSelectedCurveCenter();
+
+	// Weights
+	double computeWeight( double x, bool useGaussian = false );
 
 	// Reshaping
 	void deformMesh();
@@ -54,7 +58,7 @@ public:
 	void moveLineJoint(Point A, Point B, Vec3d deltaA, Vec3d deltaB);
 	void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
 	void reshapeFromPoints( std::vector<Vec3d>& pnts );
-	void moveCurveCenterRanged(int cid, Vec3d delta, int start = 0, int finish = -1);
+	void moveCurveCenterRanged(int cid, Vec3d delta, int start = -1, int finish = -1);
 
 	// Draw
 	void draw();

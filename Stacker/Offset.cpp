@@ -649,6 +649,9 @@ Vec2i Offset::projectedCoordinatesOf( Vec3d point, int pathID )
 
 Controller* Offset::ctrl()
 {
-	return (Controller*)activeObject()->ptr["controller"];
+	if (activeObject())
+		return (Controller*)activeObject()->ptr["controller"];
+	else
+		return NULL;
 }
 

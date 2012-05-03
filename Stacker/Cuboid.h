@@ -33,8 +33,8 @@ public:
 	void drawNames(int name, bool isDrawParts = false);
 
 	// Hot curves
-	int detectHotCurve( QVector<Vec3d> &hotSamples );
-	void translateCurve( uint cid, Vec3d T, uint sid_respect );
+	int detectHotCurve( Point hotSample);
+	int detectHotCurve( QVector<Point> &hotSamples );
 
 	// Reshaping
 	void translate( Vec3d &T );
@@ -45,6 +45,7 @@ public:
 	void movePoint(Point p, Vec3d T);
 	void scaleCurve(int cid, double s);
 	void moveLineJoint(Point A, Point B, Vec3d deltaA, Vec3d deltaB);
+	void translateCurve( uint cid, Vec3d T, uint sid_respect );
 
 	// Primitive coordinate system
 	std::vector<double> getCoordinate( Point v );

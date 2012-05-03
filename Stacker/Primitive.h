@@ -26,7 +26,8 @@ public:
 	virtual	void drawNames(int name, bool isDrawParts = false) = 0;
 
 	// Hot curves
-	virtual int detectHotCurve( QVector<Vec3d> &hotSamples ) = 0;
+	virtual int detectHotCurve( Point hotSample) = 0;
+	virtual int detectHotCurve( QVector<Point> &hotSamples ) = 0;
 
 	// Reshaping
 	virtual void translate( Vec3d &T ) = 0;

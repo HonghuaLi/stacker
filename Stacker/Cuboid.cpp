@@ -340,7 +340,15 @@ Vec3d Cuboid::selectedPartPos()
 	return partPos / face.size();
 }
 
-int Cuboid::detectHotCurve( QVector<Vec3d> &hotSamples )
+int Cuboid::detectHotCurve( Point hotSample )
+{
+	QVector<Point> hotSamples;
+	hotSamples.push_back(hotSample);
+
+	return detectHotCurve(hotSamples);
+}
+
+int Cuboid::detectHotCurve( QVector<Point> &hotSamples )
 {
 	if (hotSamples.isEmpty()) return -1;
 
@@ -821,10 +829,13 @@ void Cuboid::moveLineJoint( Point A, Point B, Vec3d deltaA, Vec3d deltaB )
 {
 	// Translate \A to \newA
 	currBox.Center += deltaA;
-	B += deltaA;
+
+	Point newA = A + deltaA;
+	Point newB = B + deltaA;
+	Vec3d delta_newB = deltaB - deltaA;
 
 	// Deform respect to joint
-	deformRespectToJoint(A + deltaA, B, deltaB);
+	deformRespectToJoint(newA, newB, delta_newB);
 	
 	deformMesh();
 }

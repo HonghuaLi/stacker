@@ -44,5 +44,5 @@ private:
 	Controller * controller();
 
 signals:
-
+	
 };
