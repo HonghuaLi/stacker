@@ -129,6 +129,9 @@
     <Filter Include="GraphicsLibrary\Smoothing">
       <UniqueIdentifier>{f0d8eb53-ef99-46fd-9f3e-6848a064c12f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GraphicsLibrary\Decimation">
+      <UniqueIdentifier>{3f08d376-1a8d-4357-affa-d9bc043ca858}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GUI\global.h">
@@ -403,6 +406,9 @@
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Smoothing\Smoother.h">
       <Filter>GraphicsLibrary\Smoothing</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Decimation\Decimater.h">
+      <Filter>GraphicsLibrary\Decimation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

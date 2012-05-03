@@ -102,6 +102,7 @@
     <ClInclude Include="GraphicsLibrary\Basic\Plane.h" />
     <ClInclude Include="GraphicsLibrary\Basic\PolygonArea.h" />
     <ClInclude Include="GraphicsLibrary\Basic\Triangle.h" />
+    <ClInclude Include="GraphicsLibrary\Decimation\Decimater.h" />
     <ClInclude Include="GraphicsLibrary\Mesh\SurfaceMesh\IO_.h" />
     <ClInclude Include="GraphicsLibrary\Mesh\SurfaceMesh\properties.h" />
     <ClInclude Include="GraphicsLibrary\Mesh\SurfaceMesh\Quadric.h" />
