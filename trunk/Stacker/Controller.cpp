@@ -68,8 +68,8 @@ void Controller::draw()
 {
 	foreach(Primitive * prim, primitives)
 	{
-		prim->drawDebug();
 		prim->draw();
+		prim->drawDebug();
 
 		// Draw proximity debug 
 		/*for (uint j = i + 1; j < primitives.size(); j++){
@@ -97,15 +97,15 @@ void Controller::drawNames(bool isDrawParts)
 	}
 }
 
-void Controller::select(int id)
+void Controller::selectPrimitive(int id)
 {
 	if(id != -1)
-		select(primitiveIdNum[id]);
+		selectPrimitive(primitiveIdNum[id]);
 	else
-		select("deselectAll");
+		selectPrimitive("deselectAll");
 }
 
-void Controller::select(QString id)
+void Controller::selectPrimitive(QString id)
 {
 	// Deselect all if given '-1'
 	if(id == "deselectAll")
@@ -123,14 +123,14 @@ void Controller::select(QString id)
 	primitives[id]->isSelected = !primitives[id]->isSelected;
 }
 
-bool Controller::selectPrimitivePart( int id )
+bool Controller::selectPrimitiveCurve( int id )
 {
 	bool beenSelected = false;
 
 	foreach(Primitive * prim, primitives)
 	{
 		if(prim->isSelected){
-			prim->selectedPartId = id;
+			prim->selectedCurveId = id;
 			beenSelected = true;
 		}
 	}
@@ -138,13 +138,15 @@ bool Controller::selectPrimitivePart( int id )
 	return beenSelected;
 }
 
-Vec3d Controller::getPrimPartPos()
+Point Controller::getSelectedCurveCenter()
 {
 	foreach(Primitive * prim, primitives)
 	{
 		if(prim->isSelected)
 			return prim->getSelectedCurveCenter();
 	}
+
+	return Point(0.0);
 }
 
 void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cuboidAxis )
@@ -305,12 +307,6 @@ QVector< Group * > Controller::groupsOf( QString id )
 		if(group->has(id))	result.push_back(group);
 
 	return result;
-}
-
-void Controller::setSegmentsVisible( bool isVisible /*= true*/ )
-{
-	foreach(Primitive* prim, primitives)
-		prim->m_mesh->isVisible = isVisible;
 }
 
 void Controller::setPrimitivesFrozen( bool isFrozen /*= false*/ )

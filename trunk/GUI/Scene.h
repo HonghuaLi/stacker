@@ -21,7 +21,6 @@ class StackerPanel;
 class QManualDeformer;
 
 enum ViewMode { VIEW, SELECTION, MODIFY };
-enum ModifyMode { DEFAULT, CP_REF_VECTOR, MOVE_VERTEX };
 enum SelectMode { SELECT_NONE, MESH, SKELETON_NODE, SKELETON_EDGE, 
 	SKELETON_FACES, RECONSTRUCTED_POINTS, VERTEX, 
 	CONTROLLER, CONTROLLER_ELEMENT, FFD_DEFORMER,VOXEL_DEFORMER};
@@ -33,67 +32,54 @@ class Scene : public QGLViewer{
 public:
 	Scene(QWidget * parent = 0, const QGLWidget * shareWidget = 0, Qt::WFlags flags = 0);
 
-	// Setup scene
-	virtual void init();
+	// OpenGL
+	ViewMode viewMode;
+	QColor backColor;
+	void init();
 	void setupCamera();
 	void setupLights();
-
-	// OpenGL Drawing and Buffer
-	virtual void draw();
-	virtual void drawWithNames();
-	virtual void postDraw();
+	void draw();
+	void drawWithNames();
+	void postDraw();
 	void drawObject();
 	void drawStacking();
 	void drawGroups();
+	void drawCornerAxis();
+	void setViewMode(ViewMode toMode);
 
 	// VBO
 	QMap<QString, VBO> vboCollection;
 	void updateVBOs();
 	void setRenderMode(RENDER_MODE toMode);
 
-	// Scene Visualizations
-	void drawCornerAxis();
-
 	// Mouse & Keyboard stuff
-	virtual void mousePressEvent(QMouseEvent* e);
-	virtual void mouseReleaseEvent(QMouseEvent* e);
-	virtual void mouseMoveEvent(QMouseEvent* e);
-	virtual void wheelEvent(QWheelEvent* e);
-	virtual void keyPressEvent(QKeyEvent *e);
+	void mousePressEvent(QMouseEvent* e);
+	void mouseReleaseEvent(QMouseEvent* e);
+	void mouseMoveEvent(QMouseEvent* e);
+	void wheelEvent(QWheelEvent* e);
+	void keyPressEvent(QKeyEvent *e);
 
 	// Focus, close
-	virtual void focusInEvent(QFocusEvent * event);
-	virtual void focusOutEvent(QFocusEvent * event);
-	virtual void closeEvent( QCloseEvent * event );
-
-	// SELECTION
-	virtual void postSelection(const QPoint& point);
-	QVector<int> selection;
-
-	// SHAPING
+	void focusInEvent(QFocusEvent * event);
+	void focusOutEvent(QFocusEvent * event);
+	void closeEvent( QCloseEvent * event );
 	void resizeEvent ( QResizeEvent * event );
 
-	// STATE
-	ViewMode viewMode;
+	// SELECTION
 	SelectMode selectMode;
-	ModifyMode modifyMode;
-
-	QColor backColor;
-
-	void setViewMode(ViewMode toMode);
-	void setSelectMode(SelectMode toMode);
-	void setModifyMode(ModifyMode toMode);
-
-	// draw on screen
-	void setupSubViewport(int x, int y, int w, int h);
-	void endSubViewport();
+	QVector<int> selection;
+	void setSelectMode(SelectMode toMode);	
+	void postSelection(const QPoint& point);
 
 	// Stacker stuff
-	QFFD * activeDeformer;
-	VoxelDeformer * activeVoxelDeformer;
-	StackerPanel * sp; 	// hack
+	StackerPanel * sp;
 	bool isShowStacked;
 	bool isDrawOffset;
+
+	// Deformer
+	ManipulatedFrame * activeFrame;
+	QFFD * activeDeformer;
+	VoxelDeformer * activeVoxelDeformer;
 	QManualDeformer * defCtrl;
 
 	// Sub scenes
@@ -101,24 +87,15 @@ public:
 	void addSubScene(int scene_width);
 	void resizeSubScenes();
 
-// TEXT ON SCREEN
-public slots:
-	void print(QString message, long age = 1000);
-	void dequeueLastMessage();
-
-private:
+	// TEXT ON SCREEN
 	QQueue<QString> osdMessages;
 	QTimer *timer;
 
-
-// Objects in the scene
-private:
-	ManipulatedFrame * activeFrame;
+	// Objects in the scene
 	QSegMesh * activeMesh;
-
-public:
 	QSegMesh * activeObject();
 	bool isEmpty();
+
 
 public slots:
 	void setActiveObject(QSegMesh* newMesh);
@@ -128,6 +105,8 @@ public slots:
 	void resetView();
 	void setActiveDeformer( QFFD * );
 	void setActiveVoxelDeformer( VoxelDeformer * );
+	void print(QString message, long age = 1000);
+	void dequeueLastMessage();
 
 signals:
 	void gotFocus( Scene* );
@@ -136,7 +115,5 @@ signals:
 	void exportActiveObject( QSegMesh* newMesh );
 	void sceneClosed( Scene* );
 	void objectDiscarded( QString );
-	void selectionVector( QVector<int> );
-
 	void groupsChanged();
 };

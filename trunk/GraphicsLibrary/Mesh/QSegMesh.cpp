@@ -325,8 +325,6 @@ void QSegMesh::computeBoundingBox()
 	
 	for (int i = 0; i < (int)nbSegments();i++)
 	{
-		if (!segment[i]->isVisible) continue;
-
 		Surface_mesh::Vertex_property<Point> points = segment[i]->vertex_property<Point>("v:point");
 		Surface_mesh::Vertex_iterator vit, vend = segment[i]->vertices_end();
 
@@ -413,10 +411,7 @@ void QSegMesh::simpleDraw( bool isColored /*= true*/, bool isDots /*= false*/ )
 {
 	// Render mesh regularly (inefficient)
 	for (int i = 0;i < (int)segment.size(); i++)
-	{
-		if (segment[i]->isVisible)
-			segment[i]->simpleDraw(isColored, isDots);
-	}
+		segment[i]->simpleDraw(isColored, isDots);
 }
 
 void QSegMesh::drawFacesUnique()
@@ -424,11 +419,8 @@ void QSegMesh::drawFacesUnique()
 	uint offset = 0;
 	for (int i=0;i<(int)segment.size();i++)
 	{
-		if (segment[i]->isVisible)
-		{
-			segment[i]->drawFacesUnique(offset);
-			offset += segment[i]->n_faces();
-		}
+		segment[i]->drawFacesUnique(offset);
+		offset += segment[i]->n_faces();
 	}
 }
 
@@ -530,9 +522,6 @@ void QSegMesh::global2local_vid( uint vid, uint& sid, uint& vid_local )
 	int i=0;
 	for (;i<(int)segment.size();i++)
 	{
-		if (!segment[i]->isVisible)
-			continue;
-
 		offset += segment[i]->n_vertices();
 
 		if (vid < offset)

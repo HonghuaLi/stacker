@@ -106,7 +106,6 @@ public:
 	std::vector<unsigned int> triangles, edges;
 
 	QString id;
-	bool isVisible;
 
 	std::vector<Vec3d> specialPnts;
 

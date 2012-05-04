@@ -15,7 +15,6 @@ QSurfaceMesh::QSurfaceMesh() : Surface_mesh()
 
 	// Render options
 	isDrawBB = false;
-	isVisible = true;
 
 	upVec = Vec3d(0,0,1);
 

@@ -30,7 +30,7 @@ public:
 
 	// Visualize the primitive and potential actions
 	void draw();
-	void drawNames(int name, bool isDrawParts = false);
+	void drawNames(int name, bool isDrawCurves = false);
 
 	// Hot curves
 	int detectHotCurve( Point hotSample);

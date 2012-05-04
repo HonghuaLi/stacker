@@ -45,7 +45,7 @@ void Group::drawDebug()
 	foreach(Point p, debugPoints) SimpleDraw::IdentifyPoint(p, 1,1,1, 20);
 
 	for(int i = 0; i < debugLines.size(); i++)
-		SimpleDraw::IdentifyLine(debugLines[i].first, debugLines[i].second, Color(1,1,1,1),false, 6);
+		SimpleDraw::IdentifyLine(debugLines[i].first, debugLines[i].second, Color(1,0,1,1),false, 1);
 }
 
 bool Group::has( QString id )

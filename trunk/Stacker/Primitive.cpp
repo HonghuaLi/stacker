@@ -12,7 +12,7 @@ Primitive::Primitive( QSurfaceMesh* mesh, QString newId )
 
 	isDraw = true;
 
-	selectedPartId = -1;
+	selectedCurveId = -1;
 }
 
 void Primitive::drawDebug()

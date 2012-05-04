@@ -16,7 +16,6 @@ void SymmetryGroup::process(QVector<Primitive*> segments)
 
 	Point point = (cA + cB) * 0.5;
 	Normal normal = (cA - cB).normalized();
-
 	symmetryPlane = Plane(normal, point);
 
 	// Representative points of two primitives
