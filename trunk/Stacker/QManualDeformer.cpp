@@ -32,10 +32,8 @@ void QManualDeformer::updateController()
 
 	Primitive * prim = ctrl->getSelectedPrimitive();
 
-	//std::cout << "Moving primitive: " << qPrintable(prim->id) << "\n";
-
 	prim->isFrozen = true;
-	prim->moveCurveCenter( -1,  pos() - prim->selectedPartPos() );
+	prim->moveCurveCenter( -1,  pos() - prim->getSelectedCurveCenter() );
 	Propagator propagator(ctrl);
 	propagator.execute();
 	prim->isFrozen = false;
@@ -50,16 +48,14 @@ void QManualDeformer::scaleUp( double s )
 
 	Primitive * prim = ctrl->getSelectedPrimitive();
 
-	if(prim != NULL)
-	{
-		prim->isFrozen = true;
-		prim->scaleCurve(-1, s);
-		Propagator propagator(ctrl);
-		propagator.execute();
-		prim->isFrozen = false;
+	prim->isFrozen = true;
+	prim->scaleCurve(-1, s);
+	Propagator propagator(ctrl);
+	propagator.execute();
+	prim->isFrozen = false;
 
-		emit( objectModified() );
-	}
+	emit( objectModified() );
+
 }
 
 void QManualDeformer::draw()

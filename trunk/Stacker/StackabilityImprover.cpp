@@ -38,7 +38,7 @@ QVector<Vec3d> StackabilityImprover::getLocalMoves( HotSpot& HS )
 
 	// step
 	Vec3d step = (constraint_bbmax - constraint_bbmin) / 20;
-	int K = 4;
+	int K = 2;
 
 	// Horizontal moves
 	if (HS.type == POINT_HOTSPOT)
@@ -141,7 +141,7 @@ void StackabilityImprover::recordSolution(Point handleCenter, Vec3d localMove, i
 		suggestions.push_back(suggest); // For visualization
 		suggestSolutions.push(state); // For showing suggestions in order
 
-		std::cout << "DeltaS = " << suggest.deltaS << "\tDeltaV = " << suggest.deltaV << "\n";
+//		std::cout << "DeltaS = " << suggest.deltaS << "\tDeltaV = " << suggest.deltaV << "\n";
 	}
 	else
 	{
@@ -178,7 +178,7 @@ void StackabilityImprover::deformNearPointLineHotspot( int side )
 
 	foreach ( Vec3d T, Ts)
 	{
-		std::cout << T << std::endl;	// debug
+//		std::cout << T << std::endl;	// debug
 
 		ctrl()->setPrimitivesFrozen(false);	// Clear flags
 		setPositionalConstriants(fixedHS); // Fix one end
@@ -194,12 +194,10 @@ void StackabilityImprover::deformNearPointLineHotspot( int side )
 			free_prim->addFixedPoint(free_handle.first() + T);
 			free_prim->addFixedPoint(free_handle.last() + T);
 		}
-
 		// Fix the relation between hot segments then propagate the local modification
-		propagator.regroupPair(free_prim->id, fixed_prim->id); 
+		propagator.regroupPair(free_prim->id, fixed_prim->id); 	
 		propagator.execute(); 
-			
-//		if ( !satisfyBBConstraint() ) continue; // BB constraint is hard	
+		//		if ( !satisfyBBConstraint() ) continue; // BB constraint is hard	
 
 		// Record the shape state
 		if (freeHS.type == POINT_HOTSPOT)

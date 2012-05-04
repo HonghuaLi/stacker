@@ -157,7 +157,7 @@ void Cuboid::deformMesh()
 	}
 }
 
-std::vector<Vec3d> Cuboid::getUniformBoxConners( Box3 &box )
+std::vector<Point> Cuboid::getUniformBoxConners( Box3 &box )
 {
 	std::vector<Vec3d> pnts(8);
 
@@ -182,22 +182,20 @@ std::vector<Vec3d> Cuboid::getUniformBoxConners( Box3 &box )
 	return pnts;
 }
 
-std::vector<Vec3d> Cuboid::getBoxConners( Box3 &box )
+std::vector<Point> Cuboid::getBoxConners( Box3 &box )
 {
-	std::vector<Vec3d> corner = getUniformBoxConners(box);
+	std::vector<Point> corner = getUniformBoxConners(box);
+	std::vector<Point> faceCenters = getUniformBoxFaceCenters(box);
 
-	// Scaling: we need face centers and scale factor per-face
-	std::vector<Vec3d> faceCenters (6, Vec3d(0,0,0));
-
-	for (int i = 0; i < 6; i++)	{
-		for (int j = 0; j < 4; j++)
-			faceCenters[i] += corner[ cubeIds[i][j] ];
+	for (int i = 0; i < 6; i++)	
+	{
+		// Scale at most two faces, which have to be opposite to each other
+		if(box.faceScaling[i] == 1.0) continue;
 		
-		faceCenters[i] /= 4;
-
+		// Scale corner point
 		for (int j = 0; j < 4; j++)	{
 			Vec3d delta = (corner[ cubeIds[i][j] ] - faceCenters[i]) * box.faceScaling[i];
-			corner[ cubeIds[i][j] ] = faceCenters[i] + delta; // scaled corner point
+			corner[ cubeIds[i][j] ] = faceCenters[i] + delta; 
 		}
 	}
 
@@ -281,38 +279,9 @@ void Cuboid::drawNames(int name, bool isDrawParts)
 	}
 }
 
-void Cuboid::scaleAlongAxis( Vec3d &scales )
-{
-	currBox.Extent[0] *= scales[0];
-	currBox.Extent[1] *= scales[1];
-	currBox.Extent[2] *= scales[2];
-}
-
 void Cuboid::translate( Vec3d &T )
 {
 	currBox.Center += T;
-}
-
-void Cuboid::rotateAroundAxes( Vec3d &angles )
-{
-	Eigen::Matrix3d Rx = rotationMatrixAroundAxis(currBox.Axis[0], angles[0]);
-	Eigen::Matrix3d Ry = rotationMatrixAroundAxis(currBox.Axis[1], angles[1]);
-	Eigen::Matrix3d Rz = rotationMatrixAroundAxis(currBox.Axis[2], angles[2]);
-	Eigen::Matrix3d R = Rx * Ry * Rz;
-
-	Eigen::Vector3d p0 = R * V2E(currBox.Axis[0]);
-	Eigen::Vector3d p1 = R * V2E(currBox.Axis[1]);
-	Eigen::Vector3d p2 = R * V2E(currBox.Axis[2]);
-
-	currBox.Axis[0] = E2V(p0);
-	currBox.Axis[1] = E2V(p1);
-	currBox.Axis[2] = E2V(p2);
-}
-
-void Cuboid::recoverMesh()
-{
-	currBox = originalBox;
-	deformMesh();
 }
 
 double Cuboid::volume()
@@ -320,24 +289,25 @@ double Cuboid::volume()
 	return getGeometry().volume();
 }
 
-std::vector <Vec3d> Cuboid::points()
+std::vector<Point> Cuboid::points()
 {
-	return getBoxConners(currBox);
+	return getUniformBoxFaceCenters(currBox);
 }
 
-Vec3d Cuboid::selectedPartPos()
+std::vector<double> Cuboid::scales()
 {
-	if(selectedPartId < 0) return currBox.Center;
+	return currBox.faceScaling;
+}
 
-	Vec3d partPos(0,0,0);
+Vec3d Cuboid::getSelectedCurveCenter()
+{
+	if( RANGE( selectedPartId, 0, 7 ) ) 
+		selectedPartId = 0;
 
-	std::vector< std::vector<Vec3d> > faces = getBoxFaces(currBox);
-	std::vector<Vec3d> face = faces[selectedPartId];
+	int idx = selectedPartId / 2;
+	double sign = (selectedPartId % 2)? 1.0 : -1.0;
 
-	for(int i = 0; i < face.size(); i++)
-		partPos += face[i];
-
-	return partPos / face.size();
+	return currBox.Center + currBox.Axis[idx] * currBox.Extent[idx] * sign;
 }
 
 int Cuboid::detectHotCurve( Point hotSample )
@@ -631,56 +601,23 @@ void Cuboid::setSymmetryPlanes( int nb_fold )
 	}
 }
 
-void Cuboid::setSelectedPartId( Vec3d normal )
+void Cuboid::reshape( std::vector<Point>& pnts, std::vector<double>& scales )
 {
-	double bestDot = 0;
-	int id = -1;
+	// Reshape from face centers and scales
+	currBox.Center = (pnts[0] + pnts[1]) / 2;
+
+	currBox.Axis[1] = pnts[3] - pnts[2];
+	currBox.Axis[2] = pnts[5] - pnts[4];
+
 	for (int i=0;i<3;i++)
 	{
-		double newDot = dot(normal, currBox.Axis[i]);
-
-		if ( abs(newDot) > abs(bestDot))
-		{
-			id = i;
-			bestDot = newDot;
-		}
-	}
-
-	if (bestDot > 0)
-		selectedPartId = id*2;
-	else
-		selectedPartId = id*2 + 1;
-}
-
-void Cuboid::reshapeFromPoints( std::vector<Vec3d>& corners )
-{
-	if (corners.size() != 8) return;
-
-	QSurfaceMesh currBoxMesh = getGeometry();
-	QSurfaceMesh currUniformBoxMesh = getBoxGeometry(currBox, true);
-
-	for (int i=0; i < 8; i++)
-	{
-		// Map from world coordinates to a uniform box
-		corners[i] = MeanValueCooridnates::point(
-			MeanValueCooridnates::weights(corners[i], &currBoxMesh), &currUniformBoxMesh);
-	}
-
-	Vec3d center(0,0,0);
-
-	for (int i=0; i < 8; i++)
-		center += corners[i];
-	
-	currBox.Center = center / 8;
-
-	currBox.Axis[0] = corners[1] - corners[0];
-	currBox.Axis[1] = corners[4] - corners[0];
-	currBox.Axis[2] = corners[0] - corners[3];
-
-	for (int i=0;i<3;i++)
+		currBox.Axis[i] = pnts[2*i+1] - pnts[2*i];
 		currBox.Extent[i] = currBox.Axis[i].norm()/2;
+	}
 
 	currBox.normalizeAxis();
+
+	currBox.faceScaling = scales;
 
 	deformMesh();
 }
@@ -730,16 +667,18 @@ void Cuboid::movePoint( Point p, Vec3d T )
 		
 	}
 	// If there are no fixed points
-	else if (fixedPoints.empty())
+	else if (fixedPoints.isEmpty())
 	{
 		// Translation
 		currBox.Center += T;
 	}
-	else
+	else if (fixedPoints.size() == 1)
 	{
 		// Only two fix points are allowed
 		deformRespectToJoint(fixedPoints[0], p, T);
 	}
+	else
+		return;
 
 	deformMesh();
 }
@@ -815,15 +754,6 @@ void Cuboid::load( std::ifstream &inF, Vec3d translation, double scaleFactor )
 	computeMeshCoordinates();
 }
 
-Point Cuboid::getSelectedCurveCenter()
-{
-	if(selectedPartId < 0)  selectedPartId = 0;
-
-	int id = selectedPartId % 2;
-
-	return currBox.Center + currBox.Axis[id] * currBox.Extent[id];
-}
-
 
 void Cuboid::moveLineJoint( Point A, Point B, Vec3d deltaA, Vec3d deltaB )
 {
@@ -870,3 +800,18 @@ Point Cuboid::curveCenter( int cid )
 
 	return center;
 }
+
+std::vector<Point> Cuboid::getUniformBoxFaceCenters( Box3 &box )
+{
+	std::vector<Point> face_centers;
+	for (int i = 0; i< 3; i++)
+	{
+		face_centers.push_back(box.Center + box.Axis[i]*box.Extent[i]);
+		face_centers.push_back(box.Center - box.Axis[i]*box.Extent[i]);
+	}
+
+	return face_centers;
+}
+
+
+

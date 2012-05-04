@@ -21,7 +21,6 @@ Propagator::Propagator( Controller* ctrl )
 	mGraph = new ConstraintGraph(mCtrl);
 }
 
-
 void Propagator::regroupPair( QString id1, QString id2 )
 {
 	// For sure there is no group
@@ -31,27 +30,34 @@ void Propagator::regroupPair( QString id1, QString id2 )
 	QVector<Group*> constraints;
 	QVector<Group*> groups = mCtrl->groupsOf(id1);
 	for (int i=0;i<groups.size();i++)
+		if (groups[i]->has(id2)) constraints.push_back(groups[i]);
+
+	// This function is called only once at the very beginning of the propagation
+	// At this time, all primitives are unfrozen
+	// To regroup the pair, one primitive has to be frozen
+	Primitive* node1 = mGraph->node(id1);
+	Primitive* node2 = mGraph->node(id2);
+	QString target;
+
+	// A more sophisticated method might be needed (?)
+	if (  node1->fixedPoints.size() > node2->fixedPoints.size() ||
+		( node1->fixedPoints.size() == node2->fixedPoints.size() &&
+		node1->symmPlanes.size() >= node2->symmPlanes.size() )  ) 
 	{
-		if (groups[i]->has(id2))
-			constraints.push_back(groups[i]);
+		target = id2;
+		node1->isFrozen = true;
+	}
+	else
+	{
+		target = id1;
+		node2->isFrozen = true;
 	}
 
-	// If there are constraints, regroup them
-	// Warning: more than two = problems?
-	foreach(Group* c, constraints)
-	{
-		// One has to be frozen
-		// So the one having most fixed points is frozen
-		Primitive* node1 = c->nodes.first();
-		Primitive* node2 = c->nodes.last();
+	// Solve the constraints
+	propagateTo(target);
 
-		if (node1->fixedPoints.size() > node2->fixedPoints.size())
-			node1->isFrozen = true;
-		else
-			node2->isFrozen = true;
-
-		c->regroup(); 
-	}
+	// Freeze the propagated target
+	mGraph->node(target)->isFrozen = true;
 }
 
 void Propagator::execute()
@@ -61,44 +67,133 @@ void Propagator::execute()
 
 	while (!target.isEmpty())
 	{
-		// DEBUG
-		//std::cout << "Current target = " << qPrintable(target) << "\t";
+		// Solve the constraints
+		propagateTo(target);
 
-		// All the constrains for the target
-		QVector<ConstraintGraph::Edge> constrains = mGraph->getConstraints(target);
-
-		// Solving
-		// Apply symmetry constraint no matter how
-		bool hasSymmetry= false;
-		foreach(ConstraintGraph::Edge e, constrains)
-		{
-			Group* group = mCtrl->groups[e.id];
-			if ( group->type == SYMMETRY )
-			{
-				group->regroup();
-				hasSymmetry = true;
-				break;
-			}
-		}
-
-		// The challenging part
-		if ( !hasSymmetry )
-			solveConstraints(target, constrains);
-
+		// Freeze the propagated target
+		mGraph->node(target)->isFrozen = true;
 
 		// The next
 		target = mGraph->nextTarget();
 	}
 }
 
-void Propagator::solveConstraints( QString target, QVector<ConstraintGraph::Edge> constraints )
+void Propagator::propagateTo( QString target )
 {
-	// \constraints are only positional: joint and hight defining constraints
+	// All the constrains for the target
+	QVector<ConstraintGraph::Edge> constraints = mGraph->getConstraints(target);
+	int N = constraints.size();
 
-	// There is only one constraint
-	if (!constraints.isEmpty())
-		mCtrl->groups[constraints.first().id]->regroup();
+	// This would happen if the graph is not connected
+	// In this case, do nothing
+	if (constraints.isEmpty())	return;
 
-	// set target as frozen
-	mGraph->node(target)->isFrozen = true;
+	// Priority: Symmetry > Line joint > Point joint
+	// 1. Symmetry (suppose only one)
+	foreach(ConstraintGraph::Edge e, constraints)
+	{
+		Group* group = mCtrl->groups[e.id];
+		if ( group->type == SYMMETRY )
+		{
+			group->regroup();
+			return;
+		}
+	}
+
+	// 2. Line joint (suppose only one)
+	foreach(ConstraintGraph::Edge e, constraints)
+	{
+		Group* group = mCtrl->groups[e.id];
+		if ( group->type == LINEJOINT )
+		{
+			group->regroup();
+			return;
+		}
+	}
+
+	// 3. Point joint(s)
+	solvePointJointConstraints(target, constraints);
+}
+
+void Propagator::solvePointJointConstraints( QString target, QVector<ConstraintGraph::Edge> &constraints )
+{
+	Primitive* targetPrim = mGraph->node(target);
+	int N = constraints.size();
+
+	// If the \target is GC, apply all constraints
+	if (targetPrim->primType == GCYLINDER)
+	{
+		foreach(ConstraintGraph::Edge e, constraints)
+			mCtrl->groups[e.id]->regroup();
+		return;
+	}
+
+	// If the \target is cuboid
+	if (targetPrim->primType == CUBOID)
+	{
+		// If there are more than one fixed points already
+		// And no symmetry planes
+		// Do nothing
+		if (targetPrim->fixedPoints.size() > 1 
+			&& targetPrim->symmPlanes.isEmpty()) 
+			return;
+
+
+		// == Only one constraint
+		// Or there are symmetry planes
+		if (N == 1 || !targetPrim->symmPlanes.isEmpty())
+		{
+			mCtrl->groups[constraints.first().id]->regroup();
+			return;
+		}
+
+		// == More than one constraint
+		// And no symmetry planes
+		QVector<Point> constraint_points;
+		foreach(ConstraintGraph::Edge e, constraints)
+		{
+			PointJointGroup* group = (PointJointGroup*)mCtrl->groups[e.id];
+			Point p = targetPrim->fromCoordinate(group->jointCoords[target]);
+			constraint_points.push_back(p);
+		}
+
+		if (targetPrim->fixedPoints.isEmpty())
+		{
+			// Find the furthest two constraints
+			int idx1 = 0, idx2 = 1;
+			double maxDis = 0.0;
+			for (int i = 0; i < N-1; i++){
+				for (int j = i+1; j < N; j++)
+				{
+					double dis = (constraint_points[i] - constraint_points[j]).norm();
+
+					if (dis > maxDis){
+						maxDis = dis;	idx1 = i;	idx2 = j;
+					}
+				}
+			}
+
+			mCtrl->groups[constraints[idx1].id]->regroup();
+			mCtrl->groups[constraints[idx2].id]->regroup();
+		}
+		else
+		{
+			// Find the furthest constraint from the fixed point
+			Point fixed_point = targetPrim->fixedPoints.first();
+
+			int idx;
+			double maxDis = 0.0;
+			for (int i = 0; i < N; i++)
+			{
+				double dis = (constraint_points[i] - fixed_point).norm();
+
+				if (dis > maxDis){
+					maxDis = dis;	idx = i;
+				}
+			}
+
+			mCtrl->groups[constraints[idx].id]->regroup();
+		}
+	}
+
 }

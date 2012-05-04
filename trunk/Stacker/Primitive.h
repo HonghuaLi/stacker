@@ -31,18 +31,16 @@ public:
 
 	// Reshaping
 	virtual void translate( Vec3d &T ) = 0;
-	virtual void reshapeFromPoints( std::vector<Vec3d>& pnts ) = 0;
-	virtual void moveCurveCenter( int cid, Vec3d T) = 0;
 	virtual void scaleCurve(int cid, double s) = 0;
-	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) = 0;
 	virtual void movePoint(Point p, Vec3d T) = 0;
 	virtual void moveLineJoint(Point A, Point B, Vec3d deltaA, Vec3d deltaB) = 0;
+	virtual void moveCurveCenter( int cid, Vec3d T) = 0;
+	virtual void reshape( std::vector<Point>& pnts, std::vector<double>& scales) = 0;
+	virtual void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T) = 0;
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v ) = 0;
-	virtual bool containsPoint(Point p) = 0;
 	virtual Point fromCoordinate(std::vector<double> coords) = 0;
-	virtual Vec3d closestPoint(Point p) = 0;
 
 	// Primitive state
 	virtual PrimitiveState	getState();
@@ -58,15 +56,17 @@ public:
 	virtual Point	curveCenter(int cid) = 0;
 	virtual QSurfaceMesh		getGeometry() = 0;
 	virtual std::vector<Vec3d>	majorAxis() = 0;
-	virtual std::vector<Vec3d>	points() = 0;
 	virtual std::vector< std::vector<Vec3d> > getCurves() = 0;
+	virtual bool containsPoint(Point p) = 0;
+	virtual Vec3d closestPoint(Point p) = 0;
+	virtual std::vector<Point>	points() = 0;
+	virtual std::vector<double> scales() = 0;
 
 	// The underlying geometry
 	QSurfaceMesh* m_mesh;			
 	QSurfaceMesh* getMesh(){ return m_mesh; }
 
 	// Symmetry, joints, fixed points
-	bool			isRotationalSymmetry;
 	QVector<Point>	fixedPoints;
 	QVector<Plane>	symmPlanes;
 	virtual void	setSymmetryPlanes(int nb_fold) = 0;
@@ -75,7 +75,6 @@ public:
 
 	// Similarity between two primitives
 	double similarity(PrimitiveState state1, PrimitiveState state2);
-
 
 	// Helpful for debugging
 	std::vector<Vec3d> debugPoints, debugPoints2, debugPoints3;
@@ -86,20 +85,16 @@ public:
 	// Selecting
 	bool	isSelected;
 	int		selectedPartId;
-	virtual Vec3d	selectedPartPos() = 0;
-	virtual void	setSelectedPartId( Vec3d normal ) = 0;
 	virtual Point	getSelectedCurveCenter() = 0;
 
 	// Save and load
 	virtual void save(std::ofstream &outF) = 0;
 	virtual void load(std::ifstream &inF, Vec3d translation, double scaleFactor) = 0;
 
-
-
 	QString		id;
 	PrimType	primType;
 	bool		isDraw;
 
-	bool		isHot;			// Is this hot component?
-	bool		isFrozen;		// The seed of propagation
+	bool		isHot;			// For hot segment
+	bool		isFrozen;		// For propagation
 };

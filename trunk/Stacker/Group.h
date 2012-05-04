@@ -21,7 +21,8 @@ public:
 	virtual void process(QVector< Primitive* > segments);
 
 	// Regroup
-	virtual void regroup();
+	virtual void regroup() = 0;
+	bool getRegroupDirection(Primitive* &frozen, Primitive* &non_frozen);
 
 	// Visualization
 	virtual void draw();
@@ -40,7 +41,6 @@ public:
 	QString id;
 	GroupType type;
 	QVector< Primitive* > nodes;
-	QMap< QString, QVector<int> > correspondence;
 
 	// Visualization
 	bool isDraw;

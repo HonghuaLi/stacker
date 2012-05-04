@@ -20,15 +20,22 @@ public:
 
 public:
 	// Build up
-	void fit();
-	void createGC( std::vector<Point> spinePoints, bool computeRadius = true );
-	void buildCage();			// Build the cage from the skeleton for the first time
-	void build_up();			// Do all the necessary things
+	void fit();						// Extract skeleton first, then build GC
+	void buildGC( std::vector<Point> spinePoints, bool computeRadius = true ); 
+									// Build GC from spin points
+	void buildCage();				// Build the cage from the skeleton for the first time
+	void computeMeshCoordinates();	// Set up the underlying deformer
+	void buildUp();				// Include the two step above
+
+	// Update
+	void updateGC();			// If the frame is changed
+	void updateCage();			// If the GC is changed
+	void deformMesh();			// Deform the underlying geometry
+	void update();				// Include the three steps above
 
 	// Coordinate system
 	std::vector<double> getCoordinate( Point v );
 	Point				fromCoordinate(std::vector<double> coords);
-	void				computeMeshCoordinates();
 
 	// Primitive geometry
 	double	volume();
@@ -37,28 +44,28 @@ public:
 	bool	containsPoint(Point p);
 	Vec3d	closestPoint(Point p);
 	QSurfaceMesh		getGeometry();
-	std::vector<Vec3d>	points();
 	std::vector<Vec3d>	majorAxis();
 	std::vector< std::vector <Vec3d> > getCurves();
-
+	std::vector<Point>	points();
+	std::vector<double> scales();
 	// Hot curves
 	int detectHotCurve( Point hotSample);
 	int detectHotCurve( QVector<Point> &hotSamples );
-	Point	getSelectedCurveCenter();
 
 	// Weights
 	double computeWeight( double x, bool useGaussian = false );
 
 	// Reshaping
-	void deformMesh();
+	void reshape( std::vector<Point>& pnts, std::vector<double>& scales);
+
+	// Deformation
 	void translate( Vec3d &T );
-	void moveCurveCenter( int cid, Vec3d T);
-	void scaleCurve(int cid, double s);
 	void movePoint(Point p, Vec3d T);
 	void moveLineJoint(Point A, Point B, Vec3d deltaA, Vec3d deltaB);
-	void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T);
-	void reshapeFromPoints( std::vector<Vec3d>& pnts );
+	void moveCurveCenter( int cid, Vec3d T);
 	void moveCurveCenterRanged(int cid, Vec3d delta, int start = -1, int finish = -1);
+	void scaleCurve(int cid, double s);
+	void deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T); // not used
 
 	// Draw
 	void draw();
@@ -72,35 +79,24 @@ public:
 	void	setSymmetryPlanes(int nb_fold);
 
 	// Selecting
-	Vec3d	selectedPartPos();
-	void	setSelectedPartId( Vec3d normal );
+	Point	getSelectedCurveCenter();
 	
 	// Save and load
 	void save(std::ofstream &outF);
 	void load(std::ifstream &inF, Vec3d translation, double scaleFactor);
 
-	qglviewer::ManipulatedFrame *mf1, *mf2;
-
-public slots:
-	void update();
-
 private:
-	Skeleton * skel;				// Skeleton of GC
-	std::vector<Point> originalSpine;
+	GeneralizedCylinder	* gc;		// The underlying GC
+	std::vector<double>		origRadius;		// Original radius
+	std::vector<double>		curveScales;			// Scales for each cross section
 
-	GeneralizedCylinder * gc;		// The underlying GC
-	QVector<double> origRadius;		// Original radius
-	QVector<double> scales;			// Scales for each cross section
-
-	DEFORMER deformer;				// Deformer switcher
-	Skinning * skinner;				// Skinning deformer
+	DEFORMER		deformer;		// Deformer switcher
+	Skinning *		skinner;		// Skinning deformer
 	GCDeformation * gcd;			// Green Coordinates deformer
 
-	QSurfaceMesh * cage;			// Wrapping cage
-	double 	deltaScale;
-	double cageScale;
-	int cageSides;
-	void updateCage();				// Update the cage after deforming the skeleton
+	QSurfaceMesh *	cage;			// Wrapping cage
+	double			cageScale;		// Scale to the radius
+	int				cageSides;		// Number of sides
 
-	bool isFitted;					// Fitting tag
+	double			deltaScale;		// Used for selecting
 };

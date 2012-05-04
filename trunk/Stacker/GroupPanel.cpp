@@ -171,11 +171,6 @@ void GroupPanel::saveGroups()
 				 outF << p.n << "\t";
 			outF << std::endl;
 		}
-
-		if (prim->isRotationalSymmetry)
-		{
-			outF << qPrintable(groupTypes[SELF_ROT_SYMMETRY]) << "\t" << qPrintable(prim->id) << std::endl;
-		}
 	}
 
 	outF.close();
@@ -239,13 +234,6 @@ void GroupPanel::loadGroups()
 					inF >> p.n;
 					prim->symmPlanes.push_back(p);
 				}
-				break;
-			}
-		case SELF_ROT_SYMMETRY:
-			{
-				inF >> str;
-				QString primId = QString(str.c_str());
-				ctrl->getPrimitive(primId)->isRotationalSymmetry = true;
 				break;
 			}
 		}
