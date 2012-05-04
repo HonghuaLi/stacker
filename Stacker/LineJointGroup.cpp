@@ -29,20 +29,8 @@ void LineJointGroup::process( QVector< Primitive* > segments )
 
 void LineJointGroup::regroup()
 {
-	Primitive * frozen =nodes.first();
-	Primitive * non_frozen = nodes.last();
-
-	// Both are frozen or unfrozen
-	if(frozen->isFrozen == non_frozen->isFrozen)
-		return;
-
-	// Match the pointer with the correct primitive
-	if(!frozen->isFrozen) 
-	{
-		Primitive * temp = frozen;
-		frozen = non_frozen;
-		non_frozen = temp;
-	}
+	Primitive *frozen,  *non_frozen;
+	if (!getRegroupDirection(frozen, non_frozen)) return;
 
 	// Regroup
 	Point A = non_frozen->fromCoordinate(lineEndsCoords[non_frozen->id][0]);
@@ -61,7 +49,9 @@ void LineJointGroup::regroup()
 	lineEnds[0] = newA;
 	lineEnds[1] = newB;
 
-	Group::regroup();
+	// Fix the regrouped line joint
+	non_frozen->addFixedPoint(newA);
+	non_frozen->addFixedPoint(newB);
 }
 
 void LineJointGroup::draw()

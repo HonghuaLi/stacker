@@ -15,4 +15,5 @@ public:
 
 public:
 	Plane symmetryPlane;
+	QMap< QString, QVector<int> > correspondence;
 };

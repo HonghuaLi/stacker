@@ -15,8 +15,6 @@ void ConcentricGroup::process( QVector< Primitive* > segments )
 
 void ConcentricGroup::regroup()
 {
-
-	Group::regroup();
 }
 
 void ConcentricGroup::draw()

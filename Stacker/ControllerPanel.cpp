@@ -76,6 +76,8 @@ void ControllerPanel::load()
 	inF.close();
 
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
+
+	if (activeScene) activeScene->updateGL();
 }
 
 void ControllerPanel::removeSelected()

@@ -26,31 +26,17 @@ void PointJointGroup::process( QVector< Primitive* > segments )
 
 void PointJointGroup::regroup()
 {
-	Primitive * frozen =nodes.first();
-	Primitive * non_frozen = nodes.last();
-
-	// Both are frozen or unfrozen
-	if(frozen->isFrozen == non_frozen->isFrozen) return;
-
-	// Match the pointer with the correct primitive
-	if(!frozen->isFrozen) 
-	{
-		Primitive * temp = frozen;
-		frozen = non_frozen;
-		non_frozen = temp;
-	}
+	Primitive *frozen,  *non_frozen;
+	if (!getRegroupDirection(frozen, non_frozen)) return;
 
 	// The joint has been apart, try to join them again
 	Vec3d newPos = frozen->fromCoordinate(jointCoords[frozen->id]);
 	Vec3d oldPos = non_frozen->fromCoordinate(jointCoords[non_frozen->id]);
 
-	Vec3d T = newPos - oldPos;
-	non_frozen->movePoint(oldPos, T);
+	non_frozen->movePoint(oldPos, newPos - oldPos);
 
-	// Make the joint fixed
+	// Fix the regrouped point joint
 	non_frozen->addFixedPoint(newPos);
-
-	Group::regroup();
 }
 
 void PointJointGroup::draw()

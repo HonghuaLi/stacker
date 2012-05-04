@@ -319,7 +319,6 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				menu.addSeparator();
 				QAction* self1foldSymm = menu.addAction("Create 1-fold Self-Symmetry..");
 				QAction* self2foldSymm = menu.addAction("Create 2-fold Self-Symmetry..");
-				QAction* selfRotSymm = menu.addAction("Create Rotational Self-Symmetry..");
 				menu.addSeparator();
 				QAction* addFixedPoint = menu.addAction("Add fixed Point");
 
@@ -362,7 +361,6 @@ void Scene::mousePressEvent( QMouseEvent* e )
 
 				if(action == self1foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(1);
 				if(action == self2foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(2);
-				if(action == selfRotSymm)	ctrl->getSelectedPrimitive()->isRotationalSymmetry = true;
 
 				if(action == addFixedPoint)	
 				{

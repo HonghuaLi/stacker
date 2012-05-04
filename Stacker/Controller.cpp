@@ -143,7 +143,7 @@ Vec3d Controller::getPrimPartPos()
 	foreach(Primitive * prim, primitives)
 	{
 		if(prim->isSelected)
-			return prim->selectedPartPos();
+			return prim->getSelectedCurveCenter();
 	}
 }
 
@@ -174,8 +174,8 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 
 		std::vector<Point> spinePoints = line.uniformSample(GC_SKELETON_JOINTS_NUM);
 
-		gc->createGC(spinePoints);
-		gc->build_up();
+		gc->buildGC(spinePoints);
+		gc->buildUp();
 	}
 
 	delete oldPrimitive;
@@ -363,7 +363,7 @@ void Controller::save( std::ofstream &outF )
 
 void Controller::load( std::ifstream &inF )
 {
-	primitives.clear();
+	clearPrimitives();
 
 	while(!inF.eof())
 	{
@@ -395,6 +395,9 @@ void Controller::removePrimitive( Primitive * prim )
 
 void Controller::clearPrimitives()
 {
+	foreach(QString id, primitives.keys())
+		delete primitives[id];
+
 	primitives.clear();
 }
 

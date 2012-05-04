@@ -66,5 +66,4 @@ void CoplanarGroup::draw()
 void CoplanarGroup::regroup()
 {
 
-	Group::regroup();
 }

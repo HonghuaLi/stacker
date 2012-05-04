@@ -54,39 +54,28 @@ void SymmetryGroup::process(QVector<Primitive*> segments)
 
 void SymmetryGroup::regroup()
 {
-	Primitive * frozen = nodes.first();
-	Primitive * non_frozen = nodes.last();
-
-	// Both are frozen or unfrozen
-	if(frozen->isFrozen == non_frozen->isFrozen) return;
-
-	// Match the pointer with the correct primitive
-	if(!frozen->isFrozen) 
-	{
-		Primitive * temp = frozen;
-		frozen = non_frozen;
-		non_frozen = temp;
-	}
+	Primitive *frozen,  *non_frozen;
+	if (!getRegroupDirection(frozen, non_frozen)) return;
 
 	// The correspondence from frozen to unfrozen
 	QVector<int> corr = correspondence[frozen->id];
 
 	// Reflect the representative points of \frozen
-	std::vector<Vec3d> pointsA = frozen->points();
-	std::vector<Vec3d> pointsB = non_frozen->points();
+	std::vector<Point> pointsA = frozen->points();
+	std::vector<double> scalesA = frozen->scales();
+	int N = pointsA.size();
+	std::vector<Point> pointsB( N );
+	std::vector<double> scalesB( N );
 
 	for(int i = 0; i < pointsA.size(); i++)
 	{
 		Point reflected = symmetryPlane.reflection(pointsA[i]);
 		pointsB[corr[i]] = reflected;
+		scalesB[corr[i]] = scalesA[i];
 	}
 	
 	// Reconstruct the primitive
-	non_frozen->reshapeFromPoints(pointsB);
-	non_frozen->isFrozen = true;
-
-	// Set flags
-	Group::regroup();
+	non_frozen->reshape(pointsB, scalesB);
 }
 
 

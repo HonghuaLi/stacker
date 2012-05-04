@@ -20,9 +20,9 @@ public:
 	// Propagation
 	void execute();
 
-	// Solve constraints
-	void solveConstraints(QString target, QVector<ConstraintGraph::Edge> constraints);
-
+	// Propagate to \target
+	void propagateTo( QString target );
+	void solvePointJointConstraints( QString target, QVector<ConstraintGraph::Edge> &constraints );
 private:
 	Controller *		mCtrl;
 	ConstraintGraph *	mGraph;

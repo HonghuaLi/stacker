@@ -11,7 +11,7 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 	cageSides = 16;
 
 	// For visualization
-	deltaScale = cageScale;
+	deltaScale = 1.5;
 
 	// useful for fitting process
 	if(!m_mesh->vertex_array.size()){
@@ -24,12 +24,10 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 	if(doFit)
 	{
 		fit();
-		build_up();
+		buildUp();
 	}
 
 	fixedPoints.clear();
-
-	isFitted = doFit;
 
     primType = GCYLINDER;
 }
@@ -40,7 +38,6 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId) : Primitive(segment,
 	cageScale = 0;
 	cageSides = 0;
 	deltaScale = 0;
-	isFitted = false;
     primType = GCYLINDER;
 }
 
@@ -48,7 +45,7 @@ void GCylinder::fit()
 {
 	// Extract and save skeleton
 	SkeletonExtract skelExt( m_mesh );
-	skel = new Skeleton();
+	Skeleton * skel = new Skeleton();
 	skelExt.SaveToSkeleton( skel );
 
 	// Select part of skeleton
@@ -60,29 +57,14 @@ void GCylinder::fit()
 	foreach(ResampledPoint sample, skel->resampleSmoothSelectedPath(numSteps, 3)) 
 		reSampledSpinePoints.push_back(sample.pos);
 
-	createGC(reSampledSpinePoints);
-
-	Vec3d p = gc->frames.point.front();
-	Vec3d q = gc->frames.point.back();
+	buildGC(reSampledSpinePoints);
 }
 
-void GCylinder::createGC( std::vector<Point> spinePoints, bool computeRadius )
+void GCylinder::buildGC( std::vector<Point> spinePoints, bool computeRadius )
 {
 	gc = new GeneralizedCylinder( spinePoints, m_mesh, computeRadius );
 
 	printf(" GC with %d cross-sections. ", gc->crossSection.size());
-	
-	// Original spine points
-	this->originalSpine = spinePoints;
-
-	// Save the original radii
-	origRadius.clear();
-	scales.clear();
-	foreach( GeneralizedCylinder::Circle c, gc->crossSection)
-	{
-		origRadius.push_back(c.radius);
-		scales.push_back(1.0);
-	}
 }
 
 void GCylinder::computeMeshCoordinates()
@@ -100,14 +82,13 @@ void GCylinder::computeMeshCoordinates()
 
 void GCylinder::deformMesh()
 {
-	// The GC has been modified, now update the cage and underlying geometry
+	// Deform the underlying geometry using deformer
 
-	// The cage
-	updateCage();
+	if(deformer == GREEN_COORDIANTES) 
+		gcd->deform();
 
-	// Underlying geometry
-	if(deformer == GREEN_COORDIANTES) gcd->deform();
-	if(deformer == SKINNING) skinner->deform();
+	if(deformer == SKINNING) 
+		skinner->deform();
 }
 
 void GCylinder::draw()
@@ -187,11 +168,6 @@ void GCylinder::drawNames( int name, bool isDrawParts)
 		if(cage) cage->simpleDraw();
 		glPopName();
 	}
-}
-
-void GCylinder::update()
-{
-	// old code
 }
 
 void GCylinder::buildCage()
@@ -282,9 +258,14 @@ void GCylinder::updateCage()
 	cagePoints[Surface_mesh::Vertex(cage->n_vertices() - 1)] = gc->crossSection.back().center;
 }
 
-std::vector <Vec3d> GCylinder::points()
+std::vector <Point> GCylinder::points()
 {
-	return cage->clonePoints();
+	return gc->frames.point;
+}
+
+std::vector <double> GCylinder::scales()
+{
+	return curveScales;
 }
 
 double GCylinder::volume()
@@ -292,38 +273,24 @@ double GCylinder::volume()
 	return cage->volume();
 }
 
-Vec3d GCylinder::selectedPartPos()
+Point GCylinder::getSelectedCurveCenter()
 {
-	if(selectedPartId < 0){
-		// Return center point
+	// Return center point
+	if( RANGED( selectedPartId, 0, gc->frames.count()-1 ) ){
 		std::vector<Point> pnts = points();
 		Vec3d center(0,0,0); foreach(Point p, pnts) center += p;
 		return center / pnts.size();
 	}
-
-	Vec3d result(0,0,0);
-
-	foreach(GeneralizedCylinder::Circle c, gc->crossSection){
-		if(c.index == selectedPartId){
-			result = c.center;
-			break;
-		}
-	}
-
-	return result;
+	else
+		return gc->frames.point[selectedPartId];
 }
 
 void GCylinder::moveCurveCenter( int cid, Vec3d delta )
 {
 	if(cid < 0 && selectedPartId < 0)
-	{
 		translate(delta);
-	}
 	else
-	{
-		// Using full range
 		moveCurveCenterRanged(cid, delta);
-	}
 }
 
 
@@ -402,45 +369,21 @@ void GCylinder::moveCurveCenterRanged(int cid, Vec3d T, int fixed_end_id1, int f
 		gc->frames.point[i] += T * weight;
 	}
 
-	// Re-compute frames and align the cross-sections
-	gc->frames.compute();
-	gc->realignCrossSections();
-	deformMesh();
+	// Update the GC, cage, and mesh
+	update();
 }
 
 void GCylinder::scaleCurve( int cid, double s )
 {
 	if (cid == -1) cid = selectedPartId;
 
-	// Scale \cid
-	scales[cid] *= s;
-
-	// Gaussian parameters
-	double sigma = 0.1;
-	double mu = 0;
-
-	// Recompute the radius of all cross sections
 	int N = gc->frames.count();
-	for(int i = 0; i < N; i++)	
-	{
-		double final_scale = 1;
 
-		// Sum up scales from all others
-		for(int j = 0; j < N; j++)
-		{
-			double deltaS = scales[j] - 1;
-			double dist = abs(double(j - i)) / double(N-1);
+	// Scale \cid
+	curveScales[cid] *= s;
 
-			double weight = 1 + ( deltaS * gaussianFunction(dist, mu, sigma) );
-		
-			final_scale *= weight;
-		}
-
-		gc->crossSection[i].radius = origRadius[i] * final_scale;
-	}
-
-	// Re-compute frames and align the cross-sections
-	deformMesh();
+	// Update the GC, cage, and mesh
+	update();
 }
 
 QSurfaceMesh GCylinder::getGeometry()
@@ -535,34 +478,15 @@ std::vector < std::vector <Vec3d> > GCylinder::getCurves()
 	return result;
 }
 
-void GCylinder::reshapeFromPoints( std::vector<Vec3d>& pnts )
+void GCylinder::reshape( std::vector<Point>& pnts, std::vector<double>& scales )
 {
-	// extract circles
-	for(uint i = 0; i < gc->crossSection.size(); i++)
-	{
-		int offset = 1 + (cageSides * i);
+	gc->frames.point = pnts;
+	this->curveScales = scales;
 
-		std::vector<Point> curvePoints;
-
-		for(uint s = 0; s < cageSides; s++)
-			curvePoints.push_back(pnts[offset + s]);
-		
-		// Computer center
-		Point c(0,0,0);
-		foreach(Point p, curvePoints)	c += p;
-		c /= curvePoints.size();
-		
-		gc->frames.point[i] = c;
-
-		// Compute radius
-		gc->crossSection[i].radius = (curvePoints.front() - c).norm() / cageScale;
-	}
-
-	// Re-compute frames and align the cross-sections
-	gc->frames.compute();
-	gc->realignCrossSections();
-	deformMesh();
+	// Update the GC, cage, and mesh
+	update();
 }
+
 
 int GCylinder::detectHotCurve( QVector<Point> &hotSamples )
 {
@@ -598,9 +522,8 @@ void GCylinder::translate( Vec3d &T )
 	for(uint i = 0; i < gc->frames.count(); i++)
 		gc->frames.point[i] += T;
 
-	gc->frames.compute();
-	gc->realignCrossSections();
-	deformMesh();
+	// Update the GC, cage, and mesh
+	update();
 }
 
 Point GCylinder::closestPoint( Point p )
@@ -615,11 +538,6 @@ bool GCylinder::containsPoint( Point p )
 	return false;
 }
 
-void GCylinder::setSelectedPartId( Vec3d normal )
-{
-	// useless for GC
-}
-
 void GCylinder::setSymmetryPlanes( int nb_fold )
 {
 	Vec3d normal = gc->crossSection.front().n;
@@ -630,7 +548,6 @@ void GCylinder::setSymmetryPlanes( int nb_fold )
 
 void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 {
-
 	// theta = <p, j, p + T>
 	Vec3d v1 = p - joint;
 	Vec3d v2 = (p + T) - joint;
@@ -656,10 +573,8 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 		gc->frames.point[c.index] = joint + ((gc->frames.point[c.index] - joint) * scaleAlong);
 
-	gc->frames.compute();
-	gc->realignCrossSections();
-	deformMesh();
-
+	// Update the GC, cage, and mesh
+	update();
 }
 
 void GCylinder::movePoint( Point p, Vec3d T )
@@ -704,46 +619,48 @@ void GCylinder::movePoint( Point p, Vec3d T )
 
 void GCylinder::save( std::ofstream &outF )
 {
-	outF << this->isFitted << "\t";
-	outF << this->cageScale << "\t";
-	outF << this->cageSides << "\t";
-	outF << this->deltaScale << "\t";
-	outF << this->originalSpine.size() << "\t";
+	outF << this->cageScale << '\t';
+	outF << this->cageSides << '\t';
+	outF << this->deltaScale << '\t';
 
-	foreach(Point p, originalSpine)
+	// The skeleton joints
+	outF << gc->frames.count() << '\t';
+	foreach(Point p, gc->frames.point)
 	{
-		outF << p << "\t";
+		outF << p << '\t';
 	}
 
+	// The radii
 	foreach(GeneralizedCylinder::Circle c, gc->crossSection)
 	{
-		outF << c.radius << "\t";
+		outF << c.radius << '\t';
 	}
 }
 
 void GCylinder::load( std::ifstream &inF, Vec3d translation, double scaleFactor )
 {
-	inF >> this->isFitted;
 	inF >> this->cageScale;
 	inF >> this->cageSides;
 	inF >> this->deltaScale;
-	inF >> GC_SKELETON_JOINTS_NUM;
 
 	// Load skeleton joints
-	for(int i = 0; i < GC_SKELETON_JOINTS_NUM; i++)
+	int N;
+	inF >> N;
+	std::vector<Point> spinePoints;
+	for(int i = 0; i < N; i++)
 	{
 		Point p(0,0,0);
 		inF >> p;
 		p += translation; 
 		p *= scaleFactor;
-		originalSpine.push_back(p);
+		spinePoints.push_back(p);
 	}
 
 	// Create GC using skeleton
-	createGC(originalSpine, false);
+	buildGC(spinePoints, false);
 
 	// Load radius
-	for(int i = 0; i < GC_SKELETON_JOINTS_NUM; i++)
+	for(int i = 0; i < N; i++)
 	{
 		double radius;
 		inF >> radius;
@@ -751,19 +668,17 @@ void GCylinder::load( std::ifstream &inF, Vec3d translation, double scaleFactor 
 		gc->crossSection[i].radius = radius;
 	}
 
-	// Build up
-	build_up();
+	buildUp();
 }
 
-Point GCylinder::getSelectedCurveCenter()
-{
-	return gc->frames.point[selectedPartId];
-}
 
 void GCylinder::moveLineJoint( Point A, Point B, Vec3d deltaA, Vec3d deltaB )
 {
 	// Move the two points one by one
 	movePoint(A, deltaA);
+
+	// After moving \A, \B might change
+	// == To do.
 	movePoint(B, deltaB);
 }
 
@@ -789,9 +704,56 @@ Point GCylinder::curveCenter( int cid )
 	return center;
 }
 
-void GCylinder::build_up()
+void GCylinder::buildUp()
 {
 	buildCage();
 	computeMeshCoordinates();
+
+	// Save the original radii
+	origRadius.clear();
+	curveScales.clear();
+	foreach( GeneralizedCylinder::Circle c, gc->crossSection)
+	{
+		origRadius.push_back(c.radius);
+		curveScales.push_back(1.0);
+	}
+}
+
+void GCylinder::updateGC()
+{
+	gc->frames.compute();
+	gc->realignCrossSections();
+
+	// Update radius for each cross section
+	// Gaussian parameters
+	double sigma = 0.1;
+	double mu = 0;
+
+	// Recompute the radius of all cross sections
+	int N = gc->frames.count();
+	for(int i = 0; i < N; i++)	
+	{
+		double final_scale = 1;
+
+		// Sum up scales from all others
+		for(int j = 0; j < N; j++)
+		{
+			double deltaS = curveScales[j] - 1;
+			double dist = abs(double(j - i)) / double(N-1);
+
+			double weight = 1 + ( deltaS * gaussianFunction(dist, mu, sigma) );
+
+			final_scale *= weight;
+		}
+
+		gc->crossSection[i].radius = origRadius[i] * final_scale;
+	}
+}
+
+void GCylinder::update()
+{
+	updateGC();
+	updateCage();
+	deformMesh();
 }
 
