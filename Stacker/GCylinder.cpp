@@ -108,7 +108,7 @@ void GCylinder::draw()
 
 		if(isSelected) glColor4d(1, 1, 0, 1.0); // yellow
 
-		if(c.index == this->selectedPartId){
+		if(c.index == this->selectedCurveId){
 			glLineWidth(6.0);
 			glColor4d(0, 1, 0, 1.0); // green
 		}
@@ -146,9 +146,9 @@ void GCylinder::draw()
 	}
 }
 
-void GCylinder::drawNames( int name, bool isDrawParts)
+void GCylinder::drawNames( int name, bool isDrawCurves)
 {
-	if(isDrawParts)
+	if(isDrawCurves)
 	{
 		int curveId = 0;
 
@@ -276,18 +276,18 @@ double GCylinder::volume()
 Point GCylinder::getSelectedCurveCenter()
 {
 	// Return center point
-	if( RANGED( selectedPartId, 0, gc->frames.count()-1 ) ){
+	if( RANGED( selectedCurveId, 0, gc->frames.count()-1 ) ){
 		std::vector<Point> pnts = points();
 		Vec3d center(0,0,0); foreach(Point p, pnts) center += p;
 		return center / pnts.size();
 	}
 	else
-		return gc->frames.point[selectedPartId];
+		return gc->frames.point[selectedCurveId];
 }
 
 void GCylinder::moveCurveCenter( int cid, Vec3d delta )
 {
-	if(cid < 0 && selectedPartId < 0)
+	if(cid < 0 && selectedCurveId < 0)
 		translate(delta);
 	else
 		moveCurveCenterRanged(cid, delta);
@@ -323,7 +323,7 @@ void GCylinder::moveCurveCenterRanged(int cid, Vec3d T, int fixed_end_id1, int f
 	{
 		useGaussian = true;
 
-		cid = selectedPartId;
+		cid = selectedCurveId;
 		if (cid - fixed_end_id1 < fixed_end_id2 - cid)
 			fixed_end_id2 = N-1;
 		else
@@ -375,7 +375,7 @@ void GCylinder::moveCurveCenterRanged(int cid, Vec3d T, int fixed_end_id1, int f
 
 void GCylinder::scaleCurve( int cid, double s )
 {
-	if (cid == -1) cid = selectedPartId;
+	if (cid == -1) cid = selectedCurveId;
 
 	int N = gc->frames.count();
 

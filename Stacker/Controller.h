@@ -20,7 +20,7 @@ public:
 
 public:
 
-	// Primitive GET's
+	// Primitives
 	int numPrimitives();
 	int numHotPrimitives();
 	int getPrimitiveIdNum(QString stringId);
@@ -42,36 +42,34 @@ public:
 	void convertToGC( QString primitiveId, bool isUsingSkeleton = true, int cuboidAxis = 0 );
 	void convertToCuboid( QString primitiveId, bool useAABB = true, int fit_method = 0);
 
-	// Interaction
-	void select(int id);
-	void select(QString id);
-	bool selectPrimitivePart( int id );
-	Vec3d getPrimPartPos();
+	// Selecting
+	void	selectPrimitive(int id);
+	void	selectPrimitive(QString id);
+	bool	selectPrimitiveCurve( int id );
+	Point	getSelectedCurveCenter();
 
 	// Grouping
 	QMap<QString, Group*> groups;
 	QVector< Group * > groupsOf( QString id );
 
-	// OpenGL stuff
+	// Draw
 	void draw();
 	void drawNames(bool isDrawParts = false);
 
 	// Shape state
-	ShapeState getShapeState();
-    void setShapeState( const ShapeState &shapeState );
+	ShapeState	getShapeState();
+    void		setShapeState( const ShapeState &shapeState );
+	double		volume();
+	double		originalVolume();
+	double		getDistortion();
 
 	// Similarity between two shape state
 	double similarity(ShapeState state1, ShapeState state2);
 	
 	// Flags
-	void setSegmentsVisible(bool isVisible = true);
 	void setPrimitivesFrozen(bool isFrozen = false);
-	void setPrimitivesAvailable(bool isAvailable = true);
 
 	// Distortion
-	double volume();
-	double originalVolume();
-	double getDistortion();
 
 	// Save and load
 	void save(std::ofstream &outF);

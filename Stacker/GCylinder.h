@@ -69,7 +69,7 @@ public:
 
 	// Draw
 	void draw();
-	void drawNames(int name, bool isDrawParts = false);
+	void drawNames(int name, bool isDrawCurves = false);
 
 	// Primitive state
 	void*	getGeometryState();

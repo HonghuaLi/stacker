@@ -84,7 +84,7 @@ public:
 
 	// Selecting
 	bool	isSelected;
-	int		selectedPartId;
+	int		selectedCurveId;
 	virtual Point	getSelectedCurveCenter() = 0;
 
 	// Save and load

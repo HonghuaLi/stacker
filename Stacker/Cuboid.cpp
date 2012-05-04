@@ -12,7 +12,7 @@ using namespace Eigen;
 
 Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
 {
-	selectedPartId = -1;
+	selectedCurveId = -1;
 	isDrawAxis = false;
 	isFrozen = false;
 
@@ -23,7 +23,7 @@ Cuboid::Cuboid( QSurfaceMesh* segment, QString newId, bool useAABB, int fit_meth
 {
 	fit(useAABB, fit_method);
 
-	selectedPartId = -1;
+	selectedCurveId = -1;
 	isDrawAxis = false;
 	isFrozen = false;
 
@@ -245,19 +245,16 @@ void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
 {
 	std::vector< std::vector<Vec3d> > faces = getBoxFaces(currBox);
 
-	if(selectedPartId >= 0)
-	{
-		SimpleDraw::DrawSquare(faces[this->selectedPartId], false, lineWidth * 2, Vec4d(0,1,0,1));
-		//SimpleDraw::IdentifyPoint(selectedPartPos(), 0,1,0,20);
-	}
+	if(selectedCurveId >= 0)
+		SimpleDraw::DrawSquare(faces[this->selectedCurveId], false, lineWidth * 2, Vec4d(0,1,0,1));
 
 	for(int i = 0; i < faces.size(); i++)
 		SimpleDraw::DrawSquare(faces[i], isOpaque, lineWidth, color);
 }
 
-void Cuboid::drawNames(int name, bool isDrawParts)
+void Cuboid::drawNames(int name, bool isDrawCurves)
 {
-	if(isDrawParts)
+	if(isDrawCurves)
 	{
 		int faceId = 0;
 
@@ -301,11 +298,11 @@ std::vector<double> Cuboid::scales()
 
 Vec3d Cuboid::getSelectedCurveCenter()
 {
-	if( RANGE( selectedPartId, 0, 7 ) ) 
-		selectedPartId = 0;
+	int cid = selectedCurveId;
+	if( RANGE( selectedCurveId, 0, 7 ) ) cid = 0;
 
-	int idx = selectedPartId / 2;
-	double sign = (selectedPartId % 2)? 1.0 : -1.0;
+	int idx = cid / 2;
+	double sign = (cid % 2)? 1.0 : -1.0;
 
 	return currBox.Center + currBox.Axis[idx] * currBox.Extent[idx] * sign;
 }
@@ -440,7 +437,7 @@ Point Cuboid::fromCoordinate( std::vector<double> coords )
 void Cuboid::moveCurveCenter( int fid, Vec3d T )
 {
 	if (fid == -1)
-		fid = selectedPartId;
+		fid = selectedCurveId;
 
 	if (fid != -1)
 	{
@@ -583,16 +580,16 @@ void Cuboid::setSymmetryPlanes( int nb_fold )
 
 	Point center = currBox.Center;
 
-	if(selectedPartId < 0) selectedPartId = 0;
+	if(selectedCurveId < 0) selectedCurveId = 0;
 
 	if (nb_fold == 1)
 	{
-		Vec3d normal = currBox.Axis[selectedPartId/2];
+		Vec3d normal = currBox.Axis[selectedCurveId/2];
 		symmPlanes.push_back(Plane(normal, center));
 	} 
 	else
 	{
-		int id = selectedPartId/2;
+		int id = selectedCurveId/2;
 		Vec3d normal1 = currBox.Axis[(id+1)%3];
 		Vec3d normal2 = currBox.Axis[(id+2)%3];
 
@@ -606,12 +603,9 @@ void Cuboid::reshape( std::vector<Point>& pnts, std::vector<double>& scales )
 	// Reshape from face centers and scales
 	currBox.Center = (pnts[0] + pnts[1]) / 2;
 
-	currBox.Axis[1] = pnts[3] - pnts[2];
-	currBox.Axis[2] = pnts[5] - pnts[4];
-
 	for (int i=0;i<3;i++)
 	{
-		currBox.Axis[i] = pnts[2*i+1] - pnts[2*i];
+		currBox.Axis[i] = pnts[2*i] - pnts[2*i+1];
 		currBox.Extent[i] = currBox.Axis[i].norm()/2;
 	}
 
@@ -687,7 +681,7 @@ void Cuboid::scaleCurve( int cid, double s )
 {
 	if(!this->symmPlanes.size()) return;
 
-	if(cid < 0)	cid = selectedPartId;
+	if(cid < 0)	cid = selectedCurveId;
 
 	currBox.faceScaling[cid] *= s;
 

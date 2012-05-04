@@ -131,6 +131,7 @@ void StackerPanel::setActiveScene( Scene * scene )
 
 void StackerPanel::updateActiveObject()
 {
+	// Offset
 	if (panel.rotAroundAxis->isChecked())
 		activeOffset->computeOffsetOfShape( ROT_AROUND_AXIS, panel.rotStackingDensity->value() );
 	else if (panel.rotFreeForm->isChecked())
@@ -138,8 +139,12 @@ void StackerPanel::updateActiveObject()
 	else
 		activeOffset->computeOffsetOfShape();
 
+	// Preview
 	stacker_preview->stackCount = panel.stackCount->value();
 	stacker_preview->updateActiveObject();
+
+	// Improver
+	improver->clear();
 }
 
 QSegMesh* StackerPanel::activeObject()

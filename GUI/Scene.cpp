@@ -31,9 +31,6 @@ Scene::Scene( QWidget * parent, const QGLWidget * shareWidget, Qt::WFlags flags)
 	timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
 
-	// Update the inserted object
-	connect(this, SIGNAL(objectInserted()), SLOT(updateActiveObject()));
-
 	// Mouse selection window
 	this->setSelectRegionHeight(10);
 	this->setSelectRegionWidth(10);
@@ -57,7 +54,6 @@ void Scene::init()
 	// Options
 	this->viewMode = VIEW;
 	this->selectMode = SELECT_NONE;
-	this->modifyMode = DEFAULT;
 
 	// Background
 	setBackgroundColor(backColor = QColor(50,50,60));
@@ -233,9 +229,12 @@ void Scene::postDraw()
 
 void Scene::setActiveObject(QSegMesh* newMesh)
 {
-	//if (!this->hasFocus()) return;
+	// Delete the original object
+	if (activeMesh)
+		emit( objectDiscarded( activeMesh->objectName() ) );
+		
+	// Setup the new object
 	activeMesh = newMesh;
-
 	activeMesh->ptr["controller"] = NULL;
 
 	// Change title of scene
@@ -244,7 +243,8 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 	// Set camera
 	resetView();
 
-	sp->improver->clear();
+	// Update the object
+	updateActiveObject();
 
 	emit(gotFocus(this));
 	emit(objectInserted());
@@ -543,10 +543,11 @@ void Scene::postSelection( const QPoint& point )
 
 	int selected = selectedName();
 
-	if (selected >= 0 && selectMode == CONTROLLER)
-		print( QString("Selected %1").arg( qPrintable(ctrl->getPrimitive(selected)->id) ) );
-	else
-		print(QString("Selected"));
+	if ( selected >= 0)
+		if (selectMode == CONTROLLER)
+			print( QString("Selected primitive: %1").arg( qPrintable(ctrl->getPrimitive(selected)->id) ) );
+		else
+			print( QString("Selected curve: %1").arg( selected ) );
 
 	// General selection
 	if(selected == -1)
@@ -585,7 +586,7 @@ void Scene::postSelection( const QPoint& point )
 	case CONTROLLER:
 		if (!isEmpty() && ctrl)
 		{
-			ctrl->select(selected);
+			ctrl->selectPrimitive(selected);
 
 			if(selected != -1)
 			{
@@ -596,7 +597,7 @@ void Scene::postSelection( const QPoint& point )
 				emit(objectInserted());
 
 				setManipulatedFrame( defCtrl->getFrame() );
-				Vec3d q = ctrl->getPrimPartPos();
+				Vec3d q = ctrl->getSelectedCurveCenter();
 				manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
 			}
 		}
@@ -605,7 +606,7 @@ void Scene::postSelection( const QPoint& point )
 	case CONTROLLER_ELEMENT:
 		if (!isEmpty() && ctrl)
 		{
-			if(ctrl->selectPrimitivePart(selected))
+			if(ctrl->selectPrimitiveCurve(selected))
 			{
 				defCtrl = new QManualDeformer(ctrl);
 				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
@@ -614,7 +615,7 @@ void Scene::postSelection( const QPoint& point )
 				emit(objectInserted());
 
 				setManipulatedFrame( defCtrl->getFrame() );
-				Vec3d q = ctrl->getPrimPartPos();
+				Vec3d q = ctrl->getSelectedCurveCenter();
 				manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
 			}
 
@@ -623,7 +624,7 @@ void Scene::postSelection( const QPoint& point )
 				setSelectMode(CONTROLLER);
 				setManipulatedFrame( activeFrame );
 
-				ctrl->select(selected);
+				ctrl->selectPrimitive(selected);
 			}
 
 		}
@@ -645,33 +646,10 @@ void Scene::setViewMode(ViewMode toMode)
 
 void Scene::setSelectMode(SelectMode toMode)
 {
+	if (toMode == CONTROLLER && selectMode != toMode)
+		selection.clear();
+
 	selectMode = toMode;
-}
-
-void Scene::setModifyMode(ModifyMode toMode)
-{
-	modifyMode = toMode;
-}
-
-void Scene::setupSubViewport( int x, int y, int w, int h )
-{
-	glViewport( x, height() - y - h, w, h);
-	glScissor( x, height() - y - h, w, h);
-
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_PROJECTION);glPushMatrix();	glLoadIdentity();
-	glOrtho(-1, 1, -1, 1, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();glLoadIdentity();glMultMatrixd(camera()->orientation().inverse().matrix());
-}
-
-void Scene::endSubViewport()
-{
-	glMatrixMode(GL_PROJECTION);glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);glPopMatrix();
-
-	glViewport(0,0,width(),height());
-	glScissor(0,0,width(),height());
 }
 
 void Scene::print( QString message, long age )
@@ -704,11 +682,11 @@ void Scene::focusOutEvent( QFocusEvent * event )
 void Scene::closeEvent( QCloseEvent * event )
 {
 	// Alert others
+	if (activeMesh)
+		emit(objectDiscarded(activeMesh->objectName()));
 	this->activeMesh = NULL;
-	emit(objectInserted());
 
 	emit(sceneClosed(this));
-
 	event->accept();
 }
 
