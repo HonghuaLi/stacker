@@ -197,7 +197,8 @@ void StackabilityImprover::deformNearPointLineHotspot( int side )
 		// Fix the relation between hot segments then propagate the local modification
 		propagator.regroupPair(free_prim->id, fixed_prim->id); 	
 		propagator.execute(); 
-		//		if ( !satisfyBBConstraint() ) continue; // BB constraint is hard	
+
+//		if ( !satisfyBBConstraint() ) continue; // BB constraint is hard	
 
 		// Record the shape state
 		if (freeHS.type == POINT_HOTSPOT)
@@ -282,7 +283,7 @@ void StackabilityImprover::localSearch()
 
 	// Step 2: Deform the object by locally modifying the hot spots
 	deformNearHotspot(1); // upper
-	deformNearHotspot(-1);	//lower
+//	deformNearHotspot(-1);	//lower
 }
 
 bool StackabilityImprover::satisfyBBConstraint()

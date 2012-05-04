@@ -35,7 +35,7 @@ public:
 
 public slots:
 	// Scene management
-	void setActiveScene( Scene * );
+	void setActiveScene( Scene * newScene);
 	void updateActiveObject();
 
 	// Buttons

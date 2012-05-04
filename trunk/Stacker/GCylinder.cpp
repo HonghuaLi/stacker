@@ -403,10 +403,8 @@ void GCylinder::setGeometryState( void* toState)
 	for(int i = 0; i < gc->frames.count(); i++)	
 		gc->frames.point[i] = gc->crossSection[i].center;
 
-	// Re-compute frames and align the cross-sections
-	gc->frames.compute();
-	gc->realignCrossSections();
-	deformMesh();
+	// Update the GC, cage, and mesh
+	update();
 }
 
 std::vector<double> GCylinder::getCoordinate( Point v )
