@@ -119,13 +119,14 @@ void StackerPanel::onHotspotsButtonClicked()
 	if(VBO::isVBOSupported()) emit(objectModified()); 
 }
 
-void StackerPanel::setActiveScene( Scene * scene )
+void StackerPanel::setActiveScene( Scene * newScene )
 {
-	if(activeScene != scene)
+	if(activeScene != newScene)
 	{
-		activeScene = scene;
-		stacker_preview->setActiveScene(scene);
-		hidden_viewer->setActiveScene(scene);
+		activeScene = newScene;
+		stacker_preview->setActiveScene(newScene);
+		hidden_viewer->setActiveScene(newScene);
+		improver->clear();
 	}
 }
 
@@ -142,9 +143,6 @@ void StackerPanel::updateActiveObject()
 	// Preview
 	stacker_preview->stackCount = panel.stackCount->value();
 	stacker_preview->updateActiveObject();
-
-	// Improver
-	improver->clear();
 }
 
 QSegMesh* StackerPanel::activeObject()

@@ -246,6 +246,9 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 	// Update the object
 	updateActiveObject();
 
+	// Stack panel 
+	sp->improver->clear();
+
 	emit(gotFocus(this));
 	emit(objectInserted());
 }
