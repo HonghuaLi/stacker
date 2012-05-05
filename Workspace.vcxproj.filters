@@ -410,6 +410,9 @@
     <ClInclude Include="GraphicsLibrary\Decimation\Decimater.h">
       <Filter>GraphicsLibrary\Decimation</Filter>
     </ClInclude>
+    <ClInclude Include="GraphicsLibrary\Decimation\SimpleMatrix.h">
+      <Filter>GraphicsLibrary\Decimation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="GUI\QMeshDoc.h">
