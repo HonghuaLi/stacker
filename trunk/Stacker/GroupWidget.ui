@@ -33,7 +33,7 @@
         </property>
         <column>
          <property name="text">
-          <string notr="true">1</string>
+          <string notr="true"/>
          </property>
         </column>
        </widget>

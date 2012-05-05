@@ -3,23 +3,25 @@
 #include "ui_GroupWidget.h"
 #include "GUI/Scene.h"
 
+class JointDetector;
+
 class GroupPanel : public QWidget{
 	Q_OBJECT
 
 public:
 	GroupPanel(QWidget * parent = NULL);
 
-	Ui::GroupManagmentWidget groupWidget;
-	Scene * activeScene;
-
 	// Types
 	QVector<QString> groupTypes;
 
-	// Utility function
-	QString getItemId(QTreeWidgetItem* item);
+	// Joint detector
+	JointDetector * jointDetector;
 
-	// Active Object
+private:
+	Ui::GroupManagmentWidget groupWidget;
+	Scene * activeScene;
 	QSegMesh* activeObject();
+	QString getItemId(QTreeWidgetItem* item);
 
 public slots:
 	// Sence management

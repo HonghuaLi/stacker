@@ -1,26 +1,26 @@
-#include "EditingSuggestion.h"
+#include "EditPath.h"
 #include "SimpleDraw.h"
 #include "ColorMap.h"
 
-EditingSuggestion::EditingSuggestion( Point Center, Vec3d Direction, double Value /*= 0.0*/ )
+EditPath::EditPath( Point Center, Vec3d Direction, double Value /*= 0.0*/ )
 {
 	this->center = center;
-	this->direction = Direction;
+	this->move = Direction;
 	this->value = Value;
 }
 
-EditingSuggestion::EditingSuggestion()
+EditPath::EditPath()
 {
 	this->center = Vec3d(0,0,0);
-	this->direction = Vec3d(1,0,0);
+	this->move = Vec3d(1,0,0);
 	this->value = 0;
 }
 
-void EditingSuggestion::draw()
+void EditPath::draw()
 {
 	double scale = 0.05;
 
-	Vec3d pos = center + direction;
+	Vec3d pos = center + move;
 
 	double value3 = value * value * value;
 	if (value3 < 0.1)
@@ -31,8 +31,8 @@ void EditingSuggestion::draw()
 
 	std::vector<Point> arrow, tail;
 
-	Vec3d normal = direction[2]? Vec3d(1,0,0) : Vec3d(0, 0, 1);
-	Vec3d v = direction.normalized() * scale * value3;
+	Vec3d normal = move[2]? Vec3d(1,0,0) : Vec3d(0, 0, 1);
+	Vec3d v = move.normalized() * scale * value3;
 	Vec3d u = cross(v, normal).normalized() * scale * value3;
 
 	arrow.push_back(pos);

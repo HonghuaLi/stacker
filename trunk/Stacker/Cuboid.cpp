@@ -557,15 +557,15 @@ std::vector <Vec3d> Cuboid::majorAxis()
 }
 
 
-void* Cuboid::getGeometryState()
+void* Cuboid::getState()
 {
 	Box3 *box = new Box3(currBox);
 	return (void*)box;
 }
 
-void Cuboid::setGeometryState( void* state)
+void Cuboid::setState( void* toState)
 {
-	currBox = *( (Box3*) state );
+	currBox = *( (Box3*) toState );
 }
 
 std::vector < std::vector <Vec3d> > Cuboid::getCurves()

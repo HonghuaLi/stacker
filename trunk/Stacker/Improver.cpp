@@ -1,25 +1,29 @@
-#include "StackabilityImprover.h"
+#include "Improver.h"
 
 #include "Offset.h"
 #include "Primitive.h"
 #include "Controller.h"
 #include "Propagator.h"
 
-
-StackabilityImprover::StackabilityImprover( Offset *offset )
+Improver::Improver( Offset *offset )
 {
 	activeOffset = offset;
+
+	// Parameters
+	NUM_EXPECTED_SOLUTION = 10;
+	BB_TOLERANCE = 1.2;
+	TARGET_STACKABILITY = 0.4;
+	LOCAL_RADIUS = 1;
 }
 
-QVector<double> StackabilityImprover::getLocalScales( HotSpot& HS )
+QVector<double> Improver::getLocalScales( HotSpot& HS )
 {
 	QVector<double> scales;
 
-	int K = 6;
 	double stepSize = 0.05;
 
 	double s = 0;
-	for (int i = 0; i< K; i++)
+	for (int i = 0; i< LOCAL_RADIUS; i++)
 	{
 		s += stepSize;
 		scales.push_back(1 + s);
@@ -29,7 +33,7 @@ QVector<double> StackabilityImprover::getLocalScales( HotSpot& HS )
 	return scales;
 }
 
-QVector<Vec3d> StackabilityImprover::getLocalMoves( HotSpot& HS )
+QVector<Vec3d> Improver::getLocalMoves( HotSpot& HS )
 {
 	QVector< Vec3d > result;
 
@@ -38,14 +42,13 @@ QVector<Vec3d> StackabilityImprover::getLocalMoves( HotSpot& HS )
 
 	// step
 	Vec3d step = (constraint_bbmax - constraint_bbmin) / 20;
-	int K = 2;
 
 	// Horizontal moves
 	if (HS.type == POINT_HOTSPOT)
 	{
-		double min_x = - step[0] * K;
+		double min_x = - step[0] * LOCAL_RADIUS;
 		double max_x = - min_x;
-		double min_y = - step[1] * K;
+		double min_y = - step[1] * LOCAL_RADIUS;
 		double max_y = - min_y;
 
 		for (double x = min_x; x <= max_x; x += step[0]){
@@ -77,7 +80,7 @@ QVector<Vec3d> StackabilityImprover::getLocalMoves( HotSpot& HS )
 		d1.normalize();
 		d2.normalize();
 
-		for (int i = 0; i < K; i++)
+		for (int i = 0; i < LOCAL_RADIUS; i++)
 		{
 			result.push_back(d1 * i * step.x());
 			result.push_back(d2 * i * step.x());
@@ -87,7 +90,7 @@ QVector<Vec3d> StackabilityImprover::getLocalMoves( HotSpot& HS )
 	// Vertical moves
 	if (!HS.defineHeight)
 	{
-		double min_z = - step[2] * K;
+		double min_z = - step[2] * LOCAL_RADIUS;
 		double max_z = - min_z;
 		if (1 == HS.side)
 			max_z = 0;
@@ -112,7 +115,7 @@ QVector<Vec3d> StackabilityImprover::getLocalMoves( HotSpot& HS )
 	return result;
 }
 
-void StackabilityImprover::recordSolution(Point handleCenter, Vec3d localMove, int side)
+void Improver::recordSolution(Point handleCenter, Vec3d localMove)
 {
 	double stackability = activeOffset->getStackability(true);
 
@@ -121,29 +124,22 @@ void StackabilityImprover::recordSolution(Point handleCenter, Vec3d localMove, i
 	// \state has to be unique
 	if (!isUnique(state, 0)) return;
 
-	// Save state history
-	state.history = currentCandidate.history;
-	state.history.push_back(state);
+	// Properties
 	state.deltaStackability = stackability - origStackability;
 	state.distortion = ctrl()->getDistortion();
 
-	// Evaluate suggestion
-	EditingSuggestion suggest;
-	suggest.center = handleCenter;
-	suggest.direction = localMove;
-	suggest.deltaS = state.deltaStackability;
-	suggest.deltaV = state.distortion;
-	suggest.side = side;
-	suggest.value = state.energy();
+	EditPath path;
+	path.center = handleCenter;
+	path.move = localMove;
+	path.value = state.energy();
 
-	state.trajectory = currentCandidate.trajectory;
-	state.trajectory.push_back(suggest);
+	state.path = path;
 
 	// Store the state
 	candidateSolutions.push(state);	
 }
 
-void StackabilityImprover::deformNearPointLineHotspot( int side )
+void Improver::deformNearPointLineHotspot( int side )
 {
 	// The first pair of hot spots
 	HotSpot& freeHS = activeOffset->getHotspot(side, 0);
@@ -186,16 +182,16 @@ void StackabilityImprover::deformNearPointLineHotspot( int side )
 
 		// Record the shape state
 		if (freeHS.type == POINT_HOTSPOT)
-			recordSolution(free_handle.first(), T, freeHS.side);
+			recordSolution(free_handle.first(), T);
 		else
-			recordSolution( (free_handle.first()+free_handle.last())/2, T, freeHS.side);
+			recordSolution( (free_handle.first()+free_handle.last())/2, T);
 
 		// Restore the shape state of current candidate
 		ctrl()->setShapeState(currentCandidate);
 	}
 }
 
-void StackabilityImprover::deformNearRingHotspot( int side )
+void Improver::deformNearRingHotspot( int side )
 {
 	// The first pair of hot spots
 	HotSpot& freeHS = activeOffset->getHotspot(side, 0);
@@ -231,14 +227,14 @@ void StackabilityImprover::deformNearRingHotspot( int side )
 		else
 			delta = free_curve_center - hotSample;
 
-		recordSolution(hotSample, delta.normalized()/10, freeHS.side);
+		recordSolution(hotSample, delta.normalized()/10);
 
 		// Restore the shape state of current candidate
 		ctrl()->setShapeState(currentCandidate);
 	}
 }
 
-void StackabilityImprover::deformNearHotspot( int side )
+void Improver::deformNearHotspot( int side )
 {
 	HOTSPOT_TYPE type;
 	if (side == 1)
@@ -258,7 +254,7 @@ void StackabilityImprover::deformNearHotspot( int side )
 	}
 }
 
-void StackabilityImprover::localSearch()
+void Improver::localSearch()
 {
 	// Step 1: Detect hot spots
 	activeOffset->computeOffsetOfShape();
@@ -269,7 +265,7 @@ void StackabilityImprover::localSearch()
 //	deformNearHotspot(-1);	//lower
 }
 
-bool StackabilityImprover::satisfyBBConstraint()
+bool Improver::satisfyBBConstraint()
 {
 	bool result = true;
 
@@ -292,23 +288,16 @@ bool StackabilityImprover::satisfyBBConstraint()
 	return result;
 }
 
-bool StackabilityImprover::isUnique( ShapeState state, double threshold )
+bool Improver::isUnique( ShapeState state, double threshold )
 {
 	// dissimilar to \solutions
-	PQShapeStateLessDistortion solutionsCopy = solutions;
-	while(!solutionsCopy.empty())
-	{
-		ShapeState ss = solutionsCopy.top();
-
+	foreach(ShapeState ss, solutions){
 		if (ctrl()->similarity(ss, state) < threshold)
 			return false;
-
-		solutionsCopy.pop();
 	}
 
 	// dissimilar to used candidate solutions
-	foreach(ShapeState ss, usedCandidateSolutions)
-	{
+	foreach(ShapeState ss, usedCandidateSolutions){
 		if (ctrl()->similarity(ss, state) < threshold)
 			return false;
 	}
@@ -328,7 +317,7 @@ bool StackabilityImprover::isUnique( ShapeState state, double threshold )
 	return true;
 }
 
-void StackabilityImprover::setPositionalConstriants( HotSpot& fixedHS )
+void Improver::setPositionalConstriants( HotSpot& fixedHS )
 {
 	std::vector<HotSpot> fixedHotspots = activeOffset->getHotspots(fixedHS.side);
 
@@ -345,145 +334,20 @@ void StackabilityImprover::setPositionalConstriants( HotSpot& fixedHS )
 	}
 }
 
-void StackabilityImprover::showSolution( int i )
-{
-	if (solutions.empty())
-	{
-		std::cout << "There is no solution.\n";
-		return;
-	}
 
-	int id = i % solutions.size();
-	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
-
-	PQShapeStateLessDistortion solutionsCopy = solutions;
-	for (int i=0;i<id;i++)
-		solutionsCopy.pop();
-
-	ShapeState sln = solutionsCopy.top();
-	ctrl->setShapeState(sln);
-
-	std::cout << "Histrory length: " << sln.history.size() << std::endl; 
-	//std::cout << "Showing the " << id << "th solution out of " << solutions.size() <<".\n";
-}
-
-void StackabilityImprover::normalizeSuggestions()
-{
-	if (suggestions.isEmpty())
-		return;
-
-	if (suggestions.size() == 1)
-	{
-		suggestions.first().value = 1;
-		return;
-	}
-
-
-	// Normalize \deltaS and \deltaV respectively
-	bool computeValue = false;
-	if (computeValue)
-	{
-		double minS = DBL_MAX;
-		double maxS = DBL_MIN;
-		double minV = DBL_MAX;
-		double maxV = DBL_MIN;
-
-		foreach(EditingSuggestion sg, suggestions)
-		{
-			double s = sg.deltaS;
-			double v = sg.deltaV;
-
-			minS = Min(minS, s);
-			maxS = Max(maxS, s);
-			minV = Min(minV, v);
-			maxV = Max(maxV, v);
-		}
-
-		double rangeS = maxS - minS;
-		double rangeV = maxV - minV;
-
-		bool zeroRangeS = abs(rangeS) < 1e-10;
-		bool zeroRangeV = abs(rangeV) < 1e-10;
-		for(int i = 0; i < suggestions.size(); i++)
-		{
-			double s = zeroRangeS? 1 : (suggestions[i].deltaS - minS) / rangeS;
-			double v = zeroRangeV? 1 : (suggestions[i].deltaV - minV) / rangeV;
-
-			double alpha = 0.7;
-			suggestions[i].value = alpha * s - (1-alpha)*v;
-
-		}
-	}
-
-
-
-	// Normalize \value
-	double minValue = DBL_MAX;
-	double maxValue = DBL_MIN;
-
-	foreach(EditingSuggestion sg, suggestions)
-	{
-		double s = sg.value;
-
-		minValue = Min(minValue, s);
-		maxValue = Max(maxValue, s);
-
-	}
-
-	double range = maxValue - minValue;
-	bool zeroRang = abs(range) < 1e-10;
-	for(int i = 0; i < suggestions.size(); i++)
-	{
-		suggestions[i].value = zeroRang? 1 : (suggestions[i].value - minValue) / range;
-	}
-
-	////Output
-	//std::cout << "There are " << suggestions.size() << " suggestions (from offset):\n";
-	//for (int i=0;i<suggestions.size();i++)
-	//{
-	//	std::cout << " deltaS = " << suggestions[i].deltaS 
-	//		<< "\tdeltaV = " << suggestions[i].deltaV
-	//		<< "\tvalue = " << suggestions[i].value << std::endl;
-	//}
-}
-
-void StackabilityImprover::showSuggestion( int i )
-{
-	if (candidateSolutions.empty())
-	{
-		std::cout << "There is no suggestion.\n";
-		return;
-	}
-
-	// Get the i-th suggestion
-	int id = i % candidateSolutions.size();
-	PQShapeStateLessEnergy suggestSolutionsCopy = candidateSolutions;
-	for (int i=0;i<id;i++)	suggestSolutionsCopy.pop();
-
-	// Show the suggest
-	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
-	ctrl->setShapeState(suggestSolutionsCopy.top());
-}
-
-QSegMesh* StackabilityImprover::activeObject()
+QSegMesh* Improver::activeObject()
 {
 	return activeOffset->activeObject();
 }
 
-Controller* StackabilityImprover::ctrl()
+Controller* Improver::ctrl()
 {
 	return (Controller*)activeObject()->ptr["controller"];
 }
 
 // === Main access
-void StackabilityImprover::executeImprove(int level)
+void Improver::executeImprove(int level)
 {
-	// Suggesting: \level == 0
-	if (level < 0) return;
-
-	// Clear
-	clear();
-
 	// The original stackability
 	origStackability = activeOffset->getStackability();
 
@@ -497,7 +361,9 @@ void StackabilityImprover::executeImprove(int level)
 	origState.distortion = 0;
 	candidateSolutions.push(origState);
 
-	while( !candidateSolutions.empty() && solutions.size() < NUM_EXPECTED_SOLUTION )
+	while( ( level>0 || level==IMPROVER_MAGIC_NUMBER ) // Suggest || Improve
+		&& !candidateSolutions.empty() 
+		&& solutions.size()<NUM_EXPECTED_SOLUTION )
 	{
 		currentCandidate = candidateSolutions.top();
 		candidateSolutions.pop();
@@ -506,7 +372,7 @@ void StackabilityImprover::executeImprove(int level)
 		// Solution or not
 		if (currentCandidate.deltaStackability + origStackability >= TARGET_STACKABILITY)
 		{
-			solutions.push(currentCandidate);
+			solutions.push_back(currentCandidate);
 			std::cout << solutions.size() << " solutions have been found. \n";
 			continue;
 		}
@@ -519,21 +385,23 @@ void StackabilityImprover::executeImprove(int level)
 
 		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;
 
-		// For suggesting or debugging
-		if (level > 0)	level--;
-		if (level == 0) break;
+		if (level != IMPROVER_MAGIC_NUMBER) level--;
 	}
 
 	std::cout << "Searching completed.\n" << std::endl;
-
-	// Suggestions
-//	if (isSuggesting) normalizeSuggestions();
 }
 
-void StackabilityImprover::clear()
+void Improver::setTargetStackability( double s )
 {
-	usedCandidateSolutions.clear();
+	TARGET_STACKABILITY = s;
+}
 
-	candidateSolutions = PQShapeStateLessEnergy();
-	solutions = PQShapeStateLessDistortion();
+void Improver::setBBTolerance( double tol )
+{
+	BB_TOLERANCE = tol;
+}
+
+void Improver::setNumExpectedSolutions( int num )
+{
+	NUM_EXPECTED_SOLUTION = num;
 }

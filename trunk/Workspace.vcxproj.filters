@@ -341,9 +341,6 @@
     <ClInclude Include="MathLibrary\Coordiantes\MeanValueCoordinates.h">
       <Filter>Math\Deformer\MeanValueCoordinates</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\EditingSuggestion.h">
-      <Filter>Stacker\Core</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_MeshBrowserForm.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
@@ -357,9 +354,6 @@
       <Filter>Math\Bounding</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\Numeric.h">
-      <Filter>Stacker\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Stacker\StackerGlobal.h">
       <Filter>Stacker\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\JointDetector.h">
@@ -412,6 +406,9 @@
     </ClInclude>
     <ClInclude Include="GraphicsLibrary\Decimation\SimpleMatrix.h">
       <Filter>GraphicsLibrary\Decimation</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\EditPath.h">
+      <Filter>Stacker\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -511,14 +508,14 @@
     <CustomBuild Include="Stacker\QManualDeformer.h">
       <Filter>Stacker\Utility</Filter>
     </CustomBuild>
-    <CustomBuild Include="Stacker\StackabilityImprover.h">
-      <Filter>Stacker\Core</Filter>
-    </CustomBuild>
     <CustomBuild Include="Stacker\Previewer.h">
       <Filter>Stacker\Panels</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\HiddenViewer.h">
       <Filter>Stacker\Panels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\Improver.h">
+      <Filter>Stacker\Core</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -828,23 +825,14 @@
     <ClCompile Include="Stacker\StackerPanel.cpp">
       <Filter>Stacker\Panels</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\EditingSuggestion.cpp">
-      <Filter>Stacker\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Stacker\HotSpot.cpp">
       <Filter>Stacker\Core</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\Offset.cpp">
       <Filter>Stacker\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\StackabilityImprover.cpp">
-      <Filter>Stacker\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Stacker\ShapeState.cpp">
       <Filter>Stacker\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\StackerGlobal.cpp">
-      <Filter>Stacker\Utility</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\JointDetector.cpp">
       <Filter>Stacker\Groups</Filter>
@@ -876,12 +864,6 @@
     <ClCompile Include="Stacker\QManualDeformer.cpp">
       <Filter>Stacker\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_StackabilityImprover.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_StackabilityImprover.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsLibrary\Smoothing\Smoother.cpp">
       <Filter>GraphicsLibrary\Smoothing</Filter>
     </ClCompile>
@@ -902,6 +884,18 @@
     </ClCompile>
     <ClCompile Include="Stacker\HiddenViewer.cpp">
       <Filter>Stacker\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Improver.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Improver.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Improver.cpp">
+      <Filter>Stacker\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\EditPath.cpp">
+      <Filter>Stacker\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

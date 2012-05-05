@@ -7,7 +7,6 @@
 #include "GUI/global.h"
 #include "Primitive.h"
 #include "Controller.h"
-#include "StackerGlobal.h"
 
 #include "JointDetector.h"
 #include "SymmetryGroup.h"
@@ -21,7 +20,9 @@ GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 	groupWidget.setupUi(this);
 
 	// Joints
-	connect(groupWidget.jointThreshold, SIGNAL(valueChanged(double)), this, SLOT(setJointThreshold(double)) );
+	jointDetector = new JointDetector();
+	groupWidget.jointThreshold->setValue(jointDetector->JOINT_THRESHOLD);
+	connect(groupWidget.jointThreshold, SIGNAL(valueChanged(double)),SLOT(setJointThreshold(double)) );
 	connect(groupWidget.findJointsButton, SIGNAL(clicked()), SLOT(findJoints()));
 	connect(groupWidget.findPairwiseJointButton, SIGNAL(clicked()), SLOT(findPairwiseJoints()));
 
@@ -311,7 +312,7 @@ void GroupPanel::findPairwiseJoints()
 
 void GroupPanel::setJointThreshold( double threshold )
 {
-	JOINT_THRESHOLD = threshold;
+	jointDetector->JOINT_THRESHOLD = threshold;
 }
 
 QSegMesh* GroupPanel::activeObject()

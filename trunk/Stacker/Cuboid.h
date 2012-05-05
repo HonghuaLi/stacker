@@ -52,8 +52,8 @@ public:
 	Point fromCoordinate(std::vector<double> coords);
 
 	// Primitive state
-	void* getGeometryState();
-	void setGeometryState( void* );
+	void* getState();
+	void setState( void* toState);
 
 	// Primitive geometry
 	double volume();

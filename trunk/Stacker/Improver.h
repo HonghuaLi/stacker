@@ -2,30 +2,30 @@
 
 #include "HotSpot.h"
 #include "ShapeState.h"
-#include "EditingSuggestion.h"
+#include "EditPath.h"
 
 class Offset;
 class QSegMesh;
 class Controller;
 class Propagator;
 
-class StackabilityImprover : public QObject
+#define IMPROVER_MAGIC_NUMBER -99999
+
+class Improver : public QObject
 {
 	Q_OBJECT
 
 public:
-	StackabilityImprover(Offset *offset);
+	Improver(Offset *offset);
+
+	// Parameters
+	int NUM_EXPECTED_SOLUTION;
+	double BB_TOLERANCE;
+	double TARGET_STACKABILITY;
+	int LOCAL_RADIUS;
 
 	// Execute improving
-	void executeImprove(int level = -1);
-
-	// Show results
-	void showSolution( int i );
-	void showSuggestion( int i );
-	void normalizeSuggestions();
-
-	// Clear
-	void clear();
+	void executeImprove(int level = IMPROVER_MAGIC_NUMBER);
 
 private:
 	QVector<Vec3d> getLocalMoves( HotSpot& HS );
@@ -33,7 +33,7 @@ private:
 	void deformNearPointLineHotspot( int side );
 	void deformNearRingHotspot( int side );
 	void deformNearHotspot( int side );
-	void recordSolution(Point handleCenter, Vec3d localMove, int side);
+	void recordSolution(Point handleCenter, Vec3d localMove);
 	void localSearch();
 
 	bool satisfyBBConstraint();
@@ -42,22 +42,23 @@ private:
 
 
 public:
-	// Suggestion
-	QVector<EditingSuggestion> suggestions;
-
 	// Best first Searching
 	double origStackability;
 	Vec3d constraint_bbmin, constraint_bbmax;
 	ShapeState currentCandidate;
-	QVector< ShapeState > usedCandidateSolutions;
 	PQShapeStateLessEnergy candidateSolutions;
-	PQShapeStateLessDistortion solutions;
+	QVector<ShapeState> usedCandidateSolutions;
+	QVector<ShapeState> solutions;
 
 private:
 	Offset* activeOffset;
-
 	QSegMesh* activeObject();
 	Controller* ctrl();
+
+public slots:
+	void setTargetStackability(double s);
+	void setBBTolerance(double tol);
+	void setNumExpectedSolutions(int num);
 
 signals:
 	void printMessage( QString );

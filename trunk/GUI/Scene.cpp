@@ -11,7 +11,6 @@
 #include "Stacker/ConcentricGroup.h"
 #include "Stacker/CoplanarGroup.h"
 #include "Stacker/Primitive.h"
-#include "StackabilityImprover.h"
 
 #include "GraphicsLibrary/Remeshing/LaplacianRemesher.h"
 #include "GraphicsLibrary/Subdivision/SubdivisionAlgorithms.h"
@@ -112,29 +111,26 @@ void Scene::draw()
 	// The main object
 	drawObject(); 
 
-	// Draw debug geometries
-	activeObject()->drawDebug();
-
-	// Draw stacking with 3 objects
-	if(isShowStacked) 
-		drawStacking();
-
 	// Draw groups of relationship between segments
 	drawGroups(); 
-
-	//if(defCtrl) defCtrl->draw();
-
-	// deformer
-	if(activeDeformer) activeDeformer->draw();
-	if(activeVoxelDeformer) activeVoxelDeformer->draw();
 
 	// Draw the controllers if exist
 	Controller * ctrl = ((Controller *)activeObject()->ptr["controller"]);
 	if (ctrl) ctrl->draw();
 
+	// Draw stacking with 3 objects
+	if(isShowStacked) 
+		drawStacking();
+
 	// Suggestions
-	foreach(EditingSuggestion sg, sp->improver->suggestions)
-		sg.draw();
+	sp->draw();
+
+	// deformer
+	if(activeDeformer) activeDeformer->draw();
+	if(activeVoxelDeformer) activeVoxelDeformer->draw();
+
+	// Draw debug geometries
+	activeObject()->drawDebug();
 }
 
 
@@ -236,7 +232,7 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 		
 	// Setup the new object
 	activeMesh = newMesh;
-	activeMesh->ptr["controller"] = NULL;
+	activeMesh->ptr["controller"] = new Controller(activeMesh);
 
 	// Change title of scene
 	setWindowTitle(activeMesh->objectName());
@@ -246,9 +242,6 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 
 	// Update the object
 	updateActiveObject();
-
-	// Stack panel 
-	sp->improver->clear();
 
 	emit(gotFocus(this));
 	emit(objectInserted());
@@ -550,11 +543,6 @@ void Scene::postSelection( const QPoint& point )
 
 	int selected = selectedName();
 
-	if ( selected >= 0)
-		if (selectMode == CONTROLLER)
-			print( QString("Selected primitive: %1").arg( qPrintable(ctrl->getPrimitive(selected)->id) ) );
-		else
-			print( QString("Selected curve: %1").arg( selected ) );
 
 	// General selection
 	if(selected == -1)
@@ -562,9 +550,18 @@ void Scene::postSelection( const QPoint& point )
 	else
 	{
 		if(selection.contains( selected ))
+		{
 			selection.remove(selection.indexOf(selected));
+		}
 		else
+		{
 			selection.push_back(selected); // to start from 0
+
+			if (selectMode == CONTROLLER)
+				print( QString("Selected primitive: %1").arg( qPrintable(ctrl->getPrimitive(selected)->id) ) );
+			else
+				print( QString("Selected curve: %1").arg( selected ) );
+		}
 	}
 
 	// FFD and such deformers

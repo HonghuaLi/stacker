@@ -5,11 +5,10 @@
 #include "Previewer.h"
 #include "HiddenViewer.h"
 #include "Controller.h"
-#include "QManualDeformer.h"
 
 // Forward declaration
 class Offset;
-class StackabilityImprover;
+class Improver;
 
 class StackerPanel : public QWidget
 {
@@ -17,34 +16,38 @@ class StackerPanel : public QWidget
 
 public:
 	StackerPanel();
+	~StackerPanel();
 
 	// Active Object
 	QSegMesh* activeObject();
-
-	// Message
 	void showMessage( QString message );
 
-	Ui::StackerWidget panel;
-	Scene * activeScene;
-	Previewer * previewer;
-	HiddenViewer * hiddenViewer;
+	// Improve and suggestion
+	QMap<QString, ShapeState> treeNodes;
+	void addChildren(QTreeWidgetItem* parent, QVector<ShapeState> &children);
+	QString getItemId(QTreeWidgetItem* item);
+
+	QVector<EditPath> suggestions;
+	void setSuggestions();
+	void draw();
 
 	// Core components
-	Offset * activeOffset;
-	StackabilityImprover * improver;
+	Ui::StackerWidget	panel;
+	Scene			* activeScene;
+	Previewer		* previewer;
+	HiddenViewer	* hiddenViewer;
+	Offset			* activeOffset;
+	Improver		* improver;
 
 public slots:
 	// Scene management
 	void setActiveScene( Scene * newScene);
+	void setActiveObject();
 	void updateActiveObject();
 
 	// Improve and suggest
 	void onImproveButtonClicked();
-	void onSuggestButtonClicked();
 	void searchDirection();
-	void setTargetStackability(double s);
-	void setBBTolerance(double tol);
-	void setNumExpectedSolutions(int num);
 
 	// Message
 	void print(QString message);
@@ -52,7 +55,6 @@ public slots:
 	// Debug
 	void onHotspotsButtonClicked();
 	void outputForPaper();
-
 
 signals:
 	void printMessage( QString );
