@@ -1,6 +1,4 @@
 #include "Previewer.h"
-#include "StackerPanel.h"
-
 
 Previewer::Previewer( QWidget * parent ) : QGLViewer (parent)
 {
