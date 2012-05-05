@@ -1,9 +1,9 @@
 // From Geometric Tools, LLC
 #pragma once
 
-//Visulization
+// Visualization
 #include "Surface_mesh.h"
-#include "SimpleDraw.h"
+#include "Utility/SimpleDraw.h"
 
 #include "GraphicsLibrary/Mesh/SurfaceMesh/Vector.h"
 #include <vector>

@@ -2,7 +2,7 @@
 
 #include "Primitive.h"
 #include "Propagator.h"
-#include "SimpleDraw.h"
+#include "Utility/SimpleDraw.h"
 
 QManualDeformer::QManualDeformer(Controller * usingController)
 {

@@ -1,5 +1,5 @@
 #include "ConcentricGroup.h"
-#include "SimpleDraw.h"
+#include "Utility/SimpleDraw.h"
 #include "Primitive.h"
 
 void ConcentricGroup::process( QVector< Primitive* > segments )

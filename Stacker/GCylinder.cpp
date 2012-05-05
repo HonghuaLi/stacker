@@ -1,6 +1,6 @@
 #include "GCylinder.h"
-#include "SkeletonExtract.h"
-#include "SimpleDraw.h"
+#include "GraphicsLibrary/Skeleton/SkeletonExtract.h"
+#include "Utility/SimpleDraw.h"
 
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {

@@ -1,7 +1,7 @@
 #include "Offset.h"
 #include "HiddenViewer.h"
-#include "ColorMap.h"
-#include "SimpleDraw.h"
+#include "Utility/ColorMap.h"
+#include "Utility/SimpleDraw.h"
 #include <QFile>
 #include <numeric>
 #include "Numeric.h"

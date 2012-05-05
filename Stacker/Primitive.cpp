@@ -1,5 +1,5 @@
 #include "Primitive.h"
-#include "SimpleDraw.h"
+#include "Utility/SimpleDraw.h"
 
 Primitive::Primitive( QSurfaceMesh* mesh, QString newId )
 {
