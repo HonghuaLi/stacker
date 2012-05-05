@@ -14,54 +14,51 @@
 #include "GCylinder.h"
 #include <QFileDialog>
 #include <QDesktopWidget>
-#include "StackerGlobal.h"
+#include "Improver.h"
 #include "Numeric.h"
-#include "StackabilityImprover.h"
 
 
 StackerPanel::StackerPanel()
 {
-	panel.setupUi(this);
+	// Object changes
+	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 
+	// The UI
+	panel.setupUi(this);
 
 	// Add a stacking preview widget
 	previewer = new Previewer(this);
 	QDockWidget * previewDock = new QDockWidget("Previewer");
 	previewDock->setWidget (previewer);
-
 	QGridLayout * previewLayout = (QGridLayout *) panel.previewBox->layout();
 	previewLayout->addWidget(previewDock, previewLayout->rowCount() + 1, 0,1,6);
 	previewer->setMinimumHeight(50);
-
 	connect(panel.stackCount, SIGNAL(valueChanged(int)), previewer, SLOT(setStackCount(int)) );
 
 	// Add a stacking hidden viewer widget for offset calculator
 	hiddenViewer = new HiddenViewer();
 	QDockWidget * hiddenDock = new QDockWidget("HiddenViewer");
 	hiddenDock->setWidget (hiddenViewer);
-
 	QGridLayout * hiddenLayout = (QGridLayout *) panel.hiddenviewBox->layout();
 	hiddenLayout->addWidget(hiddenDock, hiddenLayout->rowCount() + 1, 0,1,3);
 	hiddenDock->setFloating(true);
 	hiddenDock->setWindowOpacity(1.0);
 	int x = qApp->desktop()->availableGeometry().width();
 	hiddenDock->move(QPoint(x - hiddenDock->width(),0)); //Move the hidden dock to the top right conner
-	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hiddenViewer, SLOT(setResolution(int)));
-	
+	connect(panel.hidderViewerResolution, SIGNAL(valueChanged(int)), hiddenViewer, SLOT(setResolution(int)));
+
 	// Offset function calculator
 	activeOffset = new Offset(hiddenViewer);
-	improver = new StackabilityImprover(activeOffset);
-
-	// Object changes
-	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 
 	// Improve and suggest
-	connect(panel.targetS, SIGNAL(valueChanged(double)), this, SLOT(setTargetStackability(double)));
-	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
-	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
+	connect(panel.showPaths, SIGNAL(stateChanged(int)), SLOT(updateActiveObject()));
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
-	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
-
+	improver = new Improver(activeOffset);
+	connect(panel.targetS, SIGNAL(valueChanged(double)), improver, SLOT(setTargetStackability(double)));
+	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), improver, SLOT(setBBTolerance(double)) );
+	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), improver, SLOT(setNumExpectedSolutions(int)) );
+	connect(panel.localRadius, SIGNAL(valueChanged(int)), improver, SLOT(setLocalRadius(int)) );
+	
 	// Stacking direction
 	connect(panel.searchDirectionButton, SIGNAL(clicked()), SLOT(searchDirection()));
 			
@@ -70,29 +67,21 @@ StackerPanel::StackerPanel()
 	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
 
 	// Default values
-	panel.numExpectedSolutions->setValue(NUM_EXPECTED_SOLUTION);
-	panel.BBTolerance->setValue(BB_TOLERANCE);
-	panel.targetS->setValue(TARGET_STACKABILITY);
-	panel.hidderViewerSize->setValue(HIDDEN_VIEWER_SIZE);
+	panel.numExpectedSolutions->setValue(improver->NUM_EXPECTED_SOLUTION);
+	panel.BBTolerance->setValue(improver->BB_TOLERANCE);
+	panel.targetS->setValue(improver->TARGET_STACKABILITY);
+	panel.localRadius->setValue(improver->LOCAL_RADIUS);
+	panel.hidderViewerResolution->setValue(hiddenViewer->height());
 	panel.stackCount->setValue(previewer->stackCount);
 }
 
-void StackerPanel::onImproveButtonClicked()
+StackerPanel::~StackerPanel()
 {
-	if (!activeScene || activeScene->isEmpty())	{
-		showMessage("There is no valid object.");
-		return;
-	}
-
-	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
-
-	if (!ctrl)	{
-		showMessage("There is no controller built.");
-		return;
-	}
-
-	improver->executeImprove();
+	delete previewer;
+	delete hiddenViewer;
+	delete activeOffset;
 }
+
 
 void StackerPanel::onHotspotsButtonClicked()
 {
@@ -113,7 +102,6 @@ void StackerPanel::setActiveScene( Scene * newScene )
 		activeScene = newScene;
 		previewer->setActiveScene(newScene);
 		hiddenViewer->setActiveScene(newScene);
-		improver->clear();
 	}
 }
 
@@ -137,6 +125,40 @@ QSegMesh* StackerPanel::activeObject()
 		return activeScene->activeObject();
 	else 
 		return NULL;
+}
+
+void StackerPanel::print( QString message )
+{
+	printMessage(message);
+}
+
+void StackerPanel::draw()
+{
+	// Draw all suggestions
+	if (panel.showPaths)
+	{
+		foreach(EditPath path, suggestions)
+			path.draw();
+	}
+
+	// Draw the path of selected item
+
+}
+
+void StackerPanel::setActiveObject()
+{
+	Controller * ctrl = (Controller *) activeScene->activeObject()->ptr["controller"];
+
+	// Update
+	updateActiveObject();
+
+	// Initialize solution tree
+	treeNodes.clear();
+	treeNodes["0"] = ctrl->getShapeState();
+
+	panel.solutionTree->clear();
+	QTreeWidgetItem * node = new QTreeWidgetItem(panel.solutionTree);
+	node->setText(0, "0");
 }
 
 void StackerPanel::showMessage( QString message )
@@ -343,31 +365,71 @@ void StackerPanel::searchDirection()
 	emit(objectModified());
 }
 
-void StackerPanel::onSuggestButtonClicked()
-{
-	improver->suggestions.clear();
 
-	isSuggesting = true;
-	improver->executeImprove(0);
-	isSuggesting = false;
+QString StackerPanel::getItemId(QTreeWidgetItem* item)
+{
+	QString txt = item->text(0);
+
+	return txt.replace(0,txt.lastIndexOf(":") + 1,"");
 }
 
-void StackerPanel::setBBTolerance( double tol )
+void StackerPanel::addChildren( QTreeWidgetItem* parent, QVector<ShapeState> &children )
 {
-	BB_TOLERANCE = tol;
+	// Remove all children
+	parent->takeChildren();
+
+	// Add new children
+	int id = treeNodes.size();
+	foreach (ShapeState cs, children)
+	{
+		// Model
+		QString stringID = QString("%1").arg(id);
+		treeNodes[stringID] = cs;
+
+		// View
+		QTreeWidgetItem * child = new QTreeWidgetItem (parent);
+		child->setText(0, stringID);
+		parent->addChild(child);
+
+		id++;
+	}
 }
 
-void StackerPanel::setNumExpectedSolutions( int num )
-{
-	NUM_EXPECTED_SOLUTION = num;
-}
 
-void StackerPanel::setTargetStackability( double s )
+void StackerPanel::onImproveButtonClicked()
 {
-	TARGET_STACKABILITY = s;
-}
+	// Preconditions
+	if (!activeScene)  return;
+	if (activeScene->isEmpty()) {
+		showMessage("There is no valid object.");
+		return;
+	}
 
-void StackerPanel::print( QString message )
-{
-	printMessage(message);
+	// The selected item (parent)
+	QList<QTreeWidgetItem*> selectedItems = panel.solutionTree->selectedItems();
+	if (selectedItems.isEmpty())
+	{
+		showMessage("No item is selected!");
+		return;
+	}
+
+	// Execute
+	Improver improver(activeOffset);
+	int level = panel.isSuggesting ? panel.suggestLevels->value() : IMPROVER_MAGIC_NUMBER;
+	improver.executeImprove(level);
+
+	// Get children shape states
+	QVector<ShapeState> childrenStates = improver.solutions;
+
+	if (panel.isSuggesting)
+	{
+		while (!improver.candidateSolutions.empty())
+		{
+			childrenStates.push_back(improver.candidateSolutions.top());
+			improver.candidateSolutions.pop();
+		}
+	}
+
+	// Update the solution tree
+	addChildren(selectedItems.first(), childrenStates);
 }

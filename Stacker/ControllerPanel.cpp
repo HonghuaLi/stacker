@@ -5,8 +5,6 @@
 #include <QFileDialog>
 
 #include "GUI/global.h"
-#include "StackerGlobal.h"
-
 #include "Primitive.h"
 #include "Controller.h"
 #include "ConstraintGraphVis.h"
@@ -36,7 +34,10 @@ ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 	this->layout()->addWidget(vis = new ConstraintGraphVis(new ConstraintGraph()));
 
 	// Default values
-	controllerWidget.skeletonJoints->setValue(GC_SKELETON_JOINTS_NUM);
+	if (controller())
+		controllerWidget.skeletonJoints->setValue(controller()->GC_SKELETON_JOINTS_NUM);
+	else
+		controllerWidget.skeletonJoints->setValue(20);
 }
 
 void ControllerPanel::setActiveScene( Scene * newScene )
@@ -107,7 +108,7 @@ void ControllerPanel::reset()
 	}
 
 	// Refresh
-	activeScene->updateGL();
+	if (activeScene) activeScene->updateGL();
 }
 
 Controller * ControllerPanel::controller()
@@ -141,22 +142,23 @@ QSegMesh* ControllerPanel::activeObject()
 
 void ControllerPanel::setSkeletonJoints( int num )
 {
-	GC_SKELETON_JOINTS_NUM = num;
+	Controller * ctrl = controller();
+	if (ctrl) ctrl->GC_SKELETON_JOINTS_NUM = num;
 }
 
 void ControllerPanel::convertGC()
 {
-	if(!activeObject() || !activeObject()->ptr["controller"]) return;
-
-	Controller* ctrl = (Controller *)activeObject()->ptr["controller"];
-
-	foreach(Primitive * prim, ctrl->getPrimitives())
+	Controller * ctrl = controller();
+	if (ctrl) 
 	{
-		if(prim->isSelected)
-			ctrl->convertToGC(prim->id, !controllerWidget.basicFitGC->isChecked(), controllerWidget.convertGcAxis->value());
-	}
+		foreach(Primitive * prim, ctrl->getPrimitives())
+		{
+			if(prim->isSelected)
+				ctrl->convertToGC(prim->id, !controllerWidget.basicFitGC->isChecked(), controllerWidget.convertGcAxis->value());
+		}
 
-	if(activeScene)	activeScene->updateGL();
+		activeScene->updateGL();
+	}
 }
 
 void ControllerPanel::convertCuboid()
@@ -169,16 +171,6 @@ void ControllerPanel::convertCuboid()
 		if(prim->isSelected) ctrl->convertToCuboid(prim->id, controllerWidget.useAABB->isChecked(), controllerWidget.cuboidMethod->currentIndex());
 
 	if(activeScene)	activeScene->updateGL();
-}
-
-void ControllerPanel::updateController()
-{
-	// Create a controller if non-exists
-	if (activeScene && activeObject() && !activeObject()->ptr["controller"])
-	{
-		activeObject()->ptr["controller"] = new Controller(activeObject(), controllerWidget.useAABB->isChecked());
-		activeScene->setSelectMode(CONTROLLER);
-	}
 }
 
 void ControllerPanel::showGraph()

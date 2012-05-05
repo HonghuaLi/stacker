@@ -10,7 +10,7 @@
 class QSegMesh;
 class Primitive;
 class Group;
-class EditingSuggestion;
+class EditPath;
 
 class Controller
 {
@@ -37,6 +37,7 @@ public:
 	QVector<Primitive*> getPrimitives();
 
 	// Fitting
+	int	 GC_SKELETON_JOINTS_NUM;
 	void fitPrimitives();
 	void fitOBBs(bool useAABB = true);	
 	void convertToGC( QString primitiveId, bool isUsingSkeleton = true, int cuboidAxis = 0 );
@@ -68,8 +69,6 @@ public:
 	
 	// Flags
 	void setPrimitivesFrozen(bool isFrozen = false);
-
-	// Distortion
 
 	// Save and load
 	void save(std::ofstream &outF);

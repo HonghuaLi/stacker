@@ -7,7 +7,7 @@
 #include "Cuboid.h"
 #include "Primitive.h"
 #include "GCylinder.h"
-#include "EditingSuggestion.h"
+#include "EditPath.h"
 #include "GraphicsLibrary/Mesh/QSegMesh.h"
 
 Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
@@ -28,6 +28,9 @@ Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 	primTypeNames.push_back("CUBOID");
 	primTypeNames.push_back("GC");
 	primTypeNames.push_back("WIRE");
+
+	// GC along axis
+	GC_SKELETON_JOINTS_NUM = 16;
 }
 
 Controller::~Controller()

@@ -1,10 +1,9 @@
 #include "HiddenViewer.h"
-#include "StackerGlobal.h"
 
 HiddenViewer::HiddenViewer( QWidget * parent ) : QGLViewer (parent)
 {
 	// Restrict the size of the window
-	setFixedSize(HIDDEN_VIEWER_SIZE, HIDDEN_VIEWER_SIZE);
+	setFixedSize(200, 200);
 
 	// No active scene when initializing
 	this->activeScene = NULL;

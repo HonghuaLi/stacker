@@ -1,7 +1,6 @@
 #include "GCylinder.h"
 #include "SkeletonExtract.h"
 #include "SimpleDraw.h"
-#include "StackerGlobal.h"
 
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {
@@ -52,7 +51,7 @@ void GCylinder::fit()
 	skel->selectLongestPath();
 
 	// Compute generalized cylinder given spine points
-	int numSteps = Max(skel->sortedSelectedNodes.size(), GC_SKELETON_JOINTS_NUM);
+	int numSteps = skel->sortedSelectedNodes.size();
 	std::vector<Point> reSampledSpinePoints;
 	foreach(ResampledPoint sample, skel->resampleSmoothSelectedPath(numSteps, 3)) 
 		reSampledSpinePoints.push_back(sample.pos);
@@ -391,12 +390,12 @@ QSurfaceMesh GCylinder::getGeometry()
 	return *cage;
 }
 
-void* GCylinder::getGeometryState()
+void* GCylinder::getState()
 {
 	return (void*) new std::vector<GeneralizedCylinder::Circle>(gc->crossSection);
 }
 
-void GCylinder::setGeometryState( void* toState)
+void GCylinder::setState( void* toState)
 {
 	gc->crossSection = *( (std::vector<GeneralizedCylinder::Circle>*) toState );
 	

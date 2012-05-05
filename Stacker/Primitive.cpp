@@ -77,26 +77,10 @@ void Primitive::addFixedPoint( Point fp )
 	fixedPoints.push_back(fp);
 }
 
-PrimitiveState Primitive::getState()
-{
-	PrimitiveState state;
-	state.geometry = getGeometryState();
-	state.isFrozen = isFrozen;
-
-	return state;
-}
-
-void Primitive::setState( PrimitiveState state)
-{
-	setGeometryState(state.geometry);
-
-	isFrozen = state.isFrozen;
-}
-
-double Primitive::similarity( PrimitiveState state1, PrimitiveState state2 )
+double Primitive::similarity( void* state1, void* state2 )
 {
 	// Save the current state
-	PrimitiveState state = getState();
+	void* state = getState();
 	
 	std::vector<Vec3d> points1, points2;
 	setState(state1);

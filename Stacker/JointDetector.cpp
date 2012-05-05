@@ -1,6 +1,5 @@
 #include "JointDetector.h"
 
-#include "StackerGlobal.h"
 #include "Primitive.h"
 #include "Cuboid.h"
 #include "PointJointGroup.h"
@@ -12,6 +11,11 @@
 
 #define POINT_LINE_THRESHOLD 4
 #define	LINE_2PONINTS_THRESHOLD 0.3
+
+JointDetector::JointDetector()
+{
+	JOINT_THRESHOLD = 0.035;
+}
 
 QVector<Group*> JointDetector::detect( QVector<Primitive*> primitives )
 {

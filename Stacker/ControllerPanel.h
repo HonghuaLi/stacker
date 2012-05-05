@@ -19,9 +19,6 @@ public slots:
 	// Scene management
 	void setActiveScene( Scene * newScene );
 
-	// Update controller
-	void updateController();
-
 	// Primitives modification
 	void setSkeletonJoints( int num );
 	void convertGC();

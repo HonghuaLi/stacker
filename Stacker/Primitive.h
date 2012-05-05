@@ -43,10 +43,8 @@ public:
 	virtual Point fromCoordinate(std::vector<double> coords) = 0;
 
 	// Primitive state
-	virtual PrimitiveState	getState();
-	virtual void			setState( PrimitiveState state);
-	virtual void*			getGeometryState() = 0;
-	virtual void			setGeometryState( void* ) = 0;
+	virtual void*	getState() = 0;
+	virtual void	setState( void* state) = 0;
 
 	// Primitive geometry
 	double	originalVolume;
@@ -74,7 +72,7 @@ public:
 	virtual void	addFixedCurve(int cid);
 
 	// Similarity between two primitives
-	double similarity(PrimitiveState state1, PrimitiveState state2);
+	double similarity(void* state1, void* state2);
 
 	// Helpful for debugging
 	std::vector<Vec3d> debugPoints, debugPoints2, debugPoints3;

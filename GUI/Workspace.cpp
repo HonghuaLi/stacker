@@ -95,13 +95,11 @@ void Workspace::addNewScene()
 
 	// Objects changed in scene
 	connect(newScene, SIGNAL(objectDiscarded(QString)), mDoc, SLOT(deleteObject(QString)));
-	connect(newScene, SIGNAL(objectInserted()), sp, SLOT(updateActiveObject()));
-	connect(newScene, SIGNAL(objectInserted()), cp, SLOT(updateController()));
+	connect(newScene, SIGNAL(objectInserted()), sp, SLOT(setActiveObject()));
 
 	// Stack panel
 	connect(sp, SIGNAL(printMessage(QString)), newScene, SLOT(print(QString)));
 	connect(sp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
-	connect(sp, SIGNAL(objectModified()), cp, SLOT(updateController()));
 
 	// Groups
 	connect(newScene, SIGNAL(groupsChanged()), gp, SLOT(updateWidget()));
@@ -109,7 +107,6 @@ void Workspace::addNewScene()
 	// Object transformed by transformation panel
 	connect(tp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
 	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
-	connect(tp, SIGNAL(objectModified()), cp, SLOT(updateController()));
 
 	// Deformation
 	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *)));

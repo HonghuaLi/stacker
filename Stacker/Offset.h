@@ -3,7 +3,6 @@
 #include "GraphicsLibrary/Mesh/QSegMesh.h"
 #include "Controller.h"
 #include <QQueue>
-#include "StackerGlobal.h"
 #include "HotSpot.h"
 #include "Numeric.h"
 

@@ -12,6 +12,7 @@ private:
 	QColor backColor;
 	Scene * activeScene;
 	HVMode mode;
+	int size;
 
 public:
 	HiddenViewer(QWidget * parent = 0);

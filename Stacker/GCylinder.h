@@ -72,8 +72,8 @@ public:
 	void drawNames(int name, bool isDrawCurves = false);
 
 	// Primitive state
-	void*	getGeometryState();
-	void	setGeometryState( void* );
+	void*	getState();
+	void	setState( void* toState);
 
 	// Symmetry
 	void	setSymmetryPlanes(int nb_fold);
