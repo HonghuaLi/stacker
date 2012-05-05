@@ -52,7 +52,7 @@ public:
 
 		// Build the initial queue
 		// First element should be longest edge
-		 mesh_t::Edge_iterator edgesEnd		= _m.edges_end();
+		mesh_t::Edge_iterator edgesEnd		= _m.edges_end();
 		for (  mesh_t::Edge_iterator eit	= _m.edges_begin(); eit != edgesEnd; ++eit) {
 			const  Point to			= points[_m.to_vertex(_m.halfedge(eit,0))];
 			const  Point from		= points[_m.from_vertex(_m.halfedge(eit,0))];

@@ -16,6 +16,7 @@
 #include "GraphicsLibrary/Remeshing/LaplacianRemesher.h"
 #include "GraphicsLibrary/Subdivision/SubdivisionAlgorithms.h"
 #include "GraphicsLibrary/Smoothing/Smoother.h"
+#include "GraphicsLibrary/Decimation/Decimater.h"
 
 Scene::Scene( QWidget * parent, const QGLWidget * shareWidget, Qt::WFlags flags) : QGLViewer(parent, shareWidget, flags)
 {
@@ -334,7 +335,8 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				// == Primitive geometry stuff ==
 				menu.addSeparator();
 				QMenu & mesh_menu			= *menu.addMenu("Modify geometry");
-				QAction* remeshAction		= mesh_menu.addAction("Remesh");
+				QAction* simplifyAction		= mesh_menu.addAction("Simplify");
+				QAction* remeshAction		= mesh_menu.addAction("Re-mesh");
 				QAction* replaceAction		= mesh_menu.addAction("Replace geometry...");
 				mesh_menu.addSeparator();
 				QAction* loopAction			= mesh_menu.addAction("Loop");
@@ -389,6 +391,8 @@ void Scene::mousePressEvent( QMouseEvent* e )
 						QSurfaceMesh * mesh = prim->getMesh();
 
 						double avgEdge = mesh->getAverageEdgeLength();
+
+						if(action == simplifyAction)	Decimater::simplify(mesh, 0.5);
 
 						if(action == remeshAction)		LaplacianRemesher::remesh(mesh, avgEdge * 0.6);
 						if(action == loopAction)		LoopSubdivider().subdivide(*mesh,1);
