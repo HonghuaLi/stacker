@@ -5,7 +5,7 @@
 
 class StackerPanel;
 
-class StackerPreview : public QGLViewer
+class Previewer : public QGLViewer
 {
 	Q_OBJECT
 
@@ -14,7 +14,7 @@ private:
 	Scene * activeScene;
 
 public:
-	StackerPreview(QWidget * parent = 0);
+	Previewer(QWidget * parent = 0);
 
 	// Setup scene
 	void init();
@@ -46,5 +46,5 @@ public:
 public slots:
 	void setActiveScene(Scene * toScene);
 	void updateActiveObject();
-
+	void setStackCount( int num );
 };

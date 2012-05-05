@@ -44,10 +44,9 @@ private:
 public:
 	// Suggestion
 	QVector<EditingSuggestion> suggestions;
-	PQShapeStateLessEnergy suggestSolutions;
 
-	// Beam Searching
-	double orgStackability;
+	// Best first Searching
+	double origStackability;
 	Vec3d constraint_bbmin, constraint_bbmax;
 	ShapeState currentCandidate;
 	QVector< ShapeState > usedCandidateSolutions;

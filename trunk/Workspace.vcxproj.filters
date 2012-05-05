@@ -505,12 +505,6 @@
     <CustomBuild Include="Stacker\StackerPanel.h">
       <Filter>Stacker\Panels</Filter>
     </CustomBuild>
-    <CustomBuild Include="Stacker\StackerPreview.h">
-      <Filter>Stacker\Panels</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Stacker\HiddenViewer.h">
-      <Filter>Stacker\Panels</Filter>
-    </CustomBuild>
     <CustomBuild Include="Stacker\ConstraintGraphVis.h">
       <Filter>Stacker\Utility</Filter>
     </CustomBuild>
@@ -519,6 +513,12 @@
     </CustomBuild>
     <CustomBuild Include="Stacker\StackabilityImprover.h">
       <Filter>Stacker\Core</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\Previewer.h">
+      <Filter>Stacker\Panels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\HiddenViewer.h">
+      <Filter>Stacker\Panels</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -666,22 +666,10 @@
     <ClCompile Include="GeneratedFiles\Release\moc_GroupPanel.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_HiddenViewer.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_HiddenViewer.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_StackerPanel.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_StackerPanel.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_StackerPreview.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_StackerPreview.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\ControllerPanel.cpp">
@@ -840,12 +828,6 @@
     <ClCompile Include="Stacker\StackerPanel.cpp">
       <Filter>Stacker\Panels</Filter>
     </ClCompile>
-    <ClCompile Include="Stacker\StackerPreview.cpp">
-      <Filter>Stacker\Panels</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\HiddenViewer.cpp">
-      <Filter>Stacker\Panels</Filter>
-    </ClCompile>
     <ClCompile Include="Stacker\EditingSuggestion.cpp">
       <Filter>Stacker\Core</Filter>
     </ClCompile>
@@ -902,6 +884,24 @@
     </ClCompile>
     <ClCompile Include="GraphicsLibrary\Smoothing\Smoother.cpp">
       <Filter>GraphicsLibrary\Smoothing</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Previewer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Previewer.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\Previewer.cpp">
+      <Filter>Stacker\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_HiddenViewer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_HiddenViewer.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacker\HiddenViewer.cpp">
+      <Filter>Stacker\Panels</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

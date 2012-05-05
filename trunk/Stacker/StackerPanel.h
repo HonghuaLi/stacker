@@ -2,7 +2,7 @@
 
 #include "ui_StackerWidget.h"
 #include "GUI/Scene.h"
-#include "StackerPreview.h"
+#include "Previewer.h"
 #include "HiddenViewer.h"
 #include "Controller.h"
 #include "QManualDeformer.h"
@@ -26,8 +26,8 @@ public:
 
 	Ui::StackerWidget panel;
 	Scene * activeScene;
-	StackerPreview * stacker_preview;
-	HiddenViewer * hidden_viewer;
+	Previewer * previewer;
+	HiddenViewer * hiddenViewer;
 
 	// Core components
 	Offset * activeOffset;
@@ -38,27 +38,21 @@ public slots:
 	void setActiveScene( Scene * newScene);
 	void updateActiveObject();
 
-	// Buttons
-	void onHotspotsButtonClicked();
+	// Improve and suggest
 	void onImproveButtonClicked();
 	void onSuggestButtonClicked();
-	void onSaveSuggestionsButtonClicked();
-	void onLoadSuggestionsButtonClicked();
 	void searchDirection();
-	void outputForPaper();
-
-	// Parameters
-	void setStackCount(int num);
-
-	// Solutions
 	void setTargetStackability(double s);
 	void setBBTolerance(double tol);
 	void setNumExpectedSolutions(int num);
-	void setSolutionID(int id);
-	void setSuggestionID(int id);
 
 	// Message
 	void print(QString message);
+
+	// Debug
+	void onHotspotsButtonClicked();
+	void outputForPaper();
+
 
 signals:
 	void printMessage( QString );
