@@ -32,7 +32,7 @@ public:
 
 	void translate(const Vec3d & to);
 
-	void draw(double lineWidth, const Vec4d & color = Vec4d(1,1,1,1));
+	void draw(double lineWidth = 1.0, const Vec4d & color = Vec4d(1,1,1,1));
 	void drawFilled(const Vec4d & fillColor = Vec4d(1,0,0,1), double lineWidth = 2, const Vec4d & borderColor = Vec4d(1,1,1,1));
 };
 
