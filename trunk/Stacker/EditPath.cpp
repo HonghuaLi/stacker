@@ -1,6 +1,6 @@
 #include "EditPath.h"
-#include "SimpleDraw.h"
-#include "ColorMap.h"
+#include "Utility/SimpleDraw.h"
+#include "Utility/ColorMap.h"
 
 EditPath::EditPath( Point Center, Vec3d Direction, double Value /*= 0.0*/ )
 {

@@ -1,10 +1,10 @@
 #include "Numeric.h"
 
-#include "Macros.h"
+#include "Utility/Macros.h"
+#include "Utility/ColorMap.h"
 #include <QRect>
 #include <QImage>
 #include <QFile>
-#include "ColorMap.h"
 #include <stack>
 
 // Extreme

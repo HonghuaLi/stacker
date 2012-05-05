@@ -1,5 +1,5 @@
 #include "CoplanarGroup.h"
-#include "SimpleDraw.h"
+#include "Utility/SimpleDraw.h"
 #include "Primitive.h"
 
 void CoplanarGroup::process( QVector< Primitive* > segments )

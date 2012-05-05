@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Primitive.h"
-#include "GeneralizedCylinder.h"
-#include "Skeleton.h"
+#include "GraphicsLibrary/Skeleton/GeneralizedCylinder.h"
+#include "GraphicsLibrary/Skeleton/Skeleton.h"
 #include "MathLibrary/Coordiantes/GCDeformation.h"
 #include "GUI/Viewer/libQGLViewer/QGLViewer/manipulatedFrame.h"
 #include "MathLibrary/Deformer/Skinning.h"

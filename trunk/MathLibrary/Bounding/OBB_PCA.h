@@ -7,7 +7,7 @@
 #include "Eigen/Eigenvalues"
 
 // For visualization
-#include "SimpleDraw.h"
+#include "Utility/SimpleDraw.h"
 
 // Based on code by James Gregson: http://jamesgregson.blogspot.com/2011/03/latex-test.html
 
