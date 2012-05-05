@@ -23,58 +23,50 @@ StackerPanel::StackerPanel()
 {
 	panel.setupUi(this);
 
-	// Add controller deformer widget
-	//ctrlDeformer.setupUi(panel.controllerDeformerPanel);
-
-	QGridLayout * layout = (QGridLayout *) panel.groupBox->layout();
-	int row = layout->rowCount() + 1;
 
 	// Add a stacking preview widget
-	stacker_preview = new StackerPreview(this);
-	QDockWidget * previewDock = new QDockWidget("Preview");
-	previewDock->setWidget (stacker_preview);
-	layout->addWidget(previewDock, row++, 0,1,6);
-	stacker_preview->setMinimumHeight(50);
+	previewer = new Previewer(this);
+	QDockWidget * previewDock = new QDockWidget("Previewer");
+	previewDock->setWidget (previewer);
+
+	QGridLayout * previewLayout = (QGridLayout *) panel.previewBox->layout();
+	previewLayout->addWidget(previewDock, previewLayout->rowCount() + 1, 0,1,6);
+	previewer->setMinimumHeight(50);
+
+	connect(panel.stackCount, SIGNAL(valueChanged(int)), previewer, SLOT(setStackCount(int)) );
 
 	// Add a stacking hidden viewer widget for offset calculator
-	hidden_viewer = new HiddenViewer();
-	QDockWidget * hiddenDock = new QDockWidget("Hidden");
-	hiddenDock->setWidget (hidden_viewer);
-	layout->addWidget(hiddenDock, row++, 0,1,3);
+	hiddenViewer = new HiddenViewer();
+	QDockWidget * hiddenDock = new QDockWidget("HiddenViewer");
+	hiddenDock->setWidget (hiddenViewer);
+
+	QGridLayout * hiddenLayout = (QGridLayout *) panel.hiddenviewBox->layout();
+	hiddenLayout->addWidget(hiddenDock, hiddenLayout->rowCount() + 1, 0,1,3);
 	hiddenDock->setFloating(true);
 	hiddenDock->setWindowOpacity(1.0);
 	int x = qApp->desktop()->availableGeometry().width();
 	hiddenDock->move(QPoint(x - hiddenDock->width(),0)); //Move the hidden dock to the top right conner
+	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hiddenViewer, SLOT(setResolution(int)));
 	
 	// Offset function calculator
-	activeOffset = new Offset(hidden_viewer);
+	activeOffset = new Offset(hiddenViewer);
 	improver = new StackabilityImprover(activeOffset);
 
-	// Scene manager
+	// Object changes
 	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-	connect(panel.stackCount, SIGNAL(valueChanged(int)), this, SLOT(setStackCount(int)) );
-	connect(panel.hidderViewerSize, SIGNAL(valueChanged(int)), hidden_viewer, SLOT(setResolution(int)));
 
-	// Hotspot
-	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
+	// Improve and suggest
+	connect(panel.targetS, SIGNAL(valueChanged(double)), this, SLOT(setTargetStackability(double)));
+	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
+	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
+	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
+	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
 
 	// Stacking direction
 	connect(panel.searchDirectionButton, SIGNAL(clicked()), SLOT(searchDirection()));
-
-	// Solution
-	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), this, SLOT(setBBTolerance(double)) );
-	connect(panel.numExpectedSolutions, SIGNAL(valueChanged(int)), this, SLOT(setNumExpectedSolutions(int)) );
-	connect(panel.targetS, SIGNAL(valueChanged(double)), this, SLOT(setTargetStackability(double)));
-	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
-	connect(panel.suggestButton, SIGNAL(clicked()), SLOT(onSuggestButtonClicked()));
-	connect(panel.solutionID, SIGNAL(valueChanged(int)), this, SLOT(setSolutionID(int)));
-	
-	// Suggestion
-	connect(panel.suggestionID, SIGNAL(valueChanged(int)), this, SLOT(setSuggestionID(int)));
-	connect(panel.saveSuggestionsButton, SIGNAL(clicked()), SLOT(onSaveSuggestionsButtonClicked()));
-	connect(panel.loadSuggestionsButton, SIGNAL(clicked()), SLOT(onLoadSuggestionsButtonClicked()));
-		
-	// Paper stuff
+			
+	// Debugging
+	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
 	connect(panel.outputButton, SIGNAL(clicked()), SLOT(outputForPaper()));
 
 	// Default values
@@ -82,6 +74,7 @@ StackerPanel::StackerPanel()
 	panel.BBTolerance->setValue(BB_TOLERANCE);
 	panel.targetS->setValue(TARGET_STACKABILITY);
 	panel.hidderViewerSize->setValue(HIDDEN_VIEWER_SIZE);
+	panel.stackCount->setValue(previewer->stackCount);
 }
 
 void StackerPanel::onImproveButtonClicked()
@@ -99,12 +92,6 @@ void StackerPanel::onImproveButtonClicked()
 	}
 
 	improver->executeImprove();
-
-	int total = improver->solutions.size();
-	panel.numSolution->setText(QString("/ %1").arg(total));
-	panel.suggestionID->setValue(0);
-
-	emit(objectModified());
 }
 
 void StackerPanel::onHotspotsButtonClicked()
@@ -124,8 +111,8 @@ void StackerPanel::setActiveScene( Scene * newScene )
 	if(activeScene != newScene)
 	{
 		activeScene = newScene;
-		stacker_preview->setActiveScene(newScene);
-		hidden_viewer->setActiveScene(newScene);
+		previewer->setActiveScene(newScene);
+		hiddenViewer->setActiveScene(newScene);
 		improver->clear();
 	}
 }
@@ -134,15 +121,14 @@ void StackerPanel::updateActiveObject()
 {
 	// Offset
 	if (panel.rotAroundAxis->isChecked())
-		activeOffset->computeOffsetOfShape( ROT_AROUND_AXIS, panel.rotStackingDensity->value() );
+		activeOffset->computeOffsetOfShape( ROT_AROUND_AXIS, panel.searchDensity->value() );
 	else if (panel.rotFreeForm->isChecked())
-		activeOffset->computeOffsetOfShape( ROT_FREE_FORM, panel.rotStackingDensity->value() );
+		activeOffset->computeOffsetOfShape( ROT_FREE_FORM, panel.searchDensity->value() );
 	else
 		activeOffset->computeOffsetOfShape();
 
 	// Preview
-	stacker_preview->stackCount = panel.stackCount->value();
-	stacker_preview->updateActiveObject();
+	previewer->updateActiveObject();
 }
 
 QSegMesh* StackerPanel::activeObject()
@@ -156,30 +142,6 @@ QSegMesh* StackerPanel::activeObject()
 void StackerPanel::showMessage( QString message )
 {
 	emit(printMessage(message));
-}
-
-void StackerPanel::setSolutionID(int id)
-{
-	int total = improver->solutions.size();
-	panel.numSolution->setText(QString("/ %1").arg(total));
-
-	id = (0==total)? 0 : (id % total);
-	panel.solutionID->setValue(id);
-	improver->showSolution(id);
-
-	emit(objectModified());
-}
-
-void StackerPanel::setSuggestionID(int id)
-{
-	int total = improver->suggestSolutions.size();
-	panel.numSuggestion->setText(QString("/ %1").arg(total));
-
-	id = (0==total)? 0 : (id % total);
-	panel.suggestionID->setValue(id);
-	improver->showSuggestion(id);
-
-	emit(objectModified());
 }
 
 void StackerPanel::outputForPaper()
@@ -247,7 +209,7 @@ void StackerPanel::outputForPaper()
 
 	// 2) Save meshes stacked
 	data["stackPreview"] = "stackPreview.obj";
-	stacker_preview->saveStackObj(exportDir + "/" + data["stackPreview"], panel.stackCount->value(), 1.0);
+	previewer->saveStackObj(exportDir + "/" + data["stackPreview"], panel.stackCount->value(), 1.0);
 
 
 	// 3) Save stuck points / region
@@ -259,7 +221,7 @@ void StackerPanel::outputForPaper()
 	activeOffset->saveHotSpots(exportDir + "/" + data["lowerStuck"], -1, sampleSize);
 
 	// 4) Save stacking direction
-	Vec3d direction = stacker_preview->stackDirection;
+	Vec3d direction = previewer->stackDirection;
 	data["stackDir"] = QString("%1 %2 %3").arg(direction.x()).arg(direction.y()).arg(direction.z());
 
 
@@ -275,11 +237,10 @@ void StackerPanel::outputForPaper()
 	infoFile.close();
 }
 
-
 void StackerPanel::searchDirection()
 {
 	int num = panel.searchDensity->value();
-	int angleNum = panel.searchAngleDensity->value();
+	int angleNum = 1;
 	int num2 = num;		// maybe num2 = num * 2 for bias
 	double r = 1.0;
 
@@ -290,9 +251,7 @@ void StackerPanel::searchDirection()
 	
 	std::vector<Vec3d> samples;
 
-	std::cout<< panel.searchAxis->value() << "\n";
-
-	if(panel.searchAlongAxis->isChecked())
+	if(panel.rotAroundAxis->isChecked())
 	{
 		deltaPhi = M_PI;
 	}
@@ -314,16 +273,16 @@ void StackerPanel::searchDirection()
 		theta = 0;
 	}
 
-	if(panel.searchAlongAxis->isChecked()){
+	if(panel.rotAroundAxis->isChecked()){
 		for(int i = 0; i < samples.size(); i++){
-			switch(panel.searchAxis->value())
+			switch(panel.searchAxisID->value())
 			{
 			case 0: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(0,0,1)); break;
 			case 1: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(0,1,0)); break;
 			case 2: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(1,0,0)); break;
 			}
 
-			//activeObject()->getSegment(0)->debug_points.push_back(samples[i]);
+			activeObject()->getSegment(0)->debug_points.push_back(samples[i]);
 		}
 	}
 	
@@ -384,13 +343,6 @@ void StackerPanel::searchDirection()
 	emit(objectModified());
 }
 
-
-void StackerPanel::setStackCount( int num )
-{
-	stacker_preview->stackCount = num;
-	stacker_preview->updateActiveObject();
-}
-
 void StackerPanel::onSuggestButtonClicked()
 {
 	improver->suggestions.clear();
@@ -398,49 +350,6 @@ void StackerPanel::onSuggestButtonClicked()
 	isSuggesting = true;
 	improver->executeImprove(0);
 	isSuggesting = false;
-	
-	int total = improver->suggestSolutions.size();
-	panel.numSuggestion->setText(QString("/ %1").arg(total));
-	panel.suggestionID->setValue(0);
-	emit(objectModified());
-}
-
-void StackerPanel::onSaveSuggestionsButtonClicked()
-{
-	if(!activeScene || !activeObject())	return;
-
-	QVector< EditingSuggestion > &suggestions = suggestions;
-	if (suggestions.empty()) return;
-
-	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", "", "Group File (*.sgt)"); 
-	std::ofstream outF(qPrintable(fileName), std::ios::out);
-
-	outF << suggestions.size() << std::endl;
-	foreach(EditingSuggestion sgt, suggestions)
-	{
-		outF << sgt.center << '\t' << sgt.direction << '\t' << sgt.value << std::endl;
-	}
-	outF.close();
-}
-
-void StackerPanel::onLoadSuggestionsButtonClicked()
-{
-	if(!activeScene)	return;
-
-	QString fileName = QFileDialog::getOpenFileName(0, "Import Groups", "", "Group File (*.sgt)"); 
-	std::ifstream inF(qPrintable(fileName), std::ios::in);
-
-	int num;
-	inF >> num;
-	improver->suggestions.clear();
-	for (int i=0; i<num; i++)
-	{
-		EditingSuggestion sgt;
-		inF >> sgt.center >> sgt.direction >> sgt.value;
-		improver->suggestions.push_back(sgt);
-	}
-
-	inF.close();
 }
 
 void StackerPanel::setBBTolerance( double tol )

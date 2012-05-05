@@ -48,15 +48,9 @@ public:
 	void showHotSpots();
 	void saveHotSpots( QString filename, int direction = 1, double percent = 1.0 );
 
-
-
 	// Utilities 
 	Vec3d unprojectedCoordinatesOf( uint x, uint y, int direction);
 	Vec2i projectedCoordinatesOf( Vec3d point, int pathID );
-
-	
-
-	
 
 public:
 	HiddenViewer * activeViewer;

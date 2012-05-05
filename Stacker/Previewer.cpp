@@ -1,20 +1,20 @@
-#include "StackerPreview.h"
+#include "Previewer.h"
 #include "StackerPanel.h"
 
 
-StackerPreview::StackerPreview( QWidget * parent ) : QGLViewer (parent)
+Previewer::Previewer( QWidget * parent ) : QGLViewer (parent)
 {
-	// Default size of the preview window
-//	this->resize(350,200);
-
 	// No active scene when initializing
 	this->activeScene = NULL;
+
+	// Stack count
+	stackCount = 3;
 
 	// Stacking direction is always along z axis
 	stackDirection = Vec3d(0., 0., 1.);
 }
 
-void StackerPreview::init()
+void Previewer::init()
 {
 	glEnable(GL_MULTISAMPLE);
 
@@ -38,25 +38,25 @@ void StackerPreview::init()
 	glMaterialf(GL_FRONT, GL_SHININESS, high_shininess);
 }
 
-void StackerPreview::setupCamera()
+void Previewer::setupCamera()
 {
 	camera()->setUpVector(Vec(0,0,1));
 	camera()->setPosition(Vec(1,-2,1));
 	camera()->lookAt(Vec());
 }
 
-void StackerPreview::setupLights()
+void Previewer::setupLights()
 {
 	GLfloat lightColor[] = {0.9f, 0.9f, 0.9f, 1.0f};
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
 }
 
-void StackerPreview::preDraw()
+void Previewer::preDraw()
 {
 	QGLViewer::preDraw();
 }
 
-void StackerPreview::draw()
+void Previewer::draw()
 {
 	// Anti aliasing 
 	glEnable(GL_MULTISAMPLE);
@@ -112,7 +112,7 @@ void StackerPreview::draw()
 	glPopMatrix();
 }
 
-void StackerPreview::postDraw()
+void Previewer::postDraw()
 {
 	QGLViewer::postDraw();
 
@@ -137,14 +137,14 @@ void StackerPreview::postDraw()
 
 }
 
-void StackerPreview::setActiveScene( Scene * toScene )
+void Previewer::setActiveScene( Scene * toScene )
 {
 	this->activeScene = toScene;
 
 	updateActiveObject();
 }
 
-void StackerPreview::updateVBOs()
+void Previewer::updateVBOs()
 {
 	QSegMesh * mesh = activeScene->activeObject();
 
@@ -170,7 +170,7 @@ void StackerPreview::updateVBOs()
 	}
 }
 
-void StackerPreview::updateActiveObject()
+void Previewer::updateActiveObject()
 {
 	if(activeScene && !activeScene->isEmpty())
 	{
@@ -183,14 +183,15 @@ void StackerPreview::updateActiveObject()
 
 		double radius = (bbmax - bbmin).norm()/2;
 		camera()->setSceneRadius(radius);
-		camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
+		double s = 1.5;
+		camera()->fitBoundingBox(Vec(bbmin * s), Vec(bbmax * s));
 	}
 
 	vboCollection.clear();
 	updateGL();
 }
 
-QSegMesh* StackerPreview::activeObject()
+QSegMesh* Previewer::activeObject()
 {
 	if (activeScene)
 		return activeScene->activeObject();
@@ -198,7 +199,7 @@ QSegMesh* StackerPreview::activeObject()
 		return NULL;
 }
 
-void StackerPreview::keyPressEvent( QKeyEvent *e )
+void Previewer::keyPressEvent( QKeyEvent *e )
 {
 	if(e->key() == Qt::Key_W)
 	{
@@ -219,16 +220,21 @@ void StackerPreview::keyPressEvent( QKeyEvent *e )
 	QGLViewer::keyPressEvent(e);
 }
 
-void StackerPreview::setRenderMode( RENDER_MODE toMode )
+void Previewer::setRenderMode( RENDER_MODE toMode )
 {
 	QMap<QString, VBO>::iterator i;
 	for (i = vboCollection.begin(); i != vboCollection.end(); ++i)
-		i->render_mode = toMode;
+	{
+		if(i->render_mode == toMode)
+			i->render_mode = RENDER_REGULAR;
+		else
+			i->render_mode = toMode;
+	}
 
 	updateGL();
 }
 
-void StackerPreview::saveStackObj( QString fileName, int numStack, double scaleFactor)
+void Previewer::saveStackObj( QString fileName, int numStack, double scaleFactor)
 {
 	int stackCount = numStack;
 	double O_max = activeObject()->val["O_max"];
@@ -261,4 +267,10 @@ void StackerPreview::saveStackObj( QString fileName, int numStack, double scaleF
 
 	outputMesh.saveObj(fileName);
 	// delete deltaMesh?
+}
+
+void Previewer::setStackCount( int num )
+{
+	stackCount = num;
+	updateActiveObject();
 }

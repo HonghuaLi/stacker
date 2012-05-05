@@ -18,6 +18,7 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	sp = new StackerPanel();
 	leftLayout->addWidget(sp);
 
+
 	// === Richt dock
 	// Controller widget
 	cp = new ControllerPanel();
@@ -42,10 +43,6 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	// Mesh info widget
 	mi = new MeshInfoPanel();
 	rightLayout->addWidget(mi);
-
-	//// Hide the right dock by default
-	//ui.rightDock->hide();
-
 
 	// Create mesh document manager
 	mDoc = new QMeshDoc(this);

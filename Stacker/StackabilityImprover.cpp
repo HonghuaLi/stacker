@@ -116,11 +116,15 @@ void StackabilityImprover::recordSolution(Point handleCenter, Vec3d localMove, i
 {
 	double stackability = activeOffset->getStackability(true);
 
-	// Save state history
 	ShapeState state = ctrl()->getShapeState();
+
+	// \state has to be unique
+	if (!isUnique(state, 0)) return;
+
+	// Save state history
 	state.history = currentCandidate.history;
 	state.history.push_back(state);
-	state.deltaStackability = stackability - orgStackability;
+	state.deltaStackability = stackability - origStackability;
 	state.distortion = ctrl()->getDistortion();
 
 	// Evaluate suggestion
@@ -135,22 +139,8 @@ void StackabilityImprover::recordSolution(Point handleCenter, Vec3d localMove, i
 	state.trajectory = currentCandidate.trajectory;
 	state.trajectory.push_back(suggest);
 
-	// Whether or not we are tracking candidate solutions
-	if (isSuggesting)
-	{
-		suggestions.push_back(suggest); // For visualization
-		suggestSolutions.push(state); // For showing suggestions in order
-
-//		std::cout << "DeltaS = " << suggest.deltaS << "\tDeltaV = " << suggest.deltaV << "\n";
-	}
-	else
-	{
-		if (stackability > TARGET_STACKABILITY)
-			solutions.push(state);
-		else if (isUnique(state, 0))
-			candidateSolutions.push(state);
-	}		
-
+	// Store the state
+	candidateSolutions.push(state);	
 }
 
 void StackabilityImprover::deformNearPointLineHotspot( int side )
@@ -170,16 +160,9 @@ void StackabilityImprover::deformNearPointLineHotspot( int side )
 	//// debug
 	//Ts.clear();
 	//Ts.push_back(Vec3d(-0.25,0,0));
-	//Ts.push_back(Vec3d(0,-0.25,0));
-	//Ts.push_back(Vec3d(0.25,0,0));
-	//Ts.push_back(Vec3d(0,0.25,0));
-	//Ts.push_back(Vec3d(0.25,0.25,0));
-	//Ts.push_back(Vec3d(-0.25,-0.25,0));
 
 	foreach ( Vec3d T, Ts)
 	{
-//		std::cout << T << std::endl;	// debug
-
 		ctrl()->setPrimitivesFrozen(false);	// Clear flags
 		setPositionalConstriants(fixedHS); // Fix one end
 
@@ -194,6 +177,7 @@ void StackabilityImprover::deformNearPointLineHotspot( int side )
 			free_prim->addFixedPoint(free_handle.first() + T);
 			free_prim->addFixedPoint(free_handle.last() + T);
 		}
+
 		// Fix the relation between hot segments then propagate the local modification
 		propagator.regroupPair(free_prim->id, fixed_prim->id); 	
 		propagator.execute(); 
@@ -278,7 +262,6 @@ void StackabilityImprover::localSearch()
 {
 	// Step 1: Detect hot spots
 	activeOffset->computeOffsetOfShape();
-	orgStackability = activeOffset->getStackability();
 	activeOffset->detectHotspots();
 
 	// Step 2: Deform the object by locally modifying the hot spots
@@ -341,9 +324,6 @@ bool StackabilityImprover::isUnique( ShapeState state, double threshold )
 
 		candSolutionsCopy.pop();
 	}
-
-
-	//std::cout << "Unique: " << result <<std::endl;
 
 	return true;
 }
@@ -457,32 +437,31 @@ void StackabilityImprover::normalizeSuggestions()
 		suggestions[i].value = zeroRang? 1 : (suggestions[i].value - minValue) / range;
 	}
 
-	//Output
-	std::cout << "There are " << suggestions.size() << " suggestions (from offset):\n";
-	for (int i=0;i<suggestions.size();i++)
-	{
-		std::cout << " deltaS = " << suggestions[i].deltaS 
-			<< "\tdeltaV = " << suggestions[i].deltaV
-			<< "\tvalue = " << suggestions[i].value << std::endl;
-	}
+	////Output
+	//std::cout << "There are " << suggestions.size() << " suggestions (from offset):\n";
+	//for (int i=0;i<suggestions.size();i++)
+	//{
+	//	std::cout << " deltaS = " << suggestions[i].deltaS 
+	//		<< "\tdeltaV = " << suggestions[i].deltaV
+	//		<< "\tvalue = " << suggestions[i].value << std::endl;
+	//}
 }
 
 void StackabilityImprover::showSuggestion( int i )
 {
-	if (suggestSolutions.empty())
+	if (candidateSolutions.empty())
 	{
 		std::cout << "There is no suggestion.\n";
 		return;
 	}
 
-	int id = i % suggestSolutions.size();
+	// Get the i-th suggestion
+	int id = i % candidateSolutions.size();
+	PQShapeStateLessEnergy suggestSolutionsCopy = candidateSolutions;
+	for (int i=0;i<id;i++)	suggestSolutionsCopy.pop();
 
-	PQShapeStateLessEnergy suggestSolutionsCopy = suggestSolutions;
-	for (int i=0;i<id;i++)
-		suggestSolutionsCopy.pop();
-
+	// Show the suggest
 	Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
-
 	ctrl->setShapeState(suggestSolutionsCopy.top());
 }
 
@@ -499,15 +478,14 @@ Controller* StackabilityImprover::ctrl()
 // === Main access
 void StackabilityImprover::executeImprove(int level)
 {
+	// Suggesting: \level == 0
+	if (level < 0) return;
+
 	// Clear
 	clear();
 
-	// Check 
-	if (!isSuggesting && activeOffset->getStackability() >= TARGET_STACKABILITY )
-	{
-		printMessage("The shape already has a greater stackability than expected.");
-		return;
-	}
+	// The original stackability
+	origStackability = activeOffset->getStackability();
 
 	// The bounding box constraint is hard
 	constraint_bbmin = activeObject()->bbmin * BB_TOLERANCE;
@@ -515,53 +493,45 @@ void StackabilityImprover::executeImprove(int level)
 
 	// Push the current shape as the initial candidate solution
 	ShapeState origState = ctrl()->getShapeState();
-	origState.deltaStackability = activeOffset->getStackability() - orgStackability;
-	origState.distortion = ctrl()->getDistortion();
-	origState.history.push_back(origState);
+	origState.deltaStackability = 0;
+	origState.distortion = 0;
 	candidateSolutions.push(origState);
 
-	while(!candidateSolutions.empty())
+	while( !candidateSolutions.empty() && solutions.size() < NUM_EXPECTED_SOLUTION )
 	{
 		currentCandidate = candidateSolutions.top();
 		candidateSolutions.pop();
 		usedCandidateSolutions.push_back(currentCandidate);
 
+		// Solution or not
+		if (currentCandidate.deltaStackability + origStackability >= TARGET_STACKABILITY)
+		{
+			solutions.push(currentCandidate);
+			std::cout << solutions.size() << " solutions have been found. \n";
+			continue;
+		}
+
+		// Set up the current candidate
 		ctrl()->setShapeState(currentCandidate);
 
-		// Explorer all local successors
+		// Explore all local successors
 		localSearch();
 
 		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;
-		std::cout << "#Solutions = " << solutions.size() << std::endl;
-
-		if (solutions.size() >= NUM_EXPECTED_SOLUTION)
-		{
-			std::cout << NUM_EXPECTED_SOLUTION << " solutions have been found." << std::endl;
-			break;
-		}
 
 		// For suggesting or debugging
 		if (level > 0)	level--;
 		if (level == 0) break;
 	}
 
-	//// Debug: add candidate solutions to solutions
-	//while (!candidateSolutions.empty())
-	//{
-	//	solutions.push( candidateSolutions.top() );
-	//	candidateSolutions.pop();
-	//}
-	activeObject()->computeBoundingBox();
+	std::cout << "Searching completed.\n" << std::endl;
 
 	// Suggestions
-	if (isSuggesting) normalizeSuggestions();
+//	if (isSuggesting) normalizeSuggestions();
 }
 
 void StackabilityImprover::clear()
 {
-	suggestions.clear();
-	suggestSolutions = PQShapeStateLessEnergy();
-
 	usedCandidateSolutions.clear();
 
 	candidateSolutions = PQShapeStateLessEnergy();
