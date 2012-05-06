@@ -34,6 +34,7 @@ Scene::Scene( QWidget * parent, const QGLWidget * shareWidget, Qt::WFlags flags)
 	// Mouse selection window
 	this->setSelectRegionHeight(10);
 	this->setSelectRegionWidth(10);
+	this->selectMode = CONTROLLER;
 
 	// Take focus
 	this->setFocus();
@@ -245,6 +246,8 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 
 	emit(gotFocus(this));
 	emit(objectInserted());
+
+	this->selectMode = CONTROLLER;
 }
 
 void Scene::resetView()
@@ -598,7 +601,7 @@ void Scene::postSelection( const QPoint& point )
 				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 			
-				emit(objectInserted());
+				updateGL();
 
 				setManipulatedFrame( defCtrl->getFrame() );
 				Vec3d q = ctrl->getSelectedCurveCenter();
@@ -616,7 +619,7 @@ void Scene::postSelection( const QPoint& point )
 				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 
-				emit(objectInserted());
+				updateGL();
 
 				setManipulatedFrame( defCtrl->getFrame() );
 				Vec3d q = ctrl->getSelectedCurveCenter();

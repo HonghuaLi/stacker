@@ -38,8 +38,8 @@ public slots:
 
 private:
 	QSegMesh* activeObject();
-	Controller * controller();
+	Controller * ctrl();
 
 signals:
-	
+	void controllerModified();
 };

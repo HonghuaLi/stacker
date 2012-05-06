@@ -1,21 +1,21 @@
 #include "StackerPanel.h"
-#include "Controller.h"
-#include "Cuboid.h"
-#include "MathLibrary/Bounding/ConvexHull3.h"
+
 #include <QDockWidget>
 #include <QVBoxLayout>
-#include "Vector.h"
+#include <QDesktopWidget>
+#include <QFile>
+#include <QDir>
+
 #include <fstream>
 #include <algorithm>
 #include <numeric>
-#include <QFile>
-#include <QDir>
+
+#include "GUI/Scene.h"
 #include "Macros.h"
-#include "GCylinder.h"
-#include <QFileDialog>
-#include <QDesktopWidget>
 #include "Improver.h"
-#include "Numeric.h"
+#include "Previewer.h"
+#include "HiddenViewer.h"
+#include "Controller.h"
 #include "Offset.h"
 
 
@@ -54,6 +54,7 @@ StackerPanel::StackerPanel()
 	// Improve and suggest
 	connect(panel.showPaths, SIGNAL(stateChanged(int)), SLOT(updateActiveObject()));
 	connect(panel.improveButton, SIGNAL(clicked()), SLOT(onImproveButtonClicked()));
+	connect(panel.solutionTree, SIGNAL(itemSelectionChanged()), SLOT(setSelectedShapeState()));
 	improver = new Improver(activeOffset);
 	connect(panel.targetS, SIGNAL(valueChanged(double)), improver, SLOT(setTargetStackability(double)));
 	connect(panel.BBTolerance, SIGNAL(valueChanged(double)), improver, SLOT(setBBTolerance(double)) );
@@ -81,6 +82,7 @@ StackerPanel::~StackerPanel()
 	delete previewer;
 	delete hiddenViewer;
 	delete activeOffset;
+	delete improver;
 }
 
 
@@ -98,11 +100,10 @@ void StackerPanel::onHotspotsButtonClicked()
 
 void StackerPanel::setActiveScene( Scene * newScene )
 {
-	if(activeScene != newScene)
+	if(activeScene != newScene)	
 	{
 		activeScene = newScene;
-		previewer->setActiveObject(newScene->activeObject());
-		hiddenViewer->setActiveObject(newScene->activeObject());
+		setActiveObject();
 	}
 }
 
@@ -151,20 +152,9 @@ void StackerPanel::setActiveObject()
 	// Set active object for hidden viewer and previewer
 	previewer->setActiveObject(activeObject());
 	hiddenViewer->setActiveObject(activeObject());
-
-
-	Controller * ctrl = (Controller *) activeScene->activeObject()->ptr["controller"];
-
-	// Update
 	updateActiveObject();
 
-	// Initialize solution tree
-	treeNodes.clear();
-	treeNodes["0"] = ctrl->getShapeState();
-
-	panel.solutionTree->clear();
-	QTreeWidgetItem * node = new QTreeWidgetItem(panel.solutionTree);
-	node->setText(0, "0");
+	resetSolutionTree();
 }
 
 void StackerPanel::showMessage( QString message )
@@ -371,14 +361,6 @@ void StackerPanel::searchDirection()
 	emit(objectModified());
 }
 
-
-QString StackerPanel::getItemId(QTreeWidgetItem* item)
-{
-	QString txt = item->text(0);
-
-	return txt.replace(0,txt.lastIndexOf(":") + 1,"");
-}
-
 void StackerPanel::addChildren( QTreeWidgetItem* parent, QVector<ShapeState> &children )
 {
 	// Remove all children
@@ -411,13 +393,8 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
-	// The selected item (parent)
-	QList<QTreeWidgetItem*> selectedItems = panel.solutionTree->selectedItems();
-	if (selectedItems.isEmpty())
-	{
-		showMessage("No item is selected!");
-		return;
-	}
+	// Current selection
+	QTreeWidgetItem * currItem = selectedItem();
 
 	// Execute
 	Improver improver(activeOffset);
@@ -437,5 +414,53 @@ void StackerPanel::onImproveButtonClicked()
 	}
 
 	// Update the solution tree
-	addChildren(selectedItems.first(), childrenStates);
+	addChildren(currItem, childrenStates);
 }
+
+QTreeWidgetItem* StackerPanel::selectedItem()
+{
+	QTreeWidgetItem * item = NULL;
+
+	QList<QTreeWidgetItem*> selectedItems = panel.solutionTree->selectedItems();
+	if (!selectedItems.isEmpty()) item = selectedItems.first();
+
+	return item;
+}
+
+void StackerPanel::setSelectedShapeState()
+{
+	QTreeWidgetItem * currItem = selectedItem();
+	if (currItem && treeNodes.size()>1 )
+	{
+		QString currID = currItem->text(0);
+		showMessage( QString("Current shape state id:")+ currID );
+		ShapeState currState = treeNodes[currID];		
+		ctrl()->setShapeState(currState);
+		emit(objectModified());
+	}
+}
+
+Controller* StackerPanel::ctrl()
+{
+	if (activeObject())
+		return (Controller*)activeObject()->ptr["controller"];
+	else
+		return NULL;
+}
+
+void StackerPanel::resetSolutionTree()
+{
+	treeNodes.clear();
+	panel.solutionTree->clear();
+
+	if (ctrl())
+	{
+		QString id("0");
+		treeNodes[id] = ctrl()->getShapeState();
+
+		QTreeWidgetItem * node = new QTreeWidgetItem(panel.solutionTree);
+		node->setText(0, id);
+		node->setSelected(true);
+	}
+}
+
