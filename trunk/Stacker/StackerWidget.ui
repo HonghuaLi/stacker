@@ -280,7 +280,7 @@
           <string>Energy</string>
          </property>
          <property name="textAlignment">
-          <set>AlignRight|AlignVCenter</set>
+          <set>AlignLeft|AlignVCenter</set>
          </property>
         </column>
        </widget>

@@ -34,8 +34,8 @@ ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 	this->layout()->addWidget(vis = new ConstraintGraphVis(new ConstraintGraph()));
 
 	// Default values
-	if (controller())
-		controllerWidget.skeletonJoints->setValue(controller()->GC_SKELETON_JOINTS_NUM);
+	if (ctrl())
+		controllerWidget.skeletonJoints->setValue(ctrl()->GC_SKELETON_JOINTS_NUM);
 	else
 		controllerWidget.skeletonJoints->setValue(20);
 }
@@ -47,12 +47,12 @@ void ControllerPanel::setActiveScene( Scene * newScene )
 
 void ControllerPanel::save()
 {
-	if(!controller())	return;
+	if(!ctrl())	return;
 
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Controller", DEFAULT_FILE_PATH, "Controller File (*.ctrl)"); 
 	std::ofstream outF(qPrintable(fileName), std::ios::out);
 
-	controller()->save(outF);
+	ctrl()->save(outF);
 
 	outF.close();
 
@@ -72,29 +72,32 @@ void ControllerPanel::load()
 
 	std::ifstream inF(qPrintable(fileName), std::ios::in);
 
-	controller()->load(inF);
+	ctrl()->load(inF);
 
 	inF.close();
 
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 
-	if (activeScene) activeScene->updateGL();
+	activeScene->updateGL();
+
+	emit(controllerModified());
 }
 
 void ControllerPanel::removeSelected()
 {
-	if(!controller())	return;
+	if(!ctrl())	return;
 
-	Primitive * prim = controller()->getSelectedPrimitive();
+	Primitive * prim = ctrl()->getSelectedPrimitive();
 
-	controller()->removePrimitive(prim);
+	ctrl()->removePrimitive(prim);
 	// delete prim?
 }
 
 void ControllerPanel::reset()
 {
-	Controller * ctrl = controller();
-	if(!ctrl)
+	if (activeScene->isEmpty()) return;
+
+	if(!ctrl())
 	{
 		// Re-compute controller
 		activeObject()->ptr["controller"] = new Controller(activeObject());
@@ -102,16 +105,17 @@ void ControllerPanel::reset()
 	else
 	{
 		//delete controller();
-		ctrl->clearPrimitives();
-		delete ctrl;
+		ctrl()->clearPrimitives();
+		delete ctrl();
 		activeObject()->ptr.erase( activeObject()->ptr.find("controller") );
 	}
 
 	// Refresh
 	if (activeScene) activeScene->updateGL();
+	emit(controllerModified());
 }
 
-Controller * ControllerPanel::controller()
+Controller * ControllerPanel::ctrl()
 {
 	if(!activeScene || !activeObject())
 		return NULL;
@@ -121,9 +125,9 @@ Controller * ControllerPanel::controller()
 
 void ControllerPanel::togglePrimDisplay(int state)
 {
-	if(!controller())	return;
+	if(!ctrl())	return;
 
-	foreach(Primitive* prim, controller()->getPrimitives())
+	foreach(Primitive* prim, ctrl()->getPrimitives())
 	{
 		prim->isDraw = state;
 	}
@@ -142,44 +146,42 @@ QSegMesh* ControllerPanel::activeObject()
 
 void ControllerPanel::setSkeletonJoints( int num )
 {
-	Controller * ctrl = controller();
-	if (ctrl) ctrl->GC_SKELETON_JOINTS_NUM = num;
+	if(!ctrl())	return;
+
+	ctrl()->GC_SKELETON_JOINTS_NUM = num;
 }
 
 void ControllerPanel::convertGC()
 {
-	Controller * ctrl = controller();
-	if (ctrl) 
-	{
-		foreach(Primitive * prim, ctrl->getPrimitives())
-		{
-			if(prim->isSelected)
-				ctrl->convertToGC(prim->id, !controllerWidget.basicFitGC->isChecked(), controllerWidget.convertGcAxis->value());
-		}
+	if(!ctrl())	return;
 
-		activeScene->updateGL();
+	foreach(Primitive * prim, ctrl()->getPrimitives())
+	{
+		if(prim->isSelected)
+			ctrl()->convertToGC(prim->id, !controllerWidget.basicFitGC->isChecked(), controllerWidget.convertGcAxis->value());
 	}
+
+	activeScene->updateGL();
+	emit(controllerModified());
 }
 
 void ControllerPanel::convertCuboid()
 {
-	if(!activeObject() || !activeObject()->ptr["controller"]) return;
+	if(!ctrl())	return;
 
-	Controller* ctrl = (Controller *)activeObject()->ptr["controller"];
+	foreach(Primitive * prim, ctrl()->getPrimitives())
+		if(prim->isSelected) ctrl()->convertToCuboid(prim->id, controllerWidget.useAABB->isChecked(), controllerWidget.cuboidMethod->currentIndex());
 
-	foreach(Primitive * prim, ctrl->getPrimitives())
-		if(prim->isSelected) ctrl->convertToCuboid(prim->id, controllerWidget.useAABB->isChecked(), controllerWidget.cuboidMethod->currentIndex());
-
-	if(activeScene)	activeScene->updateGL();
+	activeScene->updateGL();
+	emit(controllerModified());
 }
 
 void ControllerPanel::showGraph()
 {
-	if(controller())
-	{
-		vis->setGraph(new ConstraintGraph(controller()));
-		vis->setFloating(true);
-		vis->show();
-	}
+	if(!ctrl())	return;
+
+	vis->setGraph(new ConstraintGraph(ctrl()));
+	vis->setFloating(true);
+	vis->show();
 }
 

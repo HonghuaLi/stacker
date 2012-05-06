@@ -270,6 +270,4 @@ void Previewer::setStackCount( int num )
 void Previewer::setActiveObject( QSegMesh * newObject )
 {
 	_activeObject = newObject;
-
-	updateActiveObject();
 }

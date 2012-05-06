@@ -59,6 +59,7 @@ public slots:
 	void setTargetStackability(double s);
 	void setBBTolerance(double tol);
 	void setNumExpectedSolutions(int num);
+	void setLocalRadius(int R);
 
 signals:
 	void printMessage( QString );

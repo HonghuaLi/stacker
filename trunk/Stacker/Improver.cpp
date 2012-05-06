@@ -405,3 +405,8 @@ void Improver::setNumExpectedSolutions( int num )
 {
 	NUM_EXPECTED_SOLUTION = num;
 }
+
+void Improver::setLocalRadius( int R )
+{
+	LOCAL_RADIUS = R;
+}

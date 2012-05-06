@@ -58,6 +58,10 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 
 	leftLayout->addStretch();
 	rightLayout->addStretch();
+
+	// Among panels
+	connect(cp, SIGNAL(controllerModified()), sp, SLOT(resetSolutionTree()));
+	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 }
 
 Workspace::~Workspace()
@@ -106,7 +110,6 @@ void Workspace::addNewScene()
 
 	// Object transformed by transformation panel
 	connect(tp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
-	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 
 	// Deformation
 	connect(dp, SIGNAL(deformerCreated(QFFD *)), newScene, SLOT(setActiveDeformer(QFFD *)));

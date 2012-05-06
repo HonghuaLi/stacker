@@ -1,14 +1,18 @@
 #pragma once
 
 #include "ui_StackerWidget.h"
-#include "GUI/Scene.h"
-#include "Previewer.h"
-#include "HiddenViewer.h"
-#include "Controller.h"
+#include "ShapeState.h"
 
-// Forward declaration
+
+class Scene;
+class QSegMesh;
+class Controller;
+class Previewer;
+class HiddenViewer;
 class Offset;
 class Improver;
+
+
 
 class StackerPanel : public QWidget
 {
@@ -20,12 +24,13 @@ public:
 
 	// Active Object
 	QSegMesh* activeObject();
+	Controller* ctrl();
 	void showMessage( QString message );
 
 	// Improve and suggestion
 	QMap<QString, ShapeState> treeNodes;
 	void addChildren(QTreeWidgetItem* parent, QVector<ShapeState> &children);
-	QString getItemId(QTreeWidgetItem* item);
+	QTreeWidgetItem* selectedItem();
 
 	QVector<EditPath> suggestions;
 	void setSuggestions();
@@ -47,12 +52,14 @@ public slots:
 
 	// Improve and suggest
 	void onImproveButtonClicked();
-	void searchDirection();
+	void setSelectedShapeState();
+	void resetSolutionTree();
 
 	// Message
 	void print(QString message);
 
 	// Debug
+	void searchDirection();
 	void onHotspotsButtonClicked();
 	void outputForPaper();
 
