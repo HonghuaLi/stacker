@@ -155,6 +155,8 @@ void Cuboid::deformMesh()
 		int vidx = ((Surface_mesh::Vertex)vit).idx();
 		points[vit] = getPositionInBox(currBox, vidx);
 	}
+
+	m_mesh->computeBoundingBox();
 }
 
 std::vector<Point> Cuboid::getUniformBoxConners( Box3 &box )

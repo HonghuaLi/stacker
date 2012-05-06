@@ -114,7 +114,10 @@ void Controller::selectPrimitive(QString id)
 	if(id == "deselectAll")
 	{
 		foreach(Primitive * prim, primitives)
+		{
 			prim->isSelected = false;
+			prim->selectedCurveId = -1;
+		}
 
 		return;
 	}

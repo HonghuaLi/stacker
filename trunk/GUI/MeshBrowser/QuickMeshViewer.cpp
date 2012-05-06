@@ -6,8 +6,8 @@ QuickMeshViewer::QuickMeshViewer( QWidget * parent /*= 0*/ ) :QGLViewer(parent)
 	this->setMaximumSize(200,200);
 
 	this->isActive = false;
-
-	connect(this, SIGNAL(meshLoaded()), SLOT(updateGL()));
+	
+	//connect(this, SIGNAL(meshLoaded()), SLOT(updateGL()));
 }
 
 void QuickMeshViewer::init()
