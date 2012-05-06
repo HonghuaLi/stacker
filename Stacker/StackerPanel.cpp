@@ -16,6 +16,7 @@
 #include <QDesktopWidget>
 #include "Improver.h"
 #include "Numeric.h"
+#include "Offset.h"
 
 
 StackerPanel::StackerPanel()
@@ -100,8 +101,8 @@ void StackerPanel::setActiveScene( Scene * newScene )
 	if(activeScene != newScene)
 	{
 		activeScene = newScene;
-		previewer->setActiveScene(newScene);
-		hiddenViewer->setActiveScene(newScene);
+		previewer->setActiveObject(newScene->activeObject());
+		hiddenViewer->setActiveObject(newScene->activeObject());
 	}
 }
 
@@ -147,6 +148,11 @@ void StackerPanel::draw()
 
 void StackerPanel::setActiveObject()
 {
+	// Set active object for hidden viewer and previewer
+	previewer->setActiveObject(activeObject());
+	hiddenViewer->setActiveObject(activeObject());
+
+
 	Controller * ctrl = (Controller *) activeScene->activeObject()->ptr["controller"];
 
 	// Update

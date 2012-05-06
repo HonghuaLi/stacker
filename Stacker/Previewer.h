@@ -1,9 +1,9 @@
 #pragma once
+#include "GL/VBO/VBO.h"
+#include "GUI/Viewer/libQGLViewer/QGLViewer/qglviewer.h"
+using namespace qglviewer;
 
-#include "GUI/Scene.h"
-#include "Offset.h"
-
-class StackerPanel;
+class QSegMesh;
 
 class Previewer : public QGLViewer
 {
@@ -11,7 +11,7 @@ class Previewer : public QGLViewer
 
 private:
 	QColor backColor;
-	Scene * activeScene;
+	QSegMesh * _activeObject;
 
 public:
 	Previewer(QWidget * parent = 0);
@@ -44,7 +44,7 @@ public:
 	void saveStackObj( QString fileName, int numStack = 3, double scaleFactor = -1.0);
 
 public slots:
-	void setActiveScene(Scene * toScene);
+	void setActiveObject(QSegMesh * newObject);
 	void updateActiveObject();
 	void setStackCount( int num );
 };

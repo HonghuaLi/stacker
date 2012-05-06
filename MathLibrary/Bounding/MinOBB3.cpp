@@ -1,6 +1,6 @@
 // Geometric Tools, LLC
 #include "MinOBB3.h"
-#include "Macros.h"
+#include "Utility/Macros.h"
 
 MinOBB3::MinOBB3( std::vector<Vector3> &points )
 {
