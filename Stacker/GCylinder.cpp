@@ -88,6 +88,8 @@ void GCylinder::deformMesh()
 
 	if(deformer == SKINNING) 
 		skinner->deform();
+
+	m_mesh->computeBoundingBox();
 }
 
 void GCylinder::draw()
