@@ -2,7 +2,7 @@
 #include "RMF.h"
 #include "GraphicsLibrary/SpacePartition/Intersection.h"
 #include "ClosedPolygon.h"
-#include "SimpleDraw.h"
+#include "Utility/SimpleDraw.h"
 
 GeneralizedCylinder::GeneralizedCylinder( std::vector<Point> spinePoints, QSurfaceMesh * mesh, bool computeRadius /*= true */ )
 {

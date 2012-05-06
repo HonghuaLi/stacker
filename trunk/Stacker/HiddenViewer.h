@@ -1,8 +1,11 @@
 #pragma once
 
-#include "GUI/Scene.h"
+#include "GUI/Viewer/libQGLViewer/QGLViewer/qglviewer.h"
+using namespace qglviewer;
 
 enum HVMode { HV_NONE, HV_DEPTH, HV_FACEUNIQUE };
+
+class QSegMesh;
 
 class HiddenViewer : public QGLViewer
 {
@@ -10,7 +13,7 @@ class HiddenViewer : public QGLViewer
 
 private:
 	QColor backColor;
-	Scene * activeScene;
+	QSegMesh * _activeObject;
 	HVMode mode;
 	int size;
 
@@ -28,6 +31,6 @@ public:
 	void* readBuffer( GLenum format, GLenum type );
 
 public slots:
-	void setActiveScene(Scene * changedScene);
+	void setActiveObject(QSegMesh * changedObject);
 	void setResolution( int newRes );
 };

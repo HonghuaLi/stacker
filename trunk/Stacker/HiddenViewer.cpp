@@ -1,3 +1,5 @@
+#include "GraphicsLibrary/Mesh/QSegMesh.h"
+
 #include "HiddenViewer.h"
 
 HiddenViewer::HiddenViewer( QWidget * parent ) : QGLViewer (parent)
@@ -6,7 +8,7 @@ HiddenViewer::HiddenViewer( QWidget * parent ) : QGLViewer (parent)
 	setFixedSize(200, 200);
 
 	// No active scene when initializing
-	this->activeScene = NULL;
+	this->_activeObject = NULL;
 
 	// Initial render mode as HV_NONE
 	mode = HV_NONE;
@@ -70,23 +72,20 @@ void HiddenViewer::draw()
 	setMode(HV_NONE);
 }
 
-void HiddenViewer::setActiveScene( Scene * changedScene )
+QSegMesh* HiddenViewer::activeObject()
 {
-	this->activeScene = changedScene;
+	return _activeObject;
+}
+
+void HiddenViewer::setActiveObject( QSegMesh * changedObject )
+{
+	_activeObject = changedObject;
 	this->updateGL();
 }
 
 void HiddenViewer::setMode( HVMode toMode )
 {
 	mode = toMode;
-}
-
-QSegMesh* HiddenViewer::activeObject()
-{
-	if(activeScene != NULL)
-		return activeScene->activeObject();
-	else
-		return NULL;
 }
 
 void* HiddenViewer::readBuffer( GLenum format, GLenum type )

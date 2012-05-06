@@ -4,7 +4,7 @@
 #include "GraphicsLibrary/Mesh/QSurfaceMesh.h"
 #include "GraphicsLibrary/Voxel/Voxeler.h"
 #include "FFD.h"
-#include "Graph.h"
+#include "Utility/Graph.h"
 
 class VoxelDeformer : public QObject{
 	Q_OBJECT

@@ -1,7 +1,7 @@
 // From Geometric Tools, LLC
 
 #include "ConvexHull3.h"
-#include "Macros.h"
+#include "Utility/Macros.h"
 
 
 ConvexHull3::ConvexHull3( std::vector<Vector3> pnts )

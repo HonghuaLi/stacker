@@ -1,9 +1,12 @@
+#include "GraphicsLibrary/Mesh/QSegMesh.h"
+#include <QKeyEvent>
+
 #include "Previewer.h"
 
 Previewer::Previewer( QWidget * parent ) : QGLViewer (parent)
 {
 	// No active scene when initializing
-	this->activeScene = NULL;
+	this->_activeObject = NULL;
 
 	// Stack count
 	stackCount = 3;
@@ -66,7 +69,7 @@ void Previewer::draw()
 	// Background
 	setBackgroundColor(backColor);
 
-	if (!activeScene || activeScene->isEmpty()) return;
+	if (!activeObject()) return;
 
 	// Update VBO if needed
 	updateVBOs();
@@ -135,16 +138,10 @@ void Previewer::postDraw()
 
 }
 
-void Previewer::setActiveScene( Scene * toScene )
-{
-	this->activeScene = toScene;
-
-	updateActiveObject();
-}
 
 void Previewer::updateVBOs()
 {
-	QSegMesh * mesh = activeScene->activeObject();
+	QSegMesh * mesh = activeObject();
 
 	if(mesh && mesh->isReady)
 	{
@@ -170,7 +167,7 @@ void Previewer::updateVBOs()
 
 void Previewer::updateActiveObject()
 {
-	if(activeScene && !activeScene->isEmpty())
+	if(activeObject())
 	{
 		Vec3d bbmin = activeObject()->bbmin;
 		Vec3d bbmax = activeObject()->bbmax;
@@ -191,10 +188,7 @@ void Previewer::updateActiveObject()
 
 QSegMesh* Previewer::activeObject()
 {
-	if (activeScene)
-		return activeScene->activeObject();
-	else
-		return NULL;
+	return _activeObject;
 }
 
 void Previewer::keyPressEvent( QKeyEvent *e )
@@ -270,5 +264,12 @@ void Previewer::saveStackObj( QString fileName, int numStack, double scaleFactor
 void Previewer::setStackCount( int num )
 {
 	stackCount = num;
+	updateActiveObject();
+}
+
+void Previewer::setActiveObject( QSegMesh * newObject )
+{
+	_activeObject = newObject;
+
 	updateActiveObject();
 }
