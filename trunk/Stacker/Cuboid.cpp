@@ -247,7 +247,7 @@ void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
 {
 	std::vector< std::vector<Vec3d> > faces = getBoxFaces(currBox);
 
-	if(selectedCurveId >= 0)
+	if(selectedCurveId >= 0 && this->selectedCurveId < faces.size()  - 1)
 		SimpleDraw::DrawSquare(faces[this->selectedCurveId], false, lineWidth * 2, Vec4d(0,1,0,1));
 
 	for(int i = 0; i < faces.size(); i++)
@@ -300,6 +300,8 @@ std::vector<double> Cuboid::scales()
 
 Vec3d Cuboid::getSelectedCurveCenter()
 {
+	if(selectedCurveId < 0) return centerPoint();
+
 	int cid = selectedCurveId;
 	if( RANGE( selectedCurveId, 0, 7 ) ) cid = 0;
 

@@ -149,7 +149,12 @@ Point Controller::getSelectedCurveCenter()
 	foreach(Primitive * prim, primitives)
 	{
 		if(prim->isSelected)
-			return prim->getSelectedCurveCenter();
+		{
+			if(prim->selectedCurveId >= 0)
+				return prim->getSelectedCurveCenter();
+			else
+				return prim->centerPoint();
+		}
 	}
 
 	return Point(0.0);

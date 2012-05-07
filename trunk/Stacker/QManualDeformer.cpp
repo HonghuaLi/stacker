@@ -31,13 +31,25 @@ void QManualDeformer::updateController()
 	ctrl->setPrimitivesFrozen(false);
 
 	Primitive * prim = ctrl->getSelectedPrimitive();
-
+	if(!prim) return;
 	prim->isFrozen = true;
-	prim->moveCurveCenter( -1,  pos() - prim->getSelectedCurveCenter() );
+
+	Vec3d delta = pos() - prim->getSelectedCurveCenter();
+
+	if(delta.norm() > 0)
+	{
+		// Translation
+		prim->moveCurveCenter( -1,  delta );
+	}
+	else
+	{
+		// Rotation
+
+	}
+
 	Propagator propagator(ctrl);
 	propagator.execute();
 	prim->isFrozen = false;
-
 	emit( objectModified() );
 }
 
@@ -47,6 +59,7 @@ void QManualDeformer::scaleUp( double s )
 	ctrl->setPrimitivesFrozen(false);
 
 	Primitive * prim = ctrl->getSelectedPrimitive();
+	if(!prim) return;
 
 	prim->isFrozen = true;
 	prim->scaleCurve(-1, s);
