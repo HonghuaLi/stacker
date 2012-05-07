@@ -397,19 +397,18 @@ void StackerPanel::onImproveButtonClicked()
 	QTreeWidgetItem * currItem = selectedItem();
 
 	// Execute
-	Improver improver(activeOffset);
 	int level = panel.isSuggesting ? panel.suggestLevels->value() : IMPROVER_MAGIC_NUMBER;
-	improver.executeImprove(level);
+	improver->execute(level);
 
 	// Get children shape states
-	QVector<ShapeState> childrenStates = improver.solutions;
+	QVector<ShapeState> childrenStates = improver->solutions;
 
 	if (panel.isSuggesting)
 	{
-		while (!improver.candidateSolutions.empty())
+		while (!improver->candidateSolutions.empty())
 		{
-			childrenStates.push_back(improver.candidateSolutions.top());
-			improver.candidateSolutions.pop();
+			childrenStates.push_back(improver->candidateSolutions.top());
+			improver->candidateSolutions.pop();
 		}
 	}
 

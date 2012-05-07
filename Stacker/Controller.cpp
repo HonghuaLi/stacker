@@ -1,6 +1,7 @@
 #include "Controller.h"
 
 #include <QQueue>
+#include <QTime>
 
 #include "Group.h"
 #include "Offset.h"

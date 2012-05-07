@@ -1,8 +1,9 @@
 #pragma once
 
+#include <QTime>
+
 #include "HotSpot.h"
 #include "ShapeState.h"
-#include "EditPath.h"
 
 class Offset;
 class QSegMesh;
@@ -25,21 +26,19 @@ public:
 	int LOCAL_RADIUS;
 
 	// Execute improving
-	void executeImprove(int level = IMPROVER_MAGIC_NUMBER);
+	void execute(int level = IMPROVER_MAGIC_NUMBER);
 
 private:
+	void setPositionalConstriants( HotSpot& fixedHS );
+	bool satisfyBBConstraint();
+	bool isUnique( ShapeState state, double threshold );
+	void recordSolution(Point handleCenter, Vec3d localMove);
+
 	QVector<Vec3d> getLocalMoves( HotSpot& HS );
 	QVector<double> getLocalScales( HotSpot& HS );
 	void deformNearPointLineHotspot( int side );
 	void deformNearRingHotspot( int side );
 	void deformNearHotspot( int side );
-	void recordSolution(Point handleCenter, Vec3d localMove);
-	void localSearch();
-
-	bool satisfyBBConstraint();
-	bool isUnique( ShapeState state, double threshold );
-	void setPositionalConstriants( HotSpot& fixedHS );
-
 
 public:
 	// Best first Searching
@@ -54,6 +53,8 @@ private:
 	Offset* activeOffset;
 	QSegMesh* activeObject();
 	Controller* ctrl();
+
+	QTime timer;
 
 public slots:
 	void setTargetStackability(double s);

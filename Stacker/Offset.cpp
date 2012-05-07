@@ -549,13 +549,10 @@ std::vector<HotSpot> Offset::getHotspots( int side )
 
 HotSpot& Offset::getHotspot( int side, int id )
 {
-	if (id > upperHotSpots.size() - 1) 
-		return HotSpot();
-
 	if (side == 1)
-		upperHotSpots[id];
+		return upperHotSpots[id];
 	else
-		lowerHotSpots[id];
+		return lowerHotSpots[id];
 }
 
 
