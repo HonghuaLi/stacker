@@ -269,9 +269,6 @@
     <ClInclude Include="Stacker\Controller.h">
       <Filter>Stacker\Controllers</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\Primitive.h">
-      <Filter>Stacker\Controllers</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_QVoxelDeformerWidget.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
@@ -408,6 +405,9 @@
       <Filter>GraphicsLibrary\Decimation</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\EditPath.h">
+      <Filter>Stacker\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Stacker\Primitive.h">
       <Filter>Stacker\Core</Filter>
     </ClInclude>
   </ItemGroup>
