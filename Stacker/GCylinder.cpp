@@ -276,6 +276,8 @@ double GCylinder::volume()
 
 Point GCylinder::getSelectedCurveCenter()
 {
+	if(selectedCurveId < 0) return centerPoint();
+
 	// Return center point
 	if( RANGED( selectedCurveId, 0, gc->frames.count()-1 ) ){
 		std::vector<Point> pnts = points();
