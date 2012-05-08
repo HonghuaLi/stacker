@@ -11,9 +11,6 @@ class GroupPanel : public QWidget{
 public:
 	GroupPanel(QWidget * parent = NULL);
 
-	// Types
-	QVector<QString> groupTypes;
-
 	// Joint detector
 	JointDetector * jointDetector;
 
