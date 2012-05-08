@@ -34,7 +34,6 @@ public:
 	virtual void keyPressEvent(QKeyEvent *e);
 
 	// Stacking parameters
-	Vec3d stackDirection;
 	int stackCount;
 
 	// Active object

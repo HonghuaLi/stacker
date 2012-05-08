@@ -6,18 +6,21 @@
 #include <numeric>
 #include "Numeric.h"
 
+#include <Eigen/Geometry>
+
 
 #define BIG_NUMBER 10
 #define DEPTH_EDGE_THRESHOLD 0.1
 
 
-// Constructor
 Offset::Offset( HiddenViewer *viewer )
 {
 	activeViewer = viewer;
+
+	searchDensity = 10;
+	searchType = ROT_AROUND_X_AND_Y;
 }
 
-// Shortener
 QSegMesh* Offset::activeObject()
 {
 	return activeViewer->activeObject();
@@ -47,11 +50,11 @@ void Offset::clear()
 // <-1, 1> + 3 = <2, 4> : The top and bottom setting for the zoomed in region
 
 // == Envelope
-void Offset::computeEnvelope(int direction)
+void Offset::computeEnvelope(int side)
 {
 	// Switcher
-	std::vector< std::vector<double> > &envelope = (1 == direction)? upperEnvelope : lowerEnvelope;
-	std::vector< std::vector<double> > &depth = (1 == direction)? upperDepth : lowerDepth;
+	std::vector< std::vector<double> > &envelope = (1 == side)? upperEnvelope : lowerEnvelope;
+	std::vector< std::vector<double> > &depth = (1 == side)? upperDepth : lowerDepth;
 	envelope.clear();
 	depth.clear();
 
@@ -61,7 +64,8 @@ void Offset::computeEnvelope(int direction)
 	// Format the data
 	int w = activeViewer->width();
 	int h = activeViewer->height();
-	double zCamera = (activeViewer->camera()->position()).z;
+	Vec c = activeViewer->camera()->position();
+	double zCamera = Vec3d(c.x, c.y, c.z).norm() * side;
 	double zNear = activeViewer->camera()->zNear();
 	double zFar = activeViewer->camera()->zFar();
 	envelope.resize(h);
@@ -80,70 +84,61 @@ void Offset::computeEnvelope(int direction)
 			depth[y][x] = zU;
 
 			if (zU == 1.0)
-				envelope[y][x] = (direction == 1) ? -BIG_NUMBER : BIG_NUMBER;
+				envelope[y][x] = (side == 1) ? -BIG_NUMBER : BIG_NUMBER;
 			else
-				envelope[y][x] = zCamera - direction * ( zU * zFar + (1-zU) * zNear );
+				envelope[y][x] = zCamera - side * ( zU * zFar + (1-zU) * zNear );
 		}
 	}
 
 	delete[] depthBuffer;
 }
 
-void Offset::computeEnvelopeOfShape( int direction )
-{
-	computeEnvelopeOfShape(direction, Vec3d(0,0,direction));
-}
-
-void Offset::computeEnvelopeOfShape( int direction, Vec3d pos, Vec3d upVector /*= Vec3d(0,1,0)*/, Vec3d horizontalShift /*= Vec3d(0,0,0)*/ )
+void Offset::computeEnvelopeOfShape( int side, Vec3d up, Vec3d stacking_direction )
 {
 	// Set camera
 	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
-	activeViewer->camera()->setPosition(Vec(pos));
+	activeViewer->camera()->setPosition(Vec( stacking_direction * side));
 	activeViewer->camera()->lookAt(Vec());	
 
-	// Set \y as the upVector, then the projected 3D BB is still BB in 3D
-	activeViewer->camera()->setUpVector(Vec(upVector));
-	Vec delta(1, 1, 1);
-	delta *= activeObject()->radius * 0.25;
+	activeViewer->camera()->setUpVector(Vec(up));
 	activeViewer->camera()->setSceneRadius(activeObject()->radius * 3);
-	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin) - delta, Vec(activeObject()->bbmax) + delta);
-	activeViewer->camera()->setPosition(activeViewer->camera()->position() + Vec(horizontalShift));
+	double s = 1.2;
+	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin * s), Vec(activeObject()->bbmax * s));
 
 	// Save this new camera settings
-	activeViewer->camera()->deletePath(direction+2);
-	activeViewer->camera()->addKeyFrameToPath(direction+2);
-
+	activeViewer->camera()->deletePath(side+2);
+	activeViewer->camera()->addKeyFrameToPath(side+2);
 
 	// Render
 	activeViewer->setMode(HV_DEPTH);
 	activeViewer->updateGL(); 
 
 	// compute the envelope
-	computeEnvelope(direction);
+	computeEnvelope(side);
 }
 
-void Offset::computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax )
+void Offset::computeEnvelopeOfRegion( int side , Vec3d bbmin, Vec3d bbmax )
 {
 	// Set camera
 	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
 	Vec3d bbCenter = (bbmin + bbmax) / 2;
 	Vec3d pos = bbCenter;
-	pos[2] = (1==direction)? bbmax.z() : bbmin.z();
+	pos[2] = (1==side)? bbmax.z() : bbmin.z();
 	activeViewer->camera()->setPosition(Vec(pos));
 	activeViewer->camera()->lookAt(Vec(bbCenter));	
 	activeViewer->camera()->setUpVector(Vec(0,1,0));
 	activeViewer->camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
 
 	// Save this new camera settings
-	activeViewer->camera()->deletePath(direction + 3);
-	activeViewer->camera()->addKeyFrameToPath(direction + 3);
+	activeViewer->camera()->deletePath(side + 3);
+	activeViewer->camera()->addKeyFrameToPath(side + 3);
 
 	// Render
 	activeViewer->setMode(HV_DEPTH);
 	activeViewer->updateGL(); 
 
 	// Compute
-	computeEnvelope(direction);
+	computeEnvelope(side);
 }
 
 
@@ -168,121 +163,77 @@ void Offset::computeOffset()
 	}
 }
 
-void Offset::computeOffsetOfShape( STACKING_TYPE type /*= STRAIGHT_LINE*/, int rotDensity /*= 1*/ )
+void Offset::computeOffsetOfShape()
 {
 	if (!activeObject()) return;
 
-	// Compute the height of the shape
-	activeObject()->computeBoundingBox();
 	objectH = (activeObject()->bbmax - activeObject()->bbmin).z();
 
-	// Save original camera settings
-	activeViewer->camera()->deletePath(0);
-	activeViewer->camera()->addKeyFrameToPath(0);
+	// Searching for the best stacking direction
+	double maxStackability = -1;
+	Vec3d bestStackingDirection(0, 0, 1);
+	QVector<Vec3d> directions = getDirectionsInCone(0.1);
 
-	// The upper envelope
-	computeEnvelopeOfShape(1, Vec3d(0,0,1));
+	//Vec3d D(0, 1, 0);
+	//directions.clear();
+	//directions.push_back(D);
 
-	// Rotation can be simulated by changing the position and upVector of the camera
-
-	
-	// Camera postions: posAngles are on y-z plane, starting from z in clockwise
-	// Camera UpVector: upVectorAngles on the new x-y plane, string from y in clockwise
-	double angleStep = 2 * M_PI / rotDensity;
-	std::vector< double > angles, singleAngle;
-	singleAngle.push_back(0);
-	for (int i=0;i<rotDensity;i++)
-		angles.push_back(i * angleStep);
-
-	std::vector< double > PosAngles, UVAngles;
-	bool shifting = false;
-	switch (type)
+	Eigen::Matrix3d m;
+	Vec3d y(0, 1, 0), z(0, 0, 1), up, axis;
+	foreach(Vec3d vec, directions)
 	{
-	case STRAIGHT_LINE:
-		PosAngles = singleAngle;
-		UVAngles = singleAngle;
-		shifting = false;
-		break;
-	case ROT_AROUND_AXIS:
-		PosAngles = singleAngle;
-		UVAngles = angles;
-		shifting = false;
-		break;
-	case ROT_FREE_FORM:
-		PosAngles = angles;
-		UVAngles = angles;
-		shifting = true;
-		break;
-	}
-
-	//std::cout << "Stacking type: " << type << "\t Shifting = " << shifting << std::endl;
-
-	// Searching
-	double minO_max = 2 * objectH;
-	double bestPosAngle = 0;
-	double bestUVAngle = 0;	
-	Vec3d bestShift;
-
-	Vec3d X(1,0,0);
-	for (int i=0;i<PosAngles.size();i++)
-	{
-		// Camera position
-		double alpha = PosAngles[i];
-		Vec3d cameraPos(0, -sin(alpha), -cos(alpha));
-		cameraPos.normalize();
-
-		for(int j=0;j<UVAngles.size();j++)
+		// The up vector for camera is the rotated \y
+		if(vec == z) up = y;
+		else
 		{
-			// Up vector
-			double beta = UVAngles[j];
-			Vec3d newY = cross(X, cameraPos);
-			Vec3d UV = X * sin(beta) + newY * cos(beta);
-
-			// Horizontal shifting 
-			int numSteps = shifting? 3 : 0;
-			Vec3d bb = activeObject()->bbmax - activeObject()->bbmin;
-			double xStep = bb[0] / 20;
-			double yStep = bb[1] / 20;
-			for (int j = -numSteps; j <= numSteps; j++)	{
-				double xShift = j * xStep;
-				for (int k = -numSteps; k <= numSteps; k++)
-				{
-					Vec3d horizontalShift(xShift, k * yStep, 0);
-
-					// The rotated and shifted lower envelope
-					computeEnvelopeOfShape(-1, cameraPos, UV, horizontalShift);
-
-					// Compute the offset function
-					computeOffset();
-					O_max = getMaxValue(offset);
-
-					if (O_max < minO_max)
-					{
-						minO_max = O_max;
-						bestPosAngle = alpha;
-						bestUVAngle = beta;
-						bestShift = horizontalShift;
-					}
-				}
-			}
+			axis = cross(z, vec);
+			double angle = acos( dot(z, vec) );
+			m = Eigen::AngleAxisd( angle, V2E(axis) );
+			up = E2V((m * V2E(y)));
 		}
-	
+
+		// Debug
+		std::vector<Point> line;
+		line.push_back(Vec3d(0.0));
+		line.push_back(up);
+		ctrl()->debugLines.push_back(line);
+
+		computeEnvelopeOfShape( 1, up, vec);
+		computeEnvelopeOfShape(-1, up, vec);
+		computeOffset();
+
+		double om = getMaxValue(offset);
+		double h = shapeExtentAlongDirection(vec);
+		double stackability = 1.0 - om / h;
+
+//		std::cout << "O_max, H, S = " << om << ' ' << h  << ' ' << stackability << std::endl;
+
+		if (stackability > maxStackability)
+		{
+			maxStackability = stackability;
+			bestStackingDirection = vec;
+
+			O_max = om;
+			objectH = h;
+		}
 	}
 
-	// Update the stackability in QSegMesh
-	O_max = minO_max;
-	activeObject()->val["O_max"]		= O_max;
-	activeObject()->val["stackability"] = 1 - O_max/objectH;
-	activeObject()->val["theta"]		= DEGREES(bestPosAngle);
-	activeObject()->val["phi"]			= DEGREES(bestUVAngle);
+//	std::cout << "Result: O_max, H, S = " << O_max << ' ' << objectH  << ' ' << maxStackability << std::endl;
 
-	activeObject()->val["tranX"]		= bestShift[0];
-	activeObject()->val["tranY"]		= -bestShift[1];
-	activeObject()->val["tranZ"]		= 0;
+
+	// debug
+	foreach(Vec3d v, directions)
+	{
+		ctrl()->debugPoints.push_back(v );
+	}
+
+	activeObject()->val["stackability"] = maxStackability;
+	activeObject()->vec["stacking_shift"] = bestStackingDirection * O_max;
 
 	// Save offset as image
+	//saveAsImage(lowerDepth, 1, "lower depth.png");
+	//saveAsImage(upperDepth, 1, "upper depth.png");
 	//saveAsImage(offset, O_max, "offset function.png");
-	activeObject()->data2D["offset"] = offset;
 }
 
 void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
@@ -296,7 +247,6 @@ void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
 	Vec3d bbmax = activeObject()->bbmax;
 	Vec2i bbmin_shape = projectedCoordinatesOf(bbmin, 3);
 	Vec2i bbmax_shape = projectedCoordinatesOf(bbmax, 3);
-
 
 	// Shrink the BB of shape along x and y direction to contain the \region only
 	Vec2i range_2D = bbmax_shape - bbmin_shape;
@@ -650,5 +600,111 @@ Controller* Offset::ctrl()
 		return (Controller*)activeObject()->ptr["controller"];
 	else
 		return NULL;
+}
+
+void Offset::setSearchType( SEARCH_TYPE type )
+{
+	searchType = type;
+}
+
+void Offset::setSearchDensity( int density )
+{
+	searchDensity = density;
+}
+
+QVector<Vec3d> Offset::getDirectionsOnXYPlane()
+{
+	QVector<Vec3d> directions;
+
+	Vec3d x(1.0, 0.0, 0.0);
+	Vec3d y(0.0, 1.0, 0.0);
+
+	switch (searchType)
+	{
+	case ROT_AROUND_X:
+		directions.push_back(y);
+		directions.push_back(-y);
+		break;
+	case ROT_AROUND_Y:
+		directions.push_back(x);
+		directions.push_back(-x);
+		break;
+	case ROT_AROUND_X_AND_Y:
+		directions.push_back(x);
+		directions.push_back(-x);
+		directions.push_back(y);
+		directions.push_back(-y);
+		break;
+	case SAMPLE_UPPER_HEMESPHERE:
+		{
+			double delta = M_PI / searchDensity;
+			double angle = 0.0;
+			for (int i = 0; i < 2 * searchDensity; i++)
+			{
+				directions.push_back(Vec3d(cos(angle), sin(angle), 0.0));
+				angle += delta;
+			}
+		}
+		break;
+	}
+
+	return directions;
+}
+
+QVector<Vec3d> Offset::getDirectionsInCone( double cone_size )
+{
+	// xy components
+	QVector<Vec3d> directions_xy = getDirectionsOnXYPlane();
+
+	// z components
+	QVector<double> thetas;
+	double delta = M_PI / searchDensity;
+	double angle = 0.0;
+	double z_min = 1.0 - cone_size;
+	for (int i = 0; i < searchDensity/2; i++)
+	{
+		double z = sin(angle);
+		if (z >= z_min)	thetas.push_back(angle);
+
+		angle += delta;
+	}
+
+	// Z direction
+	QVector<Vec3d> directions;
+	Vec3d Z(0.0, 0.0, 1.0);
+	directions.push_back(Z);
+
+	// combine
+	foreach(Vec3d XY, directions_xy){
+		foreach(double theta, thetas)
+		{
+			directions.push_back(XY * cos(theta) + Z * sin(theta));
+		}
+	}
+
+	return directions;
+}
+
+double Offset::shapeExtentAlongDirection( Vec3d vec )
+{
+	double min_proj = DOUBLE_INFINITY;
+	double max_proj = - min_proj;
+	vec.normalize();
+
+	foreach(QSurfaceMesh *mesh, activeObject()->getSegments())
+	{
+		Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
+		Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
+
+		for (vit =mesh->vertices_begin(); vit != vend; ++vit)
+		{
+			double proj = dot(points[vit], vec);
+			min_proj = Min(min_proj, proj);
+			max_proj = Max(max_proj, proj);
+		}
+
+	}
+
+	return max_proj - min_proj;
 }
 

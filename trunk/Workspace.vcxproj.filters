@@ -329,9 +329,6 @@
     <ClInclude Include="Stacker\HotSpot.h">
       <Filter>Stacker\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\Offset.h">
-      <Filter>Stacker\Core</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\ShapeState.h">
       <Filter>Stacker\Core</Filter>
     </ClInclude>
@@ -515,6 +512,9 @@
       <Filter>Stacker\Panels</Filter>
     </CustomBuild>
     <CustomBuild Include="Stacker\Improver.h">
+      <Filter>Stacker\Core</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Stacker\Offset.h">
       <Filter>Stacker\Core</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -896,6 +896,12 @@
     </ClCompile>
     <ClCompile Include="Stacker\EditPath.cpp">
       <Filter>Stacker\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Offset.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Offset.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

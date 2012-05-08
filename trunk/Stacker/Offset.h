@@ -1,8 +1,11 @@
 #pragma once
 
+#include <QQueue>
+#include <QObject>
+
+
 #include "GraphicsLibrary/Mesh/QSegMesh.h"
 #include "Controller.h"
-#include <QQueue>
 #include "HotSpot.h"
 #include "Numeric.h"
 
@@ -10,54 +13,64 @@
 
 class HiddenViewer;
 
-enum STACKING_TYPE
+enum SEARCH_TYPE
 {
-	STRAIGHT_LINE, ROT_AROUND_AXIS, ROT_FREE_FORM
+	NONE, ROT_AROUND_X, ROT_AROUND_Y, ROT_AROUND_X_AND_Y, SAMPLE_UPPER_HEMESPHERE
 };
 
 
-class Offset
+class Offset: public QObject
 {
-public:
+	Q_OBJECT
 
 public:
-	// Constructor
 	Offset(HiddenViewer* viewer);
 
-	// Shortener
-	void clear();
-	QSegMesh* activeObject();
-	Controller* ctrl();
-	
-	// Compute offset function and stackability
-	void computeEnvelope(int direction);
-	void computeEnvelopeOfShape(int direction);
-	void computeEnvelopeOfShape(int direction, Vec3d pos, Vec3d upVector = Vec3d(0,1,0), Vec3d horizontalShift = Vec3d(0,0,0));
-	void computeEnvelopeOfRegion( int direction , Vec3d bbmin, Vec3d bbmax);
-	void computeOffset();
-	void computeOffsetOfShape( STACKING_TYPE type = STRAIGHT_LINE, int rotDensity = 1);
-	void computeOffsetOfRegion( std::vector< Vec2i >& region );
-	double getStackability(bool recompute = false);
+	void		computeOffsetOfShape();
+	void		detectHotspots();
 
-	// Detect hot spots
-	void detectHotspots();
-	HotSpot detectHotspotInRegion(int direction, std::vector<Vec2i>& hotRegion);
+	double		getStackability(bool recompute = false);
+	HotSpot&	getHotspot( int side, int id );
+	void		showHotSpots();
 	std::vector<HotSpot> getHotspots(int side);
-	HotSpot& getHotspot( int side, int id );
-	void showHotSpots();
-	void saveHotSpots( QString filename, int direction = 1, double percent = 1.0 );
+
+	// Shortener
+	QSegMesh*	activeObject();
+	Controller* ctrl();
+	void		clear();
+	
+public:
+	// Compute offset function and stackability
+	void computeEnvelope(int side);
+	void computeEnvelopeOfShape( int side, Vec3d up, Vec3d stacking_direction );
+	void computeEnvelopeOfRegion( int side , Vec3d bbmin, Vec3d bbmax);
+	
+	void computeOffset();
+	void computeOffsetOfRegion( std::vector< Vec2i >& region );
+
+	// Hot spots
+	HotSpot detectHotspotInRegion(int side, std::vector<Vec2i>& hotRegion);
+	void	saveHotSpots( QString filename, int direction = 1, double percent = 1.0 );
+
+	// Stacking directions
+	QVector<Vec3d> getDirectionsOnXYPlane();
+	QVector<Vec3d> getDirectionsInCone(double cone_size);
 
 	// Utilities 
 	Vec3d unprojectedCoordinatesOf( uint x, uint y, int direction);
 	Vec2i projectedCoordinatesOf( Vec3d point, int pathID );
+	double shapeExtentAlongDirection(Vec3d vec);
 
 public:
 	HiddenViewer * activeViewer;
-	int filterSize;
-	double hotRangeThreshold;
 
+	// Stackability
 	double O_max;
 	double objectH;
+
+	// Parameters
+	SEARCH_TYPE searchType;
+	int searchDensity;			// Number of samples in [0, PI]
 
 	// Buffers
 	Buffer2d upperEnvelope;
@@ -73,4 +86,9 @@ public:
 	std::vector< HotSpot >  upperHotSpots;
 	std::vector< HotSpot >  lowerHotSpots;
 	std::set< QString> hotSegments;
+
+
+public slots:
+	void setSearchType(SEARCH_TYPE type);
+	void setSearchDensity(int density);
 };
