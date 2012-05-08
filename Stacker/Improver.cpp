@@ -349,13 +349,7 @@ void Improver::deformNearRingHotspot( int side )
 
 void Improver::deformNearHotspot( int side )
 {
-	HOTSPOT_TYPE type;
-	if (side == 1)
-		type = activeOffset->upperHotSpots[0].type;
-	else
-		type = activeOffset->lowerHotSpots[0].type;
-
-	switch (type)
+	switch (activeOffset->getHotspot(side, 0).type)
 	{
 	case POINT_HOTSPOT:
 	case LINE_HOTSPOT:

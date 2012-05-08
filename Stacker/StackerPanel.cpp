@@ -63,6 +63,7 @@ StackerPanel::StackerPanel()
 	
 	// Stacking direction
 	connect(panel.searchDirectionButton, SIGNAL(clicked()), SLOT(searchDirection()));
+	connect(panel.searchDensity, SIGNAL(valueChanged(int)), activeOffset, SLOT(setSearchDensity(int)));
 			
 	// Debugging
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
@@ -75,6 +76,7 @@ StackerPanel::StackerPanel()
 	panel.localRadius->setValue(improver->LOCAL_RADIUS);
 	panel.hidderViewerResolution->setValue(hiddenViewer->height());
 	panel.stackCount->setValue(previewer->stackCount);
+	panel.searchDensity->setValue(activeOffset->searchDensity);
 }
 
 StackerPanel::~StackerPanel()
@@ -103,19 +105,15 @@ void StackerPanel::setActiveScene( Scene * newScene )
 	if(activeScene != newScene)	
 	{
 		activeScene = newScene;
-		setActiveObject();
+		if (activeObject())
+			setActiveObject();
 	}
 }
 
 void StackerPanel::updateActiveObject()
 {
 	// Offset
-	if (panel.rotAroundAxis->isChecked())
-		activeOffset->computeOffsetOfShape( ROT_AROUND_AXIS, panel.searchDensity->value() );
-	else if (panel.rotFreeForm->isChecked())
-		activeOffset->computeOffsetOfShape( ROT_FREE_FORM, panel.searchDensity->value() );
-	else
-		activeOffset->computeOffsetOfShape();
+	activeOffset->getStackability(true);
 
 	// Preview
 	previewer->updateActiveObject();
@@ -239,7 +237,7 @@ void StackerPanel::outputForPaper()
 	activeOffset->saveHotSpots(exportDir + "/" + data["lowerStuck"], -1, sampleSize);
 
 	// 4) Save stacking direction
-	Vec3d direction = previewer->stackDirection;
+	Vec3d direction = activeObject()->vec["stacking_direction"];
 	data["stackDir"] = QString("%1 %2 %3").arg(direction.x()).arg(direction.y()).arg(direction.z());
 
 
@@ -257,108 +255,12 @@ void StackerPanel::outputForPaper()
 
 void StackerPanel::searchDirection()
 {
-	int num = panel.searchDensity->value();
-	int angleNum = 1;
-	int num2 = num;		// maybe num2 = num * 2 for bias
-	double r = 1.0;
+	//activeObject()->rotateUp(samples[bestIndex]);
 
-	double x,y,z, theta = 0, phi = 0;
+	//// Recompute normals and bounding box
+	//activeObject()->build_up();
 
-	double deltaTheta = M_PI / num;
-	double deltaPhi = 2.0 * M_PI / num2;
-	
-	std::vector<Vec3d> samples;
-
-	if(panel.rotAroundAxis->isChecked())
-	{
-		deltaPhi = M_PI;
-	}
-
-	for(uint i = 0; i <= num2 && phi < 2 * M_PI; i++){
-		for(uint j = 0; j <= num; j++){
-			x = r * cos(phi) * sin(theta);
-			y = r * sin(phi) * sin (theta);
-			z = r * cos(theta);
-
-			// Sample
-			Vec3d v(x,y,z);
-			samples.push_back(v.normalized());
-
-			theta += deltaTheta;
-		}
-
-		phi += deltaPhi;
-		theta = 0;
-	}
-
-	if(panel.rotAroundAxis->isChecked()){
-		for(int i = 0; i < samples.size(); i++){
-			switch(panel.searchAxisID->value())
-			{
-			case 0: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(0,0,1)); break;
-			case 1: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(0,1,0)); break;
-			case 2: ROTATE_VEC(samples[i], M_PI / 2.0, Vec3d(1,0,0)); break;
-			}
-
-			activeObject()->getSegment(0)->debug_points.push_back(samples[i]);
-		}
-	}
-	
-	int sampleCount = 0;
-	double maxStackbaility = activeOffset->getStackability(true); // don't go worse than start
-	int bestIndex = 0;
-	double bestAngle = 0;
-
-	printf("Start stackability = %f \n", maxStackbaility);
-
-	QElapsedTimer timing; timing.start();
-
-	for(int i = 0; i < samples.size(); i++){
-		activeObject()->rotateUp(samples[i]);
-
-		double omega = M_PI / angleNum;
-
-		for(double theta = 0; theta <= 2 * M_PI; theta += omega)
-		{
-			activeObject()->rotateAroundUp(omega);
-
-			double stackability = activeOffset->getStackability(true);
-			
-			if(stackability > maxStackbaility)
-			{
-				bestIndex = i;
-				bestAngle = theta;
-				maxStackbaility = stackability;
-			}
-
-			sampleCount++;
-		}
-
-		// restore back
-		activeObject()->rotateUp(Vec3d(0,0,1));
-
-		// report percent
-		int progress = (double(i) / samples.size()) * 100;
-
-		printf("progress: %d %%  \t best = %.3f \r", progress, maxStackbaility);
-	}
-
-	std::cout << "\r" << "Done.\n";
-
-	double bestX = samples[bestIndex].x();
-	double bestY = samples[bestIndex].y();
-	double bestZ = samples[bestIndex].z();
-
-	printf("\nSampled (%d) samples for best direction.\n", sampleCount);
-	printf("Best stackability = %f\t direction %.3f,%.3f,%.3f\n", maxStackbaility, bestX,bestY,bestZ);
-	printf("Time (%d ms).", timing.elapsed());
-
-	activeObject()->rotateUp(samples[bestIndex]);
-
-	// Recompute normals and bounding box
-	activeObject()->build_up();
-
-	emit(objectModified());
+	//emit(objectModified());
 }
 
 void StackerPanel::addChildren( QTreeWidgetItem* parent, QVector<ShapeState> &children )
@@ -432,7 +334,7 @@ void StackerPanel::setSelectedShapeState()
 	if (currItem && treeNodes.size()>1 )
 	{
 		QString currID = currItem->text(0);
-		showMessage( QString("Current shape state id:")+ currID );
+		std::cout << "Current shape state id:" << qPrintable(currID) << std::endl;
 		ShapeState currState = treeNodes[currID];		
 		ctrl()->setShapeState(currState);
 		emit(objectModified());

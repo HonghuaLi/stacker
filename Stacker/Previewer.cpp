@@ -10,9 +10,6 @@ Previewer::Previewer( QWidget * parent ) : QGLViewer (parent)
 
 	// Stack count
 	stackCount = 3;
-
-	// Stacking direction is always along z axis
-	stackDirection = Vec3d(0., 0., 1.);
 }
 
 void Previewer::init()
@@ -74,21 +71,11 @@ void Previewer::draw()
 	// Update VBO if needed
 	updateVBOs();
 
-	double O_max = activeObject()->val["O_max"];
 	double S = activeObject()->val["stackability"];
-
-	Vec3d delta = O_max * stackDirection;
-	double theta = activeObject()->val["theta"];
-	double phi = activeObject()->val["phi"];
-
-	double tranX = activeObject()->val["tranX"];
-	double tranY = activeObject()->val["tranY"];
-	double tranZ = activeObject()->val["tranZ"];
-
-	Vec3d shift (tranX, tranY, tranZ);
+	Vec3d stacking_shift = activeObject()->vec["stacking_shift"];
 
 	glPushMatrix();
-	Vec3d initPos = - delta * (stackCount-1) / 2.0;
+	Vec3d initPos = - stacking_shift * (stackCount-1) / 2.0;
 	glTranslated(initPos[0],initPos[1],initPos[2]);
 
 	for(int i = 0; i < stackCount; i++)
@@ -104,10 +91,7 @@ void Previewer::draw()
 			activeObject()->simpleDraw();
 		}
 
-		glTranslated(delta[0],delta[1],delta[2]);
-		glRotated(theta, 1, 0, 0);
-		glRotated(phi, 0, 0, 1);
-		glTranslated(shift[0], shift[1], shift[2]);
+		glTranslated(stacking_shift[0],stacking_shift[1],stacking_shift[2]);
 	}
 
 	glPopMatrix();
@@ -232,7 +216,7 @@ void Previewer::saveStackObj( QString fileName, int numStack, double scaleFactor
 	double O_max = activeObject()->val["O_max"];
 	double S = activeObject()->val["stackability"];
 
-	Vec3d delta = O_max * stackDirection;
+	Vec3d delta = O_max * activeObject()->vec["stacking_direction"];
 
 	QSegMesh outputMesh;
 	QSurfaceMesh * deltaMesh = activeObject()->flattenMesh();

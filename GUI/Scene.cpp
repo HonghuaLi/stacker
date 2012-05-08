@@ -153,21 +153,10 @@ void Scene::drawStacking()
 {
 	int stackCount = 3;
 
-	double O_max = activeObject()->val["O_max"];
 	double S = activeObject()->val["stackability"];
-
-	Vec3d stackDirection = Vec3d(0., 0., 1.);
-	Vec3d delta = O_max * stackDirection;
-	//double theta = activeObject()->val["theta"];
-	//double phi = activeObject()->val["phi"];
-
-	//double tranX = activeObject()->val["tranX"];
-	//double tranY = activeObject()->val["tranY"];
-	//double tranZ = activeObject()->val["tranZ"];
-	//Vec3d shift (tranX, tranY, tranZ);
+	Vec3d delta = activeObject()->vec["stacking_shift"];
 
 	glPushMatrix();
-
 	glColor4dv(Color(0.45,0.72,0.43,0.8));
 
 	// Top
