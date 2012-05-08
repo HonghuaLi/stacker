@@ -7,13 +7,8 @@
 #include "GUI/global.h"
 #include "Primitive.h"
 #include "Controller.h"
-
 #include "JointDetector.h"
-#include "SymmetryGroup.h"
-#include "PointJointGroup.h"
-#include "LineJointGroup.h"
-#include "ConcentricGroup.h"
-#include "CoplanarGroup.h"
+#include "Group.h"
 
 GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 {
@@ -35,14 +30,6 @@ GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 	connect(groupWidget.saveGroupsButton, SIGNAL(clicked()), SLOT(saveGroups()));
 	connect(groupWidget.loadGroupsButton, SIGNAL(clicked()), SLOT(loadGroups()));
 
-	// Strings to show in tree, ordered as in group type enum
-	groupTypes.push_back("SYMMETRY");
-	groupTypes.push_back("POINTJOINT");
-	groupTypes.push_back("LINEJOINT");
-	groupTypes.push_back("CONCENTRIC");
-	groupTypes.push_back("COPLANNAR");
-	groupTypes.push_back("SELF_SYMMETRY");
-	groupTypes.push_back("SELF_ROT_SYMMETRY");
 }
 
 void GroupPanel::setActiveScene( Scene * newScene )
@@ -79,7 +66,7 @@ void GroupPanel::updateWidget()
 	{
 		QTreeWidgetItem *groupItem = new QTreeWidgetItem(groupWidget.groupTree);
 
-		groupItem->setText(0, QString("g%1:%2").arg(groupTypes[group->type]).arg(group->id));
+		groupItem->setText(0, QString("g%1:%2").arg(ctrl->groupTypes[group->type]).arg(group->id));
 
 		foreach(QString node, group->getNodes())
 		{
@@ -141,38 +128,7 @@ void GroupPanel::saveGroups()
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", DEFAULT_FILE_PATH, "Group File (*.grp)"); 
 	std::ofstream outF(qPrintable(fileName), std::ios::out);
 
-	foreach(Group* group, ctrl->groups)
-	{
-		// type
-		outF << qPrintable(groupTypes[group->type]) << '\t'; 
-
-		// size
-		outF << group->nodes.size() << "\t";
-
-		// primitives
-		foreach(Primitive* node, group->nodes)
-			outF << qPrintable(node->id) << "\t";
-
-		// parameters
-		group->saveParameters(outF);
-
-		// break line
-		outF << '\n';
-	}
-
-	// Save properties for single segment (not groups though)
-	foreach(Primitive * prim, ctrl->getPrimitives())
-	{
-		int nb = prim->symmPlanes.size();
-		
-		if(nb > 0)
-		{
-			outF << qPrintable(groupTypes[SELF_SYMMETRY]) << "\t" << qPrintable(prim->id) << "\t" << nb << "\t";
-			foreach(Plane p, prim->symmPlanes)
-				 outF << p.n << "\t";
-			outF << std::endl;
-		}
-	}
+	ctrl->saveGroups(outF);
 
 	outF.close();
 	std::cout << "Groups have been saved.\n";
@@ -199,64 +155,7 @@ void GroupPanel::loadGroups()
 
 	std::ifstream inF(qPrintable(fileName), std::ios::in);
 
-	if (!inF) return;
-
-	while (inF)
-	{
-		std::string str;
-		inF >> str;
-		int type = groupTypes.indexOf(str.c_str());
-		if (type == -1) break;
-
-		Group* newGroup = NULL;
-
-		switch (type)
-		{
-		case SYMMETRY:
-			newGroup = new SymmetryGroup(SYMMETRY);
-			break;
-		case POINTJOINT:
-			newGroup = new PointJointGroup(POINTJOINT);
-			break;
-		case LINEJOINT:
-			newGroup = new LineJointGroup(LINEJOINT);
-			break;
-		case SELF_SYMMETRY:
-			{
-				inF >> str;
-				QString primId = QString(str.c_str());
-				Primitive* prim = ctrl->getPrimitive(primId);
-				int nb_fold = 0; 
-				inF >> nb_fold;
-				for (int i=0;i<nb_fold;i++)
-				{
-					Plane p;
-					p.center = prim->centerPoint();
-					inF >> p.n;
-					prim->symmPlanes.push_back(p);
-				}
-				break;
-			}
-		}
-
-		if(newGroup)
-		{
-			int n;
-			inF >> n;
-			std::string str;
-			QVector<Primitive*> segments;
-			for (int i=0;i<n;i++)
-			{
-				inF >> str;
-				segments.push_back(ctrl->getPrimitive(str.c_str()));
-			}
-
-			newGroup->loadParameters(inF, activeObject()->translation, activeObject()->scaleFactor);
-			newGroup->process(segments);
-
-			ctrl->groups[newGroup->id] = newGroup;
-		}
-	}
+	ctrl->loadGroups(inF);
 
 	std::cout << "Groups have been loaded.\n";
 	updateWidget();

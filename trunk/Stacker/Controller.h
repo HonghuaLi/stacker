@@ -73,7 +73,12 @@ public:
 	// Save and load
 	void save(std::ofstream &outF);
 	void load(std::ifstream &inF);
-	
+
+	// Save and load groups
+	QVector<QString> groupTypes;
+	void saveGroups( std::ofstream &outF );
+	void loadGroups(std::ifstream &inF);
+
 	// Debug items
 	std::vector<Point> debugPoints;
 	std::vector< std::vector<Point> > debugLines;
@@ -95,5 +100,6 @@ private:
 	QMap<int, QString> primitiveIdNum;
 
 	void assignIds();
+
 };
 

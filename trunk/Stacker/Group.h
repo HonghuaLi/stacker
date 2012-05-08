@@ -36,6 +36,8 @@ public:
 	bool has(QString id);
 	QVector<QString> getNodes();
 
+	QVector<QString> groupTypes;
+
 public:
 
 	QString id;

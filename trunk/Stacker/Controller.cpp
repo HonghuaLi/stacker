@@ -3,13 +3,20 @@
 #include <QQueue>
 #include <QTime>
 
-#include "Group.h"
 #include "Offset.h"
 #include "Cuboid.h"
 #include "Primitive.h"
 #include "GCylinder.h"
 #include "EditPath.h"
 #include "GraphicsLibrary/Mesh/QSegMesh.h"
+
+#include "Group.h"
+#include "SymmetryGroup.h"
+#include "ConcentricGroup.h"
+#include "CoplanarGroup.h"
+#include "PointJointGroup.h"
+#include "LineJointGroup.h"
+#include "JointDetector.h"
 
 Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 {
@@ -32,6 +39,15 @@ Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 
 	// GC along axis
 	GC_SKELETON_JOINTS_NUM = 16;
+
+	// Group types
+	groupTypes.push_back("SYMMETRY");
+	groupTypes.push_back("POINTJOINT");
+	groupTypes.push_back("LINEJOINT");
+	groupTypes.push_back("CONCENTRIC");
+	groupTypes.push_back("COPLANNAR");
+	groupTypes.push_back("SELF_SYMMETRY");
+	groupTypes.push_back("SELF_ROT_SYMMETRY");
 }
 
 Controller::~Controller()
@@ -459,4 +475,101 @@ double Controller::getDistortion()
 double Controller::meshRadius()
 {
 	return m_mesh->radius;
+}
+
+void Controller::loadGroups( std::ifstream &inF )
+{
+	if (!inF) return;
+
+	while (inF)
+	{
+		std::string str;
+		inF >> str;
+		int type = groupTypes.indexOf(str.c_str());
+		if (type == -1) break;
+
+		Group* newGroup = NULL;
+
+		switch (type)
+		{
+		case SYMMETRY:
+			newGroup = new SymmetryGroup(SYMMETRY);
+			break;
+		case POINTJOINT:
+			newGroup = new PointJointGroup(POINTJOINT);
+			break;
+		case LINEJOINT:
+			newGroup = new LineJointGroup(LINEJOINT);
+			break;
+		case SELF_SYMMETRY:
+			{
+				inF >> str;
+				QString primId = QString(str.c_str());
+				Primitive* prim = getPrimitive(primId);
+				int nb_fold = 0; 
+				inF >> nb_fold;
+				for (int i=0;i<nb_fold;i++)
+				{
+					Plane p;
+					p.center = prim->centerPoint();
+					inF >> p.n;
+					prim->symmPlanes.push_back(p);
+				}
+				break;
+			}
+		}
+
+		if(newGroup)
+		{
+			int n;
+			inF >> n;
+			std::string str;
+			QVector<Primitive*> segments;
+			for (int i=0;i<n;i++)
+			{
+				inF >> str;
+				segments.push_back(getPrimitive(str.c_str()));
+			}
+			newGroup->loadParameters(inF, m_mesh->translation, m_mesh->scaleFactor);
+			newGroup->process(segments);
+
+			groups[newGroup->id] = newGroup;
+		}
+	}
+}
+
+void Controller::saveGroups( std::ofstream &outF )
+{
+	foreach(Group* group, groups)
+	{
+		// type
+		outF << qPrintable(groupTypes[group->type]) << '\t'; 
+
+		// size
+		outF << group->nodes.size() << "\t";
+
+		// primitives
+		foreach(Primitive* node, group->nodes)
+			outF << qPrintable(node->id) << "\t";
+
+		// parameters
+		group->saveParameters(outF);
+
+		// break line
+		outF << '\n';
+	}
+
+	// Save properties for single segment (not groups though)
+	foreach(Primitive * prim, getPrimitives())
+	{
+		int nb = prim->symmPlanes.size();
+
+		if(nb > 0)
+		{
+			outF << qPrintable(groupTypes[SELF_SYMMETRY]) << "\t" << qPrintable(prim->id) << "\t" << nb << "\t";
+			foreach(Plane p, prim->symmPlanes)
+				outF << p.n << "\t";
+			outF << std::endl;
+		}
+	}
 }

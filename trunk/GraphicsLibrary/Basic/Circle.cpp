@@ -18,7 +18,7 @@ Circle::Circle( const Vec3d& circle_center, const Vec3d& circle_normal, double f
 	Vec3d refV(V2V(qglviewer::Vec(normal[0],normal[1],normal[2]).orthogonalVec()));
 
 	double theta = (2.0 * M_PI) / (double) numSides;
-	double startAngle = 0;
+	double startAngle = M_PI / 4;
 
 	for(int i = 0; i < numSides; i++)
 	{
