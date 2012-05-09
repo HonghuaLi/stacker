@@ -96,7 +96,7 @@ void VBO::free_vbo( uint vbo )
 	glDeleteBuffers(1, &vbo);
 }
 
-void VBO::render_regular( bool dynamic /*= false*/ )
+void VBO::render_regular( bool dynamic /*= false*/, bool isForceColor, Vec4d forceColor )
 {
 	if(dynamic || isDirty)
 		update();
@@ -121,6 +121,12 @@ void VBO::render_regular( bool dynamic /*= false*/ )
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, color_vbo_id);
 	glColorPointer(4, GL_DOUBLE, 0, NULL);
 	glEnableClientState(GL_COLOR_ARRAY);
+
+	if(isForceColor)
+	{
+		glDisableClientState(GL_COLOR_ARRAY);
+		glColor4dv(forceColor);
+	}
 
 	// Alpha blending
 	glEnable(GL_BLEND);

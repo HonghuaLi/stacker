@@ -37,7 +37,7 @@ void QManualDeformer::updateController()
 
 	Vec3d delta = pos() - prim->getSelectedCurveCenter();
 
-	if(delta.norm() > 1e-9 && delta.norm() < prim->getMesh()->radius * 0.5)
+	if(delta.norm() > 1e-9 && delta.norm())
 	{
 		// Translation
 		prim->moveCurveCenter( -1,  delta );
