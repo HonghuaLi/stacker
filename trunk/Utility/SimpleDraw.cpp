@@ -69,14 +69,14 @@ void SimpleDraw::DrawSolidBox(const Vec3d & center, float width, float length, f
 
 	glShadeModel(GL_FLAT);
 
-	SimpleDraw::DrawSquare(c1, c2, c3, c4, true, r,g,b,a);
-	SimpleDraw::DrawSquare(bc4, bc3, bc2, bc1, true, r,g,b,a);
+	SimpleDraw::DrawSquare(c1, c2, c3, c4, true,1, r,g,b,a);
+	SimpleDraw::DrawSquare(bc4, bc3, bc2, bc1, true,1, r,g,b,a);
 
-	SimpleDraw::DrawSquare(c1, c4, bc4, bc1, true, r,g,b,a);
-	SimpleDraw::DrawSquare(c2, c1, bc1, bc2, true, r,g,b,a);
+	SimpleDraw::DrawSquare(c1, c4, bc4, bc1, true,1, r,g,b,a);
+	SimpleDraw::DrawSquare(c2, c1, bc1, bc2, true,1, r,g,b,a);
 
-	SimpleDraw::DrawSquare(c4, c3, bc3, bc4, true, r,g,b,a);
-	SimpleDraw::DrawSquare(c2, bc2, bc3, c3, true, r,g,b,a);
+	SimpleDraw::DrawSquare(c4, c3, bc3, bc4, true,1, r,g,b,a);
+	SimpleDraw::DrawSquare(c2, bc2, bc3, c3, true,1, r,g,b,a);
 
 	glShadeModel(GL_SMOOTH);
 }
