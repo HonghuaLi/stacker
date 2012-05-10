@@ -59,7 +59,6 @@ public slots:
 	void print(QString message);
 
 	// Debug
-	void searchDirection();
 	void onHotspotsButtonClicked();
 	void outputForPaper();
 

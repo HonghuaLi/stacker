@@ -26,54 +26,37 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="2" column="0">
+   <item row="1" column="0">
     <widget class="QGroupBox" name="stackingConfigBox">
      <property name="title">
-      <string>Stacking configuration</string>
+      <string>Stacking direction</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
-      <item row="5" column="4" colspan="2">
-       <widget class="QPushButton" name="searchDirectionButton">
-        <property name="text">
-         <string>Search..</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="2">
-       <widget class="QSpinBox" name="searchAxisID">
+       <widget class="QSpinBox" name="searchType">
         <property name="maximum">
-         <number>2</number>
+         <number>4</number>
+        </property>
+        <property name="value">
+         <number>3</number>
         </property>
        </widget>
       </item>
-      <item row="3" column="4" colspan="2">
-       <widget class="QCheckBox" name="rotFreeForm">
-        <property name="text">
-         <string>Free Rotation</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="rotAroundAxis">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>arond Z axis</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
+      <item row="3" column="3">
        <widget class="QLabel" name="label_12">
         <property name="text">
          <string>Density</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="2">
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Search type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
        <widget class="QSpinBox" name="searchDensity">
         <property name="minimum">
          <number>2</number>
@@ -86,10 +69,33 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="5">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Cone</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="6">
+       <widget class="QDoubleSpinBox" name="coneSize">
+        <property name="minimum">
+         <double>0.050000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.050000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.050000000000000</double>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QGroupBox" name="hiddenviewBox">
      <property name="title">
       <string>Hidden Viewer</string>
@@ -130,7 +136,7 @@
      </layout>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QGroupBox" name="debugBox">
      <property name="title">
       <string>Debugging</string>
@@ -160,7 +166,7 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QGroupBox" name="previewBox">
      <property name="title">
       <string>Previewer</string>

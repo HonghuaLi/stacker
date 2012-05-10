@@ -5,8 +5,11 @@
 #include <QFile>
 #include <numeric>
 #include "Numeric.h"
+#include <math.h>
 
 #include <Eigen/Geometry>
+#include "GUI/Viewer/libQGLViewer/QGLViewer/qglviewer.h"
+using namespace qglviewer;
 
 
 #define BIG_NUMBER 10
@@ -17,7 +20,7 @@ Offset::Offset( HiddenViewer *viewer )
 {
 	activeViewer = viewer;
 
-	searchDensity = 10;
+	searchDensity = 20;
 	searchType = ROT_AROUND_X_AND_Y;
 }
 
@@ -98,8 +101,7 @@ void Offset::computeEnvelopeOfShape( int side, Vec3d up, Vec3d stacking_directio
 	// Set camera
 	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
 	activeViewer->camera()->setPosition(Vec( stacking_direction * side));
-	activeViewer->camera()->lookAt(Vec());	
-
+	activeViewer->camera()->lookAt(Vec());
 	activeViewer->camera()->setUpVector(Vec(up));
 	activeViewer->camera()->setSceneRadius(activeObject()->radius * 3);
 	double s = 1.2;
@@ -167,73 +169,72 @@ void Offset::computeOffsetOfShape()
 {
 	if (!activeObject()) return;
 
-	objectH = (activeObject()->bbmax - activeObject()->bbmin).z();
+	double V0 = volumeOfBB(activeObject()->bbmax - activeObject()->bbmin);
 
 	// Searching for the best stacking direction
 	double maxStackability = -1;
 	Vec3d bestStackingDirection(0, 0, 1);
 	QVector<Vec3d> directions = getDirectionsInCone(0.1);
 
-	//Vec3d D(0, 1, 0);
-	//directions.clear();
-	//directions.push_back(D);
-
 	Eigen::Matrix3d m;
 	Vec3d y(0, 1, 0), z(0, 0, 1), up, axis;
 	foreach(Vec3d vec, directions)
 	{
+		// Compute envelopes
 		// The up vector for camera is the rotated \y
 		if(vec == z) up = y;
 		else
 		{
-			axis = cross(z, vec);
+			axis = cross(z, vec).normalized();
 			double angle = acos( dot(z, vec) );
-			m = Eigen::AngleAxisd( angle, V2E(axis) );
+			m = Eigen::AngleAxisd(angle, V2E(axis) );
 			up = E2V((m * V2E(y)));
 		}
-
-		// Debug
-		std::vector<Point> line;
-		line.push_back(Vec3d(0.0));
-		line.push_back(up);
-		ctrl()->debugLines.push_back(line);
 
 		computeEnvelopeOfShape( 1, up, vec);
 		computeEnvelopeOfShape(-1, up, vec);
 		computeOffset();
 
+		// Compute stackability
 		double om = getMaxValue(offset);
-		double h = shapeExtentAlongDirection(vec);
-		double stackability = 1.0 - om / h;
-
-//		std::cout << "O_max, H, S = " << om << ' ' << h  << ' ' << stackability << std::endl;
+		Vec3d extents = computeShapeExtents(vec);
+		double V1 = volumeOfBB(extents);
+		double stackability = 1.0 - (om / extents[2]) * (V1 / V0);
 
 		if (stackability > maxStackability)
 		{
 			maxStackability = stackability;
 			bestStackingDirection = vec;
-
 			O_max = om;
-			objectH = h;
 		}
-	}
-
-//	std::cout << "Result: O_max, H, S = " << O_max << ' ' << objectH  << ' ' << maxStackability << std::endl;
-
-
-	// debug
-	foreach(Vec3d v, directions)
-	{
-		ctrl()->debugPoints.push_back(v );
 	}
 
 	activeObject()->val["stackability"] = maxStackability;
 	activeObject()->vec["stacking_shift"] = bestStackingDirection * O_max;
 
+	// debug
+	foreach(Vec3d v, directions)
+		ctrl()->debugPoints.push_back(v );
+
+	// Debug
+	// Compute the offset along the best stacking direction
+	//Vec3d vec = bestStackingDirection;
+	//if(vec == z) up = y;
+	//else
+	//{
+	//	axis = cross(z, vec);
+	//	double angle = acos( dot(z, vec) );
+	//	m = Eigen::AngleAxisd( angle, V2E(axis) );
+	//	up = E2V((m * V2E(y)));
+	//}
+	//computeEnvelopeOfShape( 1, up, vec);
+	//computeEnvelopeOfShape(-1, up, vec);
+	//computeOffset();
+
 	// Save offset as image
-	//saveAsImage(lowerDepth, 1, "lower depth.png");
-	//saveAsImage(upperDepth, 1, "upper depth.png");
-	//saveAsImage(offset, O_max, "offset function.png");
+	saveAsImage(lowerDepth, 1, "lower depth.png");
+	saveAsImage(upperDepth, 1, "upper depth.png");
+	saveAsImage(offset, O_max, "offset function.png");
 }
 
 void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
@@ -602,9 +603,9 @@ Controller* Offset::ctrl()
 		return NULL;
 }
 
-void Offset::setSearchType( SEARCH_TYPE type )
+void Offset::setSearchType( int type )
 {
-	searchType = type;
+	searchType = (SEARCH_TYPE)type;
 }
 
 void Offset::setSearchDensity( int density )
@@ -685,11 +686,15 @@ QVector<Vec3d> Offset::getDirectionsInCone( double cone_size )
 	return directions;
 }
 
-double Offset::shapeExtentAlongDirection( Vec3d vec )
+
+Vec3d Offset::computeShapeExtents( Vec3d up )
 {
-	double min_proj = DOUBLE_INFINITY;
-	double max_proj = - min_proj;
-	vec.normalize();
+	// Rotate the shape so that \up becomes z axis
+	Quaternion q(Vec(up), Vec(0, 0 ,1));
+	QVector<Point> vertices;
+
+	Vec3d bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
+	Vec3d bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);	
 
 	foreach(QSurfaceMesh *mesh, activeObject()->getSegments())
 	{
@@ -698,13 +703,18 @@ double Offset::shapeExtentAlongDirection( Vec3d vec )
 
 		for (vit =mesh->vertices_begin(); vit != vend; ++vit)
 		{
-			double proj = dot(points[vit], vec);
-			min_proj = Min(min_proj, proj);
-			max_proj = Max(max_proj, proj);
+			Vec v = q.rotate(Vec(points[vit]));
+			Point p(v.x, v.y, v.z);
+			bbmin.minimize(p);
+			bbmax.maximize(p);
 		}
-
 	}
 
-	return max_proj - min_proj;
+	return bbmax - bbmin;
+}
+
+void Offset::setConeSize( double size )
+{
+	coneSize = size;
 }
 

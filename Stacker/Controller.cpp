@@ -90,20 +90,11 @@ void Controller::draw()
 	{
 		prim->draw();
 		prim->drawDebug();
-
-		// Draw proximity debug 
-		/*for (uint j = i + 1; j < primitives.size(); j++){
-			Cuboid * c1 = (Cuboid *) primitives[i];
-			Cuboid * c2 = (Cuboid *) primitives[j];
-			Vec3d p,q;
-			c1->currBox.ClosestSegment(c2->currBox,p,q);
-			SimpleDraw::IdentifyLine(p,q,1,1,0);
-		}*/
 	}
 
 	//DEBUG:
 	foreach(Point p, debugPoints)
-		SimpleDraw::IdentifyPoint(p);
+		SimpleDraw::IdentifyPoint(p, 1.0, 0.8, 0);
 
 	foreach(std::vector<Point> line, debugLines) 
 		SimpleDraw::IdentifyConnectedPoints(line, 1.0,0,0);
@@ -325,6 +316,8 @@ void Controller::setShapeState(const ShapeState &shapeState )
 		prim->setState(shapeState.primStates[prim->id]);
 		prim->deformMesh();
 	}
+
+	m_mesh->computeBoundingBox();
 }
 
 QVector< Group * > Controller::groupsOf( QString id )

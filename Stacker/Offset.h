@@ -59,17 +59,17 @@ public:
 	// Utilities 
 	Vec3d unprojectedCoordinatesOf( uint x, uint y, int direction);
 	Vec2i projectedCoordinatesOf( Vec3d point, int pathID );
-	double shapeExtentAlongDirection(Vec3d vec);
+	Vec3d computeShapeExtents(Vec3d up);
 
 public:
 	HiddenViewer * activeViewer;
 
 	// Stackability
 	double O_max;
-	double objectH;
 
 	// Parameters
 	SEARCH_TYPE searchType;
+	double coneSize;
 	int searchDensity;			// Number of samples in [0, PI]
 
 	// Buffers
@@ -89,6 +89,7 @@ public:
 
 
 public slots:
-	void setSearchType(SEARCH_TYPE type);
+	void setSearchType(int type);
 	void setSearchDensity(int density);
+	void setConeSize(double size);
 };

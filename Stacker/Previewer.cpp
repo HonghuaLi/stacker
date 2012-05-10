@@ -2,6 +2,7 @@
 #include <QKeyEvent>
 
 #include "Previewer.h"
+#include "SimpleDraw.h"
 
 Previewer::Previewer( QWidget * parent ) : QGLViewer (parent)
 {
@@ -86,15 +87,16 @@ void Previewer::draw()
 
 		// Fall back
 		if(vboCollection.isEmpty() && activeObject())
-		{
-//			std::cout << "Render mesh regularly, VBO is not supported." << std::endl;
 			activeObject()->simpleDraw();
-		}
 
 		glTranslated(stacking_shift[0],stacking_shift[1],stacking_shift[2]);
 	}
 
 	glPopMatrix();
+
+	// Draw stacking direction
+	glColor4dv(Color(0,0,0.8,0.8));
+	SimpleDraw::DrawArrowDirected(initPos, stacking_shift, stackCount);
 }
 
 void Previewer::postDraw()

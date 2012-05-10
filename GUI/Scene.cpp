@@ -156,6 +156,10 @@ void Scene::drawStacking()
 	double S = activeObject()->val["stackability"];
 	Vec3d delta = activeObject()->vec["stacking_shift"];
 
+	// Draw stacking direction
+	glColor4dv(Color(1, 1, 0, 0.8));
+	SimpleDraw::DrawArrowDirected(Vec3d(0.0), delta.normalized());
+
 	glPushMatrix();
 	glColor4dv(Color(0.45,0.72,0.43,0.8));
 
@@ -169,6 +173,8 @@ void Scene::drawStacking()
 	activeObject()->simpleDraw(false);
 
 	glPopMatrix();
+
+
 }
 
 void Scene::drawGroups()
