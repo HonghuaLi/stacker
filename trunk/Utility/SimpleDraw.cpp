@@ -549,9 +549,7 @@ void SimpleDraw::DrawArrow( Vec3d  from, Vec3d  to, bool isForward /*= true*/ , 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	float length = (from-to).norm();
-	float radius = length * 0.05f;
-	if (radius < 0.0)
-		radius = 0.05 * length;
+	float radius = length * 0.01f;
 
 	// draw cube base
 	DrawCube(from, radius * 3);

@@ -413,3 +413,8 @@ Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p )
 	Eigen::Vector3d rp = R * V2E(p);
 	return E2V(rp);
 }
+
+double volumeOfBB( Vec3d &extents )
+{
+	return extents.x() * extents.y() * extents.z();
+}

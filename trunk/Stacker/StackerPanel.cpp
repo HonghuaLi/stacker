@@ -62,8 +62,10 @@ StackerPanel::StackerPanel()
 	connect(panel.localRadius, SIGNAL(valueChanged(int)), improver, SLOT(setLocalRadius(int)) );
 	
 	// Stacking direction
-	connect(panel.searchDirectionButton, SIGNAL(clicked()), SLOT(searchDirection()));
+	connect(panel.searchType, SIGNAL(valueChanged(int)), activeOffset, SLOT(setSearchType(int)));
+	connect(panel.coneSize, SIGNAL(valueChanged(double)), activeOffset, SLOT(setConeSize(double)));
 	connect(panel.searchDensity, SIGNAL(valueChanged(int)), activeOffset, SLOT(setSearchDensity(int)));
+	panel.searchDensity->setValue(activeOffset->searchDensity);
 			
 	// Debugging
 	connect(panel.hotspotsButton, SIGNAL(clicked()), SLOT(onHotspotsButtonClicked()));
@@ -76,7 +78,6 @@ StackerPanel::StackerPanel()
 	panel.localRadius->setValue(improver->LOCAL_RADIUS);
 	panel.hidderViewerResolution->setValue(hiddenViewer->height());
 	panel.stackCount->setValue(previewer->stackCount);
-	panel.searchDensity->setValue(activeOffset->searchDensity);
 }
 
 StackerPanel::~StackerPanel()
@@ -251,16 +252,6 @@ void StackerPanel::outputForPaper()
 		infoFile.write(qPrintable(i.key().leftJustified(14) + "\t" + i.value() + "\n"));
 	}
 	infoFile.close();
-}
-
-void StackerPanel::searchDirection()
-{
-	//activeObject()->rotateUp(samples[bestIndex]);
-
-	//// Recompute normals and bounding box
-	//activeObject()->build_up();
-
-	//emit(objectModified());
 }
 
 void StackerPanel::addChildren( QTreeWidgetItem* parent, QVector<ShapeState> &children )

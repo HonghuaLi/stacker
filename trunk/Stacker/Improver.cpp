@@ -277,7 +277,8 @@ timer.restart();
 		{
 			free_prim->movePoint(free_handle.first(), T); 
 			free_prim->addFixedPoint(free_handle.first() + T); 
-		}else
+		}
+		else
 		{
 			free_prim->moveLineJoint(free_handle.first(), free_handle.last(), T, T);
 			free_prim->addFixedPoint(free_handle.first() + T);

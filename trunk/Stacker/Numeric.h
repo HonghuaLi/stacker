@@ -49,3 +49,6 @@ std::vector<Vec2i> sampleRegion(std::vector<Vec2i> &region, int N);
 // Rotation
 Eigen::Matrix3d rotationMatrixAroundAxis(Vec3d u, double theta);
 Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );
+
+// Cuboid volume
+double volumeOfBB(Vec3d &extents);
