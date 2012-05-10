@@ -535,7 +535,7 @@ void SimpleDraw::DrawCylinder( const Vec3d & center, const Vec3d & direction /*=
 	glPopMatrix();
 }
 
-void SimpleDraw::DrawArrow( Vec3d  from, Vec3d  to, bool isForward /*= true*/ , bool isFilledBase)
+void SimpleDraw::DrawArrow( Vec3d  from, Vec3d  to, bool isForward /*= true*/ , bool isFilledBase, float width /*= 1.0f */)
 {
 	if(!isForward){
 		Vec3d  temp = from;
@@ -549,7 +549,8 @@ void SimpleDraw::DrawArrow( Vec3d  from, Vec3d  to, bool isForward /*= true*/ , 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	float length = (from-to).norm();
-	float radius = length * 0.01f;
+	float radius = length * 0.05f;
+	if (radius < 0.0) radius = 0.05 * length;
 
 	// draw cube base
 	DrawCube(from, radius * 3);
@@ -571,14 +572,9 @@ void SimpleDraw::DrawArrow( Vec3d  from, Vec3d  to, bool isForward /*= true*/ , 
 }
 
 void SimpleDraw::DrawArrowDirected( const Vec3d & pos, const Vec3d & normal, float height /*= 1.0f*/, 
-								   bool isForward /*= true*/ , bool isFilledBase)
+								   bool isForward /*= true*/ , bool isFilledBase, float width /*= 1.0f */)
 {
 	DrawArrow(pos, pos + (normal*height), isForward, isFilledBase);
-}
-
-void SimpleDraw::PointArrowAt( Vec3d  point, float radius /*= 1.0f*/ )
-{
-	DrawArrowDirected(point, point + (double(radius) * Vec3d (Max(0.2, point.x()),point.y(),point.z()).normalized()), radius, false);
 }
 
 void SimpleDraw::DrawArrowDoubleDirected( const Vec3d & pos, const Vec3d & normal, float height /*= 1.0f*/, 
@@ -588,6 +584,11 @@ void SimpleDraw::DrawArrowDoubleDirected( const Vec3d & pos, const Vec3d & norma
 
 	glColor3f(1,0,0);
 	DrawArrowDirected(pos, -normal, height, isForward, isFilledBase);
+}
+
+void SimpleDraw::PointArrowAt( Vec3d  point, float radius /*= 1.0f*/ )
+{
+	DrawArrowDirected(point, point + (double(radius) * Vec3d (Max(0.2, point.x()),point.y(),point.z()).normalized()), radius, false);
 }
 
 /*void SimpleDraw::IdentifyLines(StdVector<Line> & lines, float lineWidth, float r, float g, float b)
