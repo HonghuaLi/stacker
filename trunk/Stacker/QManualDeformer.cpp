@@ -7,10 +7,9 @@
 QManualDeformer::QManualDeformer(Controller * usingController)
 {
 	this->frame = new qglviewer::ManipulatedFrame;
-
 	this->ctrl = usingController;
-	
 	this->lastScale = 1.0;
+	this->frame->setSpinningSensitivity(100.0);
 
 	this->connect(frame, SIGNAL(manipulated()), SLOT(updateController()));
 }
@@ -22,8 +21,13 @@ qglviewer::ManipulatedFrame * QManualDeformer::getFrame()
 
 Vec3d QManualDeformer::pos()
 {
-	qglviewer::Vec q = frame->position();
-	return Vec3d (q.x,q.y,q.z);
+	if(frame->position() == frame->translation())
+	{
+		qglviewer::Vec q = frame->position();
+		return Vec3d (q.x,q.y,q.z);
+	}
+	else
+		return Vec3d(0.0);
 }
 
 void QManualDeformer::updateController()
@@ -35,7 +39,13 @@ void QManualDeformer::updateController()
 	if(!prim) return;
 	prim->isFrozen = true;
 
-	Vec3d delta = pos() - prim->getSelectedCurveCenter();
+	Vec3d delta(0,0,0);
+
+	// Check if a curve is selected or not
+	if(prim->selectedCurveId < 0)
+		delta = pos() - prim->centerPoint();
+	else
+		delta = pos() - prim->getSelectedCurveCenter();
 
 	if(delta.norm() > 1e-9 && delta.norm())
 	{
@@ -108,7 +118,7 @@ void QManualDeformer::scale( Vec3d delta )
 		// move to zero
 		pnts[i] -= center;
 
-		// rotate
+		// scale
 		pnts[i] = Vec3d(pnts[i].x() * delta.x(),
 						pnts[i].y() * delta.y(),
 						pnts[i].z() * delta.z());
@@ -117,7 +127,18 @@ void QManualDeformer::scale( Vec3d delta )
 		pnts[i] += center;
 	}
 
-	prim->reshape(pnts, prim->scales());
+	std::vector<double> oldScales = prim->scales();
+
+	if(prim->primType == GCYLINDER)
+	{
+		double usedScale = (delta.x() != 1.0) ? delta.x() : delta.y();
+		for(int i = 0; i < (int)oldScales.size(); i++)
+		{
+			oldScales[i] += (usedScale - 1) * 0.075;
+		}
+	}
+
+	prim->reshape(pnts, oldScales);
 	prim->getMesh()->buildUp();
 	//==============================
 

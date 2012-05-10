@@ -160,8 +160,6 @@ Point Controller::getSelectedCurveCenter()
 		{
 			if(prim->selectedCurveId >= 0)
 				return prim->getSelectedCurveCenter();
-			else
-				return prim->centerPoint();
 		}
 	}
 

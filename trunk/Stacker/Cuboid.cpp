@@ -300,15 +300,8 @@ std::vector<double> Cuboid::scales()
 
 Vec3d Cuboid::getSelectedCurveCenter()
 {
-	if(selectedCurveId < 0) return centerPoint();
-
-	int cid = selectedCurveId;
-	if( RANGE( selectedCurveId, 0, 7 ) ) cid = 0;
-
-	int idx = cid / 2;
-	double sign = (cid % 2)? 1.0 : -1.0;
-
-	return currBox.Center + currBox.Axis[idx] * currBox.Extent[idx] * sign;
+	std::vector<Point> faceCenters = getUniformBoxFaceCenters(currBox);
+	return faceCenters[selectedCurveId];
 }
 
 int Cuboid::detectHotCurve( Point hotSample )
