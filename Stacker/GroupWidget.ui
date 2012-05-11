@@ -81,13 +81,6 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QPushButton" name="findPairwiseJointButton">
-           <property name="text">
-            <string>Pairwise Joints</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </item>

@@ -66,6 +66,8 @@ public:
 	Vec3d closestPoint(Point p);
 	std::vector<Point> points();
 	std::vector<double> scales();
+	Point closestProjection(Point p);
+	bool atEnd(int dimensions, Point p);
 
 	// Joint, symmetry
 	void setSymmetryPlanes(int nb_fold);

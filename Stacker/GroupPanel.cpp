@@ -19,7 +19,6 @@ GroupPanel::GroupPanel( QWidget * parent) : QWidget(parent)
 	groupWidget.jointThreshold->setValue(jointDetector->JOINT_THRESHOLD);
 	connect(groupWidget.jointThreshold, SIGNAL(valueChanged(double)),SLOT(setJointThreshold(double)) );
 	connect(groupWidget.findJointsButton, SIGNAL(clicked()), SLOT(findJoints()));
-	connect(groupWidget.findPairwiseJointButton, SIGNAL(clicked()), SLOT(findPairwiseJoints()));
 
 	// Group tree
 	connect(groupWidget.removeButton, SIGNAL(clicked()), SLOT(removeSelectedItem()));
@@ -192,21 +191,6 @@ void GroupPanel::findJoints()
 
 	// update
 	this->updateWidget();
-}
-
-void GroupPanel::findPairwiseJoints()
-{
-	if(!activeScene || !activeObject() || !activeObject()->ptr["controller"])	return;
-
-	if (activeScene->selection.size() < 2) return;
-
-	Controller* ctrl = (Controller *)activeScene->activeObject()->ptr["controller"];
-
-	int selID1 = activeScene->selection[0];
-	int selID2 = activeScene->selection[1];
-
-	// Call joint detector to find joints
-	//	((Controller *)activeScene->activeObject()->ptr["controller"])->findPairwiseJoints(ctrl->primitiveIdNum[selID1],ctrl->primitiveIdNum[selID2], panel.numJoints->value());
 }
 
 void GroupPanel::setJointThreshold( double threshold )

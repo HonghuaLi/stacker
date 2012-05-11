@@ -12,12 +12,14 @@ public:
 	void regroup();
 	void draw();	
 	void saveParameters( std::ofstream &outF );
-	void loadParameters(std::ifstream &inF, Vec3d translation, double scaleFactor);
+	void loadParameters( std::ifstream &inF, Vec3d translation, double scaleFactor );
 
 	// Get
 	Point getJointPosOnPrimitive(Primitive* prim);
 	Point getJointPos();
 
+	// Sliding
+	void slide(QString sliderID);
 public:
 	Point pos; // Only used once at the very beginning for \process
     QMap<QString, std::vector<double> > jointCoords;

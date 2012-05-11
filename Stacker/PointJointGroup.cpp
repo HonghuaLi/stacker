@@ -29,7 +29,7 @@ void PointJointGroup::regroup()
 	Primitive *frozen,  *non_frozen;
 	if (!getRegroupDirection(frozen, non_frozen)) return;
 
-	// The joint has been apart, try to join them again
+	// Modify the \non_frozen to fix the joint
 	Vec3d newPos = frozen->fromCoordinate(jointCoords[frozen->id]);
 	Vec3d oldPos = non_frozen->fromCoordinate(jointCoords[non_frozen->id]);
 
@@ -41,33 +41,22 @@ void PointJointGroup::regroup()
 
 void PointJointGroup::draw()
 {
-	if(nodes.isEmpty()) return;
-
+	// Draw debug
+	Group::draw();
+	
 	// Show joints
-	Primitive * a = nodes.first();
-	Primitive * b = nodes.last();
-
-	if(isDraw)
+	if(isDraw && !nodes.isEmpty())
 	{
+		Primitive * a = nodes.first();
+		Primitive * b = nodes.last();
 		SimpleDraw::IdentifyPoint( a->fromCoordinate(jointCoords[a->id]), 1,0,1, 5 );
 		SimpleDraw::IdentifyPoint( b->fromCoordinate(jointCoords[b->id]), 0,1,0, 8 );
 	}
 
-	Group::draw();
 }
 
 void PointJointGroup::saveParameters( std::ofstream &outF )
 {
-	//Primitive * a = nodes.first();
-	//Primitive * b = nodes.last();
-
-	//outF << qPrintable(a->id) << '\t';
-	//foreach(double c, jointCoords[a->id])
-	//	outF << c << '\t';
-
-	//outF << qPrintable(b->id) << '\t';
-	//foreach(double c, jointCoords[b->id])
-	//	outF << c << '\t';
 	outF << getJointPos();
 }
 
@@ -88,6 +77,50 @@ Point PointJointGroup::getJointPos()
 	Primitive * a = nodes.first();
 	return a->fromCoordinate(jointCoords[a->id]);
 }
+
+void PointJointGroup::slide( QString sliderID )
+{
+	// Get the \slider and \track
+	Primitive * slider = nodes.first();
+	Primitive * track = nodes.last();
+
+	if (slider->id != sliderID)
+	{
+		Primitive * tmp = slider;
+		slider = track;
+		track = tmp;
+	}
+
+	// The joint position on \slider	
+	Point oldPos = slider->fromCoordinate(jointCoords[slider->id]);
+
+	// The \slider should be the '|' of the 'T' junction
+	if (slider->atEnd(1, oldPos))
+	{	
+		std::cout << qPrintable(track->id) << "is regarded as track.\n";
+
+		slider->debugPoints.clear();
+		slider->debugPoints.push_back(oldPos);
+
+		// Project \oldPos to the track
+		Point newPos = track->closestProjection(oldPos);
+		track->debugPoints2.clear();
+		track->debugPoints2.push_back(newPos);
+
+		slider->movePoint(oldPos, newPos - oldPos);
+		slider->fixedPoints.push_back(newPos);
+
+		// Recompute the coordinates of joint
+		pos = newPos;
+		process(nodes);
+
+		// Freeze both slider and track
+		slider->isFrozen = true;
+		track->isFrozen = true;
+	}
+
+}
+
 
 
 

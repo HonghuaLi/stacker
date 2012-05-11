@@ -17,6 +17,9 @@ public:
 	// Regroup pair
 	void regroupPair(QString id1, QString id2);
 
+	// Sliding
+	void slide(QString id);
+
 	// Propagation
 	void execute();
 

@@ -48,6 +48,9 @@ public:
 	std::vector< std::vector <Vec3d> > getCurves();
 	std::vector<Point>	points();
 	std::vector<double> scales();
+	Point closestProjection(Point p);
+	bool atEnd(int dimensions, Point p);
+
 	// Hot curves
 	int detectHotCurve( Point hotSample);
 	int detectHotCurve( QVector<Point> &hotSamples );
