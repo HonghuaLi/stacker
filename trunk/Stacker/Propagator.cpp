@@ -26,12 +26,6 @@ void Propagator::regroupPair( QString id1, QString id2 )
 	// For sure there is no group
 	if (id1 == id2) return;
 
-	// Get the constraint group(s)
-	QVector<Group*> constraints;
-	QVector<Group*> groups = mCtrl->groupsOf(id1);
-	for (int i=0;i<groups.size();i++)
-		if (groups[i]->has(id2)) constraints.push_back(groups[i]);
-
 	// This function is called only once at the very beginning of the propagation
 	// At this time, all primitives are unfrozen
 	// To regroup the pair, one primitive has to be frozen
@@ -153,7 +147,8 @@ void Propagator::solvePointJointConstraints( QString target, QVector<ConstraintG
 		foreach(ConstraintGraph::Edge e, constraints)
 		{
 			PointJointGroup* group = (PointJointGroup*)mCtrl->groups[e.id];
-			Point p = targetPrim->fromCoordinate(group->jointCoords[target]);
+			Primitive *frozen = mCtrl->getPrimitive(e.to);
+			Point p = frozen->fromCoordinate(group->jointCoords[e.to]);
 			constraint_points.push_back(p);
 		}
 
@@ -196,4 +191,23 @@ void Propagator::solvePointJointConstraints( QString target, QVector<ConstraintG
 		}
 	}
 
+}
+
+void Propagator::slide( QString id )
+{
+	// The \id has been deformed 
+	// To make sliding happen, \id has to be deformed again respect to its neighbors
+	QVector<ConstraintGraph::Edge> constraints = mGraph->getEdges(id);
+
+	std::cout << "There are " << constraints.size() << " constraints. \n";
+
+	foreach(ConstraintGraph::Edge e, constraints)
+	{
+		Group* group = mCtrl->groups[e.id];
+		if ( group->type == POINTJOINT )
+		{
+			((PointJointGroup*) group)->slide(id);
+			std::cout << "Sliding " << qPrintable(id) << std::endl;
+		}
+	}
 }

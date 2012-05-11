@@ -276,8 +276,7 @@ double GCylinder::volume()
 
 Point GCylinder::getSelectedCurveCenter()
 {
-	// Return center point if non-selected
-	if( !RANGED( 0, selectedCurveId, gc->frames.count()-1 ) )
+	if(selectedCurveId < 0) 
 		return centerPoint();
 	else
 		return gc->frames.point[selectedCurveId];
@@ -751,5 +750,20 @@ void GCylinder::update()
 	updateGC();
 	updateCage();
 	deformMesh();
+}
+
+Point GCylinder::closestProjection( Point p )
+{
+	return Point(0);
+}
+
+bool GCylinder::atEnd( int dimensions, Point p )
+{
+	if (deformer == SKINNING)
+	{
+		return skinner->atEnd(p);
+	}
+
+	return false;
 }
 

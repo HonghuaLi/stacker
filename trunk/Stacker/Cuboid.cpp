@@ -804,5 +804,35 @@ std::vector<Point> Cuboid::getUniformBoxFaceCenters( Box3 &box )
 	return face_centers;
 }
 
+Point Cuboid::closestProjection( Point p )
+{
+	// If \p is inside the cuboid, return \p
+	// Otherwise return the closest point on the faces.
+
+	Vec3d xyz = getCoordinatesInUniformBox(currBox, p);
+
+	for (int i = 0; i < 3; i++) 
+		xyz[i] = RANGED(-1, xyz[i], 1);
+
+	return getPositionInUniformBox(currBox, xyz);
+}
+
+bool Cuboid::atEnd( int dimensions, Point p )
+{
+	Vec3d coords = getCoordinatesInUniformBox(currBox, p);
+
+	// Find the longest direction
+	int longest_id = 0;
+	Vec3d &ext = currBox.Extent;
+	if (ext[1] > ext[0]) longest_id = 1;
+	if (ext[2] > ext[longest_id]) longest_id = 2;
+
+
+	if ( abs(coords[longest_id]) < 0.8 )
+		return false;
+	else
+		return true;
+}
+
 
 

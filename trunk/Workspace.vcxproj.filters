@@ -251,12 +251,6 @@
     <ClInclude Include="GeneratedFiles\ui_StackerWidget.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stacker\ConcentricGroup.h">
-      <Filter>Stacker\Groups</Filter>
-    </ClInclude>
-    <ClInclude Include="Stacker\CoplanarGroup.h">
-      <Filter>Stacker\Groups</Filter>
-    </ClInclude>
     <ClInclude Include="Stacker\Group.h">
       <Filter>Stacker\Groups</Filter>
     </ClInclude>
@@ -674,12 +668,6 @@
     </ClCompile>
     <ClCompile Include="Stacker\GroupPanel.cpp">
       <Filter>Stacker\Panels</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\ConcentricGroup.cpp">
-      <Filter>Stacker\Groups</Filter>
-    </ClCompile>
-    <ClCompile Include="Stacker\CoplanarGroup.cpp">
-      <Filter>Stacker\Groups</Filter>
     </ClCompile>
     <ClCompile Include="Stacker\Group.cpp">
       <Filter>Stacker\Groups</Filter>

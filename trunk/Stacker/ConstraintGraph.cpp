@@ -104,7 +104,10 @@ QVector<ConstraintGraph::Edge> ConstraintGraph::getConstraints( QString target )
 	return constrains;
 }
 
-
+QVector<ConstraintGraph::Edge> ConstraintGraph::getEdges( QString node )
+{
+	return adjacency_map[node].toVector();
+}
 
 GroupType ConstraintGraph::edgeType( QString id )
 {

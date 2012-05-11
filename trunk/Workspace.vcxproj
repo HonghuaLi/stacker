@@ -262,7 +262,6 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -Dqh_QHpointer -DQT_DLL  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I.\GraphicsLibrary\Mesh\SurfaceMesh" "-I.\Utility" "-I.\Stacker" "-I.\GraphicsLibrary\Skeleton" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UMFPACK" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\AMD" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UFconfig" "-I$(NOINHERIT)\." "-I." "-I." "-I." "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
-    <ClInclude Include="Stacker\ConcentricGroup.h" />
     <ClInclude Include="Stacker\ConstraintGraph.h" />
     <CustomBuild Include="Stacker\ConstraintGraphVis.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);%(AdditionalInputs)</AdditionalInputs>
@@ -285,7 +284,6 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -Dqh_QHpointer -DQT_DLL  "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtOpenGL" "-I." "-I.\GraphicsLibrary\Mesh\SurfaceMesh" "-I.\Utility" "-I.\Stacker" "-I.\GraphicsLibrary\Skeleton" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UMFPACK" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\AMD" "-I.\GraphicsLibrary\Skeleton\Solver\UmfPack_include\UFconfig" "-I$(NOINHERIT)\." "-I." "-I." "-I." "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
-    <ClInclude Include="Stacker\CoplanarGroup.h" />
     <ClInclude Include="Stacker\Cuboid.h" />
     <ClInclude Include="Stacker\EditPath.h" />
     <CustomBuild Include="Stacker\GCylinder.h">
@@ -647,12 +645,10 @@
     <ClCompile Include="MathLibrary\Deformer\QVoxelDeformerPanel.cpp" />
     <ClCompile Include="MathLibrary\Deformer\Skinning.cpp" />
     <ClCompile Include="MathLibrary\Deformer\VoxelDeformer.cpp" />
-    <ClCompile Include="Stacker\ConcentricGroup.cpp" />
     <ClCompile Include="Stacker\ConstraintGraph.cpp" />
     <ClCompile Include="Stacker\ConstraintGraphVis.cpp" />
     <ClCompile Include="Stacker\Controller.cpp" />
     <ClCompile Include="Stacker\ControllerPanel.cpp" />
-    <ClCompile Include="Stacker\CoplanarGroup.cpp" />
     <ClCompile Include="Stacker\Cuboid.cpp" />
     <ClCompile Include="Stacker\EditPath.cpp" />
     <ClCompile Include="Stacker\GCylinder.cpp" />

@@ -29,6 +29,7 @@ public:
 	QString nextTarget();
 	QVector<QString> getNeighbours(QString node);
 	QVector<Edge> getConstraints(QString target);
+	QVector<Edge> getEdges( QString node );
 
 	GroupType edgeType(QString id);
 

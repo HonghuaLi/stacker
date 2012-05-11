@@ -27,7 +27,6 @@ public slots:
 
 	// Joint detection
 	void findJoints();
-	void findPairwiseJoints();
 	void setJointThreshold(double threshold);
 
 	// Group tree

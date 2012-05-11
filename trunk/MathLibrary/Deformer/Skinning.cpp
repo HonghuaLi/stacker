@@ -201,3 +201,15 @@ void Skinning::deform()
 		points[vit] = fromCoordinates(coordinates[vi]);
 	}
 }
+
+bool Skinning::atEnd( Point p )
+{
+	SkinningCoord skinning_coord = computeCoordinates(p);
+	int n = skinning_coord.n1;
+	int N = gc->frames.count() - 1;
+	double pos = (double)n / (double)N;
+	if (pos < 0.2 || pos > 0.8 || n < 2 || n > N-1)
+		return true;
+	else
+		return false;
+}

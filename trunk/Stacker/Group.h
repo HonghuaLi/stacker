@@ -22,13 +22,12 @@ public:
 
 	// Regroup
 	virtual void regroup() = 0;
-	bool getRegroupDirection(Primitive* &frozen, Primitive* &non_frozen);
 
 	// Visualization
 	virtual void draw();
 	void drawDebug();
 
-	// Save and load parameters
+	// Group specified parameters
 	virtual void saveParameters(std::ofstream &outF);
 	virtual void loadParameters(std::ifstream &inF, Vec3d translation, double scaleFactor);
 
@@ -36,7 +35,9 @@ public:
 	bool has(QString id);
 	QVector<QString> getNodes();
 
-	QVector<QString> groupTypes;
+protected:
+	// Get the frozen and non_frozen primitives
+	bool getRegroupDirection(Primitive* &frozen, Primitive* &non_frozen);
 
 public:
 

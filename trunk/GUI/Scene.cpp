@@ -8,8 +8,6 @@
 // Stacker stuff
 #include "QManualDeformer.h"
 #include "Stacker/SymmetryGroup.h"
-#include "Stacker/ConcentricGroup.h"
-#include "Stacker/CoplanarGroup.h"
 #include "Stacker/Primitive.h"
 
 #include "GraphicsLibrary/Remeshing/LaplacianRemesher.h"
@@ -243,6 +241,19 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 	emit(objectInserted());
 
 	this->selectMode = CONTROLLER;
+
+	// Check if normalizedf
+	double thresh = 1e-6;
+
+	if (abs(newMesh->scaleFactor - 1.0) > thresh || newMesh->translation.norm() > thresh)
+	{
+		backColor = QColor(255,0,0);
+		setBackgroundColor(QColor(255,0,0));
+		QString message = "WARNING: EXPORT THE (! normalized !) MESH AND RELOAD AGAIN!!!!";
+		for(int i = 0; i < 30;i++) print(message);
+		displayMessage(message, 5000);
+		updateGL();
+	}
 }
 
 void Scene::resetView()
@@ -352,9 +363,6 @@ void Scene::mousePressEvent( QMouseEvent* e )
 
 				int opt = 0;
 				if(action == symmGrp)		newGroup = new SymmetryGroup(SYMMETRY);
-				if(action == concentricGrp) newGroup = new ConcentricGroup(CONCENTRIC);
-				if(action == coplanGrp)		newGroup = new CoplanarGroup(COPLANNAR);
-
 				if(action == self1foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(1);
 				if(action == self2foldSymm) ctrl->getSelectedPrimitive()->setSymmetryPlanes(2);
 
@@ -593,14 +601,16 @@ void Scene::postSelection( const QPoint& point )
 			if(selected != -1)
 			{
 				defCtrl = new QManualDeformer(ctrl);
-				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
-			
+				setManipulatedFrame( defCtrl->getFrame() );
+
 				updateGL();
 
-				setManipulatedFrame( defCtrl->getFrame() );
-				Vec3d q = ctrl->getSelectedCurveCenter();
+				Vec3d q = ctrl->getSelectedPrimitive()->centerPoint();
 				manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
+
+				
+				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
+				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 			}
 		}
 		break;
@@ -611,14 +621,17 @@ void Scene::postSelection( const QPoint& point )
 			if(ctrl->selectPrimitiveCurve(selected))
 			{
 				defCtrl = new QManualDeformer(ctrl);
-				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
+				setManipulatedFrame( defCtrl->getFrame() );
 
 				updateGL();
 
-				setManipulatedFrame( defCtrl->getFrame() );
+				
 				Vec3d q = ctrl->getSelectedCurveCenter();
 				manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
+
+				
+				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
+				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 			}
 
 			if(selected == -1)

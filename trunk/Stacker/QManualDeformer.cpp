@@ -21,13 +21,8 @@ qglviewer::ManipulatedFrame * QManualDeformer::getFrame()
 
 Vec3d QManualDeformer::pos()
 {
-	if(frame->position() == frame->translation())
-	{
-		qglviewer::Vec q = frame->position();
-		return Vec3d (q.x,q.y,q.z);
-	}
-	else
-		return Vec3d(0.0);
+	qglviewer::Vec q = frame->position();
+	return Vec3d (q.x,q.y,q.z);
 }
 
 void QManualDeformer::updateController()
@@ -37,17 +32,18 @@ void QManualDeformer::updateController()
 
 	Primitive * prim = ctrl->getSelectedPrimitive();
 	if(!prim) return;
-	prim->isFrozen = true;
 
 	Vec3d delta(0,0,0);
 
 	// Check if a curve is selected or not
+	Point p = pos();
 	if(prim->selectedCurveId < 0)
-		delta = pos() - prim->centerPoint();
+		delta = p - prim->centerPoint();
 	else
-		delta = pos() - prim->getSelectedCurveCenter();
+		delta = p - prim->getSelectedCurveCenter();
 
-	if(delta.norm() > 1e-9 && delta.norm())
+	//if(delta.norm() > 1e-9)
+	if(1)
 	{
 		// Translation
 		prim->moveCurveCenter( -1,  delta );
@@ -77,8 +73,10 @@ void QManualDeformer::updateController()
 	}
 
 	Propagator propagator(ctrl);
+	propagator.slide(prim->id);
+	prim->isFrozen = true;
 	propagator.execute();
-	prim->isFrozen = false;
+
 	emit( objectModified() );
 }
 

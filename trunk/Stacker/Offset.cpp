@@ -21,7 +21,7 @@ Offset::Offset( HiddenViewer *viewer )
 	activeViewer = viewer;
 
 	searchDensity = 20;
-	searchType = ROT_AROUND_X_AND_Y;
+	searchType = NONE;
 }
 
 QSegMesh* Offset::activeObject()
@@ -213,23 +213,9 @@ void Offset::computeOffsetOfShape()
 	activeObject()->vec["stacking_shift"] = bestStackingDirection * O_max;
 
 	// debug
+	ctrl()->debugPoints.clear();
 	foreach(Vec3d v, directions)
 		ctrl()->debugPoints.push_back(v );
-
-	// Debug
-	// Compute the offset along the best stacking direction
-	//Vec3d vec = bestStackingDirection;
-	//if(vec == z) up = y;
-	//else
-	//{
-	//	axis = cross(z, vec);
-	//	double angle = acos( dot(z, vec) );
-	//	m = Eigen::AngleAxisd( angle, V2E(axis) );
-	//	up = E2V((m * V2E(y)));
-	//}
-	//computeEnvelopeOfShape( 1, up, vec);
-	//computeEnvelopeOfShape(-1, up, vec);
-	//computeOffset();
 
 	// Save offset as image
 	saveAsImage(lowerDepth, 1, "lower depth.png");

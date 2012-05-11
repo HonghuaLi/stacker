@@ -25,6 +25,7 @@ public:
 	void deform();
 	std::vector<double> getCoordinate(Point p);
 	Point fromCoordinates(std::vector<double> coords);
+	bool atEnd( Point p );
 
 private:
 	SkinningCoord	computeCoordinates(Point v);

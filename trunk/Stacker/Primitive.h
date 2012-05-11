@@ -59,6 +59,8 @@ public:
 	virtual Vec3d closestPoint(Point p) = 0;
 	virtual std::vector<Point>	points() = 0;
 	virtual std::vector<double> scales() = 0;
+	virtual Point closestProjection(Point p) = 0;
+	virtual bool atEnd(int dimensions, Point p) = 0;
 
 	// The underlying geometry
 	QSurfaceMesh* m_mesh;			

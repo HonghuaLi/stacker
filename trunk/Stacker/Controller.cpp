@@ -521,6 +521,7 @@ void Controller::loadGroups( std::ifstream &inF )
 				inF >> str;
 				segments.push_back(getPrimitive(str.c_str()));
 			}
+			std::cout << m_mesh->translation << "<- tran \t scale->"  << m_mesh->scaleFactor << '\n';
 			newGroup->loadParameters(inF, m_mesh->translation, m_mesh->scaleFactor);
 			newGroup->process(segments);
 
