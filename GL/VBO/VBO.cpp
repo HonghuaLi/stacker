@@ -262,7 +262,6 @@ void VBO::render_depth( bool dynamic /*= false*/ )
 	if(dynamic || isDirty)
 		update();
 
-	glEnable(GL_LIGHTING);
 	glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
 	// Bind vertex positions
@@ -276,6 +275,7 @@ void VBO::render_depth( bool dynamic /*= false*/ )
 	// Draw all faces
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
 
+	glDisableClientState(GL_VERTEX_ARRAY);
 	glPopClientAttrib();
 	glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 }

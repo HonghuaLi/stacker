@@ -84,7 +84,7 @@ void Cuboid::fit( bool useAABB, int obb_method )
 		currBox = fittedBox;
 	}
 
-	currBox.Extent *= 1.0001; // needed for coordinates
+	currBox.Extent += Vec3d(0.01); // needed for coordinates
 	currBox.faceScaling.resize(6, 1.0);
 
 	originalBox = currBox;
@@ -225,7 +225,7 @@ void Cuboid::draw()
 	if(isDraw)
 	{
 		if(isSelected)
-			drawCube(3, Vec4d(1,1,0,0.2));
+			drawCube(3, Vec4d(1,1,0,0.8));
 		else
 			drawCube(2, Vec4d(0,0,1,0.4));
 	}
