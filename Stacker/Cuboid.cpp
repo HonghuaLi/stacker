@@ -748,15 +748,35 @@ void Cuboid::load( std::ifstream &inF, Vec3d translation, double scaleFactor )
 
 void Cuboid::moveLineJoint( Point A, Point B, Vec3d deltaA, Vec3d deltaB )
 {
-	// Translate \A to \newA
-	currBox.Center += deltaA;
 
-	Point newA = A + deltaA;
-	Point newB = B + deltaA;
-	Vec3d delta_newB = deltaB - deltaA;
 
-	// Deform respect to joint
-	deformRespectToJoint(newA, newB, delta_newB);
+	if (fixedPoints.isEmpty())
+	{
+		// Translate \A to \newA
+		currBox.Center += deltaA;
+
+		Point newA = A + deltaA;
+		Point newB = B + deltaA;
+		Vec3d delta_newB = deltaB - deltaA;
+		// Deform respect to joint
+		deformRespectToJoint(newA, newB, delta_newB);
+	}
+	else
+	{
+		Point joint(0.0);
+		foreach(Point p, fixedPoints) joint += p;
+		joint /= fixedPoints.size();
+
+		Point C = (A + B) / 2;
+		Point newC = C + (deltaA + deltaB) / 2;
+
+		// Project to the main axis
+		Vec3d axis = currBox.ClosestAxis(C - joint);
+		C = joint + dot(axis, C - joint) * axis;
+		newC = joint + dot(axis, newC - joint) * axis;		
+
+		deformRespectToJoint(joint, C, newC - C);
+	}
 	
 	deformMesh();
 }

@@ -118,7 +118,8 @@ void Improver::setPositionalConstriants( HotSpot& fixedHS )
 
 void Improver::recordSolution(Point handleCenter, Vec3d localMove)
 {
-	double stackability = activeOffset->getStackability(true);
+	activeOffset->computeStackability();
+	double stackability = activeObject()->val["stackability"];
 
 	ShapeState state = ctrl()->getShapeState();
 
@@ -147,7 +148,7 @@ QVector<double> Improver::getLocalScales( HotSpot& HS )
 	double stepSize = 0.05;
 
 	double s = 0;
-	for (int i = 0; i< LOCAL_RADIUS; i++)
+	for (int i = 1; i<= LOCAL_RADIUS; i++)
 	{
 		s += stepSize;
 		scales.push_back(1 + s);
@@ -208,7 +209,7 @@ QVector<Vec3d> Improver::getLocalMoves( HotSpot& HS )
 		d1.normalize();
 		d2.normalize();
 
-		for (int i = 0; i < LOCAL_RADIUS; i++)
+		for (int i = 1; i <= LOCAL_RADIUS; i++)
 		{
 			result.push_back(d1 * i * step.x());
 			result.push_back(d2 * i * step.x());
@@ -260,8 +261,10 @@ void Improver::deformNearPointLineHotspot( int side )
 	QVector<Vec3d> Ts = getLocalMoves(freeHS);
 
 	//// debug
-	//Ts.clear();
-	//Ts.push_back(Vec3d(-0.25,0,0));
+	Ts.clear();
+	Ts.push_back(Vec3d(0,0,0.05));
+	Ts.push_back(Vec3d(0,0,0.1));
+	Ts.push_back(Vec3d(0,0,0.15));
 
 	foreach ( Vec3d T, Ts)
 	{
@@ -318,6 +321,11 @@ void Improver::deformNearRingHotspot( int side )
 	// Scale the ring hot spot
 	Propagator propagator(ctrl());
 	QVector<double> scales = getLocalScales(freeHS);
+
+	// debug
+	scales.clear();
+	scales.push_back(0.5);
+
 	foreach (double scale, scales)
 	{
 		ctrl()->setPrimitivesFrozen(false);	// Clear flags
@@ -328,10 +336,10 @@ void Improver::deformNearRingHotspot( int side )
 		free_prim->addFixedCurve(free_cid);
 
 		// Fix the relation between hot segments then propagate the local modification
-		propagator.regroupPair(free_prim->id, fixed_prim->id); 
-		propagator.execute(); 
+//		propagator.regroupPair(free_prim->id, fixed_prim->id); 
+//		propagator.execute(); 
 
-		if ( !satisfyBBConstraint() ) continue; // BB constraint is strict	
+//		if ( !satisfyBBConstraint() ) continue; // BB constraint is strict	
 
 		// Record the shape state
 		Vec3d delta;
@@ -366,7 +374,7 @@ void Improver::deformNearHotspot( int side )
 void Improver::execute(int level)
 {
 	// The original stackability
-	origStackability = activeOffset->getStackability();
+	origStackability = activeObject()->val["stackability"];
 
 	// The bounding box constraint is hard
 	constraint_bbmin = activeObject()->bbmin * BB_TOLERANCE;

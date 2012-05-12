@@ -97,7 +97,7 @@ void Controller::draw()
 		SimpleDraw::IdentifyPoint(p, 1.0, 0.8, 0);
 
 	foreach(std::vector<Point> line, debugLines) 
-		SimpleDraw::IdentifyConnectedPoints(line, 1.0,0,0);
+		SimpleDraw::IdentifyConnectedPoints(line, 1.0,0.8,0);
 }
 
 void Controller::drawNames(bool isDrawParts)
@@ -304,6 +304,8 @@ ShapeState Controller::getShapeState()
 	foreach(Primitive * prim, primitives)
 		state.primStates[prim->id] = prim->getState();
 
+	state.stacking_shift = m_mesh->vec["stacking_shift"];
+
 	return state;
 }
 
@@ -314,6 +316,8 @@ void Controller::setShapeState(const ShapeState &shapeState )
 		prim->setState(shapeState.primStates[prim->id]);
 		prim->deformMesh();
 	}
+
+	m_mesh->vec["stacking_shift"] = shapeState.stacking_shift;
 
 	m_mesh->computeBoundingBox();
 }
@@ -521,7 +525,6 @@ void Controller::loadGroups( std::ifstream &inF )
 				inF >> str;
 				segments.push_back(getPrimitive(str.c_str()));
 			}
-			std::cout << m_mesh->translation << "<- tran \t scale->"  << m_mesh->scaleFactor << '\n';
 			newGroup->loadParameters(inF, m_mesh->translation, m_mesh->scaleFactor);
 			newGroup->process(segments);
 

@@ -399,7 +399,7 @@
       <Filter>Stacker\Core</Filter>
     </ClInclude>
     <ClInclude Include="Stacker\Primitive.h">
-      <Filter>Stacker\Core</Filter>
+      <Filter>Stacker\Controllers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -78,6 +78,7 @@ StackerPanel::StackerPanel()
 	panel.localRadius->setValue(improver->LOCAL_RADIUS);
 	panel.hidderViewerResolution->setValue(hiddenViewer->height());
 	panel.stackCount->setValue(previewer->stackCount);
+	panel.searchType->setValue(activeOffset->searchType);
 }
 
 StackerPanel::~StackerPanel()
@@ -114,7 +115,7 @@ void StackerPanel::setActiveScene( Scene * newScene )
 void StackerPanel::updateActiveObject()
 {
 	// Offset
-	activeOffset->getStackability(true);
+	activeOffset->computeStackability();
 
 	// Preview
 	previewer->updateActiveObject();
@@ -151,7 +152,13 @@ void StackerPanel::setActiveObject()
 	// Set active object for hidden viewer and previewer
 	previewer->setActiveObject(activeObject());
 	hiddenViewer->setActiveObject(activeObject());
-	updateActiveObject();
+
+	// Offset
+	if (!activeObject()->vec.contains("stacking_shift"))
+		activeOffset->computeStackability();
+
+	// Preview
+	previewer->updateActiveObject();
 
 	resetSolutionTree();
 }
@@ -178,7 +185,7 @@ void StackerPanel::outputForPaper()
 	data["offsetData"] = "offset_function.dat";
 
 	// Compute everything
-	activeOffset->computeOffsetOfShape();
+	activeOffset->computeStackability();
 	
 
 	// 1) Save envelopes + offset function (both image + values)
@@ -191,7 +198,7 @@ void StackerPanel::outputForPaper()
 	saveAsImage(activeOffset->offset, activeOffset->O_max, exportDir + "/" + data["offsetImg"]);
 	saveAsData(activeOffset->offset, 1.0, exportDir + "/" + data["offsetData"]);
 	data["O_max"] = QString::number(activeOffset->O_max);
-	data["Stackability"] = QString::number(activeOffset->getStackability());
+	data["Stackability"] = QString::number(activeObject()->val["stackability"]);
 
 	// Save visualized 3D offset function:
 	int w = activeOffset->offset.front().size();
