@@ -34,6 +34,8 @@ void HiddenViewer::init()
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 	glMaterialf(GL_FRONT, GL_SHININESS, high_shininess);
+
+	camera()->setType(Camera::ORTHOGRAPHIC);
 }
 
 void HiddenViewer::setupCamera()

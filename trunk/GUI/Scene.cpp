@@ -247,10 +247,8 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 
 	if (abs(newMesh->scaleFactor - 1.0) > thresh || newMesh->translation.norm() > thresh)
 	{
-		backColor = QColor(255,0,0);
-		setBackgroundColor(QColor(255,0,0));
 		QString message = "WARNING: EXPORT THE (! normalized !) MESH AND RELOAD AGAIN!!!!";
-		for(int i = 0; i < 30;i++) print(message);
+		for(int i = 0; i < 5;i++) print(message);
 		displayMessage(message, 5000);
 		updateGL();
 	}

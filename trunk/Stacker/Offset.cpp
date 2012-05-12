@@ -6,6 +6,7 @@
 #include <numeric>
 #include "Numeric.h"
 #include <math.h>
+#include <iomanip>
 
 #include <Eigen/Geometry>
 #include "GUI/Viewer/libQGLViewer/QGLViewer/qglviewer.h"
@@ -21,7 +22,7 @@ Offset::Offset( HiddenViewer *viewer )
 	activeViewer = viewer;
 
 	searchDensity = 20;
-	searchType = NONE;
+	searchType = ROT_AROUND_X_AND_Y;
 }
 
 QSegMesh* Offset::activeObject()
@@ -99,7 +100,6 @@ void Offset::computeEnvelope(int side)
 void Offset::computeEnvelopeOfShape( int side, Vec3d up, Vec3d stacking_direction )
 {
 	// Set camera
-	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
 	activeViewer->camera()->setPosition(Vec( stacking_direction * side));
 	activeViewer->camera()->lookAt(Vec());
 	activeViewer->camera()->setUpVector(Vec(up));
@@ -119,16 +119,14 @@ void Offset::computeEnvelopeOfShape( int side, Vec3d up, Vec3d stacking_directio
 	computeEnvelope(side);
 }
 
-void Offset::computeEnvelopeOfRegion( int side , Vec3d bbmin, Vec3d bbmax )
+void Offset::computeEnvelopeOfRegion( int side , Vec3d up, Vec3d direction, Vec3d bbmin, Vec3d bbmax )
 {
 	// Set camera
-	activeViewer->camera()->setType(Camera::ORTHOGRAPHIC);
 	Vec3d bbCenter = (bbmin + bbmax) / 2;
-	Vec3d pos = bbCenter;
-	pos[2] = (1==side)? bbmax.z() : bbmin.z();
+	Vec3d pos = bbCenter + direction * side;
 	activeViewer->camera()->setPosition(Vec(pos));
 	activeViewer->camera()->lookAt(Vec(bbCenter));	
-	activeViewer->camera()->setUpVector(Vec(0,1,0));
+	activeViewer->camera()->setUpVector(Vec(up));
 	activeViewer->camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
 
 	// Save this new camera settings
@@ -165,41 +163,78 @@ void Offset::computeOffset()
 	}
 }
 
-void Offset::computeOffsetOfShape()
+Vec3d Offset::computeCameraUpVector( Vec3d newZ )
+{
+	// The up vector for camera is the rotated \y
+	// z => newZ, y => up
+	newZ.normalize();
+
+	Vec3d y(0, 1, 0), z(0, 0, 1), up;
+
+	if(newZ == z) 
+		up = y;
+	else
+	{
+		Vec3d axis = cross(z, newZ).normalized();
+		double angle = acos( dot(z, newZ) );
+		Eigen::Matrix3d m;
+		m = Eigen::AngleAxisd(angle, V2E(axis) );
+		up = E2V((m * V2E(y)));
+	}
+
+	return up;
+}
+
+void Offset::computeOffsetOfShape( Vec3d direction )
+{
+	Vec3d up = computeCameraUpVector(direction);
+//	std::cout <<"direction = " << direction << "up = " << up << '\n';
+
+	// Compute envelopes
+	computeEnvelopeOfShape( 1, up, direction);
+	computeEnvelopeOfShape(-1, up, direction);
+
+	// Offset
+	computeOffset();
+
+	// debug
+	//ctrl()->debugPoints.push_back(direction);
+	//std::vector<Point> line;
+	//line.push_back(Vec3d(0));
+	//line.push_back(up);
+	//ctrl()->debugLines.push_back(line);
+}
+
+
+void Offset::computeStackability()
 {
 	if (!activeObject()) return;
 
-	double V0 = volumeOfBB(activeObject()->bbmax - activeObject()->bbmin);
+	//std::cout << std::setprecision(4);
+	// Compute the bounding box
+	activeObject()->computeBoundingBox();
+	Vec3d diag = activeObject()->bbmax - activeObject()->bbmin;
+	//std::cout << diag << '\n';
+	double V0 = volumeOfBB(diag);
 
+	//std::cout << "V0 = " << V0 << '\n';
+	//std::cout << "V1 \t O_max \t H \t Stackability\n";
 	// Searching for the best stacking direction
 	double maxStackability = -1;
 	Vec3d bestStackingDirection(0, 0, 1);
 	QVector<Vec3d> directions = getDirectionsInCone(0.1);
 
-	Eigen::Matrix3d m;
-	Vec3d y(0, 1, 0), z(0, 0, 1), up, axis;
 	foreach(Vec3d vec, directions)
 	{
-		// Compute envelopes
-		// The up vector for camera is the rotated \y
-		if(vec == z) up = y;
-		else
-		{
-			axis = cross(z, vec).normalized();
-			double angle = acos( dot(z, vec) );
-			m = Eigen::AngleAxisd(angle, V2E(axis) );
-			up = E2V((m * V2E(y)));
-		}
-
-		computeEnvelopeOfShape( 1, up, vec);
-		computeEnvelopeOfShape(-1, up, vec);
-		computeOffset();
+		computeOffsetOfShape(vec);
 
 		// Compute stackability
 		double om = getMaxValue(offset);
-		Vec3d extents = computeShapeExtents(vec);
-		double V1 = volumeOfBB(extents);
-		double stackability = 1.0 - (om / extents[2]) * (V1 / V0);
+		Vec3d extent = computeShapeExtents(vec);
+		double V1 = volumeOfBB(extent);
+		double stackability = 1.0 - (om / extent[2]) * (V1 / V0);
+
+		//std::cout << V1 << '\t'<< om << '\t' << extent << '\t' << stackability << '\n';
 
 		if (stackability > maxStackability)
 		{
@@ -217,13 +252,13 @@ void Offset::computeOffsetOfShape()
 	foreach(Vec3d v, directions)
 		ctrl()->debugPoints.push_back(v );
 
-	// Save offset as image
-	saveAsImage(lowerDepth, 1, "lower depth.png");
-	saveAsImage(upperDepth, 1, "upper depth.png");
-	saveAsImage(offset, O_max, "offset function.png");
+	//// Save offset as image
+	//saveAsImage(lowerDepth, 1, "lower depth.png");
+	//saveAsImage(upperDepth, 1, "upper depth.png");
+	//saveAsImage(offset, O_max, "offset function.png");
 }
 
-void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
+void Offset::computeOffsetOfRegion( Vec3d direction, std::vector< Vec2i >& region )
 {
 	// BB of hot 2D region
 	Vec2i bbmin_region, bbmax_region;
@@ -252,8 +287,9 @@ void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
 	}
 
 	// Envelopes
-	computeEnvelopeOfRegion(1, bbmin, bbmax );
-	computeEnvelopeOfRegion(-1,  bbmin, bbmax );
+	Vec3d up = computeCameraUpVector(direction);
+	computeEnvelopeOfRegion(1, up, direction, bbmin, bbmax );
+	computeEnvelopeOfRegion(-1, up, direction,  bbmin, bbmax );
 
 	// Offset
 	computeOffset();
@@ -264,17 +300,17 @@ void Offset::computeOffsetOfRegion( std::vector< Vec2i >& region )
 
 double Offset::getStackability( bool recompute /*= false*/ )
 {
-	if (recompute) computeOffsetOfShape();
+	if (recompute) computeStackability();
 
 	return activeObject()->val["stackability"];
 }
 
 
 // == Hot spots
-HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegion)
+HotSpot Offset::detectHotspotInRegion(int side, std::vector<Vec2i> &hotRegion)
 {
 	// Restore the camera according to the direction
-	activeViewer->camera()->playPath( direction + 3 );
+	activeViewer->camera()->playPath( side + 3 );
 
 	// Draw Faces Unique
 	activeViewer->setMode(HV_FACEUNIQUE);
@@ -289,7 +325,7 @@ HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegi
 	int h = activeViewer->height();	
 
 	// Switch between directions
-	bool isUpper = (direction == 1);
+	bool isUpper = (side == 1);
 	std::vector< std::vector<double> > &depth = isUpper? upperDepth : lowerDepth;
 
 	// Detect hot spots
@@ -306,7 +342,7 @@ HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegi
 	{
 		// 2D coordinates in OpenGL format
 		Vec2i &hotPixel = hotRegion[j];
-		x = (direction == 1) ? hotPixel.x() : (w-1) - hotPixel.x();
+		x = (side == 1) ? hotPixel.x() : (w-1) - hotPixel.x();
 		y = hotPixel.y();
 
 		// 3d position of this hot sample
@@ -336,7 +372,8 @@ HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegi
 		subHotSamples[segmentID].push_back(hotPoint);
 
 		// All hot points in 3D
-		hotPoints[segmentID].push_back(hotPoint);
+		if (!isUpper)
+			hotPoints[segmentID].push_back(hotPoint);
 
 		// debuging
 //		debugImg.setPixel(x, y, QColor(r, g, b).rgb());
@@ -363,7 +400,7 @@ HotSpot Offset::detectHotspotInRegion(int direction, std::vector<Vec2i> &hotRegi
 
 		Controller* ctrl = (Controller*)activeObject()->ptr["controller"];
 
-		HS.side = direction;
+		HS.side = side;
 		HS.hotPixels = subHotPixels[HS.segmentID];
 		HS.hotSamples = subHotSamples[HS.segmentID];
 	}
@@ -378,11 +415,11 @@ void Offset::detectHotspots( )
 	int h = activeViewer->height();
 	int w = activeViewer->width();
 
-	// Recompute the offset function of the entire shape
-	computeOffsetOfShape();
+	// The best staking direction have been computed
+	Vec3d stackV = activeObject()->vec["stacking_shift"].normalized();
+	computeOffsetOfShape(stackV);
 
 	// Detect hot regions
-	hotRegions.clear();
 	double hot_cap = 1.0;
 	while (hotRegions.empty()){
 		hot_cap -= 0.05; // increase the cap
@@ -403,7 +440,7 @@ void Offset::detectHotspots( )
 	// Zoom into each hot region
 	for (int i=0;i<hotRegions.size();i++)
 	{
-		computeOffsetOfRegion(hotRegions[i]);
+		computeOffsetOfRegion(stackV, hotRegions[i]);
 
 		// Detect zoomed (in) hot region 
 		std::vector< std::vector<Vec2i> > zoomedHRs
@@ -414,7 +451,7 @@ void Offset::detectHotspots( )
 		}
 
 		// If there are multiple regions, pick up the one closest to the center
-		//visualizeRegions(zoomedHRs, "zoomed in hot regions.png");
+		visualizeRegions(w, h, zoomedHRs, "zoomed in hot regions.png");
 		Vec2i center(w/2, h/2);
 		int minDis = w;
 		int closestID = 0;
@@ -450,6 +487,15 @@ void Offset::detectHotspots( )
 		UHS.computeRepresentative(ctrl());
 		LHS.computeRepresentative(ctrl());
 
+		// debug
+		if (LHS.type == LINE_HOTSPOT)
+		{
+			std::vector<Point> line;
+			line.push_back(LHS.rep.first());
+			line.push_back(LHS.rep.last());
+			ctrl()->debugLines.push_back(line);
+		}
+
 		upperHotSpots.push_back(UHS);
 		lowerHotSpots.push_back(LHS);
 	}
@@ -466,13 +512,13 @@ void Offset::detectHotspots( )
 	}
 	std::cout << std::endl;
 
-	// Hot segments
-	hotSegments.clear();
-	for (int i=0;i<upperHotSpots.size();i++)
-	{
-		hotSegments.insert(upperHotSpots[i].segmentID);
-		hotSegments.insert(lowerHotSpots[i].segmentID);
-	}
+	//// Hot segments
+	//hotSegments.clear();
+	//for (int i=0;i<upperHotSpots.size();i++)
+	//{
+	//	hotSegments.insert(upperHotSpots[i].segmentID);
+	//	hotSegments.insert(lowerHotSpots[i].segmentID);
+	//}
 }
 
 std::vector<HotSpot> Offset::getHotspots( int side )
@@ -495,7 +541,7 @@ HotSpot& Offset::getHotspot( int side, int id )
 
 void Offset::showHotSpots()
 {
-	// Clear past states
+	// Clear
 	for(uint i = 0; i < activeObject()->nbSegments(); i++)
 	{
 		QSurfaceMesh * seg = activeObject()->getSegment(i);
@@ -509,9 +555,6 @@ void Offset::showHotSpots()
 	{
 		QString sid = i->first;
 		QSurfaceMesh* segment = activeObject()->getSegment(sid);
-
-		// Hot segment in red
-		//segment->setColorVertices(Color(1, 0, 0, 1)); 
 
 		// Hot spots as red points
 		for (std::vector< Vec3d >::iterator pit = i->second.begin(); pit != i->second.end(); pit++)
@@ -673,10 +716,10 @@ QVector<Vec3d> Offset::getDirectionsInCone( double cone_size )
 }
 
 
-Vec3d Offset::computeShapeExtents( Vec3d up )
+Vec3d Offset::computeShapeExtents( Vec3d direction )
 {
 	// Rotate the shape so that \up becomes z axis
-	Quaternion q(Vec(up), Vec(0, 0 ,1));
+	Quaternion q(Vec(direction), Vec(0, 0 ,1));
 	QVector<Point> vertices;
 
 	Vec3d bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
@@ -703,4 +746,6 @@ void Offset::setConeSize( double size )
 {
 	coneSize = size;
 }
+
+
 

@@ -7,6 +7,8 @@
 #include <QFile>
 #include <stack>
 
+
+
 // Extreme
 double getMaxValue( Buffer2d& image )
 {
@@ -417,4 +419,70 @@ Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p )
 double volumeOfBB( Vec3d &extents )
 {
 	return extents.x() * extents.y() * extents.z();
+}
+
+
+void twoFurthestPoints( std::vector<Point> &points, Point &p1, Point &p2 )
+{
+	double maxDis = 0.0;
+	int id1, id2;
+	for (int i = 0; i < points.size(); i++)
+	{
+		for (int j = i + 1; j <points.size(); j++)
+		{
+			double dis = (points[i]-points[j]).norm();
+			if (dis > maxDis)
+			{
+				id1 = i;
+				id2 = j;
+				maxDis = dis;
+			}
+		}
+	}
+
+	p1 = points[id1];
+	p2 = points[id2];
+}
+
+double distanceCluster2Cluster( std::vector<Point> &cluster1, std::vector<Point> &cluster2 )
+{
+	double minDis = DOUBLE_INFINITY;
+	foreach(Point p1, cluster1)
+	{
+		foreach(Point p2, cluster2)
+		{
+			double dis = (p1-p2).norm();
+
+			if (dis < minDis)
+			{
+				minDis = dis;
+			}
+		}
+	}
+
+	return minDis;
+}
+
+std::vector< std::vector<Point> > twoClassClustering( std::vector<Point>& points, Point seed1, Point seed2 )
+{
+	// Assign all the points to two seeds
+	std::vector<  std::vector< Point > >clusters(2);
+	foreach( Vec3d p, points)
+	{
+		if ((p - seed1).norm() < (p - seed2).norm())
+			clusters[0].push_back(p);
+		else
+			clusters[1].push_back(p);
+	}
+
+	return clusters;
+}
+
+Point centroid(std::vector<Point> points)
+{
+	Point center(0);
+	foreach(Point p, points) center += p;
+	center /= points.size();
+
+	return center;
 }

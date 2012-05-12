@@ -290,7 +290,6 @@ void GCylinder::moveCurveCenter( int cid, Vec3d delta )
 		moveCurveCenterRanged(cid, delta);
 }
 
-
 double GCylinder::computeWeight( double x, bool useGaussian /* = false*/ ) 
 {
 	double weight = 1;

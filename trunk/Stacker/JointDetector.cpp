@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "GraphicsLibrary/Voxel/Voxeler.h"
 #include "MathLibrary/Bounding/MinOBB3.h"
+#include "Numeric.h"
 
 #define POINT_LINE_THRESHOLD 4
 #define	LINE_2PONINTS_THRESHOLD 0.3
@@ -128,56 +129,7 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 	return Joints;
 }
 
-void JointDetector::twoFurthestPoints( std::vector<Point> &points, Point &p1, Point &p2 )
-{
-	p1 = points[0];
-	double maxDis = 0.0;
-	foreach( Point p, points)
-	{
-		double dis = (p-p1).norm();
-		if (dis > maxDis){
-			p2 = p;
-			maxDis = dis;
-		}
-	}
-}
 
-
-std::vector< std::vector<Point> > JointDetector::twoClassClustering( std::vector<Point>& points, Point seed1, Point seed2 )
-{
-	// Assign all the points to two seeds
-	std::vector<  std::vector< Point > >clusters(2);
-	foreach( Vec3d p, points)
-	{
-		if ((p - seed1).norm() < (p - seed2).norm())
-			clusters[0].push_back(p);
-		else
-			clusters[1].push_back(p);
-	}
-
-	return clusters;
-}
-
-
-
-double JointDetector::distanceCluster2Cluster( std::vector<Point> &cluster1, std::vector<Point> &cluster2 )
-{
-	double minDis = DOUBLE_INFINITY;
-	foreach(Point p1, cluster1)
-	{
-		foreach(Point p2, cluster2)
-		{
-			double dis = (p1-p2).norm();
-
-			if (dis < minDis)
-			{
-				minDis = dis;
-			}
-		}
-	}
-
-	return minDis;
-}
 
 PointJointGroup* JointDetector::setupPointJointGroup( QVector<Primitive*> segments, std::vector<Point>& points )
 {

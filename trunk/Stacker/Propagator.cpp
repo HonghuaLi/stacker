@@ -199,7 +199,7 @@ void Propagator::slide( QString id )
 	// To make sliding happen, \id has to be deformed again respect to its neighbors
 	QVector<ConstraintGraph::Edge> constraints = mGraph->getEdges(id);
 
-	std::cout << "There are " << constraints.size() << " constraints. \n";
+//	std::cout << "There are " << constraints.size() << " constraints. \n";
 
 	foreach(ConstraintGraph::Edge e, constraints)
 	{

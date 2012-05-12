@@ -26,40 +26,41 @@ class Offset: public QObject
 public:
 	Offset(HiddenViewer* viewer);
 
-	void		computeOffsetOfShape();
-	void		detectHotspots();
+	// Stackability
+	void	computeStackability();
+	double	getStackability(bool recompute = false);
+	
+	// Compute offset function and stackability
+	void computeEnvelope(int side);
+	void computeEnvelopeOfRegion( int side , Vec3d up, Vec3d direction, Vec3d bbmin, Vec3d bbmax );
+	void computeEnvelopeOfShape( int side, Vec3d up, Vec3d stacking_direction );
+	
+	void computeOffset();
+	void computeOffsetOfRegion( Vec3d direction, std::vector< Vec2i >& region );
+	void computeOffsetOfShape( Vec3d direction );
 
-	double		getStackability(bool recompute = false);
+	// Hot spots
+	void		detectHotspots();
+	HotSpot		detectHotspotInRegion(int side, std::vector<Vec2i>& hotRegion);
 	HotSpot&	getHotspot( int side, int id );
 	void		showHotSpots();
 	std::vector<HotSpot> getHotspots(int side);
-
-	// Shortener
-	QSegMesh*	activeObject();
-	Controller* ctrl();
-	void		clear();
-	
-public:
-	// Compute offset function and stackability
-	void computeEnvelope(int side);
-	void computeEnvelopeOfShape( int side, Vec3d up, Vec3d stacking_direction );
-	void computeEnvelopeOfRegion( int side , Vec3d bbmin, Vec3d bbmax);
-	
-	void computeOffset();
-	void computeOffsetOfRegion( std::vector< Vec2i >& region );
-
-	// Hot spots
-	HotSpot detectHotspotInRegion(int side, std::vector<Vec2i>& hotRegion);
 	void	saveHotSpots( QString filename, int direction = 1, double percent = 1.0 );
 
 	// Stacking directions
 	QVector<Vec3d> getDirectionsOnXYPlane();
 	QVector<Vec3d> getDirectionsInCone(double cone_size);
 
+	// Shortener
+	QSegMesh*	activeObject();
+	Controller* ctrl();
+	void		clear();
+
 	// Utilities 
 	Vec3d unprojectedCoordinatesOf( uint x, uint y, int direction);
 	Vec2i projectedCoordinatesOf( Vec3d point, int pathID );
-	Vec3d computeShapeExtents(Vec3d up);
+	Vec3d computeShapeExtents(Vec3d direction);
+	Vec3d computeCameraUpVector(Vec3d newZ);
 
 public:
 	HiddenViewer * activeViewer;

@@ -11,6 +11,7 @@
 typedef std::vector< std::vector<double> >	Buffer2d;
 typedef std::vector< std::vector<bool> >	Buffer2b;
 
+typedef Vec3d Point;
 
 // Extrema
 double getMinValue( Buffer2d & image );
@@ -52,3 +53,9 @@ Vec3d rotatePointByMatrix( Eigen::Matrix3d &R, Vec3d p );
 
 // Cuboid volume
 double volumeOfBB(Vec3d &extents);
+
+// Points
+void twoFurthestPoints( std::vector<Point> &points, Point &p1, Point &p2 );
+double distanceCluster2Cluster( std::vector<Point> &cluster1, std::vector<Point> &cluster2 );
+std::vector< std::vector<Point> > twoClassClustering( std::vector<Point>& points, Point seed1, Point seed2 );
+Point centroid(std::vector<Point> points);

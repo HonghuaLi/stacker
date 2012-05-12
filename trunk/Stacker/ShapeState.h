@@ -9,7 +9,11 @@
 class ShapeState
 {
 public:
+	// Geometry
 	QMap< QString, void* > primStates;
+
+	// Stacking
+	Vec3d stacking_shift;
 
 	// Energy
 	double deltaStackability;
