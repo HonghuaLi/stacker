@@ -446,6 +446,10 @@ void Cuboid::moveCurveCenter( int fid, Vec3d T )
 		Vec3d q = j + T;
 
 		deformRespectToJoint(k, j, T);
+
+		// Correct for singular cases
+		Vec3d kk = faceCenterOfUniformBox(currBox, opp_fid);
+		translate(k - kk);
 	}
 	else
 	{
@@ -506,9 +510,6 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	currBox.Axis[2] = p0 - p3;
 	currBox.normalizeAxis();
 
-
-	//if(rotAxis.norm() < 10e-3) 
-	//	int a = 1;
 	// Scale the box only along one axis
 	uint axisID = 0;
 	double maxDot = 0;
@@ -524,6 +525,7 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 		}
 	}
 
+	// Blend coefficents
 	double alpha = - oldJointCoords[axisID];
 	double beta = pCoords[axisID];
 	double sum = alpha + beta;
