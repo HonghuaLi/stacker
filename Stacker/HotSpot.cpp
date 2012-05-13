@@ -5,7 +5,7 @@
 #include "Primitive.h"
 #include "Cuboid.h"
 #include "Controller.h"
-#include "Macros.h"
+#include "Utility/Macros.h"
 #include "Numeric.h"
 
 void HotSpot::print()
