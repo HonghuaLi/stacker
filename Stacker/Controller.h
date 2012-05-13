@@ -15,7 +15,7 @@ class EditPath;
 class Controller
 {
 public:
-	Controller(QSegMesh* mesh, bool useAABB = true);
+	Controller(QSegMesh* mesh, bool useAABB = true, QString loadFromFile = "" );
 	~Controller();
 
 public:

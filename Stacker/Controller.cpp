@@ -18,7 +18,7 @@
 #include "LineJointGroup.h"
 #include "JointDetector.h"
 
-Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
+Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/, QString loadFromFile /* = ""*/ )
 {
 	m_mesh = mesh;
 
@@ -26,12 +26,6 @@ Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 	m_mesh->computeBoundingBox();
 	original_bbmin = m_mesh->bbmin;
 	original_bbmax = m_mesh->bbmax;
-
-	// Fit
-	fitOBBs(useAABB);
-
-	// Assign numerical IDs
-	assignIds();
 
 	primTypeNames.push_back("CUBOID");
 	primTypeNames.push_back("GC");
@@ -48,6 +42,21 @@ Controller::Controller( QSegMesh* mesh, bool useAABB /*= true*/ )
 	groupTypes.push_back("COPLANNAR");
 	groupTypes.push_back("SELF_SYMMETRY");
 	groupTypes.push_back("SELF_ROT_SYMMETRY");
+
+	if(loadFromFile.isEmpty())
+	{
+		// Fit
+		fitOBBs(useAABB);
+	}
+	else
+	{
+		std::ifstream inF(qPrintable(loadFromFile), std::ios::in);
+		load(inF);
+		inF.close();
+	}
+
+	// Assign numerical IDs
+	assignIds();
 }
 
 Controller::~Controller()
