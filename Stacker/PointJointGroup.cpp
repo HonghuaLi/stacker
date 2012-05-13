@@ -49,8 +49,8 @@ void PointJointGroup::draw()
 	{
 		Primitive * a = nodes.first();
 		Primitive * b = nodes.last();
-		SimpleDraw::IdentifyPoint( a->fromCoordinate(jointCoords[a->id]), 1,0,1, 5 );
-		SimpleDraw::IdentifyPoint( b->fromCoordinate(jointCoords[b->id]), 0,1,0, 8 );
+		SimpleDraw::IdentifyPoint( a->fromCoordinate(jointCoords[a->id]), 1,0,1,20 );
+		SimpleDraw::IdentifyPoint( b->fromCoordinate(jointCoords[b->id]), 0,1,0, 20 );
 	}
 
 }
@@ -84,6 +84,7 @@ void PointJointGroup::slide( QString sliderID )
 	Primitive * slider = nodes.first();
 	Primitive * track = nodes.last();
 
+	// Swap if needed
 	if (slider->id != sliderID)
 	{
 		Primitive * tmp = slider;
@@ -99,13 +100,13 @@ void PointJointGroup::slide( QString sliderID )
 	{	
 		std::cout << qPrintable(track->id) << "is regarded as track.\n";
 
-		slider->debugPoints.clear();
-		slider->debugPoints.push_back(oldPos);
+		//slider->debugPoints.clear();
+		//slider->debugPoints.push_back(oldPos);
 
 		// Project \oldPos to the track
 		Point newPos = track->closestProjection(oldPos);
-		track->debugPoints2.clear();
-		track->debugPoints2.push_back(newPos);
+	/*	track->debugPoints2.clear();
+		track->debugPoints2.push_back(newPos);*/
 
 		slider->movePoint(oldPos, newPos - oldPos);
 		slider->fixedPoints.push_back(newPos);
@@ -121,7 +122,30 @@ void PointJointGroup::slide( QString sliderID )
 
 }
 
+void PointJointGroup::rejoint(QString sliderID)
+{
+	// Get the \slider and \track
+	Primitive * slider = nodes.first();
+	Primitive * track = nodes.last();
 
+	// Swap if needed
+	if (slider->id != sliderID)
+	{
+		Primitive * tmp = slider;
+		slider = track;
+		track = tmp;
+	}
 
+	// The joint position on \slider	
+	Point p = slider->fromCoordinate(jointCoords[slider->id]);
 
+	// Update the joint coordinates for \track
+	if (slider->atEnd(1, p))
+	{
+		jointCoords[track->id] = track->getCoordinate(slider->fromCoordinate(jointCoords[sliderID]));
+	}
 
+	// Freeze both slider and track
+	/*slider->isFrozen = true;
+	track->isFrozen = true;*/
+}

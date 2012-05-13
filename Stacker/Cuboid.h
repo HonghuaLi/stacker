@@ -83,11 +83,10 @@ private:
 	QSurfaceMesh getBoxGeometry( Box3 &box, bool isUniform = false );
 	Vector3 getCoordinatesInUniformBox(Box3 &box, Vector3 &p);
     Vector3 getPositionInUniformBox(const Box3 &box, const Vector3 &coord);
-	std::vector<Point> getUniformBoxConners( Box3 &box );
+	std::vector<Point> getUniformBoxCorners( Box3 &box );
 	std::vector<Point> getUniformBoxFaceCenters( Box3 &box );
-	Vector3 getPositionInBox( Box3 &box, int vidx );
-
-	std::vector<Point> getBoxConners(Box3 &box);
+	Vector3 getPositionInBox( std::vector<Vector3> & pnts, int vidx );
+	std::vector<Point> getBoxCorners(Box3 &box);
 	std::vector< std::vector<Vector3> > getBoxFaces(Box3 &fromBox);
 	Vector3 faceCenterOfUniformBox( Box3 &box, uint fid );
 

@@ -603,12 +603,15 @@ void Scene::postSelection( const QPoint& point )
 
 				updateGL();
 
-				Vec3d q = ctrl->getSelectedPrimitive()->centerPoint();
-				manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
+				if(ctrl->getSelectedPrimitive())
+				{
+					Vec3d q = ctrl->getSelectedPrimitive()->centerPoint();
+					manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
 
-				
-				this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-				this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
+
+					this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
+					this->connect(defCtrl, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
+				}
 			}
 		}
 		break;
