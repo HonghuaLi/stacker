@@ -42,8 +42,7 @@ void QManualDeformer::updateController()
 	else
 		delta = p - prim->getSelectedCurveCenter();
 
-	//if(delta.norm() > 1e-9)
-	if(1)
+	if(delta.norm() > 1e-9)
 	{
 		// Translation
 		prim->moveCurveCenter( -1,  delta );
