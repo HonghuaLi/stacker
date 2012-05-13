@@ -1,7 +1,7 @@
 #include "HotSpot.h"
 
 #include <iostream>
-#include "MathLibrary/Bounding/OBB_PCA.h"
+#include "MathLibrary/Bounding/MinOBB2.h"
 #include "Primitive.h"
 #include "Cuboid.h"
 #include "Controller.h"
@@ -19,37 +19,22 @@ void HotSpot::print()
 void HotSpot::decideType()
 {
 	// Using STL and double
-	std::vector<Vec3d> pixels;
+	std::vector<Vec2d> pixels;
 	foreach(Vec2i v, hotPixels)
-		pixels.push_back(Vec3d(v.x(), v.y(), 0));
+		pixels.push_back(Vec2d(v.x(), v.y()));
 
 	// Compute bounding box in 2D
-	OBB_PCA obb;
-	obb.build_from_points(pixels);
+	MinOBB2 obb(pixels);
+	MinOBB2::Box2 box = obb.getBox2();
 
-	Vec3d extent = obb.extents();
-	QVector<double> tmp;
-	for (int i = 0; i< 3; i++)
-	{
-		if (extent[i] > 2)
-			tmp.push_back(extent[i]);
-	}
-
-	if (tmp.size() != 2)
-	{
-		std::cout << "NOT 2D !!\n";
-		type = POINT_HOTSPOT;
-		return;
-	}
-
-	double ratio = tmp[0] / tmp[1];
+	double ratio = box.Extent[0] / box.Extent[1];
 	if (ratio < 1) ratio = 1/ratio;
 
 	if (ratio > 4)
 		type = LINE_HOTSPOT;
 	else
 	{
-		Vec2i center((int)obb.center().x(), (int)obb.center().y());
+		Vec2i center((int)box.Center.x(), (int)box.Center.y());
 		for (int i = center.x() - 2; i < center.x() + 2; i++ ){
 			for (int j = center.y() - 2; j < center.y() + 2; j++ ){
 

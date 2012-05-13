@@ -570,7 +570,7 @@ void QSegMesh::rotateAroundUp( double theta )
 
 void QSegMesh::rotateUp( Vec3d to )
 {
-	double theta = acos(dot(upVec, to));
+	double theta = acos(RANGED(-1.0, dot(upVec, to), 1.0));
 	if(theta == 0)	return;
 	Vec3d axis = cross(upVec, to).normalized();
 

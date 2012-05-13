@@ -305,6 +305,7 @@ ShapeState Controller::getShapeState()
 		state.primStates[prim->id] = prim->getState();
 
 	state.stacking_shift = m_mesh->vec["stacking_shift"];
+	state.stackability = m_mesh->val["stackability"];
 
 	return state;
 }
@@ -318,6 +319,7 @@ void Controller::setShapeState(const ShapeState &shapeState )
 	}
 
 	m_mesh->vec["stacking_shift"] = shapeState.stacking_shift;
+	m_mesh->val["stackability"] = shapeState.stackability;
 
 	m_mesh->computeBoundingBox();
 }

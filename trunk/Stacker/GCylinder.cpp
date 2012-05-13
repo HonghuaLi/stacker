@@ -389,7 +389,16 @@ QSurfaceMesh GCylinder::getGeometry()
 
 void* GCylinder::getState()
 {
-	return (void*) new std::vector<GeneralizedCylinder::Circle>(gc->crossSection);
+	std::vector<GeneralizedCylinder::Circle> * state = 
+		new std::vector<GeneralizedCylinder::Circle>(gc->crossSection);
+
+	// Reuse radius to store scales
+	// Since the radius is computed by \origRadius and \curveScales
+	// and \origRadius should not change
+	for(int i = 0; i < gc->frames.count(); i++)	
+		state->at(i).radius = curveScales[i];
+
+	return (void*)state;
 }
 
 void GCylinder::setState( void* toState)
@@ -397,7 +406,10 @@ void GCylinder::setState( void* toState)
 	gc->crossSection = *( (std::vector<GeneralizedCylinder::Circle>*) toState );
 	
 	for(int i = 0; i < gc->frames.count(); i++)	
+	{
 		gc->frames.point[i] = gc->crossSection[i].center;
+		curveScales[i] = gc->crossSection[i].radius; // see \getState()
+	}
 
 	// Update the GC, cage, and mesh
 	update();
@@ -481,7 +493,6 @@ void GCylinder::reshape( std::vector<Point>& pnts, std::vector<double>& scales )
 	update();
 }
 
-
 int GCylinder::detectHotCurve( QVector<Point> &hotSamples )
 {
 	if (hotSamples.isEmpty()) return -1;
@@ -546,7 +557,7 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	Vec3d v1 = p - joint;
 	Vec3d v2 = (p + T) - joint;
 
-	double theta = acos(dot(v1.normalized(), v2.normalized()));
+	double theta = acos(RANGED(-1.0, dot(v1.normalized(), v2.normalized()), 1.0));
 	Vec3d axis = cross(v1, v2).normalized();
 
 	// 1) Rotate with respect to joint (theta)
@@ -664,7 +675,6 @@ void GCylinder::load( std::ifstream &inF, Vec3d translation, double scaleFactor 
 
 	buildUp();
 }
-
 
 void GCylinder::moveLineJoint( Point A, Point B, Vec3d deltaA, Vec3d deltaB )
 {

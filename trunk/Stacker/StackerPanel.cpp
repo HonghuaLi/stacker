@@ -21,9 +21,6 @@
 
 StackerPanel::StackerPanel()
 {
-	// Object changes
-	connect(this, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-
 	// The UI
 	panel.setupUi(this);
 
@@ -112,15 +109,6 @@ void StackerPanel::setActiveScene( Scene * newScene )
 	}
 }
 
-void StackerPanel::updateActiveObject()
-{
-	// Offset
-	activeOffset->computeStackability();
-
-	// Preview
-	previewer->updateActiveObject();
-}
-
 QSegMesh* StackerPanel::activeObject()
 {
 	if (activeScene)
@@ -154,8 +142,7 @@ void StackerPanel::setActiveObject()
 	hiddenViewer->setActiveObject(activeObject());
 
 	// Offset
-	if (!activeObject()->vec.contains("stacking_shift"))
-		activeOffset->computeStackability();
+	activeOffset->computeStackability();
 
 	// Preview
 	previewer->updateActiveObject();
@@ -335,6 +322,8 @@ void StackerPanel::setSelectedShapeState()
 		std::cout << "Current shape state id:" << qPrintable(currID) << std::endl;
 		ShapeState currState = treeNodes[currID];		
 		ctrl()->setShapeState(currState);
+
+		previewer->updateActiveObject();
 		emit(objectModified());
 	}
 }
@@ -361,5 +350,11 @@ void StackerPanel::resetSolutionTree()
 		node->setText(0, id);
 		node->setSelected(true);
 	}
+}
+
+void StackerPanel::updateActiveObject()
+{
+	activeOffset->computeStackability();
+	previewer->updateActiveObject();
 }
 

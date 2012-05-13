@@ -14,6 +14,7 @@ public:
 
 	// Stacking
 	Vec3d stacking_shift;
+	double stackability;
 
 	// Energy
 	double deltaStackability;

@@ -1,6 +1,7 @@
 #include "Skinning.h"
 #include "GraphicsLibrary/Basic/Line.h"
 #include "DualQuat.h"
+#include "Macros.h"
 
 Skinning::Skinning( QSurfaceMesh * src_mesh, GeneralizedCylinder * using_gc )
 {
@@ -86,6 +87,7 @@ void Skinning::computeMeshCoordinates()
 
 Point Skinning::fromCoordinates( SkinningCoord coords )
 {
+
 	int i1 = coords.n1;
 	int i2 = coords.n2;
 	double w = coords.time;
@@ -183,7 +185,7 @@ Matrix3d Skinning::rotationOfCurve( int cid )
 
 	if(axis.norm() > 0)
 	{
-		double angle = acos(dot(n1, n2));
+		double angle = acos(RANGED(-1.0, dot(n1, n2), 1.0));
 		rm = AngleAxisd(angle, axis).toRotationMatrix();
 	}
 
