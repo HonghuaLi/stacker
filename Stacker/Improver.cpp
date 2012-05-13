@@ -145,7 +145,7 @@ QVector<double> Improver::getLocalScales( HotSpot& HS )
 {
 	QVector<double> scales;
 
-	double stepSize = 0.05;
+	double stepSize = 0.1;
 
 	double s = 0;
 	for (int i = 1; i<= LOCAL_RADIUS; i++)
@@ -323,8 +323,8 @@ void Improver::deformNearRingHotspot( int side )
 	QVector<double> scales = getLocalScales(freeHS);
 
 	// debug
-	scales.clear();
-	scales.push_back(0.5);
+	//scales.clear();
+	//scales.push_back(0.5);
 
 	foreach (double scale, scales)
 	{

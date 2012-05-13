@@ -107,19 +107,8 @@ void Previewer::postDraw()
 
 	if(activeObject())
 	{
-		QString message = QString("O_max = %1; S = %2").arg(activeObject()->val["O_max"]).arg(activeObject()->val["stackability"]);
+		QString message = QString("S = %1").arg(activeObject()->val["stackability"]);
 		renderText(0, this->height()- 10, message);
-
-		QString message2 = QString("Theta = %1; Phi = %2").arg(activeObject()->val["theta"]).arg(activeObject()->val["phi"]);
-		renderText(0, this->height()- 30, message2);
-
-		double tranX = activeObject()->val["tranX"];
-		double tranY = activeObject()->val["tranY"];
-		double tranZ = activeObject()->val["tranZ"];
-		Vec3d shift (tranX, tranY, tranZ);
-
-		QString message3 = QString("Shift = %1,%2,%3").arg(shift[0]).arg(shift[1]).arg(shift[2]);
-		renderText(0, this->height()- 50, message3);
 	}
 
 }

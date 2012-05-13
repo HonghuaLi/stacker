@@ -247,7 +247,7 @@ void Cuboid::drawCube(double lineWidth, Vec4d color, bool isOpaque)
 {
 	std::vector< std::vector<Vec3d> > faces = getBoxFaces(currBox);
 
-	if(selectedCurveId >= 0 && this->selectedCurveId < faces.size()  - 1)
+	if(selectedCurveId >= 0 && this->selectedCurveId < faces.size())
 		SimpleDraw::DrawSquare(faces[this->selectedCurveId], false, lineWidth * 2, Vec4d(0,1,0,1));
 
 	for(int i = 0; i < faces.size(); i++)
@@ -486,7 +486,7 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	// Rotation matrix
 	Vec3d rotAxis = cross( v1, v2 );
 	double dotProd = dot(v1.normalized(),v2.normalized());
-	double theta = DEGREES( acos(dotProd) );
+	double theta = DEGREES( acos(RANGED(-1.0, dotProd, 1.0)) );
 	if ( dot( rotAxis, cross( v1.normalized(),v2.normalized() ) ) < 0 )
 		theta *= -1;
 

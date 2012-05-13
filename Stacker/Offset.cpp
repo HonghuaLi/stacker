@@ -176,7 +176,7 @@ Vec3d Offset::computeCameraUpVector( Vec3d newZ )
 	else
 	{
 		Vec3d axis = cross(z, newZ).normalized();
-		double angle = acos( dot(z, newZ) );
+		double angle = acos( RANGED(-1.0, dot(z, newZ), 1.0) );
 		Eigen::Matrix3d m;
 		m = Eigen::AngleAxisd(angle, V2E(axis) );
 		up = E2V((m * V2E(y)));
