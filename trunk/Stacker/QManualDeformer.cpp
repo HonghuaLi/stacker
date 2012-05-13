@@ -50,6 +50,10 @@ void QManualDeformer::updateController()
 	else
 	{
 		// Rotation
+		// Restrict the rotation according to symmetrys
+		// How?
+
+		// Apply to points
 		std::vector<Point> pnts = originalMesh;
 		Point center = prim->centerPoint();
 		

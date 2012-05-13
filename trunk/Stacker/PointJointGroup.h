@@ -20,6 +20,8 @@ public:
 
 	// Sliding
 	void slide(QString sliderID);
+	void rejoint(QString fixedID);
+
 public:
 	Point pos; // Only used once at the very beginning for \process
     QMap<QString, std::vector<double> > jointCoords;

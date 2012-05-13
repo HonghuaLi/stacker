@@ -133,10 +133,8 @@ Vec3d Cuboid::getPositionInUniformBox( const Box3 &box, const Vec3d &coord )
 	return local_p + box.Center;
 }
 
-Vec3d Cuboid::getPositionInBox( Box3 &box, int vidx )
+Vec3d Cuboid::getPositionInBox( std::vector<Vec3d> & pnts, int vidx )
 {
-	std::vector<Vec3d> pnts = getBoxConners(box);
-
 	Vec3d p(0,0,0);
 
 	for(int i = 0; i < pnts.size(); i++)
@@ -148,18 +146,21 @@ Vec3d Cuboid::getPositionInBox( Box3 &box, int vidx )
 void Cuboid::deformMesh()
 {
 	Surface_mesh::Vertex_property<Point> points = m_mesh->vertex_property<Point>("v:point");
-	Surface_mesh::Vertex_iterator vit, vend = m_mesh->vertices_end();
 
-	for (vit = m_mesh->vertices_begin(); vit != vend; ++vit)
+	std::vector<Vec3d> pnts = getBoxCorners(currBox);
+
+	#pragma omp parallel for
+	for(int i = 0; i < m_mesh->n_vertices(); i++)
 	{
-		int vidx = ((Surface_mesh::Vertex)vit).idx();
-		points[vit] = getPositionInBox(currBox, vidx);
+		Surface_mesh::Vertex vit(i);
+		int vidx = vit.idx();
+		points[vit] = getPositionInBox(pnts, vidx);
 	}
 
 	m_mesh->computeBoundingBox();
 }
 
-std::vector<Point> Cuboid::getUniformBoxConners( Box3 &box )
+std::vector<Point> Cuboid::getUniformBoxCorners( Box3 &box )
 {
 	std::vector<Vec3d> pnts(8);
 
@@ -184,9 +185,9 @@ std::vector<Point> Cuboid::getUniformBoxConners( Box3 &box )
 	return pnts;
 }
 
-std::vector<Point> Cuboid::getBoxConners( Box3 &box )
+std::vector<Point> Cuboid::getBoxCorners( Box3 &box )
 {
-	std::vector<Point> corner = getUniformBoxConners(box);
+	std::vector<Point> corner = getUniformBoxCorners(box);
 	std::vector<Point> faceCenters = getUniformBoxFaceCenters(box);
 
 	for (int i = 0; i < 6; i++)	
@@ -207,7 +208,7 @@ std::vector<Point> Cuboid::getBoxConners( Box3 &box )
 std::vector< std::vector<Vec3d> > Cuboid::getBoxFaces(Box3 &fromBox)
 {
 	std::vector< std::vector<Vec3d> > faces(6);
-	std::vector<Vec3d> pnts = getBoxConners(fromBox);
+	std::vector<Vec3d> pnts = getBoxCorners(fromBox);
 
 	for (int i = 0; i < 6; i++)	{
 		for (int j = 0; j < 4; j++)	{
@@ -379,8 +380,8 @@ QSurfaceMesh Cuboid::getBoxGeometry( Box3 &box, bool isUniform )
 	std::vector<Vec3d> pnts;
 
 	// Decide which corners to use
-	if(isUniform) pnts = getUniformBoxConners(box);
-	else pnts = getBoxConners(box);
+	if(isUniform) pnts = getUniformBoxCorners(box);
+	else pnts = getBoxCorners(box);
 
 	QSurfaceMesh mesh;
 
@@ -430,29 +431,106 @@ Point Cuboid::fromCoordinate( std::vector<double> coords )
 //      |\
 //      |-\ theta
 //      |  \
-//      j   q
+//      p   q
 void Cuboid::moveCurveCenter( int fid, Vec3d T )
 {
 	if (fid == -1)
 		fid = selectedCurveId;
 
+	double tol = currBox.Extent[0] / 10000;
+
 	if (fid != -1)
 	{
-		// Control points
 		uint opp_fid = ( fid % 2 == 0 ) ? fid+1 : fid-1;
 
 		Vec3d k = faceCenterOfUniformBox(currBox, opp_fid);
-		Vec3d j = faceCenterOfUniformBox(currBox, fid);
-		Vec3d q = j + T;
+		Vec3d p = faceCenterOfUniformBox(currBox, fid);
+		Vec3d q = p + T;
 
-		deformRespectToJoint(k, j, T);
+		// Curve selected
+		if(symmPlanes.isEmpty())
+		{
+			deformRespectToJoint(k, p, T);
 
-		// Correct for singular cases
-		Vec3d kk = faceCenterOfUniformBox(currBox, opp_fid);
-		translate(k - kk);
+			// Correct for singular cases
+			Vec3d kk = faceCenterOfUniformBox(currBox, opp_fid);
+			translate(k - kk);
+		}
+		else
+		{
+			if(symmPlanes.size() == 1)
+			{
+				// Single plane
+				Plane plane = symmPlanes.front();
+				Vec3d projT = plane.projectionOf(T) - plane.center;
+
+				if(plane.IsOn(p))
+				{
+					deformRespectToJoint(k, p, projT);
+				}
+				else
+				{
+					translate(projT);
+
+					// compute scale
+					double s = abs( plane.GetPointDistance(q)/plane.GetPointDistance(p) );
+					currBox.Extent[fid/2] *= s;
+				}
+			}
+			else
+			{
+				// Two planes
+				Plane planeA = symmPlanes.front();
+				Plane planeB = symmPlanes.back();
+
+				double dA = abs(planeA.GetPointDistance(p));
+				double dB = abs(planeB.GetPointDistance(p));
+
+				Vec3d projTA = planeA.projectionOf(T) - planeA.center;
+				Vec3d projTB = planeB.projectionOf(T) - planeB.center;
+
+				if(dA < tol && dB < tol)
+				{
+					// On both planes A and B
+					Plane planeC( currBox.Axis[fid/2], currBox.Center );
+					double s = abs( planeC.GetPointDistance(q)/planeC.GetPointDistance(p) );
+					currBox.Extent[fid/2] *= s;
+				}
+				else if (dA < tol)
+				{
+					// On plane A
+					double s = abs( planeB.GetPointDistance(q)/planeB.GetPointDistance(p) );
+					currBox.Extent[fid/2] *= s;
+				}
+				else
+				{
+					// On plane B
+					double s = abs( planeA.GetPointDistance(q)/planeA.GetPointDistance(p));
+					currBox.Extent[fid/2] *= s;
+				}
+			}
+		}
+
 	}
 	else
 	{
+		if(symmPlanes.size() == 1)
+		{
+			// Single plane
+			Plane plane = symmPlanes.front();
+			T = plane.projectionOf(T) - plane.center;
+		}
+
+		if(symmPlanes.size() == 2)
+		{
+			// Two planes
+			Plane planeA = symmPlanes.front();
+			Plane planeB = symmPlanes.back();
+
+			T = planeA.projectionOf(T) - planeA.center;
+			T = planeB.projectionOf(T) - planeB.center;
+		}
+
 		translate(T);
 	}
 
@@ -497,7 +575,7 @@ void Cuboid::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 	Eigen::Matrix3d R = rotationMatrixAroundAxis(rotAxis, theta);
 
 	// Rotate the box
-	std::vector<Vec3d> conners = getUniformBoxConners(currBox);
+	std::vector<Vec3d> conners = getUniformBoxCorners(currBox);
 
 	currBox.Center = rotatePointByMatrix( R,  currBox.Center - joint ) + joint;
 
@@ -599,6 +677,8 @@ void Cuboid::setSymmetryPlanes( int nb_fold )
 
 void Cuboid::reshape( std::vector<Point>& pnts, std::vector<double>& scales )
 {
+	if(pnts.size() != 6 || scales.size() != 6) return;
+
 	// Reshape from face centers and scales
 	currBox.Center = (pnts[0] + pnts[1]) / 2;
 
@@ -643,8 +723,9 @@ void Cuboid::movePoint( Point p, Vec3d T )
 		Vec3d coordP = getCoordinatesInUniformBox(currBox, p);
 		Vec3d coordNewP = getCoordinatesInUniformBox(currBox, newP);
 
-		// Scaling along the normal of the symmetry planes
-		Vec3d scales(coordNewP[0]/coordP[0], coordNewP[1]/coordP[1], coordNewP[2]/coordP[2]);
+		Vec3d scales;
+		for (int i = 0; i < 3; i++)
+			scales[i] = (coordP[i] == 0.0)? 1 : coordNewP[i]/coordP[i];
 		
 		for (int i=0;i<3;i++ )
 		{
@@ -663,7 +744,7 @@ void Cuboid::movePoint( Point p, Vec3d T )
 	else if (fixedPoints.isEmpty())
 	{
 		// Translation
-		currBox.Center += T;
+		translate(T);
 	}
 	else if (fixedPoints.size() == 1)
 	{
@@ -678,9 +759,14 @@ void Cuboid::movePoint( Point p, Vec3d T )
 
 void Cuboid::scaleCurve( int cid, double s )
 {
-	if(!this->symmPlanes.size()) return;
-
 	if(cid < 0)	cid = selectedCurveId;
+
+	foreach (Plane plane, symmPlanes)
+	{
+		Vec3d axis = currBox.Axis[cid/2];
+		if( abs(dot(axis, plane.n) > 0.9) )
+			return;
+	}
 
 	currBox.faceScaling[cid] *= s;
 

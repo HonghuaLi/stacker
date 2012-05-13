@@ -108,6 +108,11 @@ void Box3::sort()
 
 Vec3d Box3::ClosestAxis( const Vec3d& v )
 {
+	return Axis[ClosestAxisID(v)];
+}
+
+int Box3::ClosestAxisID( const Vec3d& v )
+{
 	double maxDot = 0;
 	int bestID = 0;
 	for (int i = 0; i< 3; i++)
@@ -120,5 +125,5 @@ Vec3d Box3::ClosestAxis( const Vec3d& v )
 		}
 	}
 
-	return Axis[bestID];
+	return bestID;
 }

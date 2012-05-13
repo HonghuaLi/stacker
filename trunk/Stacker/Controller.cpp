@@ -92,6 +92,9 @@ void Controller::draw()
 		prim->drawDebug();
 	}
 
+	foreach(Group * g, groups)
+		g->draw();
+
 	//DEBUG:
 	foreach(Point p, debugPoints)
 		SimpleDraw::IdentifyPoint(p, 1.0, 0.8, 0);

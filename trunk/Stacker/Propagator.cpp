@@ -199,8 +199,6 @@ void Propagator::slide( QString id )
 	// To make sliding happen, \id has to be deformed again respect to its neighbors
 	QVector<ConstraintGraph::Edge> constraints = mGraph->getEdges(id);
 
-//	std::cout << "There are " << constraints.size() << " constraints. \n";
-
 	foreach(ConstraintGraph::Edge e, constraints)
 	{
 		Group* group = mCtrl->groups[e.id];
@@ -210,4 +208,34 @@ void Propagator::slide( QString id )
 			std::cout << "Sliding " << qPrintable(id) << std::endl;
 		}
 	}
+
+	// In case the \slider has symmetry peer	
+	QVector<QString> peers;
+	foreach(ConstraintGraph::Edge e, constraints)
+	{
+		// find the peers
+		Group* group = mCtrl->groups[e.id];
+		if ( group->type == SYMMETRY )
+		{
+			group->regroup();
+			peers.push_back(e.to); 
+		}
+	}
+
+
+	foreach(QString peerID, peers)
+	{
+		// get all constraints for peer
+		QVector<ConstraintGraph::Edge> pc = mGraph->getEdges(peerID);
+
+		foreach(ConstraintGraph::Edge e, pc)
+		{
+			Group* group = mCtrl->groups[e.id];
+			if ( group->type == POINTJOINT )
+			{
+				((PointJointGroup*) group)->rejoint(peerID);
+			}
+		}
+	}
+
 }
