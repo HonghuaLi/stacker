@@ -1,7 +1,7 @@
 #include "Skinning.h"
 #include "GraphicsLibrary/Basic/Line.h"
 #include "DualQuat.h"
-#include "Macros.h"
+#include "Utility/Macros.h"
 
 Skinning::Skinning( QSurfaceMesh * src_mesh, GeneralizedCylinder * using_gc )
 {
