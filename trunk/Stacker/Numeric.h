@@ -59,3 +59,6 @@ void twoFurthestPoints( std::vector<Point> &points, Point &p1, Point &p2 );
 double distanceCluster2Cluster( std::vector<Point> &cluster1, std::vector<Point> &cluster2 );
 std::vector< std::vector<Point> > twoClassClustering( std::vector<Point>& points, Point seed1, Point seed2 );
 Point centroid(std::vector<Point> points);
+
+// Sample poly-line
+std::vector<Point> uniformSampleCurve(std::vector<Point> & points);

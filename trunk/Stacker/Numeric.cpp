@@ -486,3 +486,39 @@ Point centroid(std::vector<Point> points)
 
 	return center;
 }
+
+std::vector<Point> uniformSampleCurve(std::vector<Point> & points)
+{
+	std::vector<Point> newPoints;
+
+	// Cumulative length
+	int N = points.size();
+	std::vector<double> cumDis(N, 0.0);
+	for (int i = 1; i < N; i++)
+	{
+		double len = (points[i] - points[i-1]).norm();
+		cumDis[i] = cumDis[i-1] + len;
+	}
+
+	// Sampling
+	int low = 0; // the starting end
+	double step = cumDis[N-1] / (N-1);
+	newPoints.push_back(points[0]);
+	double pos = 0; // current length
+	for (int i = 1; i < N; i++)
+	{
+		pos += step;
+		while(low < N-2 && cumDis[low+1] < pos)
+			low ++;
+
+		double a = pos - cumDis[low];
+		double b = cumDis[low+1] - pos;
+		double alpha = a / (a+b);
+		double belta = b / (a+b);
+
+		Point p = belta * points[low] + alpha * points[low + 1];
+		newPoints.push_back(p);
+	}
+
+	return newPoints;
+}

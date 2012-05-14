@@ -1,6 +1,7 @@
 #include "GCylinder.h"
 #include "GraphicsLibrary/Skeleton/SkeletonExtract.h"
 #include "Utility/SimpleDraw.h"
+#include "Numeric.h"
 
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {
@@ -264,6 +265,8 @@ std::vector <Point> GCylinder::points()
 	return gc->frames.point;
 }
 
+
+
 std::vector <double> GCylinder::scales()
 {
 	return curveScales;
@@ -276,18 +279,24 @@ double GCylinder::volume()
 
 Point GCylinder::getSelectedCurveCenter()
 {
-	if(selectedCurveId < 0) 
-		return centerPoint();
-	else
+	if(RANGE(selectedCurveId, 0, gc->crossSection.size())) 
 		return gc->frames.point[selectedCurveId];
+	else
+		return centerPoint();
 }
 
-void GCylinder::moveCurveCenter( int cid, Vec3d delta )
+void GCylinder::moveCurveCenter( int cid, Vec3d T )
 {
 	if(cid < 0 && selectedCurveId < 0)
-		translate(delta);
+		translate(T);
 	else
-		moveCurveCenterRanged(cid, delta);
+	{
+		curveTranslation[Max(cid,Max(0,selectedCurveId))] += T;
+		//moveCurveCenterRanged(cid, delta);
+	}
+
+	// Update the GC, cage, and mesh
+	update();
 }
 
 double GCylinder::computeWeight( double x, bool useGaussian /* = false*/ ) 
@@ -319,11 +328,19 @@ void GCylinder::moveCurveCenterRanged(int cid, Vec3d T, int fixed_end_id1, int f
 	{
 		useGaussian = true;
 
+		// Fix the further end
 		cid = selectedCurveId;
 		if (cid - fixed_end_id1 < fixed_end_id2 - cid)
 			fixed_end_id2 = N-1;
 		else
 			fixed_end_id1 = 0;
+
+		// Fix two ends if at middle
+		if( abs((double)cid/N - 0.5) < 0.1 )
+		{
+			fixed_end_id1 = 0;
+			fixed_end_id2 = N - 1;
+		}
 	}
 
 
@@ -390,26 +407,24 @@ QSurfaceMesh GCylinder::getGeometry()
 
 void* GCylinder::getState()
 {
-	std::vector<GeneralizedCylinder::Circle> * state = 
-		new std::vector<GeneralizedCylinder::Circle>(gc->crossSection);
-
-	// Reuse radius to store scales
-	// Since the radius is computed by \origRadius and \curveScales
-	// and \origRadius should not change
-	for(int i = 0; i < gc->frames.count(); i++)	
-		state->at(i).radius = curveScales[i];
-
-	return (void*)state;
+	std::vector<double> state;
+	for(int i = 0; i < curveScales.size(); i++)
+	{		
+		for(int j = 0; j < 3; j++)	state.push_back(basicGC.crossSection[i].center[j]); // P		
+		for(int j = 0; j < 3; j++)	state.push_back(curveTranslation[i][j]); // T		
+		state.push_back(curveScales[i]); // S
+	}
+	return new std::vector<double>(state);
 }
 
 void GCylinder::setState( void* toState)
 {
-	gc->crossSection = *( (std::vector<GeneralizedCylinder::Circle>*) toState );
-	
-	for(int i = 0; i < gc->frames.count(); i++)	
-	{
-		gc->frames.point[i] = gc->crossSection[i].center;
-		curveScales[i] = gc->crossSection[i].radius; // see \getState()
+	std::vector<double> & state = *(std::vector<double> *)toState;
+	for(int k = 0, i = 0; i < curveScales.size() * 7; k++)
+	{		
+		for(int j = 0; j < 3; j++)	basicGC.crossSection[k].center[j] = state[i++]; // P		
+		for(int j = 0; j < 3; j++)	curveTranslation[k][j] = state[i++]; // T		
+		curveScales[k] = state[i++]; // S
 	}
 
 	// Update the GC, cage, and mesh
@@ -487,7 +502,13 @@ std::vector < std::vector <Vec3d> > GCylinder::getCurves()
 
 void GCylinder::reshape( std::vector<Point>& pnts, std::vector<double>& scales )
 {
-	gc->frames.point = pnts;
+	int N = basicGC.crossSection.size();
+	for(int i = 0; i < N; i++)
+	{
+		basicGC.crossSection[i].center = pnts[i];
+		curveTranslation[i] = pnts[N+i];
+	}
+
 	this->curveScales = scales;
 
 	// Update the GC, cage, and mesh
@@ -525,8 +546,8 @@ int GCylinder::detectHotCurve( Point hotSample )
 
 void GCylinder::translate( Vec3d &T )
 {
-	for(uint i = 0; i < gc->frames.count(); i++)
-		gc->frames.point[i] += T;
+	for(uint i = 0; i < gc->crossSection.size(); i++)
+		basicGC.crossSection[i].center += T;
 
 	// Update the GC, cage, and mesh
 	update();
@@ -724,16 +745,35 @@ void GCylinder::buildUp()
 
 void GCylinder::updateGC()
 {
+	// Gaussian parameters
+	double sigma = 0.25;
+	double mu = 0;
+	Vec3d zeroV(0.0);
+
+	// Recompute the position of all spine points
+	int N = gc->frames.count();
+	for(int i = 0; i < N; i++)	
+	{
+		Vec3d final_translate = zeroV;
+
+		// Sum up scales from all others
+		for(int j = 0; j < N; j++)
+		{
+			if (curveTranslation[j] == zeroV) continue; // no contribution
+
+			double dist = abs(double(j - i)) / double(N-1);
+			double weight = gaussianFunction(dist, mu, sigma);
+			final_translate += curveTranslation[j] * weight;
+		}
+
+		gc->frames.point[i] = final_translate + basicGC.crossSection[i].center;
+	}
+
+	// Rearrange frames
 	gc->frames.compute();
 	gc->realignCrossSections();
 
 	// Update radius for each cross section
-	// Gaussian parameters
-	double sigma = 0.1;
-	double mu = 0;
-
-	// Recompute the radius of all cross sections
-	int N = gc->frames.count();
 	for(int i = 0; i < N; i++)	
 	{
 		double final_scale = 1;
@@ -741,18 +781,29 @@ void GCylinder::updateGC()
 		// Sum up scales from all others
 		for(int j = 0; j < N; j++)
 		{
+
 			if ( curveScales[j] == 1) continue; // no contribution
 
-			double deltaS = curveScales[j] - 1;
-
 			double dist = abs(double(j - i)) / double(N-1);
-			double scale = 1 + ( deltaS * gaussianFunction(dist, mu, sigma) );
+			double weight = gaussianFunction(dist, mu, sigma);
 
-			final_scale *= scale;
+			double deltaS = curveScales[j] - 1;
+			final_scale *= 1 + ( deltaS *  weight);
 		}
 
 		gc->crossSection[i].radius = final_scale * basicGC.crossSection[i].radius;
 	}
+
+	// Fix the orientation of cross sections at the ends
+	Point c0 = gc->crossSection[0].center;
+	Point c1 = gc->crossSection[1].center;
+	gc->crossSection[0].center = c1 - (c1-c0).norm() * gc->crossSection[1].n;
+	gc->crossSection[0].n = gc->crossSection[1].n;
+
+	Point cn_1 = gc->crossSection[N-1].center;
+	Point cn_2 = gc->crossSection[N-2].center;
+	gc->crossSection[N-1].center = cn_2 + (cn_1-cn_2).norm() * gc->crossSection[N-2].n;
+	gc->crossSection[N-1].n = gc->crossSection[N-2].n;
 }
 
 void GCylinder::update()
@@ -775,84 +826,6 @@ bool GCylinder::atEnd( int dimensions, Point p )
 	}
 
 	return false;
-}
-
-void GCylinder::updateFramePoints()
-{
-	// Update the frame points based on \basicGC and \curveTranslations
-
-	// The fixed tags for cross sections
-	int N = gc->crossSection.size();
-	std::vector<bool> fixedCrossSection(N, false);
-	foreach(Point fp, fixedPoints)
-	{
-		int csi = gc->crossSection[detectHotCurve(fp)].index;
-		fixedCrossSection[csi] = true;
-	}
-
-	// Go through all cross sections
-	Vec3d zeroV(0.0);
-	int N = gc->crossSection.size();
-	QVector<Vec3d> finalT(N, zeroV);
-
-	for (int i = 0; i < N; i++)
-	{
-		// Find the influence range of \i
-		int fixed_end_id1 = -1, fixed_end_id2 = N;
-		for(uint j = 0; j < N; j++)
-		{
-			if(j < i && fixedCrossSection[j])
-				fixed_end_id1 = Max(fixed_end_id1, j);
-
-			if(j > i && fixedCrossSection[j])
-				fixed_end_id2 = Min(fixed_end_id2, j);
-		}
-
-		//===== Up to here
-
-		// First half: (fixed_end_id1, \cid)
-		double range = cid - fixed_end_id1; // Only if \fixed_end_id1 >= 0
-		for (int i = fixed_end_id1 + 1; i < cid; i++)
-		{
-			double weight = 1.0;
-
-			// This range is not free
-			if (fixed_end_id1 != -1)
-			{
-				double dist = double(cid - i) / range;
-				weight = computeWeight(dist, useGaussian);
-			}
-
-			gc->frames.point[i] += T * weight;
-		}
-
-		// The \cid
-		gc->frames.point[cid] += T;
-
-		// The second half: (\cid, fixed_end_id2)
-		range = fixed_end_id2 - cid; // Only if \fixed_end_id1 >= 0
-		for(int i = cid + 1; i < fixed_end_id2; i++)
-		{
-			double weight = 1.0;
-
-			// This range is not free
-			if (fixed_end_id2 < N)
-			{
-				double dist = double(i - cid) / range;
-				weight = computeWeight(dist, useGaussian);
-			}
-
-			gc->frames.point[i] += T * weight;
-		}
-
-
-	}
-
-
-	// Copy
-
-
-
 }
 
 

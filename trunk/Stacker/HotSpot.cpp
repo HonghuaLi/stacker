@@ -55,7 +55,6 @@ void HotSpot::computeRepresentative(Controller* ctrl)
 {
 	if (type == RING_HOTSPOT) return;
 	
-
 	// Eliminate outliers in hot samples(may caused by un-projection from 2D to 3D)
 	// Weak assumption: all hot spots are flat
 	double mean_z = 0;
