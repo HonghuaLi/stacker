@@ -35,7 +35,7 @@ public:
 
 	// Coordinate system
 	std::vector<double> getCoordinate( Point v );
-	Point				fromCoordinate(std::vector<double> coords);
+	Point				fromCoordinate(std::vector<double> &coords);
 
 	// Primitive geometry
 	double	volume();
@@ -48,7 +48,7 @@ public:
 	std::vector< std::vector <Vec3d> > getCurves();
 	std::vector<Point>	points();
 	std::vector<double> scales();
-	Point closestProjection(Point p);
+	Point closestProjection( Point p );
 	bool atEnd(int dimensions, Point p);
 
 	// Hot curves

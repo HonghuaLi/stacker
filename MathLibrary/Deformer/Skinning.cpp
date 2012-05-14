@@ -6,24 +6,21 @@
 Skinning::Skinning( QSurfaceMesh * src_mesh, GeneralizedCylinder * using_gc )
 {
 	this->mesh = src_mesh;
-	this->gc = using_gc;
-	this->origGC = *gc;
+	this->currGC = using_gc;
+	this->origGC = *currGC;
 
 	computeMeshCoordinates();
 }
 
-
-Skinning::SkinningCoord Skinning::computeCoordinates( Point v )
+Skinning::SkinningCoord Skinning::computeCoordinates( GeneralizedCylinder *gc, Point& v )
 {
-	// The coordinates of \v is computed based the original GC \origGC
-
 	// Go over the skeleton for the closest segment
 	double minDis = DBL_MAX, minT = 0;
 	int minIdx = -1;
-	for(int i = 0; i < (int)origGC.crossSection.size() - 1; i++)
+	for(int i = 0; i < (int)gc->crossSection.size() - 1; i++)
 	{
-		GeneralizedCylinder::Circle & c1 = origGC.crossSection[i];
-		GeneralizedCylinder::Circle & c2 = origGC.crossSection[i+1];
+		GeneralizedCylinder::Circle & c1 = gc->crossSection[i];
+		GeneralizedCylinder::Circle & c2 = gc->crossSection[i+1];
 
 		Line seg(c1.center, c2.center);
 		double t = seg.timeAt(v);
@@ -44,13 +41,14 @@ Skinning::SkinningCoord Skinning::computeCoordinates( Point v )
 		}
 	}
 
-	if(minIdx == -1){
-		// If at end or outside GC
+	if(minIdx == -1)
+	{
+		// At the end of or outside \gc
 		// Find the closest cross section
 		minDis = DBL_MAX;
-		for(int j = 0; j < (int)origGC.crossSection.size(); j++)
+		for(int j = 0; j < (int)gc->crossSection.size(); j++)
 		{
-			double dist = (origGC.crossSection[j].center - v).norm();
+			double dist = (gc->crossSection[j].center - v).norm();
 
 			if(dist < minDis){
 				minDis = dist;
@@ -58,7 +56,7 @@ Skinning::SkinningCoord Skinning::computeCoordinates( Point v )
 			}
 		}
 
-		GeneralizedCylinder::Circle & c = origGC.crossSection[minIdx];
+		GeneralizedCylinder::Circle & c = gc->crossSection[minIdx];
 		Line seg(c.center, c.center + c.normal());
 		double t = seg.timeAt(v);
 		Point proj = c.center + c.normal()*t;
@@ -67,13 +65,15 @@ Skinning::SkinningCoord Skinning::computeCoordinates( Point v )
 	}
 	else
 	{
-		Point proj = origGC.crossSection[minIdx].center*(1-minT) + origGC.crossSection[minIdx+1].center*minT;
+		// On the segment [\minIdx, \minIdx+1]
+		Point proj = gc->crossSection[minIdx].center*(1-minT) + gc->crossSection[minIdx+1].center*minT;
 		return SkinningCoord(minIdx, minIdx + 1, minT, v - proj);
 	}
 }
 
 void Skinning::computeMeshCoordinates()
 {
+	// The coordinates are computed based the original GC \origGC
 	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
 	Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
 
@@ -81,21 +81,20 @@ void Skinning::computeMeshCoordinates()
 	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
 	{
 		Vec3d v = points[vit];
-		coordinates.push_back(computeCoordinates(v));
+		coordinates.push_back(computeCoordinates(&origGC, v));
 	}
 }
 
-Point Skinning::fromCoordinates( SkinningCoord coords )
+Point Skinning::fromCoordinates( GeneralizedCylinder &orig_gc, SkinningCoord coords )
 {
-
 	int i1 = coords.n1;
 	int i2 = coords.n2;
 	double w = coords.time;
 
-	GeneralizedCylinder::Circle & orig_c1 = origGC.crossSection[i1];
-	GeneralizedCylinder::Circle & orig_c2 = origGC.crossSection[i2];
-	GeneralizedCylinder::Circle & c1 = gc->crossSection[i1];
-	GeneralizedCylinder::Circle & c2 = gc->crossSection[i2];
+	GeneralizedCylinder::Circle & orig_c1 = orig_gc.crossSection[i1];
+	GeneralizedCylinder::Circle & orig_c2 = orig_gc.crossSection[i2];
+	GeneralizedCylinder::Circle & c1 = currGC->crossSection[i1];
+	GeneralizedCylinder::Circle & c2 = currGC->crossSection[i2];
 
 	// Projection on the skeleton
 	Point proj;
@@ -142,9 +141,10 @@ Point Skinning::fromCoordinates( SkinningCoord coords )
 
 std::vector<double> Skinning::getCoordinate( Point p )
 {
+	// The coordinates in the \currGC
 	std::vector<double> coords;
 
-	SkinningCoord skinning_coord = computeCoordinates(p);
+	SkinningCoord skinning_coord = computeCoordinates(currGC, p);
 
 	coords.push_back(skinning_coord.n1);
 	coords.push_back(skinning_coord.n2);
@@ -154,31 +154,65 @@ std::vector<double> Skinning::getCoordinate( Point p )
 	coords.push_back(skinning_coord.d[1]);
 	coords.push_back(skinning_coord.d[2]);
 
+	// The \currGC has also to be stored as part of the coordinates
+	// It will be used to compute the relative local rotation and translation
+	foreach (GeneralizedCylinder::Circle c, currGC->crossSection )
+	{
+		// center
+		coords.push_back(c.center[0]);
+		coords.push_back(c.center[1]);
+		coords.push_back(c.center[2]);
+
+		// normal
+		coords.push_back(c.n[0]);
+		coords.push_back(c.n[1]);
+		coords.push_back(c.n[2]);
+
+		// radius
+		coords.push_back(c.radius);
+	}
+
 	return coords;
 }
 
-Point Skinning::fromCoordinates( std::vector<double> coords )
+Point Skinning::fromCoordinates( std::vector<double> &coords )
 {
-	if(coords.size() != 6) return Point(0.0);
+	int N = currGC->crossSection.size();
 
+	// 6 for \SkinningCoord
+	// 7 for each \Circle of cross sections
+	if(coords.size() != 6+7*N ) return Point(0.0);
+
+	// The \SkinningCoord
 	SkinningCoord skinning_coords;
 	skinning_coords.n1 = int(coords[0]);
 	skinning_coords.n2 = int(coords[1]);
 	skinning_coords.time = coords[2];
 	skinning_coords.d = Vec3d(coords[3], coords[4], coords[5]);
 
-	return fromCoordinates(skinning_coords);
+	// The original GC
+	GeneralizedCylinder orig_gc = *currGC;
+	int id = 6;
+	for (int i = 0; i < N; i++, id += 7)
+	{
+		GeneralizedCylinder::Circle &c = orig_gc.crossSection[i];
+		c.center = Point(coords[id], coords[id+1], coords[id+2]);
+		c.n = Vec3d(coords[id+3], coords[id+4], coords[id+5]);
+		c.radius = coords[id+6];
+	}
+
+	return fromCoordinates(orig_gc, skinning_coords);
 }
 
 Matrix3d Skinning::rotationOfCurve( int cid )
 {
 	Matrix3d rm = Matrix3d::Identity();
 
-	if (cid < 0 || cid >= gc->crossSection.size())
+	if (cid < 0 || cid >= currGC->crossSection.size())
 		return rm;
 
 	GeneralizedCylinder::Circle & orig_c = origGC.crossSection[cid];
-	GeneralizedCylinder::Circle & c = gc->crossSection[cid];
+	GeneralizedCylinder::Circle & c = currGC->crossSection[cid];
 
 	Vec3d n1(orig_c.normal()), n2(c.normal());
 	Vector3d axis = V2E(cross(n1, n2).normalized());
@@ -200,18 +234,66 @@ void Skinning::deform()
 	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
 	{		
 		int vi = Surface_mesh::Vertex(vit).idx();
-		points[vit] = fromCoordinates(coordinates[vi]);
+		points[vit] = fromCoordinates(origGC, coordinates[vi]);
 	}
 }
 
 bool Skinning::atEnd( Point p )
 {
-	SkinningCoord skinning_coord = computeCoordinates(p);
+	SkinningCoord skinning_coord = computeCoordinates(currGC, p);
 	int n = skinning_coord.n1;
-	int N = gc->frames.count() - 1;
+	int N = currGC->frames.count() - 1;
 	double pos = (double)n / (double)N;
 	if (pos < 0.2 || pos > 0.8 || n < 2 || n > N-1)
 		return true;
 	else
 		return false;
+}
+
+Point Skinning::closestProjection( Point v )
+{
+	SkinningCoord coords = computeCoordinates(currGC, v);
+
+	int i1 = coords.n1;
+	int i2 = coords.n2;
+	double w = coords.time;
+	Vec3d d = coords.d;
+
+	GeneralizedCylinder::Circle & c1 = currGC->crossSection[i1];
+	GeneralizedCylinder::Circle & c2 = currGC->crossSection[i2];
+
+	// Radius
+	double r = c1.radius*(1.0-w) + c2.radius*w;
+
+	// The Projection
+	Point p;
+	if ( (i1 == 0 && w < 0)
+		|| i1 == currGC->crossSection.size()-1 )
+	{
+		// Out the ends of gc
+		p = currGC->crossSection[i1].center;
+	}
+	else if (d.norm() <= r)
+	{
+		// In the GC, return \v
+		p = v;
+	}
+	else
+	{
+		// Within two ends but out of GC
+		// Projection on the skeleton
+		Point skl_proj;
+		if (i1 == i2)
+			skl_proj = c1.center + c1.normal() * w;
+		else
+		{
+			Line seg(c1.center, c2.center);
+			skl_proj = seg.pointAt(w);
+		}
+
+		// On the GC surface
+		p = skl_proj + r * d.normalized();
+	}
+
+	return p;
 }

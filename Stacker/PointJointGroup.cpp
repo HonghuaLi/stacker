@@ -96,7 +96,8 @@ void PointJointGroup::slide( QString sliderID )
 	Point oldPos = slider->fromCoordinate(jointCoords[slider->id]);
 
 	// The \slider should be the '|' of the 'T' junction
-	if (slider->atEnd(1, oldPos))
+	bool at_end = slider->atEnd(1, oldPos);
+	if (at_end)
 	{	
 		std::cout << qPrintable(track->id) << "is regarded as track.\n";
 
