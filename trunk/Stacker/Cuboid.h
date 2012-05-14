@@ -49,7 +49,7 @@ public:
 
 	// Primitive coordinate system
 	std::vector<double> getCoordinate( Point v );
-	Point fromCoordinate(std::vector<double> coords);
+	Point fromCoordinate(std::vector<double> &coords);
 
 	// Primitive state
 	void* getState();

@@ -40,7 +40,7 @@ public:
 
 	// Primitive coordinate system
 	virtual std::vector<double> getCoordinate( Point v ) = 0;
-	virtual Point fromCoordinate(std::vector<double> coords) = 0;
+	virtual Point fromCoordinate(std::vector<double> &coords) = 0;
 
 	// Primitive state
 	virtual void*	getState() = 0;

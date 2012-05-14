@@ -422,7 +422,7 @@ std::vector<double> Cuboid::getCoordinate( Point v )
 	return coords;
 }
 
-Point Cuboid::fromCoordinate( std::vector<double> coords )
+Point Cuboid::fromCoordinate( std::vector<double> &coords )
 {
 	return getPositionInUniformBox(currBox, Vec3d(coords[0], coords[1], coords[2]));
 }
@@ -761,15 +761,20 @@ void Cuboid::scaleCurve( int cid, double s )
 {
 	if(cid < 0)	cid = selectedCurveId;
 
+	currBox.faceScaling[cid] *= s;
+
+	// Reflect the scale
 	foreach (Plane plane, symmPlanes)
 	{
 		Vec3d axis = currBox.Axis[cid/2];
 		if( abs(dot(axis, plane.n) > 0.9) )
-			return;
+		{
+			int op_cid = (cid % 2) ? cid - 1: cid + 1;
+			currBox.faceScaling[op_cid] *= s;
+			break;
+		}
 	}
-
-	currBox.faceScaling[cid] *= s;
-
+	
 	deformMesh();
 }
 

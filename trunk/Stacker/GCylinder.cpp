@@ -436,7 +436,7 @@ std::vector<double> GCylinder::getCoordinate( Point v )
 	return coords;
 }
 
-Point GCylinder::fromCoordinate( std::vector<double> coords )
+Point GCylinder::fromCoordinate( std::vector<double> &coords )
 {
 	Point v;
 
@@ -763,7 +763,7 @@ void GCylinder::update()
 
 Point GCylinder::closestProjection( Point p )
 {
-	return Point(0);
+	return skinner->closestProjection(p);
 }
 
 bool GCylinder::atEnd( int dimensions, Point p )
