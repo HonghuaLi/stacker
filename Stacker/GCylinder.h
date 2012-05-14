@@ -28,7 +28,9 @@ public:
 	void buildUp();				// Include the two step above
 
 	// Update
-	void updateGC();			// If the frame is changed
+	void updateFramePoints();	// Update position of frame points
+	void updateCurveRadius();	// Update curve radius
+	void updateGC();			// Update frame, cross sections
 	void updateCage();			// If the GC is changed
 	void deformMesh();			// Deform the underlying geometry
 	void update();				// Include the three steps above
@@ -89,9 +91,12 @@ public:
 	void load(std::ifstream &inF, Vec3d translation, double scaleFactor);
 
 private:
-	GeneralizedCylinder	* gc;		// The underlying GC
-	std::vector<double>		origRadius;		// Original radius
-	std::vector<double>		curveScales;			// Scales for each cross section
+	GeneralizedCylinder	*	gc;					// The underlying GC
+	
+	// \gc is computed by the following \basicGC and additional scales and translations
+	GeneralizedCylinder		basicGC;			// The basic GC
+	std::vector<double>		curveScales;		// Scales for each cross section of \basicGC
+	std::vector<Vec3d>		curveTranslation;	// Translation for each cross section of \basicGC
 
 	DEFORMER		deformer;		// Deformer switcher
 	Skinning *		skinner;		// Skinning deformer

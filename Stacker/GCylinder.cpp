@@ -714,14 +714,12 @@ void GCylinder::buildUp()
 	buildCage();
 	computeMeshCoordinates();
 
-	// Save the original radii
-	origRadius.clear();
-	curveScales.clear();
-	foreach( GeneralizedCylinder::Circle c, gc->crossSection)
-	{
-		origRadius.push_back(c.radius);
-		curveScales.push_back(1.0);
-	}
+	// Save the \basicGC and additional scales and translations
+	basicGC = *gc;
+
+	int N = gc->crossSection.size();
+	curveScales.resize(N, 1.0);
+	curveTranslation.resize(N, Vec3d(0.0));
 }
 
 void GCylinder::updateGC()
@@ -743,15 +741,17 @@ void GCylinder::updateGC()
 		// Sum up scales from all others
 		for(int j = 0; j < N; j++)
 		{
+			if ( curveScales[j] == 1) continue; // no contribution
+
 			double deltaS = curveScales[j] - 1;
+
 			double dist = abs(double(j - i)) / double(N-1);
+			double scale = 1 + ( deltaS * gaussianFunction(dist, mu, sigma) );
 
-			double weight = 1 + ( deltaS * gaussianFunction(dist, mu, sigma) );
-
-			final_scale *= weight;
+			final_scale *= scale;
 		}
 
-		gc->crossSection[i].radius = origRadius[i] * final_scale;
+		gc->crossSection[i].radius = final_scale * basicGC.crossSection[i].radius;
 	}
 }
 
@@ -776,4 +776,83 @@ bool GCylinder::atEnd( int dimensions, Point p )
 
 	return false;
 }
+
+void GCylinder::updateFramePoints()
+{
+	// Update the frame points based on \basicGC and \curveTranslations
+
+	// The fixed tags for cross sections
+	int N = gc->crossSection.size();
+	std::vector<bool> fixedCrossSection(N, false);
+	foreach(Point fp, fixedPoints)
+	{
+		int csi = gc->crossSection[detectHotCurve(fp)].index;
+		fixedCrossSection[csi] = true;
+	}
+
+	// Go through all cross sections
+	Vec3d zeroV(0.0);
+	int N = gc->crossSection.size();
+	QVector<Vec3d> finalT(N, zeroV);
+
+	for (int i = 0; i < N; i++)
+	{
+		// Find the influence range of \i
+		int fixed_end_id1 = -1, fixed_end_id2 = N;
+		for(uint j = 0; j < N; j++)
+		{
+			if(j < i && fixedCrossSection[j])
+				fixed_end_id1 = Max(fixed_end_id1, j);
+
+			if(j > i && fixedCrossSection[j])
+				fixed_end_id2 = Min(fixed_end_id2, j);
+		}
+
+		//===== Up to here
+
+		// First half: (fixed_end_id1, \cid)
+		double range = cid - fixed_end_id1; // Only if \fixed_end_id1 >= 0
+		for (int i = fixed_end_id1 + 1; i < cid; i++)
+		{
+			double weight = 1.0;
+
+			// This range is not free
+			if (fixed_end_id1 != -1)
+			{
+				double dist = double(cid - i) / range;
+				weight = computeWeight(dist, useGaussian);
+			}
+
+			gc->frames.point[i] += T * weight;
+		}
+
+		// The \cid
+		gc->frames.point[cid] += T;
+
+		// The second half: (\cid, fixed_end_id2)
+		range = fixed_end_id2 - cid; // Only if \fixed_end_id1 >= 0
+		for(int i = cid + 1; i < fixed_end_id2; i++)
+		{
+			double weight = 1.0;
+
+			// This range is not free
+			if (fixed_end_id2 < N)
+			{
+				double dist = double(i - cid) / range;
+				weight = computeWeight(dist, useGaussian);
+			}
+
+			gc->frames.point[i] += T * weight;
+		}
+
+
+	}
+
+
+	// Copy
+
+
+
+}
+
 
