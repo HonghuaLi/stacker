@@ -372,6 +372,7 @@ void GCylinder::moveCurveCenterRanged(int cid, Vec3d T, int fixed_end_id1, int f
 void GCylinder::scaleCurve( int cid, double s )
 {
 	if (cid == -1) cid = selectedCurveId;
+	if (cid == -1) return;
 
 	int N = gc->frames.count();
 
