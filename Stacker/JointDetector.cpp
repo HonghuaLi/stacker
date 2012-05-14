@@ -10,8 +10,8 @@
 #include "MathLibrary/Bounding/MinOBB3.h"
 #include "Numeric.h"
 
-#define POINT_LINE_THRESHOLD 4
-#define	LINE_2PONINTS_THRESHOLD 0.3
+#define POINT_LINE_THRESHOLD 3
+#define	LINE_2PONINTS_THRESHOLD 0.2
 
 JointDetector::JointDetector()
 {
@@ -48,9 +48,9 @@ QVector<Group*> JointDetector::detect( QVector<Primitive*> primitives )
 					points.push_back(Point(v.x, v.y, v.z) * JOINT_THRESHOLD);
 				}
 
-				//// Debug: visualize the intersection
-				//foreach (Point p, points)
-				//	a->debugPoints.push_back(p);
+				// Debug: visualize the intersection
+				foreach (Point p, points)
+					a->debugPoints.push_back(p);
 
 				// Analyze the pair-wise intersection
 				QVector<Group*> pairwiseJoints = analyzeIntersection(a, b, points);
@@ -79,7 +79,22 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 	Box3 box = obb.mMinBox;
 	box.sort();
 
+	// Debug
+	QSurfaceMesh * foo = a->getMesh();
+	std::vector<Vec3d> line0,line1,line2;
+	line0.push_back(box.Center);
+	line0.push_back(box.Center + box.Extent[0] * box.Axis[0]);
+	line1.push_back(box.Center);
+	line1.push_back(box.Center + box.Extent[1] * box.Axis[1]);
+	line2.push_back(box.Center);
+	line2.push_back(box.Center + box.Extent[2] * box.Axis[2]);
+	foo->debug_lines.push_back(line0);
+	foo->debug_lines2.push_back(line1);
+	foo->debug_lines3.push_back(line2);
+
 	// Decide the type of joint
+	std::cout << box.Extent[2]/box.Extent[1] << std::endl;
+	
 	if (box.Extent[2]/box.Extent[1] < POINT_LINE_THRESHOLD)
 	{
 		// Point-joint
@@ -106,6 +121,8 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 
 		// The distance between two clusters
 		double dis = distanceCluster2Cluster(clusters[0], clusters[1]);
+
+		std::cout << dis/box.Extent[2] << std::endl;
 
 		if (dis/box.Extent[2] < LINE_2PONINTS_THRESHOLD)
 		{

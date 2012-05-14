@@ -1,6 +1,7 @@
 #include "SymmetryGroup.h"
 #include "Utility/SimpleDraw.h"
 #include "Primitive.h"
+#include "GCylinder.h"
 
 void SymmetryGroup::process(QVector<Primitive*> segments)
 {
@@ -59,17 +60,42 @@ void SymmetryGroup::regroup()
 	// The correspondence from frozen to unfrozen
 	QVector<int> corr = correspondence[frozen->id];
 
-	// Reflect the representative points of \frozen
-	std::vector<Point> pointsA = frozen->points();
-	std::vector<double> scalesA = frozen->scales();
-	int N = pointsA.size();
-	std::vector<Point> pointsB( N );
-	std::vector<double> scalesB( N );
-
-	for(int i = 0; i < pointsA.size(); i++)
+	// Reflect the \frozen
+	std::vector<Point> pointsB;
+	if (frozen->primType == GCYLINDER)
 	{
-		Point reflected = symmetryPlane.reflection(pointsA[i]);
-		pointsB[corr[i]] = reflected;
+		//GC
+		GCylinder * frozen_gc = (GCylinder *) frozen;
+		GCylinder * non_frozen_gc = (GCylinder *) non_frozen;
+
+		// Reflect the \basicGC and \curveTranslations
+		int N = frozen_gc->gc->crossSection.size();
+		pointsB.resize( 2*N );
+		for(int i = 0; i < N; i++)
+		{
+			Point p = frozen_gc->basicGC.crossSection[i].center;
+			pointsB[corr[i]] = symmetryPlane.reflection(p);
+
+			// curveTranslate
+			Vec3d T = frozen_gc->curveTranslation[i];
+			pointsB[N + corr[i]] = symmetryPlane.reflection(T);
+		}
+	}
+	else
+	{
+		// Cuboid
+		std::vector<Point> pointsA = frozen->points();		
+		pointsB.resize( pointsA.size() );
+
+		for(int i = 0; i < pointsA.size(); i++)
+			pointsB[corr[i]] = symmetryPlane.reflection(pointsA[i]);
+	}	
+
+	// Scale
+	std::vector<double> scalesA = frozen->scales();
+	std::vector<double> scalesB( scalesA.size() );
+	for(int i = 0; i < scalesA.size(); i++)
+	{
 		scalesB[corr[i]] = scalesA[i];
 	}
 	
