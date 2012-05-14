@@ -184,7 +184,7 @@ void QSegMesh::read( QString fileName )
 			}
 
 			// Create unique vertex set for each segment
-			std::vector< std::vector <Surface_mesh::Vertex> > segVertices(nbSeg);
+			std::vector< std::set <Surface_mesh::Vertex> > segVertices(nbSeg);
 			Surface_mesh::Face_iterator fit, fend = mesh.faces_end();
 			Surface_mesh::Vertex_around_face_circulator fvit;	
 
@@ -194,9 +194,9 @@ void QSegMesh::read( QString fileName )
 				int sid = faceSeg[f.idx()];
 
 				fvit = mesh.vertices(fit);	
-				segVertices[sid].push_back(fvit);
-				segVertices[sid].push_back(++fvit);
-				segVertices[sid].push_back(++fvit);
+				segVertices[sid].insert(fvit);
+				segVertices[sid].insert(++fvit);
+				segVertices[sid].insert(++fvit);
 			}
 
 			// Add Vertices to each segment	
@@ -207,7 +207,7 @@ void QSegMesh::read( QString fileName )
 			{
 				int j = 0;
 
-				std::vector<Surface_mesh::Vertex>::iterator vit, vend = segVertices[i].end();
+				std::set<Surface_mesh::Vertex>::iterator vit, vend = segVertices[i].end();
 				for (vit=segVertices[i].begin(); vit!=vend; vit++, j++)
 				{
 					segment[i]->add_vertex(mesh.getVertexPos(*vit));
