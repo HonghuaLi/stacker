@@ -439,80 +439,86 @@ void Cuboid::moveCurveCenter( int fid, Vec3d T )
 
 	double tol = currBox.Extent[0] / 10000;
 
-	if (fid != -1)
-	{
+	if (fid != -1) // Move curve
+	{		
 		uint opp_fid = ( fid % 2 == 0 ) ? fid+1 : fid-1;
 
 		Vec3d k = faceCenterOfUniformBox(currBox, opp_fid);
 		Vec3d p = faceCenterOfUniformBox(currBox, fid);
 		Vec3d q = p + T;
 
-		// Curve selected
 		if(symmPlanes.isEmpty())
 		{
+			// No symmetry planes
 			deformRespectToJoint(k, p, T);
 
 			// Correct for singular cases
 			Vec3d kk = faceCenterOfUniformBox(currBox, opp_fid);
 			translate(k - kk);
 		}
-		else
+		else if(symmPlanes.size() == 1)
 		{
-			if(symmPlanes.size() == 1)
+			// Single plane
+			Plane plane = symmPlanes.front();
+			Vec3d projT = plane.projectionOf(plane.center + T) - plane.center;
+
+			if(plane.IsOn(p, 0.05))
 			{
-				// Single plane
-				Plane plane = symmPlanes.front();
-				Vec3d projT = plane.projectionOf(T) - plane.center;
+				// On the plane
+				deformRespectToJoint(k, p, projT);
 
-				if(plane.IsOn(p))
-				{
-					deformRespectToJoint(k, p, projT);
-				}
-				else
-				{
-					translate(projT);
-
-					// compute scale
-					double s = abs( plane.GetPointDistance(q)/plane.GetPointDistance(p) );
-					currBox.Extent[fid/2] *= s;
-				}
+				// Correct for singular cases
+				Vec3d kk = faceCenterOfUniformBox(currBox, opp_fid);
+				translate(k - kk);
 			}
 			else
 			{
-				// Two planes
-				Plane planeA = symmPlanes.front();
-				Plane planeB = symmPlanes.back();
+				// Translate on the plane
+				translate(projT);
 
-				double dA = abs(planeA.GetPointDistance(p));
-				double dB = abs(planeB.GetPointDistance(p));
-
-				Vec3d projTA = planeA.projectionOf(T) - planeA.center;
-				Vec3d projTB = planeB.projectionOf(T) - planeB.center;
-
-				if(dA < tol && dB < tol)
-				{
-					// On both planes A and B
-					Plane planeC( currBox.Axis[fid/2], currBox.Center );
-					double s = abs( planeC.GetPointDistance(q)/planeC.GetPointDistance(p) );
-					currBox.Extent[fid/2] *= s;
-				}
-				else if (dA < tol)
-				{
-					// On plane A
-					double s = abs( planeB.GetPointDistance(q)/planeB.GetPointDistance(p) );
-					currBox.Extent[fid/2] *= s;
-				}
-				else
-				{
-					// On plane B
-					double s = abs( planeA.GetPointDistance(q)/planeA.GetPointDistance(p));
-					currBox.Extent[fid/2] *= s;
-				}
+				// Scale along the normal of the plane
+				double s = abs( plane.GetPointDistance(q)/plane.GetPointDistance(p) );
+				currBox.Extent[fid/2] *= s;
 			}
 		}
+		else if (symmPlanes.size() == 2)
+		{
+			// Two planes
+			Plane planeA = symmPlanes.front();
+			Plane planeB = symmPlanes.back();
+
+			bool onA = planeA.IsOn(p, 0.05);
+			bool onB = planeB.IsOn(p, 0.05);
+	
+			if( onA && onB)
+			{
+				// On cross of planes A and B
+				Vec3d projT = planeA.projectionOf(planeA.center + T) - planeA.center;
+				projT = planeB.projectionOf(planeB.center + projT) - planeB.center;
+
+				deformRespectToJoint(k, p, projT);
+
+				// Correct for singular cases
+				Vec3d kk = faceCenterOfUniformBox(currBox, opp_fid);
+				translate(k - kk);
+			}
+			else
+			{	
+				double s = 1.0;
+
+				if (onA)	// On plane A					
+					s = abs( planeB.GetPointDistance(q)/planeB.GetPointDistance(p) );
+				else		// On plane B					
+					s = abs( planeA.GetPointDistance(q)/planeA.GetPointDistance(p));
+				
+//				std::cout << "onA, onB, s = " << onA << ',' << onB << ',' << s << '\n';
+				currBox.Extent[fid/2] *= s;
+			}
+		}
+		
 
 	}
-	else
+	else // Move the cuboid
 	{
 		if(symmPlanes.size() == 1)
 		{
@@ -737,7 +743,7 @@ void Cuboid::movePoint( Point p, Vec3d T )
 			if (sign == -1) cid += 1;
 
 			Vec3d delta(0.0);
-			delta[i] = FB - FA;
+			delta[i] = (FB - FA) * extent;
 
 			moveCurveCenter(cid, delta);
 		}

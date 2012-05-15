@@ -22,7 +22,7 @@ Offset::Offset( HiddenViewer *viewer )
 	activeViewer = viewer;
 
 	searchDensity = 20;
-	searchType = ROT_AROUND_X_AND_Y;
+	searchType = NONE;
 }
 
 QSegMesh* Offset::activeObject()
