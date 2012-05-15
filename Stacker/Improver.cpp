@@ -272,9 +272,9 @@ void Improver::deformNearPointLineHotspot( int side )
 	Propagator propagator(ctrl());
 	QVector<Vec3d> Ts = getLocalMoves(freeHS);
 
-	// debug
-	Ts.clear();
-	Ts.push_back(Vec3d(0,0.2,0));
+	//// debug
+	//Ts.clear();
+	//Ts.push_back(Vec3d(0,0.2,0));
 
 	foreach ( Vec3d T, Ts)
 	{
@@ -417,7 +417,7 @@ std::cout << "Detect hot spots: " << timer.elapsed() << " ms\n";
 timer.restart();
 		// Local modification
 		deformNearHotspot(1);
-//		deformNearHotspot(-1);
+		deformNearHotspot(-1);
 
 		// Debug
 		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;

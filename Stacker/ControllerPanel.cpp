@@ -32,6 +32,7 @@ ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 
 	// Gaussian 
 	connect(controllerWidget.gaussianSlider, SIGNAL(valueChanged(int)), this, SLOT(setGaussianSigma(int)) );
+	controllerWidget.gaussianSlider->setValue(GC_GAUSSIAN_SIGMA);
 
 	this->activeScene = NULL;
 

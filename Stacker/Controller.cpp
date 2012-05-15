@@ -493,6 +493,11 @@ void Controller::loadGroups( std::ifstream &inF )
 {
 	if (!inF) return;
 
+	// Clear
+	groups.clear();
+	foreach (Primitive * p, getPrimitives()) p->symmPlanes.clear();
+
+	// Read
 	while (inF)
 	{
 		std::string str;
