@@ -202,10 +202,9 @@ QVector<Vec3d> Improver::getLocalMoves( HotSpot& HS )
 	else if ( HS.type == LINE_HOTSPOT)
 	{
 		// Move only perpendicular to the line
-		Vec3d n = HS.rep.last() - HS.rep.first();
-		n.normalize();
-		Vec3d d1 = Vec3d(n.x(), - n.y(), 0);
-		Vec3d d2 = Vec3d(-n.x(), n.y(), 0);
+		Vec3d d = HS.rep.last() - HS.rep.first();
+		Vec3d d1 = Vec3d(d.y(), - d.x(), 0);
+		Vec3d d2 = Vec3d(-d.y(), d.x(), 0);
 		d1.normalize();
 		d2.normalize();
 
@@ -214,6 +213,19 @@ QVector<Vec3d> Improver::getLocalMoves( HotSpot& HS )
 			result.push_back(d1 * i * step.x());
 			result.push_back(d2 * i * step.x());
 		}
+
+		// debug
+		QSurfaceMesh * foo = activeObject()->getSegment(0);
+		std::vector<Vec3d> line0,line1,line2;
+		line0.push_back(Vec3d(0));
+		line0.push_back(d.normalized());
+		line1.push_back(Vec3d(0));
+		line1.push_back(d1);
+		line2.push_back(Vec3d(0));
+		line2.push_back(d2);
+		foo->debug_lines.push_back(line0);
+		foo->debug_lines2.push_back(line1);
+		foo->debug_lines3.push_back(line2);
 	}
 
 	// Vertical moves
@@ -260,18 +272,12 @@ void Improver::deformNearPointLineHotspot( int side )
 	Propagator propagator(ctrl());
 	QVector<Vec3d> Ts = getLocalMoves(freeHS);
 
-	//// debug
+	// debug
 	Ts.clear();
-	Ts.push_back(Vec3d(0,0,0.05));
-	Ts.push_back(Vec3d(0,0,0.1));
-	Ts.push_back(Vec3d(0,0,0.15));
+	Ts.push_back(Vec3d(0,0.2,0));
 
 	foreach ( Vec3d T, Ts)
 	{
-// Timer
-std::cout << "One local move: ";
-timer.restart();
-
 		ctrl()->setPrimitivesFrozen(false);	// Clear flags
 		setPositionalConstriants(fixedHS); // Fix one end
 
@@ -291,8 +297,7 @@ timer.restart();
 		// Fix the relation between hot segments then propagate the local modification
 		propagator.regroupPair(free_prim->id, fixed_prim->id); 	
 		propagator.execute(); 
-std::cout << timer.elapsed() << " ms. ";
-timer.restart();
+
 //		if ( !satisfyBBConstraint() ) continue; // BB constraint is hard	
 
 		// Record the shape state
@@ -300,11 +305,9 @@ timer.restart();
 			recordSolution(free_handle.first(), T);
 		else
 			recordSolution( (free_handle.first()+free_handle.last())/2, T);
-std::cout << timer.elapsed() << " ms. ";
-timer.restart();
+
 		// Restore the shape state of current candidate
 		ctrl()->setShapeState(currentCandidate);
-std::cout << timer.elapsed() << " ms.\n";
 	}
 }
 
@@ -336,8 +339,8 @@ void Improver::deformNearRingHotspot( int side )
 		free_prim->addFixedCurve(free_cid);
 
 		// Fix the relation between hot segments then propagate the local modification
-//		propagator.regroupPair(free_prim->id, fixed_prim->id); 
-//		propagator.execute(); 
+		propagator.regroupPair(free_prim->id, fixed_prim->id); 
+		propagator.execute(); 
 
 //		if ( !satisfyBBConstraint() ) continue; // BB constraint is strict	
 
@@ -390,6 +393,7 @@ void Improver::execute(int level)
 		&& !candidateSolutions.empty() 
 		&& solutions.size()<NUM_EXPECTED_SOLUTION )
 	{
+
 		currentCandidate = candidateSolutions.top();
 		candidateSolutions.pop();
 		usedCandidateSolutions.push_back(currentCandidate);
@@ -401,24 +405,27 @@ void Improver::execute(int level)
 			std::cout << solutions.size() << " solutions have been found. \n";
 			continue;
 		}
-
+// Timer
+std::cout << "One level: ";
+timer.start();
 		// Set up the current candidate
 		ctrl()->setShapeState(currentCandidate);
 
 		// Detect hot spots
-		timer.start();
 		activeOffset->detectHotspots();
-		std::cout << "Detect hot spots: " << timer.elapsed() << " ms\n";
-
+std::cout << "Detect hot spots: " << timer.elapsed() << " ms\n";
+timer.restart();
 		// Local modification
 		deformNearHotspot(1);
-		deformNearHotspot(-1);
+//		deformNearHotspot(-1);
 
 		// Debug
 		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;
 
 		// Decrease the suggesting level
 		if (level != IMPROVER_MAGIC_NUMBER) level--;
+
+std::cout << "Done (" <<timer.elapsed() << " ms)\n";
 	}
 
 	std::cout << "Searching completed.\n" << std::endl;

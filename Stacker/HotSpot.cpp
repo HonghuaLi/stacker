@@ -1,7 +1,8 @@
 #include "HotSpot.h"
 
 #include <iostream>
-#include "MathLibrary/Bounding/MinOBB2.h"
+#include "MathLibrary/Bounding/OBB_PCA.h"
+#include "MathLibrary/Bounding/Box3.h"
 #include "Primitive.h"
 #include "Cuboid.h"
 #include "Controller.h"
@@ -10,31 +11,42 @@
 
 void HotSpot::print()
 {
+	QStringList types;
+	types << "POINT" << "LINE" << "RING";
+
 	std::cout << "side="   << side << '\t'
 		<< "segmentID="	  << qPrintable(segmentID) << '\t'
 		<< "defineHeight=" << defineHeight << '\t'
-		<< "type=" << type << std::endl; 
+		<< "type=" << qPrintable(types[type]) << std::endl; 
 }
 
 void HotSpot::decideType()
 {
 	// Using STL and double
-	std::vector<Vec2d> pixels;
+	std::vector<Vec3d> points;
+	Vec2i center(0);
 	foreach(Vec2i v, hotPixels)
-		pixels.push_back(Vec2d(v.x(), v.y()));
+	{
+		points.push_back(Vec3d(v.x(), v.y(), 0));
+		center += v;
+	}
+	center /= hotPixels.size();
 
 	// Compute bounding box in 2D
-	MinOBB2 obb(pixels);
-	MinOBB2::Box2 box = obb.getBox2();
+	OBB_PCA obb;
+	obb.build_from_points(points);
+	Box3 box;
+	box.Center = obb.center();
+	box.Axis = obb.axis();
+	box.Extent = obb.extents();
+	box.sort();
 
-	double ratio = box.Extent[0] / box.Extent[1];
-	if (ratio < 1) ratio = 1/ratio;
+	double ratio = box.Extent[2] / box.Extent[1];
 
 	if (ratio > 4)
 		type = LINE_HOTSPOT;
 	else
 	{
-		Vec2i center((int)box.Center.x(), (int)box.Center.y());
 		for (int i = center.x() - 2; i < center.x() + 2; i++ ){
 			for (int j = center.y() - 2; j < center.y() + 2; j++ ){
 

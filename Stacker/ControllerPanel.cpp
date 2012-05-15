@@ -8,6 +8,7 @@
 #include "Primitive.h"
 #include "Controller.h"
 #include "ConstraintGraphVis.h"
+#include "Numeric.h"
 
 ConstraintGraphVis * vis;
 
@@ -28,6 +29,9 @@ ControllerPanel::ControllerPanel( QWidget * parent /*= NULL*/ )
 	connect(controllerWidget.skeletonJoints, SIGNAL(valueChanged(int)), this, SLOT(setSkeletonJoints(int)) );
 	connect(controllerWidget.convertToGC, SIGNAL(clicked()), SLOT(convertGC()));
 	connect(controllerWidget.convertToCuboid, SIGNAL(clicked()), SLOT(convertCuboid()));
+
+	// Gaussian 
+	connect(controllerWidget.gaussianSlider, SIGNAL(valueChanged(int)), this, SLOT(setGaussianSigma(int)) );
 
 	this->activeScene = NULL;
 
@@ -183,5 +187,10 @@ void ControllerPanel::showGraph()
 	vis->setGraph(new ConstraintGraph(ctrl()));
 	vis->setFloating(true);
 	vis->show();
+}
+
+void ControllerPanel::setGaussianSigma( int step )
+{
+	GC_GAUSSIAN_SIGMA = (double)step / 10;; 
 }
 

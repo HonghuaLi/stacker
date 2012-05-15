@@ -49,8 +49,8 @@ QVector<Group*> JointDetector::detect( QVector<Primitive*> primitives )
 				}
 
 				// Debug: visualize the intersection
-				foreach (Point p, points)
-					a->debugPoints.push_back(p);
+				//foreach (Point p, points)
+				//	a->debugPoints.push_back(p);
 
 				// Analyze the pair-wise intersection
 				QVector<Group*> pairwiseJoints = analyzeIntersection(a, b, points);
@@ -80,17 +80,17 @@ QVector<Group*> JointDetector::analyzeIntersection( Primitive* a, Primitive* b, 
 	box.sort();
 
 	// Debug
-	QSurfaceMesh * foo = a->getMesh();
-	std::vector<Vec3d> line0,line1,line2;
-	line0.push_back(box.Center);
-	line0.push_back(box.Center + box.Extent[0] * box.Axis[0]);
-	line1.push_back(box.Center);
-	line1.push_back(box.Center + box.Extent[1] * box.Axis[1]);
-	line2.push_back(box.Center);
-	line2.push_back(box.Center + box.Extent[2] * box.Axis[2]);
-	foo->debug_lines.push_back(line0);
-	foo->debug_lines2.push_back(line1);
-	foo->debug_lines3.push_back(line2);
+	//QSurfaceMesh * foo = a->getMesh();
+	//std::vector<Vec3d> line0,line1,line2;
+	//line0.push_back(box.Center);
+	//line0.push_back(box.Center + box.Extent[0] * box.Axis[0]);
+	//line1.push_back(box.Center);
+	//line1.push_back(box.Center + box.Extent[1] * box.Axis[1]);
+	//line2.push_back(box.Center);
+	//line2.push_back(box.Center + box.Extent[2] * box.Axis[2]);
+	//foo->debug_lines.push_back(line0);
+	//foo->debug_lines2.push_back(line1);
+	//foo->debug_lines3.push_back(line2);
 
 	// Decide the type of joint
 	std::cout << box.Extent[2]/box.Extent[1] << std::endl;

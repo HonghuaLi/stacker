@@ -295,7 +295,9 @@ void Offset::computeOffsetOfRegion( Vec3d direction, std::vector< Vec2i >& regio
 	computeOffset();
 
 	// Save offset as image
-	//saveAsImage(offset, O_max, "offset function of region.png");
+	//saveAsImage(upperEnvelope, "upper.png");
+	//saveAsImage(lowerEnvelope, "lower.png");
+	saveAsImage(offset, QString::number(direction.z()) + "_offset function of region.png");
 }
 
 double Offset::getStackability( bool recompute /*= false*/ )
@@ -420,12 +422,8 @@ void Offset::detectHotspots( )
 	computeOffsetOfShape(stackV);
 
 	// Detect hot regions
-	double hot_cap = 1.0;
-	while (hotRegions.empty()){
-		hot_cap -= 0.05; // increase the cap
-		hotRegions = getRegionsGreaterThan(offset, O_max * hot_cap);
-	}
-//	visualizeRegions(w, h, hotRegions, "hot regions of shape.png");
+	hotRegions = getMaximumRegions(offset);
+	visualizeRegions(w, h, hotRegions, "hot regions of shape.png");
 
 	// The max offset of hot regions
 	maxOffsetInHotRegions.clear();
@@ -442,16 +440,15 @@ void Offset::detectHotspots( )
 	{
 		computeOffsetOfRegion(stackV, hotRegions[i]);
 
+		saveAsImage(offset, "Offset of region before getting hot regions.png");
+
 		// Detect zoomed (in) hot region 
-		std::vector< std::vector<Vec2i> > zoomedHRs
-			=  getRegionsGreaterThan(offset, O_max * hot_cap);
-		if (zoomedHRs.empty()){
-			std::cout << "There is no hot region in the zoomed-in view.\n";
-			continue;
-		}
+		Buffer2v2i zoomedHRs = getMaximumRegions(offset);
 
 		// If there are multiple regions, pick up the one closest to the center
-		visualizeRegions(w, h, zoomedHRs, "zoomed in hot regions.png");
+#ifdef _DEBUG		
+		visualizeRegions(w, h, zoomedHRs, QString::number(i) + "_zoomed in hot regions.png");
+#endif
 		Vec2i center(w/2, h/2);
 		int minDis = w;
 		int closestID = 0;
