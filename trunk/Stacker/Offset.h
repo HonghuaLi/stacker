@@ -82,7 +82,7 @@ public:
 
 	// Hot stuff
 	std::map< QString, std::vector<Vec3d> > hotPoints;
-	std::vector< std::vector<Vec2i> > hotRegions;
+	Buffer2v2i hotRegions;
 	std::vector< double > maxOffsetInHotRegions;
 	std::vector< HotSpot >  upperHotSpots;
 	std::vector< HotSpot >  lowerHotSpots;

@@ -2,6 +2,7 @@
 #include "GraphicsLibrary/Basic/Line.h"
 #include "DualQuat.h"
 #include "Utility/Macros.h"
+#include "GraphicsLibrary/Basic/Plane.h"
 
 Skinning::Skinning( QSurfaceMesh * src_mesh, GeneralizedCylinder * using_gc )
 {
@@ -262,25 +263,26 @@ Point Skinning::closestProjection( Point v )
 	GeneralizedCylinder::Circle & c1 = currGC->crossSection[i1];
 	GeneralizedCylinder::Circle & c2 = currGC->crossSection[i2];
 
-	// Radius
+	// Blended Radius
 	double r = c1.radius*(1.0-w) + c2.radius*w;
 
 	// The Projection
 	Point p;
-	if ( (i1 == 0 && w < 0)
+	if ( (i1 == 0 && i2 == 0)
 		|| i1 == currGC->crossSection.size()-1 )
 	{
 		// Out the ends of gc
-		p = currGC->crossSection[i1].center;
-	}
-	else if (d.norm() <= r)
-	{
-		// In the GC, return \v
-		p = v;
+		// Project within the circle
+		Vec3d n = currGC->crossSection[i1].n;
+		Point c = currGC->crossSection[i1].center;
+		Plane plane(n, c);
+		Point proj = plane.projectionOf(v);
+		Vec3d delta = c - proj;
+		p = Min(r, delta.norm()) * delta.normalized();
 	}
 	else
 	{
-		// Within two ends but out of GC
+		// Within two ends
 		// Projection on the skeleton
 		Point skl_proj;
 		if (i1 == i2)
@@ -291,7 +293,7 @@ Point Skinning::closestProjection( Point v )
 			skl_proj = seg.pointAt(w);
 		}
 
-		// On the GC surface
+		// Project to the GC surface
 		p = skl_proj + r * d.normalized();
 	}
 

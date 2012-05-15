@@ -7,15 +7,18 @@
 
 #include <Eigen/Dense>
 
+extern double GC_GAUSSIAN_SIGMA;
 
 typedef std::vector< std::vector<double> >	Buffer2d;
 typedef std::vector< std::vector<bool> >	Buffer2b;
+typedef std::vector< std::vector<Vec2i> >   Buffer2v2i;
 
 typedef Vec3d Point;
 
 // Extrema
 double getMinValue( Buffer2d & image );
 double getMaxValue( Buffer2d & image );
+Vec3d maxMidMinValues( Buffer2d & image );
 
 // Region
 double maxValueInRegion( Buffer2d& image,  std::vector< Vec2i >& region);
@@ -39,7 +42,7 @@ void setPixelColor( Buffer2d& image, Vec2i pos, double color );
 void visualizeRegions( int w, int h, std::vector< std::vector<Vec2i> >& regions, QString filename );
 template< typename T >
 std::vector< std::vector < T > > createImage( int w, int h, T intial);
-void saveAsImage( Buffer2d& image, double maxV, QString fileName );
+void saveAsBinaryImage( Buffer2d& image, QString fileName );
 void saveAsImage( Buffer2d& image, QString fileName );
 void saveAsData( Buffer2d& image, double maxV, QString fileName );
 
@@ -62,3 +65,6 @@ Point centroid(std::vector<Point> points);
 
 // Sample poly-line
 std::vector<Point> uniformSampleCurve(std::vector<Point> & points);
+
+// Adaptive maximum region detection
+Buffer2v2i getMaximumRegions(Buffer2d &image);

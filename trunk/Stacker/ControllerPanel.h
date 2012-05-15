@@ -36,6 +36,9 @@ public slots:
 	// Constraints
 	void showGraph();
 
+	// Gaussian
+	void setGaussianSigma(int step);
+
 private:
 	QSegMesh* activeObject();
 	Controller * ctrl();

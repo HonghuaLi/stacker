@@ -287,13 +287,17 @@ Point GCylinder::getSelectedCurveCenter()
 
 void GCylinder::moveCurveCenter( int cid, Vec3d T )
 {
-	if(cid < 0 && selectedCurveId < 0)
-		translate(T);
-	else
+	int N =  gc->crossSection.size();
+	if(!RANGE(cid, 0, N-1))
 	{
-		curveTranslation[Max(cid,Max(0,selectedCurveId))] += T;
-		//moveCurveCenterRanged(cid, delta);
+		// Manual
+		if (RANGE(selectedCurveId, 0, N-1))
+			curveTranslation[selectedCurveId] += T;
+		else
+			translate(T);
 	}
+	else
+		curveTranslation[cid] += T;
 
 	// Update the GC, cage, and mesh
 	update();
@@ -308,7 +312,7 @@ double GCylinder::computeWeight( double x, bool useGaussian /* = false*/ )
 	}
 	else
 	{
-		double sigma = 1.0 / sqrt(2 * M_PI);
+		double sigma = GC_GAUSSIAN_SIGMA;
 		double mu = 0;
 		weight = gaussianFunction(x, mu, sigma);
 	}
@@ -316,6 +320,7 @@ double GCylinder::computeWeight( double x, bool useGaussian /* = false*/ )
 	return weight;
 }
 
+// Legacy code
 void GCylinder::moveCurveCenterRanged(int cid, Vec3d T, int fixed_end_id1, int fixed_end_id2)
 {
 	int N = gc->crossSection.size();
@@ -606,42 +611,8 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 
 void GCylinder::movePoint( Point p, Vec3d T )
 {
-	if (fixedPoints.isEmpty())
-		translate(T);
-	else
-	{
-		// The fixed tags for cross sections
-		int N = gc->crossSection.size();
-		std::vector<bool> fixedCrossSection(N, false);
-		foreach(Point fp, fixedPoints)
-		{
-			int csi = gc->crossSection[detectHotCurve(fp)].index;
-			fixedCrossSection[csi] = true;
-		}
-
-		// If point to be moved is near fixed area, do nothing
-		int cid = detectHotCurve(p);
-		if(fixedCrossSection[cid])	return;
-
-		// Find range
-		int fixed_end_id1 = -1, fixed_end_id2 = N;
-		for(uint i = 0; i < N; i++)
-		{
-			if(i < cid && fixedCrossSection[i])
-				fixed_end_id1 = Max(fixed_end_id1, i);
-
-			if(i > cid && fixedCrossSection[i])
-				fixed_end_id2 = Min(fixed_end_id2, i);
-		}
-
-		// post fixing
-		if (fixed_end_id1 == -1 && cid - fixed_end_id1 < 3)	cid = 0;
-		if (fixed_end_id2 ==  N && fixed_end_id2 - cid < 3)	cid = N-1;
-
-
-		// Move range
-		moveCurveCenterRanged(cid, T, fixed_end_id1, fixed_end_id2);
-	}
+	int cid = detectHotCurve(p);
+	moveCurveCenter(cid, T);
 }
 
 void GCylinder::save( std::ofstream &outF )
@@ -746,7 +717,7 @@ void GCylinder::buildUp()
 void GCylinder::updateGC()
 {
 	// Gaussian parameters
-	double sigma = 0.25;
+	double sigma = GC_GAUSSIAN_SIGMA;
 	double mu = 0;
 	Vec3d zeroV(0.0);
 

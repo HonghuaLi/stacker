@@ -179,10 +179,10 @@ void StackerPanel::outputForPaper()
 	double maxUE = getMaxValue(activeOffset->upperEnvelope);
 	double minLE = getMinValue(activeOffset->lowerEnvelope);
 
-	saveAsImage(activeOffset->upperEnvelope, maxUE, exportDir + "/" + data["upperEnvelope"]);
-	saveAsImage(activeOffset->lowerEnvelope, minLE, exportDir + "/" + data["lowerEnvelope"]);
+	saveAsImage(activeOffset->upperEnvelope,exportDir + "/" + data["upperEnvelope"]);
+	saveAsImage(activeOffset->lowerEnvelope,exportDir + "/" + data["lowerEnvelope"]);
 
-	saveAsImage(activeOffset->offset, activeOffset->O_max, exportDir + "/" + data["offsetImg"]);
+	saveAsImage(activeOffset->offset, exportDir + "/" + data["offsetImg"]);
 	saveAsData(activeOffset->offset, 1.0, exportDir + "/" + data["offsetData"]);
 	data["O_max"] = QString::number(activeOffset->O_max);
 	data["Stackability"] = QString::number(activeObject()->val["stackability"]);
@@ -280,6 +280,8 @@ void StackerPanel::onImproveButtonClicked()
 		return;
 	}
 
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
 	// Current selection
 	QTreeWidgetItem * currItem = selectedItem();
 
@@ -301,6 +303,8 @@ void StackerPanel::onImproveButtonClicked()
 
 	// Update the solution tree
 	addChildren(currItem, childrenStates);
+
+	QApplication::restoreOverrideCursor();
 }
 
 QTreeWidgetItem* StackerPanel::selectedItem()

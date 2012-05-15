@@ -7,6 +7,7 @@
 #include <QFile>
 #include <stack>
 
+double GC_GAUSSIAN_SIGMA = 0.2;
 
 
 // Extreme
@@ -176,6 +177,7 @@ std::vector< std::vector< Vec2i > > getRegionsGreaterThan( Buffer2d& image, doub
 				//saveAsImage(mask, "mask1.png");
 				std::vector< Vec2i > region = getRegionGreaterThan(image, mask, Vec2i(x, y), threshold);
 				regions.push_back(sampleRegion(region, 100));
+				//regions.push_back(region);
 				//saveAsImage(mask, "mask2.png");
 			}
 			mask[y][x] = true;
@@ -194,6 +196,7 @@ std::vector< std::vector< Vec2i > > getRegionsGreaterThan( Buffer2d& image, doub
 
 		regions.clear();
 		regions.push_back(sampleRegion(super_region, 100));
+		//regions.push_back(super_region);
 	}
 
 	return regions;
@@ -293,7 +296,7 @@ void visualizeRegions( int w, int h, std::vector< std::vector<Vec2i> >& regions,
 	{
 		setRegionColor(debugImg, regions[i], step * (i+1));
 	}
-	saveAsImage(debugImg, 1.0, filename);
+	saveAsImage(debugImg, filename);
 }
 
 template< typename T >
@@ -302,16 +305,21 @@ std::vector< std::vector < T > > createImage( int w, int h, T intial )
 	return std::vector< std::vector < T > > ( h, std::vector<T>( w, intial ) );
 }
 
-void saveAsImage( Buffer2d& image, double maxV, QString fileName )
+void saveAsImage( Buffer2d& image, QString fileName )
 {
 	int h = image.size();
 	int w = image[0].size();
 	QImage Output(w, h, QImage::Format_ARGB32);
 
+	double minV = getMinValue(image);
+	double maxV = getMaxValue(image);
+	double range = maxV - minV;
+
 	// \p y is flipped, since OpenGL has origin at the left bottom conner, while Qt at left top conner
 	for(int y = 0; y < h; y++){
 		for(int x = 0; x < w; x++)	{
-			Output.setPixel(x, (h-1)-y, jetColor( Max(0., image[y][x] / maxV), 0., 1.));			
+			double c = (image[y][x] - minV) / range;
+			Output.setPixel(x, (h-1)-y, jetColor( c, 0., 1.));			
 		}
 	}
 
@@ -337,7 +345,7 @@ void saveAsData( Buffer2d& image, double maxV, QString fileName )
 	file.close();
 }
 
-void saveAsImage( Buffer2d& image, QString fileName )
+void saveAsBinaryImage( Buffer2d& image, QString fileName )
 {
 	int h = image.size();
 	int w = image[0].size();
@@ -521,4 +529,39 @@ std::vector<Point> uniformSampleCurve(std::vector<Point> & points)
 	}
 
 	return newPoints;
+}
+
+Vec3d maxMidMinValues( Buffer2d & image )
+{
+	//std::set<double> vals;
+
+	//int h = image.size();
+	//int w = image[0].size();
+
+	//for(int y = 0; y < h; y++){
+	//	for(int x = 0; x < w; x++)	{
+	//		vals.insert(image);
+	//	}
+	//}
+
+	//if(vals.size() > 1)
+	//	return Vec3d(*vals.begin(), *(vals.begin()++), *vals.rbegin());
+	//else
+	//	return Vec3d(*vals.begin(),0,0);
+	return Vec3d(0);
+}
+
+Buffer2v2i getMaximumRegions( Buffer2d &image )
+{
+	// Precondition: each pixel is greater or equal than 0
+	double maxV = getMaxValue(image);
+	Buffer2v2i regions;
+	double hot_cap = 1.0;
+
+	while (regions.empty()){
+		hot_cap -= 0.05; // increase the cap
+		regions = getRegionsGreaterThan(image, maxV * hot_cap);
+	}
+
+	return regions;
 }

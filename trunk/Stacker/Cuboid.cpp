@@ -715,32 +715,33 @@ Point Cuboid::closestPoint( Point p )
 void Cuboid::movePoint( Point p, Vec3d T )
 {
 	// Move the control point p according to some properties, such as symmetry, joint, etc..
-
-	// There are two symmetry planes
 	if (!symmPlanes.empty())
 	{
-		Point newP = p + T;
-		Vec3d coordP = getCoordinatesInUniformBox(currBox, p);
-		Vec3d coordNewP = getCoordinatesInUniformBox(currBox, newP);
-
-		Vec3d scales;
+		// Transfer to \moveCurveCenter()
+		Point center = currBox.Center;
 		for (int i = 0; i < 3; i++)
-			scales[i] = (coordP[i] == 0.0)? 1 : coordNewP[i]/coordP[i];
-		
-		for (int i=0;i<3;i++ )
 		{
 			Vec3d axis = currBox.Axis[i];
-			for (int j=0;j<symmPlanes.size();j++){
-				if ( abs( dot(axis, symmPlanes[j].n) > 0.99 ) )
-				{
-					currBox.Extent[i] *= scales[i];
-					break;
-				}
-			}
+			double extent = currBox.Extent[i];
+
+			double A = dot(p - center, axis);
+			if (abs(A) < 0.1)	continue;
+
+			int sign = (A > 0) ? 1 : -1;
+			double FA = sign * extent;
+
+			double B = A + dot(T, axis);
+			double FB = FA * B / A;
+			
+			int cid = 2 * i;
+			if (sign == -1) cid += 1;
+
+			Vec3d delta(0.0);
+			delta[i] = FB - FA;
+
+			moveCurveCenter(cid, delta);
 		}
-		
 	}
-	// If there are no fixed points
 	else if (fixedPoints.isEmpty())
 	{
 		// Translation
@@ -751,8 +752,6 @@ void Cuboid::movePoint( Point p, Vec3d T )
 		// Only two fix points are allowed
 		deformRespectToJoint(fixedPoints[0], p, T);
 	}
-	else
-		return;
 
 	deformMesh();
 }
@@ -841,9 +840,11 @@ void Cuboid::load( std::ifstream &inF, Vec3d translation, double scaleFactor )
 
 void Cuboid::moveLineJoint( Point A, Point B, Vec3d deltaA, Vec3d deltaB )
 {
-
-
-	if (fixedPoints.isEmpty())
+	if (!symmPlanes.isEmpty())
+	{
+		movePoint((A + B) / 2, (deltaA + deltaB) / 2);
+	}
+	else if (fixedPoints.isEmpty())
 	{
 		// Translate \A to \newA
 		currBox.Center += deltaA;
@@ -863,10 +864,10 @@ void Cuboid::moveLineJoint( Point A, Point B, Vec3d deltaA, Vec3d deltaB )
 		Point C = (A + B) / 2;
 		Point newC = C + (deltaA + deltaB) / 2;
 
-		// Project to the main axis
-		Vec3d axis = currBox.ClosestAxis(C - joint);
-		C = joint + dot(axis, C - joint) * axis;
-		newC = joint + dot(axis, newC - joint) * axis;		
+		//// Project to the main axis
+		//Vec3d axis = currBox.ClosestAxis(C - joint);
+		//C = joint + dot(axis, C - joint) * axis;
+		//newC = joint + dot(axis, newC - joint) * axis;		
 
 		deformRespectToJoint(joint, C, newC - C);
 	}

@@ -116,7 +116,10 @@ void Controller::drawNames(bool isDrawParts)
 {
 	foreach(Primitive * prim, primitives)
 	{
-		prim->drawNames(getPrimitiveIdNum(prim->id), isDrawParts);
+		if(!isDrawParts)
+			prim->drawNames(getPrimitiveIdNum(prim->id), isDrawParts);
+		else if(prim->isSelected)
+			prim->drawNames(getPrimitiveIdNum(prim->id), isDrawParts);
 	}
 }
 
