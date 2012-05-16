@@ -20,7 +20,7 @@ struct HotSpot
 	HOTSPOT_TYPE		type;
 	QVector<Point>		rep;		//representative
 
-	void decideType();
-	void computeRepresentative(Controller* ctrl);
+	void decideType(Controller* ctrl);
+	void computeRepresentative();
 	void print();	
 };

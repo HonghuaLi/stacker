@@ -146,6 +146,16 @@ void GCylinder::draw()
 		cage->drawDebug();
 		cage->simpleDraw();
 	}
+
+	// Symmetry planes
+	for (int i=0;i<symmPlanes.size();i++)
+	{
+		glClear(GL_DEPTH_BITS);
+
+		glDisable(GL_DEPTH_TEST);
+		symmPlanes[i].draw(0.1);
+		glEnable(GL_DEPTH_TEST);
+	}
 }
 
 void GCylinder::drawNames( int name, bool isDrawCurves)
@@ -572,10 +582,14 @@ bool GCylinder::containsPoint( Point p )
 
 void GCylinder::setSymmetryPlanes( int nb_fold )
 {
-	Vec3d normal = gc->crossSection.front().n;
-	Vec3d center = gc->crossSection.front().center;
+	int N = gc->crossSection.size();
+	int mid_cid = N / 2;
 
-	symmPlanes.push_back(Plane(normal, center));
+	if(nb_fold > 0)
+		symmPlanes.push_back(Plane(Vec3d(1,0,0), gc->crossSection[mid_cid].center));
+
+	if(nb_fold > 1)
+		symmPlanes.push_back(Plane(Vec3d(0,1,0), gc->crossSection[mid_cid].center));
 }
 
 void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
@@ -611,8 +625,13 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 
 void GCylinder::movePoint( Point p, Vec3d T )
 {
-	int cid = detectHotCurve(p);
-	moveCurveCenter(cid, T);
+	if (fixedPoints.isEmpty())
+		translate(T);
+	else
+	{
+		int cid = detectHotCurve(p);
+		moveCurveCenter(cid, T);
+	}
 }
 
 void GCylinder::save( std::ofstream &outF )

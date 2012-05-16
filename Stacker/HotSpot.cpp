@@ -20,8 +20,16 @@ void HotSpot::print()
 		<< "type=" << qPrintable(types[type]) << std::endl; 
 }
 
-void HotSpot::decideType()
+void HotSpot::decideType(Controller* ctrl)
 {
+	// Special case for GC
+	Primitive* prim = ctrl->getPrimitive(segmentID);
+	if(prim->primType == GCYLINDER && prim->symmPlanes.size() == 2)
+	{
+		type = RING_HOTSPOT;
+		return;
+	}
+
 	// Using STL and double
 	std::vector<Vec3d> points;
 	Vec2i center(0);
@@ -63,9 +71,9 @@ void HotSpot::decideType()
 }
 
 
-void HotSpot::computeRepresentative(Controller* ctrl)
+void HotSpot::computeRepresentative()
 {
-	if (type == RING_HOTSPOT) return;
+	if (type == RING_HOTSPOT || hotSamples.size() < 2) return;
 	
 	// Eliminate outliers in hot samples(may caused by un-projection from 2D to 3D)
 	// Weak assumption: all hot spots are flat
@@ -74,10 +82,19 @@ void HotSpot::computeRepresentative(Controller* ctrl)
 	mean_z /= hotSamples.size();
 
 	std::vector<Point> points;
-	foreach(Point p, hotSamples)
+	double tol = 0.01;
+
+	while(points.size() < 3)
 	{
-		if ( abs(p.z() - mean_z) < 0.01 )
-			points.push_back(p);
+		points.clear();
+
+		foreach(Point p, hotSamples)
+		{
+			if ( abs(p.z() - mean_z) < tol )
+				points.push_back(p);
+		}
+
+		tol += 0.05;
 	}
 
 	// Compute minimal bounding box in 3D

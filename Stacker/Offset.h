@@ -28,6 +28,7 @@ public:
 
 	// Stackability
 	void	computeStackability();
+	void	computeStackability(Vec3d direction);
 	double	getStackability(bool recompute = false);
 	
 	// Compute offset function and stackability
