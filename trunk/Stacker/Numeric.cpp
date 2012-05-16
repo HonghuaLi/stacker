@@ -432,6 +432,8 @@ double volumeOfBB( Vec3d &extents )
 
 void twoFurthestPoints( std::vector<Point> &points, Point &p1, Point &p2 )
 {
+	if(points.size() < 2) return;
+
 	double maxDis = 0.0;
 	int id1, id2;
 	for (int i = 0; i < points.size(); i++)
@@ -558,9 +560,20 @@ Buffer2v2i getMaximumRegions( Buffer2d &image )
 	Buffer2v2i regions;
 	double hot_cap = 1.0;
 
-	while (regions.empty()){
+	while (regions.empty())
+	{
 		hot_cap -= 0.05; // increase the cap
 		regions = getRegionsGreaterThan(image, maxV * hot_cap);
+
+		// If the hot regions are too small
+		int num = 0;
+		for (int i = 0; i < regions.size(); i++)
+		{
+			if (regions[i].size() > num) num = regions[i].size();
+		}
+
+		if(num < 3) 
+			regions.clear();	
 	}
 
 	return regions;

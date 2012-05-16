@@ -258,6 +258,29 @@ void Offset::computeStackability()
 	//saveAsImage(offset, O_max, "offset function.png");
 }
 
+void Offset::computeStackability( Vec3d direction )
+{
+	if (!activeObject()) return;
+
+	//std::cout << std::setprecision(4);
+	// Compute the bounding box
+	activeObject()->computeBoundingBox();
+	Vec3d diag = activeObject()->bbmax - activeObject()->bbmin;
+	//std::cout << diag << '\n';
+	double V0 = volumeOfBB(diag);
+
+	computeOffsetOfShape(direction);
+
+	// Compute stackability
+	double om = getMaxValue(offset);
+	Vec3d extent = computeShapeExtents(direction);
+	double V1 = volumeOfBB(extent);
+	double stackability = 1.0 - (om / extent[2]) * (V1 / V0);
+
+	activeObject()->val["stackability"] = stackability;
+	activeObject()->vec["stacking_shift"] = direction * om;
+}
+
 void Offset::computeOffsetOfRegion( Vec3d direction, std::vector< Vec2i >& region )
 {
 	// BB of hot 2D region
@@ -303,10 +326,8 @@ void Offset::computeOffsetOfRegion( Vec3d direction, std::vector< Vec2i >& regio
 double Offset::getStackability( bool recompute /*= false*/ )
 {
 	if (recompute) computeStackability();
-
 	return activeObject()->val["stackability"];
 }
-
 
 // == Hot spots
 HotSpot Offset::detectHotspotInRegion(int side, std::vector<Vec2i> &hotRegion)
@@ -479,10 +500,10 @@ void Offset::detectHotspots( )
 		std::vector< double > valuesL = getValuesInRegion(lowerEnvelope, zoomedHR, true);
 		LHS.defineHeight = MinElement(valuesL) < (minLE + ZERO_TOLERANCE);
 
-		UHS.decideType();
-		LHS.decideType();
-		UHS.computeRepresentative(ctrl());
-		LHS.computeRepresentative(ctrl());
+		UHS.decideType(ctrl());
+		LHS.decideType(ctrl());
+		UHS.computeRepresentative();
+		LHS.computeRepresentative();
 
 		// debug
 		if (LHS.type == LINE_HOTSPOT)

@@ -118,12 +118,6 @@ void GroupPanel::saveGroups()
 		return;
 	}
 
-	if (ctrl->groups.empty())
-	{
-		std::cout << "There are no groups.\n";
-		return;
-	}
-
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Groups", DEFAULT_FILE_PATH, "Group File (*.grp)"); 
 	std::ofstream outF(qPrintable(fileName), std::ios::out);
 
