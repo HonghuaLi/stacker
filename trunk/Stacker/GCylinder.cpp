@@ -57,7 +57,14 @@ void GCylinder::fit()
 	foreach(ResampledPoint sample, skel->resampleSmoothSelectedPath(numSteps, 3)) 
 		reSampledSpinePoints.push_back(sample.pos);
 
-	buildGC(reSampledSpinePoints);
+	// Add one more spine point at each end
+	int N = reSampledSpinePoints.size();
+	std::vector<Point> spinePoints;
+	spinePoints.push_back(reSampledSpinePoints[0] * 2 - reSampledSpinePoints[1]);
+	spinePoints.insert(spinePoints.end(), reSampledSpinePoints.begin(), reSampledSpinePoints.end());
+	spinePoints.push_back(reSampledSpinePoints[N-2] * 2 - reSampledSpinePoints[N-1]);
+
+	buildGC(spinePoints);
 }
 
 void GCylinder::buildGC( std::vector<Point> spinePoints, bool computeRadius )
@@ -297,6 +304,12 @@ Point GCylinder::getSelectedCurveCenter()
 
 void GCylinder::moveCurveCenter( int cid, Vec3d T )
 {
+	if (symmPlanes.size() == 1)
+	{
+		T[0] = 0;
+		T[1] = 0;
+	}
+
 	int N =  gc->crossSection.size();
 	if(!RANGE(cid, 0, N-1))
 	{
@@ -582,14 +595,8 @@ bool GCylinder::containsPoint( Point p )
 
 void GCylinder::setSymmetryPlanes( int nb_fold )
 {
-	int N = gc->crossSection.size();
-	int mid_cid = N / 2;
-
-	if(nb_fold > 0)
-		symmPlanes.push_back(Plane(Vec3d(1,0,0), gc->crossSection[mid_cid].center));
-
-	if(nb_fold > 1)
-		symmPlanes.push_back(Plane(Vec3d(0,1,0), gc->crossSection[mid_cid].center));
+	// For special cases
+	symmPlanes.resize(nb_fold);
 }
 
 void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
