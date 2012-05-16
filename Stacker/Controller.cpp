@@ -204,7 +204,8 @@ void Controller::convertToGC( QString primitiveId, bool isUsingSkeleton, int cub
 		Vec3d axis = cuboid->currBox.Axis[cuboidAxis];
 		Vec3d center = cuboid->centerPoint();
 
-		Line line(center + (axis * extent), center + (-axis * extent));
+		double s = 1.05;
+		Line line(center + (axis * extent * s), center + (-axis * extent * s));
 
 		std::vector<Point> spinePoints = line.uniformSample(Max(5,GC_SKELETON_JOINTS_NUM));
 
