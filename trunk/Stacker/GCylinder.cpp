@@ -3,6 +3,7 @@
 #include "Utility/SimpleDraw.h"
 #include "Numeric.h"
 
+
 GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primitive(segment, newId)
 {
 	cage = NULL;
@@ -447,6 +448,39 @@ void GCylinder::setState( void* toState)
 	// Update the GC, cage, and mesh
 	update();
 }
+
+void GCylinder::serialize( QTextStream &out)
+{
+	int N = gc->crossSection.size();
+	out << N << ' ';
+
+	// Each cross sections
+	for(int i = 0; i < N; i++)
+	{		
+		for(int j = 0; j < 3; j++)	out << basicGC.crossSection[i].center[j] << ' '; // P		
+		for(int j = 0; j < 3; j++)	out << curveTranslation[i][j] << ' '; // T		
+		out << curveScales[i] << ' '; // S
+	}
+}
+
+
+void GCylinder::unserialize( QTextStream &in)
+{
+	int N;
+	in >> N;
+
+	// Each cross sections
+	for(int i = 0; i < N; i++)
+	{		
+		for(int j = 0; j < 3; j++)	in >> basicGC.crossSection[i].center[j]; // P		
+		for(int j = 0; j < 3; j++)	in >> curveTranslation[i][j]; // T		
+		in >> curveScales[i]; // S
+	}
+
+	update();
+}
+
+
 
 std::vector<double> GCylinder::getCoordinate( Point v )
 {

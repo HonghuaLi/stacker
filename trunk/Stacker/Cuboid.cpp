@@ -7,8 +7,9 @@ using namespace Eigen;
 
 #include "MathLibrary/Bounding/OBB_PCA.h"
 #include "MathLibrary/Bounding/OBB_Volume.h"
-
 #include "MathLibrary/Coordiantes/MeanValueCoordinates.h"
+
+#include <QTextStream>
 
 Cuboid::Cuboid( QSurfaceMesh* segment, QString newId ) : Primitive(segment, newId)
 {
@@ -645,6 +646,49 @@ void Cuboid::setState( void* toState)
 {
 	currBox = *( (Box3*) toState );
 }
+
+void Cuboid::serialize( QTextStream &out)
+{
+	// Center
+	for (int i = 0; i < 3; i++)	 
+		out <<currBox.Center[i]<< ' ';
+
+	// Axis
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			out << currBox.Axis[i][j]<< ' ';
+
+	// Extent
+	for (int i = 0; i < 3; i++)
+		out << currBox.Extent[i]<< ' ';
+
+	// Face Scales
+	for (int i = 0; i < 6; i++)
+		out << currBox.faceScaling[i]<< ' ';
+}
+
+void Cuboid::unserialize( QTextStream &in)
+{
+	// Center
+	for (int i = 0; i < 3; i++)	 
+		in >> currBox.Center[i];
+
+	// Axis
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			in >> currBox.Axis[i][j];
+
+	// Extent
+	for (int i = 0; i < 3; i++)
+		in >> currBox.Extent[i];
+
+	// Face Scales
+	for (int i = 0; i < 6; i++)
+		in >> currBox.faceScaling[i];
+
+	deformMesh();
+}
+
 
 std::vector < std::vector <Vec3d> > Cuboid::getCurves()
 {

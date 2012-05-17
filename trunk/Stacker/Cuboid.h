@@ -52,8 +52,8 @@ public:
 	Point fromCoordinate(std::vector<double> &coords);
 
 	// Primitive state
-	void* getState();
-	void setState( void* toState);
+	void*	getState();
+	void	setState( void* toState);
 
 	// Primitive geometry
 	double volume();
@@ -78,6 +78,8 @@ public:
 	// Save and load
 	void save(std::ofstream &outF);
 	void load(std::ifstream &inF, Vec3d translation, double scaleFactor);
+	void	serialize( QTextStream &out);
+	void	unserialize( QTextStream &in);
 
 private:
 	QSurfaceMesh getBoxGeometry( Box3 &box, bool isUniform = false );

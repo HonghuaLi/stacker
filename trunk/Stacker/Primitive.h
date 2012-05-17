@@ -6,6 +6,8 @@
 #include <Eigen/Dense>
 #include "ShapeState.h"
 
+#include <QTextStream>
+
 enum PrimType{ CUBOID, GCYLINDER, WIRE};
 
 
@@ -90,6 +92,8 @@ public:
 	// Save and load
 	virtual void save(std::ofstream &outF) = 0;
 	virtual void load(std::ifstream &inF, Vec3d translation, double scaleFactor) = 0;
+	virtual void	serialize( QTextStream &out) = 0;
+	virtual void	unserialize( QTextStream &in) = 0;
 
 	QString		id;
 	PrimType	primType;

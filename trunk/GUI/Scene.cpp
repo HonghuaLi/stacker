@@ -568,7 +568,10 @@ void Scene::postSelection( const QPoint& point )
 			selection.push_back(selected); // to start from 0
 
 			if (selectMode == CONTROLLER)
-				print( QString("Selected primitive: %1").arg( qPrintable(ctrl->getPrimitive(selected)->id) ) );
+			{
+				print( QString("Selected primitive (Type = %1): ").arg(ctrl->getPrimitive(selected)->primType) 
+					+ ctrl->getPrimitive(selected)->id  );
+			}
 			else
 				print( QString("Selected curve: %1").arg( selected ) );
 		}

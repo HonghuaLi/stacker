@@ -45,4 +45,5 @@ private:
 
 signals:
 	void controllerModified();
+	void objectModified();
 };
