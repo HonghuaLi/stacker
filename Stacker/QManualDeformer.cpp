@@ -1,6 +1,7 @@
 #include "QManualDeformer.h"
 
 #include "Primitive.h"
+#include "GCylinder.h"
 #include "Propagator.h"
 #include "Utility/SimpleDraw.h"
 
@@ -53,10 +54,32 @@ void QManualDeformer::updateController()
 		// Restrict the rotation according to symmetrys
 		// How?
 
-		// Apply to points
-		std::vector<Point> pnts = originalMesh;
-		Point center = prim->centerPoint();
-		
+		std::vector<Point> pnts, pnts2;
+		Point center(0);
+
+		// Get structure points
+		if(prim->primType == CUBOID)
+		{
+			// Apply to points
+			pnts = originalMesh;
+			prim->centerPoint();
+		}
+		else
+		{
+			GCylinder * gc = (GCylinder *) prim;
+			int N = gc->basicGC.crossSection.size();
+			pnts.resize(N);
+
+			for(int i = 0; i < N; i++)
+			{
+				pnts[i] = gc->basicGC.crossSection[i].center;
+				center += pnts[i];
+				//pnts2.push_back(pnts.back());
+			}
+			center /= N;
+		}
+
+		// Rotate structure
 		for(int i = 0; i < pnts.size(); i++)
 		{
 			// move to zero
@@ -71,7 +94,22 @@ void QManualDeformer::updateController()
 			pnts[i] += center;
 		}
 
-		prim->reshape(pnts, prim->scales());
+		// Reshape
+		if(prim->primType == CUBOID)
+			prim->reshape(pnts, prim->scales());
+		else
+		{
+			GCylinder * gc = (GCylinder *) prim;
+			int N = gc->basicGC.crossSection.size();
+
+			for(int i = 0; i < N; i++)
+			{
+				gc->basicGC.crossSection[i].center = pnts[i];
+			}
+			
+			gc->update();
+		}
+
 		prim->getMesh()->buildUp();
 	}
 
@@ -102,7 +140,7 @@ void QManualDeformer::scaleUp( double s )
 
 void QManualDeformer::scale( Vec3d delta )
 {	// unfreeze all
-	ctrl->setPrimitivesFrozen(false);
+	/*ctrl->setPrimitivesFrozen(false);
 
 	Primitive * prim = ctrl->getSelectedPrimitive();
 	if(!prim) return;
@@ -147,7 +185,7 @@ void QManualDeformer::scale( Vec3d delta )
 	propagator.execute();
 	prim->isFrozen = false;
 
-	emit( objectModified() );
+	emit( objectModified() );*/
 }
 
 void QManualDeformer::draw()

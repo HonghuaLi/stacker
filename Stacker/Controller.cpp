@@ -93,23 +93,23 @@ void Controller::fitOBBs( bool useAABB /*= true*/ )
 	}
 }
 
-void Controller::draw()
+void Controller::draw(bool isDrawGroups, bool isDrawDebug)
 {
 	foreach(Primitive * prim, primitives)
 	{
 		prim->draw();
-		prim->drawDebug();
+		if(isDrawDebug)	prim->drawDebug();
 	}
 
-	foreach(Group * g, groups)
-		g->draw();
+	if(isDrawGroups)
+	{
+		foreach(Group * g, groups)
+			g->draw();
+	}
 
 	//DEBUG:
-	foreach(Point p, debugPoints)
-		SimpleDraw::IdentifyPoint(p, 1.0, 0.8, 0);
-
-	foreach(std::vector<Point> line, debugLines) 
-		SimpleDraw::IdentifyConnectedPoints(line, 1.0,0.8,0);
+	foreach(Point p, debugPoints) SimpleDraw::IdentifyPoint(p, 1.0, 0.8, 0);
+	foreach(std::vector<Point> line, debugLines) SimpleDraw::IdentifyConnectedPoints(line, 1.0,0.8,0);
 }
 
 void Controller::drawNames(bool isDrawParts)

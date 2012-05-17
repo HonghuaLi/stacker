@@ -8,6 +8,7 @@
 #include "Controller.h"
 #include "HotSpot.h"
 #include "Numeric.h"
+#include "HiddenViewer.h"
 
 #define ZERO_TOLERANCE 0.001
 
@@ -89,6 +90,8 @@ public:
 	std::vector< HotSpot >  lowerHotSpots;
 	std::set< QString> hotSegments;
 
+	// Camera setting
+	QMap<int, ObjectTranformation> objectTransformation;
 
 public slots:
 	void setSearchType(int type);

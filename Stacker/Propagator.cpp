@@ -195,6 +195,10 @@ void Propagator::solvePointJointConstraints( QString target, QVector<ConstraintG
 
 void Propagator::slide( QString id )
 {
+	// The main part doesn't slide
+	Primitive* slider = mGraph->node(id);
+	if(slider->symmPlanes.size() == 2) return;
+
 	// The \id has been deformed 
 	// To make sliding happen, \id has to be deformed again respect to its neighbors
 	QVector<ConstraintGraph::Edge> constraints = mGraph->getEdges(id);

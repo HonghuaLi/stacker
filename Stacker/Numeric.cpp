@@ -562,7 +562,7 @@ Buffer2v2i getMaximumRegions( Buffer2d &image )
 
 	while (regions.empty())
 	{
-		hot_cap -= 0.05; // increase the cap
+		hot_cap -= 0.1; // increase the cap
 		regions = getRegionsGreaterThan(image, maxV * hot_cap);
 
 		// If the hot regions are too small
@@ -577,4 +577,43 @@ Buffer2v2i getMaximumRegions( Buffer2d &image )
 	}
 
 	return regions;
+}
+
+
+// AABB
+void computeAABB( std::vector<Point> &points,  Vec3d &bbmin, Vec3d &bbmax)
+{
+	bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
+	bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);	
+
+	foreach(Point p, points)
+	{
+		bbmin.minimize(p);
+		bbmax.maximize(p);
+	}
+}
+
+std::vector<Point> cornersOfAABB(Vec3d bbmin, Vec3d bbmax)
+{
+	std::vector<Point> corner;
+
+	double min_x = bbmin.x();
+	double min_y = bbmin.y();
+	double min_z = bbmin.z();	
+	
+	double max_x = bbmax.x();
+	double max_y = bbmax.y();
+	double max_z = bbmax.z();
+
+	corner.push_back(Point( min_x, min_y, min_z));
+	corner.push_back(Point( min_x, min_y, max_z));
+	corner.push_back(Point( min_x, max_y, min_z));
+	corner.push_back(Point( min_x, max_y, max_z));
+
+	corner.push_back(Point( max_x, min_y, min_z));
+	corner.push_back(Point( max_x, min_y, max_z));
+	corner.push_back(Point( max_x, max_y, min_z));
+	corner.push_back(Point( max_x, max_y, max_z));
+
+	return corner;
 }

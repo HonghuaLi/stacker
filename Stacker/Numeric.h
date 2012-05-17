@@ -68,3 +68,7 @@ std::vector<Point> uniformSampleCurve(std::vector<Point> & points);
 
 // Adaptive maximum region detection
 Buffer2v2i getMaximumRegions(Buffer2d &image);
+
+// AABB
+std::vector<Point> cornersOfAABB(Vec3d bbmin, Vec3d bbmax);
+void computeAABB( std::vector<Point> &points, Vec3d &bbmin, Vec3d &bbmax);
