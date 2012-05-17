@@ -57,7 +57,11 @@ void ControllerPanel::save()
 	QString fileName = QFileDialog::getSaveFileName(0, "Export Controller", DEFAULT_FILE_PATH, "Controller File (*.ctrl)"); 
 	std::ofstream outF(qPrintable(fileName), std::ios::out);
 
-	ctrl()->save(outF);
+	if (controllerWidget.serialize->isChecked())
+		outF << qPrintable(ctrl()->serialize());
+
+	else
+		ctrl()->save(outF);
 
 	outF.close();
 
@@ -68,7 +72,6 @@ void ControllerPanel::load()
 {
 	if(!activeScene || !activeScene->activeObject())	return;
 
-	activeScene->activeObject()->ptr["controller"] = new Controller(activeScene->activeObject());
 
 
 	QString fileName = QFileDialog::getOpenFileName(0, "Load Controller", DEFAULT_FILE_PATH, "Controller File (*.ctrl)"); 
@@ -77,7 +80,25 @@ void ControllerPanel::load()
 
 	std::ifstream inF(qPrintable(fileName), std::ios::in);
 
-	ctrl()->load(inF);
+	if (controllerWidget.serialize->isChecked())
+	{
+		QString content;
+		QTextStream out(&content);
+		std::string word;
+		while (inF)
+		{
+			inF >> word;
+			out << word.c_str() << ' ';
+		}
+		
+		ctrl()->unserialize(content);
+		emit(objectModified());
+	}
+	else
+	{
+		activeScene->activeObject()->ptr["controller"] = new Controller(activeScene->activeObject());
+		ctrl()->load(inF);
+	}
 
 	inF.close();
 
@@ -87,6 +108,7 @@ void ControllerPanel::load()
 
 	emit(controllerModified());
 }
+
 
 void ControllerPanel::removeSelected()
 {

@@ -73,6 +73,8 @@ public:
 	// Save and load
 	void save(std::ofstream &outF);
 	void load(std::ifstream &inF);
+	QString serialize();
+	void unserialize(QString &content);
 
 	// Save and load groups
 	QVector<QString> groupTypes;

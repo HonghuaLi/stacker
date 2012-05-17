@@ -61,6 +61,7 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 
 	// Among panels
 	connect(cp, SIGNAL(controllerModified()), sp, SLOT(resetSolutionTree()));
+	connect(cp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 }
 
@@ -104,6 +105,9 @@ void Workspace::addNewScene()
 	// Stack panel
 	connect(sp, SIGNAL(printMessage(QString)), newScene, SLOT(print(QString)));
 	connect(sp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
+
+	// Controller
+	connect(cp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
 
 	// Groups
 	connect(newScene, SIGNAL(groupsChanged()), gp, SLOT(updateWidget()));

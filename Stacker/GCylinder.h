@@ -87,7 +87,8 @@ public:
 	// Save and load
 	void save(std::ofstream &outF);
 	void load(std::ifstream &inF, Vec3d translation, double scaleFactor);
-
+	void	serialize( QTextStream &out);
+	void	unserialize( QTextStream &in);
 public:
 	GeneralizedCylinder	*	gc;					// The underlying GC
 	

@@ -2,6 +2,7 @@
 
 #include <QQueue>
 #include <QTime>
+#include <QTextStream>
 
 #include "Offset.h"
 #include "Cuboid.h"
@@ -589,5 +590,33 @@ void Controller::saveGroups( std::ofstream &outF )
 				outF << p.n << "\t";
 			outF << std::endl;
 		}
+	}
+}
+
+
+QString Controller::serialize()
+{
+	QString content;
+	QTextStream out(&content);
+
+	foreach(Primitive* prim, getPrimitives())
+	{
+		out << prim->id << ' ';
+		PrimType type =  prim->primType;
+		prim->serialize(out);
+	}
+	
+	return content;
+}
+
+void Controller::unserialize( QString &content )
+{
+	QTextStream in(&content);
+
+	for (int i = 0; i < this->numPrimitives(); i++)
+	{
+		QString primID;
+		in >> primID;
+		getPrimitive(primID)->unserialize(in);
 	}
 }
