@@ -1,6 +1,7 @@
 #include "GraphicsLibrary/Mesh/QSegMesh.h"
 
 #include "HiddenViewer.h"
+#include "Numeric.h"
 
 HiddenViewer::HiddenViewer( QWidget * parent ) : QGLViewer (parent)
 {
@@ -34,14 +35,13 @@ void HiddenViewer::init()
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 	glMaterialf(GL_FRONT, GL_SHININESS, high_shininess);
-
-	camera()->setType(Camera::ORTHOGRAPHIC);
 }
 
 void HiddenViewer::setupCamera()
 {
+	camera()->setType(Camera::ORTHOGRAPHIC);
 	camera()->setUpVector(Vec(0,0,1));
-	camera()->setPosition(Vec(2,-2,2));
+	camera()->setPosition(Vec(0,0,10));
 	camera()->lookAt(Vec());
 }
 
@@ -51,8 +51,50 @@ void HiddenViewer::setupLights()
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
 }
 
+void HiddenViewer::preDraw()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if(activeObject())
+	{
+		// Compute the AABB
+		Vec3d bbmin = objectTransformation.bbmin;
+		Vec3d bbmax = objectTransformation.bbmax;
+		Point center = (bbmin + bbmax) / 2;
+
+		std::vector<Point> corner = cornersOfAABB(bbmin - center, bbmax - center);
+		for (int i = 0; i < 8; i++){
+			Vec p = objectTransformation.rot * Vec(corner[i]);
+			corner[i] = Point(p.x, p.y, p.z);
+		}
+		Point new_bbmin(-1), new_bbmax(1);	
+		computeAABB(corner, new_bbmin, new_bbmax);
+		double s = 1.5;
+
+		camera()->fitBoundingBox(Vec(new_bbmin) * s, Vec(new_bbmax) * s);
+		camera()->setSceneRadius(10);
+	}
+
+
+	// GL_PROJECTION matrix
+	camera()->loadProjectionMatrix();
+	// GL_MODELVIEW matrix
+	camera()->loadModelViewMatrix();
+
+	Q_EMIT drawNeeded();
+}
+
 void HiddenViewer::draw()
 {
+	glPushMatrix();
+
+	if(activeObject())
+	{
+		// Place object
+		glMultMatrixd(objectTransformation.rot.matrix());
+		glTranslated(objectTransformation.t.x, objectTransformation.t.y, objectTransformation.t.z);
+	}
+
 	switch (mode)
 	{
 	case HV_NONE:
@@ -71,7 +113,9 @@ void HiddenViewer::draw()
 		break;
 	}
 
-	setMode(HV_NONE);
+	glPopMatrix();
+
+	//setMode(HV_NONE);
 }
 
 QSegMesh* HiddenViewer::activeObject()

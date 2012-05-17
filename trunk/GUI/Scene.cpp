@@ -9,6 +9,8 @@
 #include "QManualDeformer.h"
 #include "Stacker/SymmetryGroup.h"
 #include "Stacker/Primitive.h"
+#include "Stacker/Offset.h"
+#include "Stacker/HiddenViewer.h"
 
 #include "GraphicsLibrary/Remeshing/LaplacianRemesher.h"
 #include "GraphicsLibrary/Subdivision/SubdivisionAlgorithms.h"
@@ -115,7 +117,11 @@ void Scene::draw()
 
 	// Draw the controllers if exist
 	Controller * ctrl = ((Controller *)activeObject()->ptr["controller"]);
-	if (ctrl) ctrl->draw();
+	if (ctrl) 
+	{
+		ctrl->draw(true, true);
+		//sp->activeOffset->activeViewer->camera()->draw();
+	}
 
 	// Draw stacking with 3 objects
 	if(isShowStacked) 

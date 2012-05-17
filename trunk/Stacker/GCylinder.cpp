@@ -147,21 +147,10 @@ void GCylinder::draw()
 	glDisable(GL_LINE_STIPPLE);
 	glEnable(GL_LIGHTING);
 
-
 	if(cage) 
 	{
 		cage->drawDebug();
 		cage->simpleDraw();
-	}
-
-	// Symmetry planes
-	for (int i=0;i<symmPlanes.size();i++)
-	{
-		glClear(GL_DEPTH_BITS);
-
-		glDisable(GL_DEPTH_TEST);
-		symmPlanes[i].draw(0.1);
-		glEnable(GL_DEPTH_TEST);
 	}
 }
 

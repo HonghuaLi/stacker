@@ -54,7 +54,7 @@ public:
 	QVector< Group * > groupsOf( QString id );
 
 	// Draw
-	void draw();
+	void draw(bool isDrawGroups = false, bool isDrawDebug = false);
 	void drawNames(bool isDrawParts = false);
 
 	// Shape state

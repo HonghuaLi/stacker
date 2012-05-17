@@ -40,7 +40,7 @@ StackerPanel::StackerPanel()
 	QGridLayout * hiddenLayout = (QGridLayout *) panel.hiddenviewBox->layout();
 	hiddenLayout->addWidget(hiddenDock, hiddenLayout->rowCount() + 1, 0,1,3);
 	hiddenDock->setFloating(true);
-	hiddenDock->setWindowOpacity(0.0);
+	hiddenDock->setWindowOpacity(1.0);
 	int x = qApp->desktop()->availableGeometry().width();
 	hiddenDock->move(QPoint(x - hiddenDock->width(),0)); //Move the hidden dock to the top right conner
 	connect(panel.hidderViewerResolution, SIGNAL(valueChanged(int)), hiddenViewer, SLOT(setResolution(int)));

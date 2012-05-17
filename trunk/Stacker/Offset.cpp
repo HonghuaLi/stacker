@@ -1,5 +1,5 @@
 #include "Offset.h"
-#include "HiddenViewer.h"
+
 #include "Utility/ColorMap.h"
 #include "Utility/SimpleDraw.h"
 #include <QFile>
@@ -49,7 +49,7 @@ void Offset::clear()
 // OpenGL 2D coordinates system has origin at the left bottom conner, while Qt at left top conner
 // OpenGL coordinates are mainly used in this class
 
-// Camera paths
+// Camera setting ids
 // <-1, 1> + 2 = <1, 3> : The top and bottom setting for the entire shape
 // <-1, 1> + 3 = <2, 4> : The top and bottom setting for the zoomed in region
 
@@ -99,17 +99,18 @@ void Offset::computeEnvelope(int side)
 
 void Offset::computeEnvelopeOfShape( int side, Vec3d up, Vec3d stacking_direction )
 {
-	// Set camera
-	activeViewer->camera()->setPosition(Vec( stacking_direction * side));
-	activeViewer->camera()->lookAt(Vec());
-	activeViewer->camera()->setUpVector(Vec(up));
-	activeViewer->camera()->setSceneRadius(activeObject()->radius * 3);
-	double s = 1.2;
-	activeViewer->camera()->fitBoundingBox(Vec(activeObject()->bbmin * s), Vec(activeObject()->bbmax * s));
+	// Set virtual transformation of camera
+	Quaternion q1(side * Vec(0,0,1),Vec(stacking_direction));
+	Vec rotated_y = q1 * Vec(0,1,0);
+	Quaternion q2(rotated_y,Vec(up));
+	
+	activeViewer->objectTransformation.t = - Vec(activeObject()->center + stacking_direction);	
+	activeViewer->objectTransformation.rot = (q2 * q1).inverse();
+	activeViewer->objectTransformation.bbmin = activeObject()->bbmin;
+	activeViewer->objectTransformation.bbmax = activeObject()->bbmax;
 
 	// Save this new camera settings
-	activeViewer->camera()->deletePath(side+2);
-	activeViewer->camera()->addKeyFrameToPath(side+2);
+	objectTransformation[side+2] = activeViewer->objectTransformation;
 
 	// Render
 	activeViewer->setMode(HV_DEPTH);
@@ -117,21 +118,24 @@ void Offset::computeEnvelopeOfShape( int side, Vec3d up, Vec3d stacking_directio
 
 	// compute the envelope
 	computeEnvelope(side);
+
 }
 
 void Offset::computeEnvelopeOfRegion( int side , Vec3d up, Vec3d direction, Vec3d bbmin, Vec3d bbmax )
 {
-	// Set camera
-	Vec3d bbCenter = (bbmin + bbmax) / 2;
-	Vec3d pos = bbCenter + direction * side;
-	activeViewer->camera()->setPosition(Vec(pos));
-	activeViewer->camera()->lookAt(Vec(bbCenter));	
-	activeViewer->camera()->setUpVector(Vec(up));
-	activeViewer->camera()->fitBoundingBox(Vec(bbmin), Vec(bbmax));
+	// Set virtual transformation of camera
+	Quaternion q1(side * Vec(0,0,1),Vec(direction));
+	Vec rotated_y = q1 * Vec(0,1,0);
+	Quaternion q2(rotated_y,Vec(up));
+
+	Point center = (bbmin + bbmax) / 2;
+	activeViewer->objectTransformation.t = -Vec(center + direction);	
+	activeViewer->objectTransformation.rot = (q2 * q1).inverse();
+	activeViewer->objectTransformation.bbmin = bbmin;
+	activeViewer->objectTransformation.bbmax = bbmax;
 
 	// Save this new camera settings
-	activeViewer->camera()->deletePath(side + 3);
-	activeViewer->camera()->addKeyFrameToPath(side + 3);
+	objectTransformation[side+3] = activeViewer->objectTransformation;
 
 	// Render
 	activeViewer->setMode(HV_DEPTH);
@@ -222,7 +226,7 @@ void Offset::computeStackability()
 	// Searching for the best stacking direction
 	double maxStackability = -1;
 	Vec3d bestStackingDirection(0, 0, 1);
-	QVector<Vec3d> directions = getDirectionsInCone(0.1);
+	QVector<Vec3d> directions = getDirectionsInCone(coneSize);
 
 	foreach(Vec3d vec, directions)
 	{
@@ -252,10 +256,10 @@ void Offset::computeStackability()
 	foreach(Vec3d v, directions)
 		ctrl()->debugPoints.push_back(v );
 
-	//// Save offset as image
-	//saveAsImage(lowerDepth, 1, "lower depth.png");
-	//saveAsImage(upperDepth, 1, "upper depth.png");
-	//saveAsImage(offset, O_max, "offset function.png");
+	// Save offset as image
+//	saveAsImage(lowerDepth, "lower depth.png");
+//	saveAsImage(upperDepth, "upper depth.png");
+	saveAsImage(offset, "offset function.png");
 }
 
 void Offset::computeStackability( Vec3d direction )
@@ -333,13 +337,13 @@ double Offset::getStackability( bool recompute /*= false*/ )
 HotSpot Offset::detectHotspotInRegion(int side, std::vector<Vec2i> &hotRegion)
 {
 	// Restore the camera according to the direction
-	activeViewer->camera()->playPath( side + 3 );
+	activeViewer->objectTransformation = objectTransformation[side + 3];
 
 	// Draw Faces Unique
 	activeViewer->setMode(HV_FACEUNIQUE);
 	activeViewer->updateGL(); 
-	activeViewer->setMode(HV_FACEUNIQUE);
-	activeViewer->updateGL(); 
+	//activeViewer->setMode(HV_FACEUNIQUE);
+	//activeViewer->updateGL(); 
 
 	GLubyte* colormap = (GLubyte*)activeViewer->readBuffer(GL_RGBA, GL_UNSIGNED_BYTE);
 
@@ -426,6 +430,18 @@ HotSpot Offset::detectHotspotInRegion(int side, std::vector<Vec2i> &hotRegion)
 		HS.side = side;
 		HS.hotPixels = subHotPixels[HS.segmentID];
 		HS.hotSamples = subHotSamples[HS.segmentID];
+	}
+
+	// 
+	Quaternion rot = objectTransformation[side + 3].rot.inverse();
+	Vec t = -objectTransformation[side + 3].t;
+	for (int i = 0; i < HS.hotSamples.size(); i++)
+	{
+		Vec p(HS.hotSamples[i]);
+
+		p = (rot * p) + t;
+
+		HS.hotSamples[i] = Vec3d(p.x, p.y, p.z);
 	}
 
 	return HS;
@@ -559,26 +575,13 @@ HotSpot& Offset::getHotspot( int side, int id )
 
 void Offset::showHotSpots()
 {
-	// Clear
-	for(uint i = 0; i < activeObject()->nbSegments(); i++)
-	{
-		QSurfaceMesh * seg = activeObject()->getSegment(i);
-
-		seg->debug_points.clear();
-		seg->setColorVertices(Color(1,1,1,1)); // white
-	}
-
 	// Show hot segments and hot spots
-	for (std::map< QString, std::vector< Vec3d > >::iterator i=hotPoints.begin();i!=hotPoints.end();i++)
+	foreach (HotSpot hs, lowerHotSpots)
 	{
-		QString sid = i->first;
-		QSurfaceMesh* segment = activeObject()->getSegment(sid);
+		QSurfaceMesh* segment = activeObject()->getSegment(hs.segmentID);
 
-		// Hot spots as red points
-		for (std::vector< Vec3d >::iterator pit = i->second.begin(); pit != i->second.end(); pit++)
-		{
-			segment->debug_points.push_back(*pit);
-		}
+		segment->debug_points.clear();
+		foreach (Point p, hs.hotSamples) segment->debug_points.push_back(p);
 	}
 }
 
@@ -609,17 +612,17 @@ void Offset::saveHotSpots( QString filename, int direction, double percent)
 
 
 // ==(un)Projection
-Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int direction )
+Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int side )
 {
 	// Restore the camera according to the direction
-	activeViewer->camera()->playPath( direction + 2 );
+	activeViewer->objectTransformation = objectTransformation[side + 2];
 	activeViewer->updateGL();
 
 	int w = activeViewer->height();
 	int h = activeViewer->width();
 
-	std::vector< std::vector<double> > &depth = (direction == 1)? upperDepth : lowerDepth;
-	if (direction == -1)	x = (w-1) - x;
+	std::vector< std::vector<double> > &depth = (side == 1)? upperDepth : lowerDepth;
+	if (side == -1)	x = (w-1) - x;
 
 	Vec P = activeViewer->camera()->unprojectedCoordinatesOf(Vec(x, (h-1)-y, depth[y][x]));
 
@@ -629,7 +632,7 @@ Vec3d Offset::unprojectedCoordinatesOf( uint x, uint y, int direction )
 Vec2i Offset::projectedCoordinatesOf( Vec3d point, int pathID )
 {
 	// Restore the camera according to the direction
-	activeViewer->camera()->playPath( pathID );
+	activeViewer->objectTransformation = objectTransformation[pathID];
 
 	// Make sure to call /updateGL() to update the projectionMatrix!!!
 	activeViewer->updateGL();

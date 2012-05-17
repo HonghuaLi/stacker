@@ -228,7 +228,7 @@ void Cuboid::draw()
 		if(isSelected)
 			drawCube(3, Vec4d(1,1,0,0.8));
 		else
-			drawCube(2, Vec4d(0,0,1,0.4));
+			drawCube(2, Vec4d(0,0.5,1,0.5));
 	}
 
 	// Draw axis
@@ -236,11 +236,6 @@ void Cuboid::draw()
 		glColor4f(1,0,0,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[0], 0.1f);
 		glColor4f(0,1,0,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[1], 0.1f);
 		glColor4f(0,0,1,1);	SimpleDraw::DrawArrowDirected(currBox.Center, currBox.Axis[2], 0.1f);
-	}
-
-	for (int i=0;i<symmPlanes.size();i++)
-	{
-		symmPlanes[i].draw(0.1);
 	}
 }
 

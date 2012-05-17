@@ -137,7 +137,15 @@ Point Skinning::fromCoordinates( GeneralizedCylinder &orig_gc, SkinningCoord coo
 	// The result
 	Vector3d V = V2E((proj + coords.d * s));
 	V = R * V + T;
-	return E2V(V);
+
+	Vec3d point = E2V(V);
+	if (!( point[0] == point[0]))
+	{
+		int aaaa = 0;
+	}
+
+
+	return point;
 }
 
 std::vector<double> Skinning::getCoordinate( Point p )

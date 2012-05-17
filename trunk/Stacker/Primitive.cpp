@@ -61,6 +61,11 @@ void Primitive::drawDebug()
 
 		glPopAttrib();
 	}*/
+
+	for (int i=0;i<symmPlanes.size();i++)
+	{
+		symmPlanes[i].draw(0.1);
+	}
 }
 
 Vec3d Primitive::centerPoint()
