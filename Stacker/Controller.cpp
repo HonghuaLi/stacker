@@ -332,7 +332,6 @@ void Controller::setShapeState(const ShapeState &shapeState )
 	foreach(Primitive * prim, primitives)
 	{
 		prim->setState(shapeState.primStates[prim->id]);
-		prim->deformMesh();
 	}
 
 	m_mesh->vec["stacking_shift"] = shapeState.stacking_shift;

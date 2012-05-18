@@ -13,6 +13,12 @@ HiddenViewer::HiddenViewer( QWidget * parent ) : QGLViewer (parent)
 
 	// Initial render mode as HV_NONE
 	mode = HV_NONE;
+
+	// Avoid camera bug
+	objectTransformation.t = Vec(0,0,0);
+	objectTransformation.rot = Quaternion();
+	objectTransformation.bbmax = Vec3d(1,1,1);
+	objectTransformation.bbmin = Vec3d(-1,-1,-1);
 }
 
 void HiddenViewer::init()
@@ -41,7 +47,7 @@ void HiddenViewer::setupCamera()
 {
 	camera()->setType(Camera::ORTHOGRAPHIC);
 	camera()->setUpVector(Vec(0,0,1));
-	camera()->setPosition(Vec(0,0,10));
+	camera()->setPosition(Vec(0,0,4));
 	camera()->lookAt(Vec());
 }
 
@@ -55,6 +61,7 @@ void HiddenViewer::preDraw()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// Buggy on some machines, we get QNAN for camera position
 	if(activeObject())
 	{
 		// Compute the AABB
@@ -67,21 +74,17 @@ void HiddenViewer::preDraw()
 			Vec p = objectTransformation.rot * Vec(corner[i]);
 			corner[i] = Point(p.x, p.y, p.z);
 		}
+	
 		Point new_bbmin(-1), new_bbmax(1);	
 		computeAABB(corner, new_bbmin, new_bbmax);
 		double s = 1.5;
 
 		camera()->fitBoundingBox(Vec(new_bbmin) * s, Vec(new_bbmax) * s);
-		camera()->setSceneRadius(10);
 	}
 
-
-	// GL_PROJECTION matrix
-	camera()->loadProjectionMatrix();
-	// GL_MODELVIEW matrix
-	camera()->loadModelViewMatrix();
-
-	Q_EMIT drawNeeded();
+	camera()->setSceneRadius(10);
+	
+	QGLViewer::preDraw();
 }
 
 void HiddenViewer::draw()

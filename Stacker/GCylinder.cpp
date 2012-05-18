@@ -8,11 +8,11 @@ GCylinder::GCylinder( QSurfaceMesh* segment, QString newId, bool doFit) : Primit
 {
 	cage = NULL;
 
-	cageScale = 1.2;
+	cageScale = 1.25;
 	cageSides = 16;
 
 	// For visualization
-	deltaScale = 1.5;
+	deltaScale = 1.25;
 
 	// useful for fitting process
 	if(!m_mesh->vertex_array.size()){
@@ -294,16 +294,16 @@ Point GCylinder::getSelectedCurveCenter()
 
 void GCylinder::moveCurveCenter( int cid, Vec3d T )
 {
-	if (symmPlanes.size() == 1)
-	{
-		T[0] = 0;
-		T[1] = 0;
-	}
-
 	int N =  gc->crossSection.size();
 	if(!RANGE(cid, 0, N-1))
 	{
 		// Manual
+		if (symmPlanes.size() == 1)
+		{
+			T[0] = 0;
+			T[1] = 0;
+		}		
+		
 		if (RANGE(selectedCurveId, 0, N-1))
 			curveTranslation[selectedCurveId] += T;
 		else

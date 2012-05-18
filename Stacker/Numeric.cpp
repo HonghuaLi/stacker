@@ -7,7 +7,7 @@
 #include <QFile>
 #include <stack>
 
-double GC_GAUSSIAN_SIGMA = 0.2;
+double GC_GAUSSIAN_SIGMA = 0.25;
 
 
 // Extreme
