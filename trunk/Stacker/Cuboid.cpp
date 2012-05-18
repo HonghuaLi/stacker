@@ -645,6 +645,8 @@ void* Cuboid::getState()
 void Cuboid::setState( void* toState)
 {
 	currBox = *( (Box3*) toState );
+
+	deformMesh();
 }
 
 void Cuboid::serialize( QTextStream &out)

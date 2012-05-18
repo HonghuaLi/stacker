@@ -31,6 +31,7 @@ void QManualDeformer::updateController()
 	// unfreeze all
 	ctrl->setPrimitivesFrozen(false);
 
+
 	Primitive * prim = ctrl->getSelectedPrimitive();
 	if(!prim) return;
 
@@ -44,7 +45,7 @@ void QManualDeformer::updateController()
 		delta = p - prim->getSelectedCurveCenter();
 
 	if(delta.norm() > 1e-9)
-	{
+	{		
 		// Translation
 		prim->moveCurveCenter( -1,  delta );
 	}
@@ -112,7 +113,7 @@ void QManualDeformer::updateController()
 
 		prim->getMesh()->buildUp();
 	}
-
+	
 	Propagator propagator(ctrl);
 	propagator.slide(prim->id);
 	prim->isFrozen = true;
@@ -129,11 +130,10 @@ void QManualDeformer::scaleUp( double s )
 	Primitive * prim = ctrl->getSelectedPrimitive();
 	if(!prim) return;
 
-	prim->isFrozen = true;
-	prim->scaleCurve(-1, s);
+	prim->scaleCurve(-1, s);	
+	prim->isFrozen = true;	
 	Propagator propagator(ctrl);
 	propagator.execute();
-	prim->isFrozen = false;
 
 	emit( objectModified() );
 }

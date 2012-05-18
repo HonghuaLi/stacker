@@ -259,7 +259,7 @@ void Offset::computeStackability()
 	// Save offset as image
 //	saveAsImage(lowerDepth, "lower depth.png");
 //	saveAsImage(upperDepth, "upper depth.png");
-	saveAsImage(offset, "offset function.png");
+//	saveAsImage(offset, "offset function.png");
 }
 
 void Offset::computeStackability( Vec3d direction )
@@ -324,7 +324,7 @@ void Offset::computeOffsetOfRegion( Vec3d direction, std::vector< Vec2i >& regio
 	// Save offset as image
 	//saveAsImage(upperEnvelope, "upper.png");
 	//saveAsImage(lowerEnvelope, "lower.png");
-	saveAsImage(offset, QString::number(direction.z()) + "_offset function of region.png");
+	//saveAsImage(offset, QString::number(direction.z()) + "_offset function of region.png");
 }
 
 double Offset::getStackability( bool recompute /*= false*/ )
@@ -460,7 +460,7 @@ void Offset::detectHotspots( )
 
 	// Detect hot regions
 	hotRegions = getMaximumRegions(offset);
-	visualizeRegions(w, h, hotRegions, "hot regions of shape.png");
+	//visualizeRegions(w, h, hotRegions, "hot regions of shape.png");
 
 	// The max offset of hot regions
 	maxOffsetInHotRegions.clear();
@@ -477,7 +477,7 @@ void Offset::detectHotspots( )
 	{
 		computeOffsetOfRegion(stackV, hotRegions[i]);
 
-		saveAsImage(offset, "Offset of region before getting hot regions.png");
+		//saveAsImage(offset, "Offset of region before getting hot regions.png");
 
 		// Detect zoomed (in) hot region 
 		Buffer2v2i zoomedHRs = getMaximumRegions(offset);
