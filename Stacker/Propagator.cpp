@@ -23,8 +23,12 @@ Propagator::Propagator( Controller* ctrl )
 
 void Propagator::regroupPair( QString id1, QString id2 )
 {
-	// For sure there is no group
-	if (id1 == id2) return;
+	// The hot spots pair is on the same primitive
+	if (id1 == id2) 
+	{
+		mGraph->node(id1)->isFrozen = true;
+		return;
+	}
 
 	// This function is called only once at the very beginning of the propagation
 	// At this time, all primitives are unfrozen
