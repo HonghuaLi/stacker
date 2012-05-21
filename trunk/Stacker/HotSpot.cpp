@@ -68,6 +68,20 @@ void HotSpot::decideType(Controller* ctrl)
 
 		type = RING_HOTSPOT;
 	}
+
+
+	if(type == LINE_HOTSPOT)
+	{
+		// Check the distribution in 3D
+		// Line hot spot shouldn't be too short
+		std::vector<Point> points;
+		foreach(Point p, hotSamples)
+			points.push_back(p);
+		Point p1, p2;
+		twoFurthestPoints(points, p1, p2);
+		if( (p1-p2).norm() < 0.3)
+			type = POINT_HOTSPOT;
+	}
 }
 
 
@@ -97,7 +111,7 @@ void HotSpot::computeRepresentative()
 		tol += 0.05;
 	}
 
-	// Compute minimal bounding box in 3D
+	// The Representatives
 	rep.clear();
 	switch (type)
 	{
