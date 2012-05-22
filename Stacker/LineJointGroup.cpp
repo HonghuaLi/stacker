@@ -46,6 +46,7 @@ void LineJointGroup::regroup()
 	}
 
 	// Update the line ends
+	if (lineEnds.size() != 2) lineEnds.resize(2);
 	lineEnds[0] = newA;
 	lineEnds[1] = newB;
 
@@ -76,6 +77,7 @@ void LineJointGroup::draw()
 
 void LineJointGroup::saveParameters( std::ofstream &outF )
 {
+	updateLineEnds();
 	outF << lineEnds[0] << '\t' << lineEnds[1];
 }
 
@@ -89,4 +91,22 @@ void LineJointGroup::loadParameters( std::ifstream &inF, Vec3d translation, doub
 
 	lineEnds[1] += translation;
 	lineEnds[1] *= scaleFactor;
+}
+
+Group* LineJointGroup::clone()
+{
+	LineJointGroup * g = new LineJointGroup(LINEJOINT);
+
+	g->id = this->id;
+	g->nodes = this->nodes;
+	g->lineEndsCoords = this->lineEndsCoords;
+
+	return g;
+}
+
+void LineJointGroup::updateLineEnds()
+{
+	Primitive * a = nodes.first();
+	lineEnds[0] = a->fromCoordinate(lineEndsCoords[a->id][0]);
+	lineEnds[1] = a->fromCoordinate(lineEndsCoords[a->id][1]);
 }

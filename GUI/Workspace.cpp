@@ -2,6 +2,9 @@
 #include "Workspace.h"
 #include <QVBoxLayout>
 #include <QFileInfo>
+#include <QFileDialog>
+#include "Stacker/Controller.h"
+#include <QTextStream>
 
 Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, flags)
 {
@@ -56,11 +59,15 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	// Connect to mesh browser
 	connect(ui.actionMeshBrowser, SIGNAL(triggered()), mDoc, SLOT(importObjectBrowser()));
 
+	// Connect to Process User study
+	connect(ui.actionUnserialize, SIGNAL(triggered()), SLOT(LoadUserStudyResults()));
+
 	leftLayout->addStretch();
 	rightLayout->addStretch();
 
 	// Among panels
 	connect(cp, SIGNAL(controllerModified()), sp, SLOT(resetSolutionTree()));
+	connect(gp, SIGNAL(groupsModified()), sp, SLOT(resetSolutionTree()));
 	connect(cp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 	connect(tp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
 }
@@ -169,4 +176,54 @@ void Workspace::sceneClosed( Scene* scene )
 		setActiveScene(activeScene = NULL);
 		printf("No scenes! %d\n", count);
 	}
+}
+
+void Workspace::LoadUserStudyResults()
+{
+	QStringList xmlFileNames =  QFileDialog::getOpenFileNames(0, "Result file", "", "Results Files (*.xml)"); 
+
+	foreach(QString xmlFileName, xmlFileNames)
+	{
+		QFileInfo fi(xmlFileName);
+
+		// The current folder
+		QString currFolder = fi.absoluteDir().path();
+
+		// Submitter name
+		// Clean up name
+		QString submitName = fi.baseName();
+		if(submitName.contains("_")){
+			QStringList sl = submitName.split("_");
+			submitName = sl.last();
+		}
+		QString submitFolder = currFolder + "/" + submitName + "/" ;
+
+		// Find all obj.txt files
+		QDir submitDir(submitFolder);
+		QStringList filters;filters << "*.obj.txt";		
+		foreach (QString itemName, submitDir.entryList(filters))
+		{		
+			// Create a new scene
+			addNewScene();
+
+			// Load the mesh
+			QString meshName = itemName;
+			meshName.chop(4);
+			QString meshFilename = currFolder + "/tasks/" + meshName;
+			mDoc->importObject(meshFilename);
+
+			// Unserialize user's result
+			QString resultFilename = submitFolder + itemName;
+			QFile inF(resultFilename); 
+			inF.open(QIODevice::ReadOnly | QIODevice::Text);
+			QString content = inF.readAll();
+			Controller * ctrl = (Controller * )activeScene->activeMesh->ptr["controller"];
+			ctrl->unserialize(content);
+
+			// update
+			activeScene->updateActiveObject();
+			sp->updateActiveObject();
+		}		
+	}
+
 }

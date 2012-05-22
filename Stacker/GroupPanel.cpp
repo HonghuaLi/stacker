@@ -104,6 +104,8 @@ void GroupPanel::removeSelectedItem()
 	}
 
 	updateWidget();
+
+	emit( groupsModified() );
 }
 
 void GroupPanel::saveGroups()
@@ -154,6 +156,8 @@ void GroupPanel::loadGroups()
 	updateWidget();
 
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
+
+	emit( groupsModified() );
 }
 
 void GroupPanel::clearGroups()
@@ -169,6 +173,8 @@ void GroupPanel::clearGroups()
 
 	std::cout << "Groups cleared.\n";
 	updateWidget();
+
+	emit( groupsModified() );
 }
 
 void GroupPanel::findJoints()
@@ -180,11 +186,17 @@ void GroupPanel::findJoints()
 	JointDetector JD;
 	QVector<Group*> jointGroups = JD.detect(ctrl->getPrimitives());
 
+	int i = ctrl->groups.size();
 	foreach(Group* g, jointGroups)
+	{
+		g->id = QString::number(i++);
 		ctrl->groups[g->id] = g;
+	}
 
 	// update
 	this->updateWidget();
+
+	emit( groupsModified() );
 }
 
 void GroupPanel::setJointThreshold( double threshold )

@@ -232,7 +232,10 @@ void Scene::setActiveObject(QSegMesh* newMesh)
 		
 	// Setup the new object
 	activeMesh = newMesh;
-	activeMesh->ptr["controller"] = new Controller(activeMesh);
+
+	// Controller
+	if (!activeMesh->ptr.contains("controller"))
+		activeMesh->ptr["controller"] = new Controller(activeMesh);
 
 	// Change title of scene
 	setWindowTitle(activeMesh->objectName());
@@ -381,6 +384,7 @@ void Scene::mousePressEvent( QMouseEvent* e )
 				{
 					newGroup->process(ctrl->getPrimitives(selection));
 
+					newGroup->id = QString::number(ctrl->groups.size());
 					ctrl->groups[newGroup->id] = newGroup;
 					emit(groupsChanged());
 

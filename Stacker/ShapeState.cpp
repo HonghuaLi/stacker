@@ -4,7 +4,7 @@
 
 double ShapeState::energy()
 {
-	double alpha = 0.2;
+	double alpha = 1;
 	return  deltaStackability * alpha - distortion * (1-alpha);
 }
 

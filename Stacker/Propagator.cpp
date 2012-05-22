@@ -21,8 +21,28 @@ Propagator::Propagator( Controller* ctrl )
 	mGraph = new ConstraintGraph(mCtrl);
 }
 
-void Propagator::regroupPair( QString id1, QString id2 )
+void Propagator::regroupPair( QString id1, QString id2, bool sliding /*=false*/ )
 {
+	if (sliding && mGraph->hasRelation(id1, id2, POINTJOINT))
+	{
+		//std::cout << "Sliding of Line joint \n";
+		// slide the smaller one
+		Primitive* slider = mCtrl->getPrimitive(id1);
+
+		if (id1 == id2) slide(id1);	
+		else
+		{
+			Primitive* track = mCtrl->getPrimitive(id2);
+			if (slider->volume() > track->volume()) slider = track;
+		}
+
+		slide(slider->id);
+
+		// Freeze the slider
+		slider->isFrozen = true;
+		return;
+	}
+
 	// The hot spots pair is on the same primitive
 	if (id1 == id2) 
 	{
@@ -38,9 +58,8 @@ void Propagator::regroupPair( QString id1, QString id2 )
 	QString target;
 
 	// A more sophisticated method might be needed (?)
-	if (  node1->fixedPoints.size() > node2->fixedPoints.size() ||
-		( node1->fixedPoints.size() == node2->fixedPoints.size() &&
-		node1->symmPlanes.size() >= node2->symmPlanes.size() )  ) 
+	if (  node1->symmPlanes.size() >= node2->symmPlanes.size()
+		|| node1->fixedPoints.size() > node2->fixedPoints.size() ) 
 	{
 		target = id2;
 		node1->isFrozen = true;
@@ -213,7 +232,7 @@ void Propagator::slide( QString id )
 		if ( group->type == POINTJOINT )
 		{
 			((PointJointGroup*) group)->slide(id);
-			std::cout << "Sliding " << qPrintable(id) << std::endl;
+//			std::cout << "Sliding " << qPrintable(id) << std::endl;
 		}
 	}
 

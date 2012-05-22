@@ -2,13 +2,9 @@
 #include "Utility/SimpleDraw.h"
 #include "Primitive.h"
 
-int GroupUniqueID = 0;
-
-Group::Group(GroupType newType )
+Group::Group(GroupType newType)
 {
 	this->type = newType;
-	this->id = QString("%1").arg(GroupUniqueID++);
-
 	this->isDraw = true;
 }
 

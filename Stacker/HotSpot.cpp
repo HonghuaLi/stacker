@@ -98,7 +98,7 @@ void HotSpot::computeRepresentative()
 	std::vector<Point> points;
 	double tol = 0.01;
 
-	while(points.size() < 3)
+	while(points.size() < 2)
 	{
 		points.clear();
 

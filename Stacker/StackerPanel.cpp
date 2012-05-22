@@ -147,6 +147,7 @@ void StackerPanel::setActiveObject()
 	// Preview
 	previewer->updateActiveObject();
 
+	// Reset solution tree
 	resetSolutionTree();
 }
 
@@ -264,6 +265,7 @@ void StackerPanel::addChildren( QTreeWidgetItem* parent, QVector<ShapeState> &ch
 		// View
 		QTreeWidgetItem * child = new QTreeWidgetItem (parent);
 		child->setText(0, stringID);
+		child->setText(1, QString::number(-cs.energy()));
 		parent->addChild(child);
 
 		id++;
@@ -286,15 +288,15 @@ void StackerPanel::onImproveButtonClicked()
 	QTreeWidgetItem * currItem = selectedItem();
 
 	// Execute
-	int level = panel.isSuggesting ? panel.suggestLevels->value() : IMPROVER_MAGIC_NUMBER;
+	int level = panel.isSuggesting->isChecked() ? panel.suggestLevels->value() : IMPROVER_MAGIC_NUMBER;
 	improver->execute(level);
 
-	// Get children shape states
+	// Get children shape states (at most 20)
 	QVector<ShapeState> childrenStates = improver->solutions;
 
-	if (panel.isSuggesting)
+	if (panel.isSuggesting->isChecked())
 	{
-		while (!improver->candidateSolutions.empty())
+		while (childrenStates.size() < 20 && !improver->candidateSolutions.empty())
 		{
 			childrenStates.push_back(improver->candidateSolutions.top());
 			improver->candidateSolutions.pop();
@@ -323,7 +325,7 @@ void StackerPanel::setSelectedShapeState()
 	if (currItem && treeNodes.size()>1 )
 	{
 		QString currID = currItem->text(0);
-		std::cout << "Current shape state id:" << qPrintable(currID) << std::endl;
+//		std::cout << "Current shape state id:" << qPrintable(currID) << std::endl;
 		ShapeState currState = treeNodes[currID];		
 		ctrl()->setShapeState(currState);
 
@@ -347,11 +349,12 @@ void StackerPanel::resetSolutionTree()
 
 	if (ctrl())
 	{
-		QString id("0");
-		treeNodes[id] = ctrl()->getShapeState();
+		QString zero("0");
+		treeNodes[zero] = ctrl()->getShapeState();
 
 		QTreeWidgetItem * node = new QTreeWidgetItem(panel.solutionTree);
-		node->setText(0, id);
+		node->setText(0, zero);
+		node->setText(1, zero);
 		node->setSelected(true);
 	}
 }
@@ -361,4 +364,5 @@ void StackerPanel::updateActiveObject()
 	activeOffset->computeStackability();
 	previewer->updateActiveObject();
 }
+
 

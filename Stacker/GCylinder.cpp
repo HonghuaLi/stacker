@@ -438,6 +438,9 @@ void* GCylinder::getState()
 void GCylinder::setState( void* toState)
 {
 	std::vector<double> & state = *(std::vector<double> *)toState;
+
+	if(state.size() != curveScales.size() * 7) return;
+
 	for(int k = 0, i = 0; i < curveScales.size() * 7; k++)
 	{		
 		for(int j = 0; j < 3; j++)	basicGC.crossSection[k].center[j] = state[i++]; // P		
@@ -655,7 +658,7 @@ void GCylinder::deformRespectToJoint( Vec3d joint, Vec3d p, Vec3d T )
 
 void GCylinder::movePoint( Point p, Vec3d T )
 {
-	if (fixedPoints.isEmpty())
+	if (fixedPoints.isEmpty() && symmPlanes.isEmpty())
 		translate(T);
 	else
 	{

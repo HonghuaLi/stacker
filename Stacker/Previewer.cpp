@@ -69,8 +69,8 @@ void Previewer::draw()
 
 	if (!activeObject()) return;
 
-	// Update VBO if needed
-	updateVBOs();
+	//// Update VBO if needed
+	//updateVBOs();
 
 	double S = activeObject()->val["stackability"];
 	Vec3d stacking_shift = activeObject()->vec["stacking_shift"];
@@ -81,11 +81,11 @@ void Previewer::draw()
 
 	for(int i = 0; i < stackCount; i++)
 	{
-		// Draw object using VBO
-		for (QMap<QString, VBO>::iterator itr = vboCollection.begin(); itr != vboCollection.end(); ++itr)
-			itr->render();
+		//// Draw object using VBO
+		//for (QMap<QString, VBO>::iterator itr = vboCollection.begin(); itr != vboCollection.end(); ++itr)
+		//	itr->render();
 
-		// Fall back
+		// Simple draw
 		if(vboCollection.isEmpty() && activeObject())
 			activeObject()->simpleDraw();
 

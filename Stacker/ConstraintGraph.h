@@ -32,6 +32,7 @@ public:
 	QVector<Edge> getEdges( QString node );
 
 	GroupType edgeType(QString id);
+	bool hasRelation(QString id1, QString id2, GroupType type);
 
 public:
 	QMap< QString, QList<Edge> > adjacency_map;

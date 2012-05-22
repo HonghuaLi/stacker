@@ -12,6 +12,7 @@ public:
 	void process(QVector< Primitive* > segments);
 	void regroup();
 	void draw();
+	Group* clone();
 
 public:
 	Plane symmetryPlane;

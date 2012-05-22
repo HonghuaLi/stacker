@@ -78,6 +78,8 @@ void HiddenViewer::preDraw()
 		Point new_bbmin(-1), new_bbmax(1);	
 		computeAABB(corner, new_bbmin, new_bbmax);
 		double s = 1.5;
+		new_bbmin[2] *= 2;
+		new_bbmax[2] *= 2;
 
 		camera()->fitBoundingBox(Vec(new_bbmin) * s, Vec(new_bbmax) * s);
 	}

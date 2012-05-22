@@ -28,8 +28,8 @@ public:
 	Offset(HiddenViewer* viewer);
 
 	// Stackability
-	void	computeStackability();
-	void	computeStackability(Vec3d direction);
+	double	computeStackability();
+	double	computeStackability(Vec3d direction);
 	double	getStackability(bool recompute = false);
 	
 	// Compute offset function and stackability

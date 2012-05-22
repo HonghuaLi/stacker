@@ -161,7 +161,7 @@ QVector<double> Improver::getLocalScales( HotSpot& HS )
 QVector<Vec3d> Improver::getLocalMoves( HotSpot& HS )
 {
 	// Debug
-	std::cout << "Local radius = " << LOCAL_RADIUS << std::endl;
+//	std::cout << "Local radius = " << LOCAL_RADIUS << std::endl;
 
 	QVector< Vec3d > result;
 
@@ -174,30 +174,27 @@ QVector<Vec3d> Improver::getLocalMoves( HotSpot& HS )
 	// Horizontal moves
 	if (HS.type == POINT_HOTSPOT)
 	{
-		double min_x = - step[0] * LOCAL_RADIUS;
-		double max_x = - min_x;
-		double min_y = - step[1] * LOCAL_RADIUS;
-		double max_y = - min_y;
+		Primitive* prim = ctrl()->getPrimitive(HS.segmentID);
+		if (!(prim->primType == GCYLINDER && prim->symmPlanes.size() == 1))
+		{
+			double min_x = - step[0] * LOCAL_RADIUS;
+			double max_x = - min_x;
+			double min_y = - step[1] * LOCAL_RADIUS;
+			double max_y = - min_y;
 
-		for (double x = min_x; x <= max_x; x += step[0]){
-			for (double y = min_y; y <= max_y; y += step[1]){
-				{
-					if(x == hotPoint.x() && y == hotPoint.y())
-						continue;
-
-					Vec3d delta(x,y,0);
-					Vec3d pos = hotPoint + delta;
-
-					// check whether \pos is in BB
-					if (RANGE(pos[0], constraint_bbmin[0], constraint_bbmax[0])
-						&& RANGE(pos[1], constraint_bbmin[1], constraint_bbmax[1])
-						&& RANGE(pos[2], constraint_bbmin[2], constraint_bbmax[2]))
+			for (double x = min_x; x <= max_x; x += step[0]){
+				for (double y = min_y; y <= max_y; y += step[1]){
 					{
-						result.push_back(delta);
-					}
-				}			
+						if(x == hotPoint.x() && y == hotPoint.y())
+							continue;
+						else
+							result.push_back(Vec3d(x,y,0));
+						
+					}			
+				}
 			}
 		}
+
 	}
 	else if ( HS.type == LINE_HOTSPOT)
 	{
@@ -213,47 +210,18 @@ QVector<Vec3d> Improver::getLocalMoves( HotSpot& HS )
 			result.push_back(d1 * i * step.x());
 			result.push_back(d2 * i * step.x());
 		}
-
-		// debug
-		QSurfaceMesh * foo = activeObject()->getSegment(0);
-		std::vector<Vec3d> line0,line1,line2;
-		line0.push_back(Vec3d(0));
-		line0.push_back(d.normalized());
-		line1.push_back(Vec3d(0));
-		line1.push_back(d1);
-		line2.push_back(Vec3d(0));
-		line2.push_back(d2);
-		foo->debug_lines.push_back(line0);
-		foo->debug_lines2.push_back(line1);
-		foo->debug_lines3.push_back(line2);
 	}
 
 	// Vertical moves
 	if (!HS.defineHeight)
 	{
-		double min_z = - step[2] * LOCAL_RADIUS;
-		double max_z = - min_z;
-		if (1 == HS.side)
-			max_z = 0;
-		else
-			min_z = 0;
-
-		for (double z = min_z; z <= max_z; z += step[2])
-		{
-			Vec3d delta = Vec3d(0, 0, z);
-			Vec3d pos = hotPoint + delta;
-
-			// check whether \pos is in BB
-			if (RANGE(pos[0], constraint_bbmin[0], constraint_bbmax[0])
-				&& RANGE(pos[1], constraint_bbmin[1], constraint_bbmax[1])
-				&& RANGE(pos[2], constraint_bbmin[2], constraint_bbmax[2]))
-			{
-				result.push_back(delta);
-			}
-		}
+		Vec3d delta(0.0); 
+		delta[2] = (1 == HS.side)?  - step[2] : step[2];
+		for (int i = 1; i <= LOCAL_RADIUS; i++)
+			result.push_back(delta * i);
 	}
 
-	std::cout << "# Moves = " << result.size() << std::endl;
+//	std::cout << "# Moves = " << result.size() << std::endl;
 
 	return result;
 }
@@ -297,8 +265,6 @@ void Improver::deformNearPointLineHotspot( int side )
 		// Fix the relation between hot segments then propagate the local modification
 		propagator.regroupPair(free_prim->id, fixed_prim->id); 	
 		propagator.execute(); 
-
-//		if ( !satisfyBBConstraint() ) continue; // BB constraint is hard	
 
 		// Record the shape state
 		if (freeHS.type == POINT_HOTSPOT)
@@ -376,58 +342,68 @@ void Improver::deformNearHotspot( int side )
 // === Main access
 void Improver::execute(int level)
 {
-	// The original stackability
-	origStackability = activeObject()->val["stackability"];
+	// Clear
+	solutions.clear();
+	usedCandidateSolutions.clear();
+	candidateSolutions = PQShapeStateLessEnergy();
 
 	// The bounding box constraint is hard
 	constraint_bbmin = activeObject()->bbmin * BB_TOLERANCE;
 	constraint_bbmax = activeObject()->bbmax * BB_TOLERANCE;
 
+	// The original stackability
+	origStackability = activeOffset->computeStackability();
+
 	// Push the current shape as the initial candidate solution
 	ShapeState origState = ctrl()->getShapeState();
-	origState.deltaStackability = 0;
-	origState.distortion = 0;
 	candidateSolutions.push(origState);
+	double currentStackability = 0;
 
-	while( ( level>0 || level==IMPROVER_MAGIC_NUMBER ) // Suggest || Improve
-		&& !candidateSolutions.empty() 
-		&& solutions.size()<NUM_EXPECTED_SOLUTION )
+// Timer
+timer.restart();
+	while( ( level>0 || level==IMPROVER_MAGIC_NUMBER )	// Suggest || Improve
+		&& !candidateSolutions.empty())
 	{
-
+		// Set current
 		currentCandidate = candidateSolutions.top();
 		candidateSolutions.pop();
-		usedCandidateSolutions.push_back(currentCandidate);
+		ctrl()->setShapeState(currentCandidate);
+		currentStackability = activeOffset->computeStackability();
+
+		std::cout << "CurrStackability = " << currentStackability << "\n";
 
 		// Solution or not
-		if (currentCandidate.deltaStackability + origStackability >= TARGET_STACKABILITY)
+		if (currentStackability >= TARGET_STACKABILITY)
 		{
 			solutions.push_back(currentCandidate);
-			std::cout << solutions.size() << " solutions have been found. \n";
+			//std::cout << solutions.size() << " solutions have been found. \n";
 			continue;
 		}
-// Timer
-std::cout << "One level: ";
-timer.start();
-		// Set up the current candidate
-		ctrl()->setShapeState(currentCandidate);
+
+		// #solutions 	
+		if (solutions.size() >= NUM_EXPECTED_SOLUTION) break;
 
 		// Detect hot spots
 		activeOffset->detectHotspots();
-std::cout << "Detect hot spots: " << timer.elapsed() << " ms\n";
-timer.restart();
+		if (activeOffset->upperHotSpots.empty() || activeOffset->lowerHotSpots.empty())
+			std::cout << "\nWARNING: Hot spot detection failed.\n";
+
 		// Local modification
 		deformNearHotspot(1);
 		deformNearHotspot(-1);
 
-		// Debug
-		std::cout << "#Candidates = " << candidateSolutions.size() << std::endl;
-
 		// Decrease the suggesting level
 		if (level != IMPROVER_MAGIC_NUMBER) level--;
 
-std::cout << "Done (" <<timer.elapsed() << " ms)\n";
+
+		//std::cout << "One level: E = " << currentCandidate.energy() << ", currS = " << currentStackability;
+		//std::cout << " #Cand = " << candidateSolutions.size() << std::endl;
 	}
 
+std::cout << "Total time = " <<(double)timer.elapsed()/60000 << " min\n";
+
+	// Restore the original
+	ctrl()->setShapeState(origState);
 	std::cout << "Searching completed.\n" << std::endl;
 }
 

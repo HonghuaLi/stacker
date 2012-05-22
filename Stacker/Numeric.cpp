@@ -7,7 +7,7 @@
 #include <QFile>
 #include <stack>
 
-double GC_GAUSSIAN_SIGMA = 0.25;
+double GC_GAUSSIAN_SIGMA = 0.2;
 
 
 // Extreme
@@ -562,7 +562,7 @@ Buffer2v2i getMaximumRegions( Buffer2d &image )
 
 	while (regions.empty())
 	{
-		hot_cap -= 0.1; // increase the cap
+		hot_cap -= 0.05; // increase the cap
 		regions = getRegionsGreaterThan(image, maxV * hot_cap);
 
 		// If the hot regions are too small

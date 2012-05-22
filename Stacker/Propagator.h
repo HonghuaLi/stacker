@@ -15,8 +15,7 @@ public:
 	Propagator( Controller* ctrl );
 
 	// Regroup pair
-	void regroupPair(QString id1, QString id2);
-
+	void regroupPair( QString id1, QString id2, bool sliding = true );
 	// Sliding
 	void slide(QString id);
 
