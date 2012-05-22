@@ -210,19 +210,15 @@ void Offset::computeOffsetOfShape( Vec3d direction )
 }
 
 
-void Offset::computeStackability()
+double Offset::computeStackability()
 {
-	if (!activeObject()) return;
+	if (!activeObject()) return -1;
 
-	//std::cout << std::setprecision(4);
-	// Compute the bounding box
+	// The \V0
 	activeObject()->computeBoundingBox();
 	Vec3d diag = activeObject()->bbmax - activeObject()->bbmin;
-	//std::cout << diag << '\n';
 	double V0 = volumeOfBB(diag);
 
-	//std::cout << "V0 = " << V0 << '\n';
-	//std::cout << "V1 \t O_max \t H \t Stackability\n";
 	// Searching for the best stacking direction
 	double maxStackability = -1;
 	Vec3d bestStackingDirection(0, 0, 1);
@@ -238,8 +234,6 @@ void Offset::computeStackability()
 		double V1 = volumeOfBB(extent);
 		double stackability = 1.0 - (om / extent[2]) * (V1 / V0);
 
-		//std::cout << V1 << '\t'<< om << '\t' << extent << '\t' << stackability << '\n';
-
 		if (stackability > maxStackability)
 		{
 			maxStackability = stackability;
@@ -248,30 +242,28 @@ void Offset::computeStackability()
 		}
 	}
 
+	// Save for \activeObject
 	activeObject()->val["stackability"] = maxStackability;
 	activeObject()->vec["stacking_shift"] = bestStackingDirection * O_max;
 
-	// debug
-	ctrl()->debugPoints.clear();
-	foreach(Vec3d v, directions)
-		ctrl()->debugPoints.push_back(v );
+	//// Save offset as image
+	//saveAsImage(lowerDepth, "lower depth.png");
+	//saveAsImage(upperDepth, "upper depth.png");
+	//saveAsImage(offset, "offset function.png");
 
-	// Save offset as image
-//	saveAsImage(lowerDepth, "lower depth.png");
-//	saveAsImage(upperDepth, "upper depth.png");
-//	saveAsImage(offset, "offset function.png");
+	return maxStackability;
 }
 
-void Offset::computeStackability( Vec3d direction )
+double Offset::computeStackability( Vec3d direction )
 {
-	if (!activeObject()) return;
+	if (!activeObject()) return -1;
 
-	//std::cout << std::setprecision(4);
-	// Compute the bounding box
+	// The \V0
 	activeObject()->computeBoundingBox();
 	Vec3d diag = activeObject()->bbmax - activeObject()->bbmin;
-	//std::cout << diag << '\n';
 	double V0 = volumeOfBB(diag);
+
+	// Searching for the best stacking direction
 
 	computeOffsetOfShape(direction);
 
@@ -281,9 +273,19 @@ void Offset::computeStackability( Vec3d direction )
 	double V1 = volumeOfBB(extent);
 	double stackability = 1.0 - (om / extent[2]) * (V1 / V0);
 
+
+	// Save for \activeObject
 	activeObject()->val["stackability"] = stackability;
-	activeObject()->vec["stacking_shift"] = direction * om;
+	activeObject()->vec["stacking_shift"] = direction * O_max;
+
+	//// Save offset as image
+	//saveAsImage(lowerDepth, "lower depth.png");
+	//saveAsImage(upperDepth, "upper depth.png");
+	//saveAsImage(offset, "offset function.png");
+
+	return stackability;
 }
+
 
 void Offset::computeOffsetOfRegion( Vec3d direction, std::vector< Vec2i >& region )
 {
@@ -322,9 +324,9 @@ void Offset::computeOffsetOfRegion( Vec3d direction, std::vector< Vec2i >& regio
 	computeOffset();
 
 	// Save offset as image
-	//saveAsImage(upperEnvelope, "upper.png");
-	//saveAsImage(lowerEnvelope, "lower.png");
-	//saveAsImage(offset, QString::number(direction.z()) + "_offset function of region.png");
+	saveAsImage(upperEnvelope, "upper.png");
+	saveAsImage(lowerEnvelope, "lower.png");
+	saveAsImage(offset, QString::number(direction.z()) + "_offset function of region.png");
 }
 
 double Offset::getStackability( bool recompute /*= false*/ )
@@ -342,8 +344,8 @@ HotSpot Offset::detectHotspotInRegion(int side, std::vector<Vec2i> &hotRegion)
 	// Draw Faces Unique
 	activeViewer->setMode(HV_FACEUNIQUE);
 	activeViewer->updateGL(); 
-	//activeViewer->setMode(HV_FACEUNIQUE);
-	//activeViewer->updateGL(); 
+	activeViewer->setMode(HV_FACEUNIQUE);
+	activeViewer->updateGL(); 
 
 	GLubyte* colormap = (GLubyte*)activeViewer->readBuffer(GL_RGBA, GL_UNSIGNED_BYTE);
 
@@ -460,7 +462,7 @@ void Offset::detectHotspots( )
 
 	// Detect hot regions
 	hotRegions = getMaximumRegions(offset);
-	//visualizeRegions(w, h, hotRegions, "hot regions of shape.png");
+	visualizeRegions(w, h, hotRegions, "hot regions of shape.png");
 
 	// The max offset of hot regions
 	maxOffsetInHotRegions.clear();
@@ -483,9 +485,8 @@ void Offset::detectHotspots( )
 		Buffer2v2i zoomedHRs = getMaximumRegions(offset);
 
 		// If there are multiple regions, pick up the one closest to the center
-#ifdef _DEBUG		
-		visualizeRegions(w, h, zoomedHRs, QString::number(i) + "_zoomed in hot regions.png");
-#endif
+		//visualizeRegions(w, h, zoomedHRs, QString::number(i) + "_zoomed in hot regions.png");
+
 		Vec2i center(w/2, h/2);
 		int minDis = w;
 		int closestID = 0;
@@ -521,14 +522,16 @@ void Offset::detectHotspots( )
 		UHS.computeRepresentative();
 		LHS.computeRepresentative();
 
+
 		// debug
-		if (LHS.type == LINE_HOTSPOT)
-		{
-			std::vector<Point> line;
-			line.push_back(LHS.rep.first());
-			line.push_back(LHS.rep.last());
-			ctrl()->debugLines.push_back(line);
-		}
+		//if (LHS.type == LINE_HOTSPOT)
+		//{
+		//	std::vector<Point> line;
+		//	line.push_back(LHS.rep.first());
+		//	line.push_back(LHS.rep.last());
+		//	ctrl()->debugLines.push_back(line);
+		//}
+
 
 		upperHotSpots.push_back(UHS);
 		lowerHotSpots.push_back(LHS);
@@ -537,22 +540,15 @@ void Offset::detectHotspots( )
 	if(upperHotSpots.size() + lowerHotSpots.size() == 0)
 		return;
 
-	// Show results in the std output
-	std::cout << "Hot spots: " << std::endl;
-	for (int i=0;i<upperHotSpots.size();i++)
-	{
-		upperHotSpots[i].print();
-		lowerHotSpots[i].print();
-	}
-	std::cout << std::endl;
 
-	//// Hot segments
-	//hotSegments.clear();
+	//// Show results in the std output
+	//std::cout << "Hot spots: " << std::endl;
 	//for (int i=0;i<upperHotSpots.size();i++)
 	//{
-	//	hotSegments.insert(upperHotSpots[i].segmentID);
-	//	hotSegments.insert(lowerHotSpots[i].segmentID);
+	//	upperHotSpots[i].print();
+	//	lowerHotSpots[i].print();
 	//}
+	//std::cout << std::endl;
 }
 
 std::vector<HotSpot> Offset::getHotspots( int side )

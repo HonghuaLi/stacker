@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include "Workspace.h"
 #include "MeshBrowser/MeshBrowserWidget.h"
+#include "Stacker/Controller.h"
 
 QMeshDoc::QMeshDoc( QObject * parent ) : QObject(parent)
 {
@@ -50,13 +51,39 @@ void QMeshDoc::importObject(QString fileName)
 
 	// Set global ID for the mesh and all its segments
 	newMesh->setObjectName(newObjId);
+	
+	// Try to load the controller and groups with the same filename
+	// Setup controller file name
+	fileName.chop(3);fileName += "ctrl";
 
-	// Focus active scene
-	workspace->activeScene->setFocus();
-	workspace->activeScene->print(newObjId + " has been imported.");
-	workspace->activeScene->setActiveObject(newMesh);
+	if(QFileInfo(fileName).exists())
+	{
+		// Load controller
+		newMesh->ptr["controller"] = new Controller(newMesh, true, fileName);
+		Controller * ctrl = (Controller *)newMesh->ptr["controller"];
+
+		fileName.chop(4);fileName += "grp";
+		if(QFileInfo(fileName).exists())
+		{
+			std::ifstream inF(qPrintable(fileName), std::ios::in);
+			ctrl->loadGroups(inF);
+			inF.close();
+		}
+	}
+	else
+	{
+		newMesh->ptr["controller"] = new Controller(newMesh);
+	}
+
 
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
+
+	// Focus active scene
+	emit(printMessage(newObjId + " has been imported."));
+	emit(objectImported(newMesh));
+	//workspace->activeScene->setFocus();
+	//workspace->activeScene->print(newObjId + " has been imported.");
+	//workspace->activeScene->setActiveObject(newMesh);
 }
 
 QSegMesh * QMeshDoc::getObject( QString objectId )

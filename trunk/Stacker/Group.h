@@ -35,6 +35,9 @@ public:
 	bool has(QString id);
 	QVector<QString> getNodes();
 
+	// Clone
+	virtual Group* clone() = 0;
+
 protected:
 	// Get the frozen and non_frozen primitives
 	bool getRegroupDirection(Primitive* &frozen, Primitive* &non_frozen);

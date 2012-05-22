@@ -51,9 +51,9 @@ public slots:
 	void updateActiveObject();
 
 	// Improve and suggest
-	void onImproveButtonClicked();
 	void setSelectedShapeState();
 	void resetSolutionTree();
+	void onImproveButtonClicked();
 
 	// Message
 	void print(QString message);

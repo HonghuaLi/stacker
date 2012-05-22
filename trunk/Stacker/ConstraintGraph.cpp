@@ -113,3 +113,20 @@ GroupType ConstraintGraph::edgeType( QString id )
 {
 	return ctrl->groups[id]->type;
 }
+
+bool ConstraintGraph::hasRelation( QString id1, QString id2, GroupType type )
+{
+	QVector<ConstraintGraph::Edge> relations =this->getEdges(id1);
+
+	foreach(ConstraintGraph::Edge e, relations)
+	{
+		if ( node(e.to)->id == id2)
+		{
+			Group* group = ctrl->groups[e.id];
+			if (group->type == type )
+				return true;
+		}
+	}
+
+	return false;
+}

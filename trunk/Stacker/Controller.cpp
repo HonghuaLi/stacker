@@ -324,6 +324,10 @@ ShapeState Controller::getShapeState()
 	state.stacking_shift = m_mesh->vec["stacking_shift"];
 	state.stackability = m_mesh->val["stackability"];
 
+	// Groups
+	foreach (Group* g, groups)
+		state.groups[g->id] = g->clone();
+
 	return state;
 }
 
@@ -336,6 +340,9 @@ void Controller::setShapeState(const ShapeState &shapeState )
 
 	m_mesh->vec["stacking_shift"] = shapeState.stacking_shift;
 	m_mesh->val["stackability"] = shapeState.stackability;
+
+	// Groups
+	this->groups = shapeState.groups;
 
 	m_mesh->computeBoundingBox();
 }
@@ -499,6 +506,7 @@ void Controller::loadGroups( std::ifstream &inF )
 	foreach (Primitive * p, getPrimitives()) p->symmPlanes.clear();
 
 	// Read
+	int groupID = 0;
 	while (inF)
 	{
 		std::string str;
@@ -551,7 +559,9 @@ void Controller::loadGroups( std::ifstream &inF )
 			newGroup->loadParameters(inF, m_mesh->translation, m_mesh->scaleFactor);
 			newGroup->process(segments);
 
-			groups[newGroup->id] = newGroup;
+			QString id = QString::number(groupID++);
+			newGroup->id = id;
+			groups[id] = newGroup;
 		}
 	}
 }

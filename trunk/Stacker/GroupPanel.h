@@ -37,4 +37,7 @@ public slots:
 	// Load and save
 	void saveGroups();
 	void loadGroups();
+
+signals:
+	void groupsModified();
 };

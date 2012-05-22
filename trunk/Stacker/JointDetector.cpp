@@ -48,7 +48,7 @@ QVector<Group*> JointDetector::detect( QVector<Primitive*> primitives )
 					points.push_back(Point(v.x, v.y, v.z) * JOINT_THRESHOLD);
 				}
 
-				// Debug: visualize the intersection
+				//// Debug: visualize the intersection
 				//foreach (Point p, points)
 				//	a->debugPoints.push_back(p);
 

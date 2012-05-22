@@ -114,3 +114,15 @@ void SymmetryGroup::draw()
 	// Draw debug and stuff
 	Group::draw();
 }
+
+Group* SymmetryGroup::clone()
+{
+	SymmetryGroup * g = new SymmetryGroup(SYMMETRY);
+
+	g->id = this->id;
+	g->nodes = this->nodes;
+	g->symmetryPlane = this->symmetryPlane;
+	g->correspondence = this->correspondence;
+
+	return g;
+}

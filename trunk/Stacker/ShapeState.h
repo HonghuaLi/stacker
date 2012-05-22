@@ -6,11 +6,16 @@
 #include <queue>
 #include "Stacker/EditPath.h"
 
+class Group;
+
 class ShapeState
 {
 public:
 	// Geometry
 	QMap< QString, void* > primStates;
+
+	// Groups
+	QMap<QString, Group*> groups;
 
 	// Stacking
 	Vec3d stacking_shift;

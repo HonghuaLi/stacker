@@ -99,7 +99,7 @@ void PointJointGroup::slide( QString sliderID )
 	bool at_end = slider->atEnd(1, oldPos);
 	if (at_end)
 	{	
-		std::cout << qPrintable(track->id) << "is regarded as track.\n";
+//		std::cout << qPrintable(track->id) << "is regarded as track.\n";
 
 		//slider->debugPoints.clear();
 		//slider->debugPoints.push_back(oldPos);
@@ -149,4 +149,15 @@ void PointJointGroup::rejoint(QString sliderID)
 	// Freeze both slider and track
 	/*slider->isFrozen = true;
 	track->isFrozen = true;*/
+}
+
+Group* PointJointGroup::clone()
+{
+	PointJointGroup* g = new PointJointGroup(POINTJOINT);
+
+	g->id = this->id;
+	g->nodes = this->nodes;
+	g->jointCoords = this->jointCoords;
+
+	return g;
 }

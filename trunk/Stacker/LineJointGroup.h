@@ -14,6 +14,11 @@ public:
 	void draw();	
 	void saveParameters( std::ofstream &outF );
 	void loadParameters(std::ifstream &inF, Vec3d translation, double scaleFactor);
+	Group* clone();
+
+
+	// 
+	void updateLineEnds();
 
 public:
 	QVector<Point> lineEnds;

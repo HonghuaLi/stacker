@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1015</width>
+    <width>1016</width>
     <height>671</height>
    </rect>
   </property>
@@ -41,7 +41,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1015</width>
+     <width>1016</width>
      <height>21</height>
     </rect>
    </property>
@@ -54,6 +54,7 @@
     <addaction name="actionExportObject"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
+    <addaction name="actionUnserialize"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -164,6 +165,16 @@
    </property>
    <property name="text">
     <string>Mesh Browser</string>
+   </property>
+  </action>
+  <action name="actionProcess">
+   <property name="text">
+    <string>Process</string>
+   </property>
+  </action>
+  <action name="actionUnserialize">
+   <property name="text">
+    <string>Unserialize objects</string>
    </property>
   </action>
  </widget>
