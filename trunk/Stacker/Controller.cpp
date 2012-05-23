@@ -466,30 +466,49 @@ double Controller::originalVolume()
 	return result;
 }
 
-double Controller::getDistortion()
+
+std::vector<double> Controller::getDistortions()
 {
 	// Distortion terms
 	std::vector< double > D; 	
 
-	// Change of the total volume of primitives
-	double orgV = originalVolume();
-	double D1 = abs(volume() - orgV) /orgV;
+	// Change primitive volumes
+	double D1 = 0;
+	double sumV = 0;
+	foreach (Primitive * prim, primitives)
+	{
+		D1 += abs(prim->volume() - prim->originalVolume);
+		sumV += prim->originalVolume;
+	}
+	D1 /= sumV;
+
 	D.push_back(D1);
 
-	// Change of BB along 3 main axes
+	// Change of BB extents along 3 main axes
 	Vec3d bbmin, bbmax;
 	m_mesh->computeBoundingBox();
 	bbmin = m_mesh->bbmin;
 	bbmax = m_mesh->bbmax;
-	double D2 = 0;
 	Vec3d orgSize = original_bbmax - original_bbmin;
 	Vec3d currSize = bbmax - bbmin;
 	Vec3d delta = currSize - orgSize;
-	for (int i=0;i<3;i++)
-		D2 += abs(delta[i]);
 
-	// Total Energy
-	return Sum(D);
+	double D2 = 0;
+	for (int i=0;i<3;i++)
+		D2 += abs(delta[i]/orgSize[i]);
+	D2 /= 3;
+
+	D.push_back(D2);
+
+	return D;
+}
+
+
+double Controller::getDistortion()
+{
+	std::vector< double > D = getDistortions(); 	
+
+	return Sum(D)/D.size();
 }
 
 double Controller::meshRadius()

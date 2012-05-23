@@ -63,6 +63,7 @@ public:
 	double		volume();
 	double		originalVolume();
 	double		getDistortion();
+	std::vector<double>		getDistortions();
 
 	// Similarity between two shape state
 	double similarity(ShapeState state1, ShapeState state2);

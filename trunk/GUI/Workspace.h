@@ -33,7 +33,8 @@ public slots:
 	void setActiveScene(Scene* scene);
 	void disconnectScene(Scene* scene);
 	void sceneClosed(Scene* scene);
-	void LoadUserStudyResults();
+	void processUserStudyResults();
+	void processUserStudyResults2();
 
 private:
 	MeshInfoPanel * mi;

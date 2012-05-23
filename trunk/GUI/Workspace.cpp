@@ -60,12 +60,13 @@ Workspace::Workspace(QWidget *parent, Qt::WFlags flags)	: QMainWindow(parent, fl
 	connect(ui.actionMeshBrowser, SIGNAL(triggered()), mDoc, SLOT(importObjectBrowser()));
 
 	// Connect to Process User study
-	connect(ui.actionUnserialize, SIGNAL(triggered()), SLOT(LoadUserStudyResults()));
+	connect(ui.actionUnserialize, SIGNAL(triggered()), SLOT(processUserStudyResults2()));
 
 	leftLayout->addStretch();
 	rightLayout->addStretch();
 
 	// Among panels
+	connect(sp, SIGNAL(objectModified()), gp, SLOT(updateWidget()));
 	connect(cp, SIGNAL(controllerModified()), sp, SLOT(resetSolutionTree()));
 	connect(gp, SIGNAL(groupsModified()), sp, SLOT(resetSolutionTree()));
 	connect(cp, SIGNAL(objectModified()), sp, SLOT(updateActiveObject()));
@@ -108,6 +109,7 @@ void Workspace::addNewScene()
 	// Objects changed in scene
 	connect(newScene, SIGNAL(objectDiscarded(QString)), mDoc, SLOT(deleteObject(QString)));
 	connect(newScene, SIGNAL(objectInserted()), sp, SLOT(setActiveObject()));
+	connect(newScene, SIGNAL(objectInserted()), gp, SLOT(updateWidget()));
 
 	// Stack panel
 	connect(sp, SIGNAL(printMessage(QString)), newScene, SLOT(print(QString)));
@@ -118,6 +120,7 @@ void Workspace::addNewScene()
 
 	// Groups
 	connect(newScene, SIGNAL(groupsChanged()), gp, SLOT(updateWidget()));
+	connect(newScene, SIGNAL(groupsChanged()), sp, SLOT(resetSolutionTree()));
 
 	// Object transformed by transformation panel
 	connect(tp, SIGNAL(objectModified()), newScene, SLOT(updateActiveObject()));
@@ -178,7 +181,7 @@ void Workspace::sceneClosed( Scene* scene )
 	}
 }
 
-void Workspace::LoadUserStudyResults()
+void Workspace::processUserStudyResults()
 {
 	QStringList xmlFileNames =  QFileDialog::getOpenFileNames(0, "Result file", "", "Results Files (*.xml)"); 
 
@@ -225,5 +228,103 @@ void Workspace::LoadUserStudyResults()
 			sp->updateActiveObject();
 		}		
 	}
+
+}
+
+void Workspace::processUserStudyResults2()
+{
+	// Meshes
+	QStringList meshNames;
+	meshNames << "IKEA-cup.obj" << "chair-armrest.obj" << "chair.obj" << "cup-handle.obj" 
+		<< "table-skirt.obj" << "table-middlebar.obj" << "stool.obj";
+
+	// Select XML files
+	QStringList xmlFileNames =  QFileDialog::getOpenFileNames(0, "Result file", "", "Results Files (*.xml)"); 
+
+	// The folder names
+	QFileInfo fi(xmlFileNames.front());
+	QString parentFolder = fi.absoluteDir().path();
+	QString outputFolder = parentFolder + "/distortion-stackability/";
+	QString taskFolder = parentFolder + "/tasks/";
+	QDir parentDir(parentFolder);
+	parentDir.mkdir("distortion-stackability");
+
+	// Load meshes
+	QMap<QString, QSegMesh*> meshes;
+	foreach (QString meshName, meshNames)
+	{
+		QString meshFilename = taskFolder + meshName;
+		meshes[meshName] = mDoc->importObject(meshFilename);
+	}
+
+	// Open output files
+	QMap<QString, QFile*> outFile;
+	foreach (QString meshName, meshNames)
+	{
+		outFile[meshName] =  new QFile(outputFolder + meshName + ".csv");
+		outFile[meshName]->open(QIODevice::WriteOnly | QIODevice::Text);
+		outFile[meshName]->write("user,volume,BB_extent,stackability\n");
+	}
+
+	// For each user
+	foreach(QString xmlFileName, xmlFileNames)
+	{
+		// Read xmlFile
+		QFile xmlFile(xmlFileName); xmlFile.open(QIODevice::ReadOnly | QIODevice::Text);
+		QString xmlString = xmlFile.readAll(); xmlFile.close();
+		xmlString.replace("data/Tasks/","");
+		QDomDocument doc; doc.setContent(xmlString);
+
+		// Submitter name
+		QFileInfo fi_foo(xmlFileName);
+		QString submitName = fi_foo.baseName();
+		if(submitName.contains("_")){
+			QStringList sl = submitName.split("_");
+			submitName = sl.last();
+		}
+
+		std::cout << qPrintable(submitName) << ": ";
+
+		// For each shape
+		QDomElement e = doc.firstChildElement().firstChildElement();
+		while(!e.isNull())
+		{
+			if(e.tagName().endsWith(".obj"))
+			{
+				// Raw data
+				QDomElement name = e.elementsByTagName("mesh-name").at(0).toElement();
+				QDomElement stackability = e.elementsByTagName("stackability").at(0).toElement();
+				QDomElement controller = e.elementsByTagName("controller").at(0).toElement();
+
+				// Compute the distortion
+				QString meshName = name.text();
+				if (outFile.contains(meshName))
+				{
+					Controller * ctrl = (Controller *)meshes[meshName]->ptr["controller"];
+					ctrl->unserialize(controller.text());
+					std::vector<double> Ds = ctrl->getDistortions();
+
+					QString line = submitName + QString(",%1,%2,%3\n").arg(Ds[0]).arg(Ds[1]).arg(stackability.text());
+					outFile[meshName]->write(qPrintable(line));
+
+					std::cout << ".";		
+				}
+			}
+
+			e = e.nextSiblingElement();
+		}
+
+		std::cout << "Done.\n";
+
+	}
+
+	// Close files, delete meshes
+	foreach (QString meshName, meshNames)
+	{
+		delete meshes[meshName];
+		outFile[meshName]->close();
+	}
+
+	
 
 }
