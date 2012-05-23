@@ -24,7 +24,6 @@ public slots:
 	// Sence management
 	void setActiveScene( Scene * newScene );
 	void updateWidget();
-
 	// Joint detection
 	void findJoints();
 	void setJointThreshold(double threshold);

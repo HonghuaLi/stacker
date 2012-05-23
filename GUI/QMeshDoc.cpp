@@ -18,23 +18,35 @@ QMeshDoc::~QMeshDoc()
 
 void QMeshDoc::importObject()
 {
-	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", DEFAULT_FILE_PATH, "Mesh Files (*.obj *.off *.stl)"); 
-
-	importObject(fileName);
-}
-
-void QMeshDoc::importObject(QString fileName)
-{
 	Workspace * workspace = (Workspace *) parent();
 	if(workspace->activeScene == NULL) return;
 
+	// The dialog
+	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", DEFAULT_FILE_PATH, "Mesh Files (*.obj *.off *.stl)"); 
+	
+	// Read the file
+	QSegMesh * newMesh = importObject(fileName);
+
+	if (newMesh)
+	{
+		// Save the default path
+		DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
+
+		// Emit signals
+		emit(printMessage(newMesh->objectName() + " has been imported."));
+		emit(objectImported(newMesh));
+	}
+}
+
+QSegMesh * QMeshDoc::importObject(QString fileName)
+{
 	// Get object name from file path
 	QFileInfo fInfo (fileName);
 
 	if(!fileName.size() || !fInfo.exists())
 	{
 		emit(printMessage(QString("Error: invalid file (%1).").arg(fileName)));
-		return;
+		return NULL;
 	}
 
 	QString newObjId = fInfo.fileName();
@@ -75,15 +87,7 @@ void QMeshDoc::importObject(QString fileName)
 		newMesh->ptr["controller"] = new Controller(newMesh);
 	}
 
-
-	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
-
-	// Focus active scene
-	emit(printMessage(newObjId + " has been imported."));
-	emit(objectImported(newMesh));
-	//workspace->activeScene->setFocus();
-	//workspace->activeScene->print(newObjId + " has been imported.");
-	//workspace->activeScene->setActiveObject(newMesh);
+	return newMesh;
 }
 
 QSegMesh * QMeshDoc::getObject( QString objectId )
