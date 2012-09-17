@@ -220,6 +220,31 @@ void Scene::postDraw()
 		renderText(x, y, osdMessages.at(i));
 	}
 
+	// Draw offset function
+	if(isDrawOffset && activeObject() && sp && sp->activeOffset)
+	{
+		int size = 400;
+
+		glViewport(width() - size, size * -0.1,size,size);
+		glScissor(width() - size, size * -0.1,size,size);
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glMatrixMode(GL_PROJECTION);glPushMatrix();     glLoadIdentity();
+		glOrtho(-1, 1, -1, 1, -1, 1);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();glLoadIdentity();glMultMatrixd(camera()->orientation().inverse().matrix());
+
+		// Draw graph
+		glTranslated(-0.5, -0.5, 0);
+		SimpleDraw::DrawGraph2D(sp->activeOffset->offset);
+
+		glMatrixMode(GL_PROJECTION);glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);glPopMatrix();
+
+		glViewport(0,0,width(),height());
+		glScissor(0,0,width(),height());
+	}
+
 	QGLViewer::postDraw();
 	//SimpleDraw::drawCornerAxis(camera()->orientation().inverse().matrix());
 }
@@ -487,6 +512,7 @@ void Scene::keyPressEvent( QKeyEvent *e )
 	if(e->key() == Qt::Key_O)
 	{
 		isDrawOffset = !isDrawOffset;
+		updateGL();
 	}
 
 	if(e->key() == Qt::Key_P)
